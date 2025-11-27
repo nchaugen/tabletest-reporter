@@ -12,7 +12,7 @@ import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BasicTableReportTest {
+public class EndToEndTableReportTest {
 
     private static @TempDir Path tempDir;
     private static Path inDir;
@@ -46,7 +46,7 @@ public class BasicTableReportTest {
         """;
 
     @Test
-    void should_produce_asciidoc_from_table_context_file() throws IOException {
+    void should_produce_asciidoc_file_from_table_context_file() throws IOException {
         new TableTestReporter().report(ASCIIDOC, inDir, outDir);
 
         assertThat(Files.readAllLines(outDir.resolve("table.adoc")))
@@ -75,7 +75,7 @@ public class BasicTableReportTest {
     }
 
     @Test
-    void should_produce_markdown_from_table_context_file() throws IOException {
+    void should_produce_markdown_file_from_table_context_file() throws IOException {
         new TableTestReporter().report(MARKDOWN, inDir, outDir);
 
         assertThat(Files.readAllLines(outDir.resolve("table.md")))

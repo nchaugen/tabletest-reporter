@@ -1,7 +1,9 @@
 ## {{ title }}
 
+{% if description %}
 
 {{ description }}
+{% endif %}
 
 |{% for header in headers %} {{ header.value }} |{% endfor %}
 

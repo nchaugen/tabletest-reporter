@@ -1,13 +1,6 @@
 package io.github.nchaugen.tabletest.reporter;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.UncheckedIOException;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -30,27 +23,12 @@ public class TableTestReporter {
         return new OutPathAndInPath(outDir.resolve(fileName), inPath);
     }
 
-    private static final ObjectMapper MAPPER = new YAMLMapper();
-    private static final TypeReference<Map<String, Object>> TYPE_REFERENCE = new TypeReference<>() {
-    };
-
     private OutPathAndContext readContext(Path outPath, Path inPath) {
-        try {
-            Map<String, Object> context = MAPPER.readValue(inPath.toFile(), TYPE_REFERENCE);
-            return new OutPathAndContext(outPath, context);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to read YAML file " + inPath, e);
-        }
+        return new OutPathAndContext(outPath, Context.fromYaml(inPath.toFile()));
     }
 
     private OutPathAndContent renderContent(ReportFormat format, Path outPath, Map<String, Object> context) {
-        try {
-            Writer writer = new StringWriter();
-            format.tableTemplate().evaluate(writer, context);
-            return new OutPathAndContent(outPath, writer.toString());
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to render table in " + format + " with context: " + context.get("title"), e);
-        }
+        return new OutPathAndContent(outPath, format.renderTable(context));
     }
 
     private void writeFile(Path outFile, String content) {

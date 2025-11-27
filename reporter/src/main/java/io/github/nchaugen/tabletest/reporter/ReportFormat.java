@@ -4,6 +4,12 @@ import io.github.nchaugen.tabletest.reporter.pebble.PebbleExtension;
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.io.Writer;
+import java.util.Map;
+
 public enum ReportFormat {
     ASCIIDOC(".adoc"),
     MARKDOWN(".md");
@@ -23,7 +29,17 @@ public enum ReportFormat {
         return extension;
     }
 
-    public PebbleTemplate tableTemplate() {
+    public String renderTable(Map<String, Object> context) {
+        try {
+            Writer writer = new StringWriter();
+            tableTemplate().evaluate(writer, context);
+            return writer.toString();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to render table in " + this + " with context: " + context.get("title"), e);
+        }
+    }
+
+    private PebbleTemplate tableTemplate() {
         return switch (this) {
             case ASCIIDOC -> ASCIIDOC_TABLE_TEMPLATE;
             case MARKDOWN -> MARKDOWN_TABLE_TEMPLATE;

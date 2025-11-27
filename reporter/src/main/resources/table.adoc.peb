@@ -1,7 +1,9 @@
 == ++{{ title }}++
 
+{% if description %}
 {{ description }}
 
+{% endif %}
 [%header,cols="{{ '1' | replicate(columnCount) | join(',') }}"]
 |===
 {% for header in headers %}
