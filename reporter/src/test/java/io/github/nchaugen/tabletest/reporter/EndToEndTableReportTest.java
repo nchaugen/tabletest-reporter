@@ -31,7 +31,6 @@ public class EndToEndTableReportTest {
         description: |
             The leap year rules should be well-known.
         
-        columnCount: 3
         headers:
           - value: Scenario
           - value: Year

@@ -6,11 +6,10 @@ import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TableValuesWithPipeTest {
+public class TableWithPipeTest {
 
     private static final String TABLE_CONTEXT_YAML = """
         title: Escaped pipes
-        columnCount: 3
         headers:
           - value: "a"
           - value: "b"
@@ -31,11 +30,11 @@ public class TableValuesWithPipeTest {
                 |===
                 |++a++
                 |++b++
-                |++a\\|b++
+                |++a++\\|++b++
                 
-                a|++\\|++
-                a|++\\|++
-                a|++Text with \\| character++
+                a|\\|
+                a|\\|
+                a|++Text with ++\\|++ character++
 
                 |===
                 """

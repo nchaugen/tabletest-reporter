@@ -7,7 +7,7 @@
 
 |{% for header in headers %} {{ renderCell(header) }} |{% endfor %}
 
-|{{ ' --- |' | replicate(columnCount) | join }}
+|{{ ' --- |' | replicate(headers.size) | join }}
 
 {% for row in rows %}
 |{% for cell in row %} {{ renderCell(cell) }} |{% endfor %}
@@ -15,5 +15,14 @@
 {% endfor %}
 {# MACROS #}
 {% macro renderCell(cell) %}
-{{ cell.value | replace({'|': '\|'}) }}
+{% if cell.value == null %}
+{% elseif cell.value == '' %}
+{{- '""' -}}
+{% else %}
+{% set NEEDS_ENCODING = '(^ +)|( +$)|(\t+)|([ \t]{2,})|([|]+)' %}
+{% set PLUS_SIGN = '&#43;' %}
+{% set TAB_SIGN = '&#x21E5;' %}
+{% set SPACE_SIGN = '&#x2423;' %}
+{{- cell.value | replaceInMatch(NEEDS_ENCODING, {'\|': '\\|', ' ': SPACE_SIGN, '\t': TAB_SIGN}) -}}
+{% endif %}
 {% endmacro %}

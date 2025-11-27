@@ -4,7 +4,7 @@
 {{ description }}
 
 {% endif %}
-[%header,cols="{{ '1' | replicate(columnCount) | join(',') }}"]
+[%header,cols="{{ '1' | replicate(headers.size) | join(',') }}"]
 |===
 {% for header in headers %}
 |{{ renderCell(header) }}
@@ -19,9 +19,24 @@ a|{{ renderCell(cell) }}
 
 {% endfor %}
 |===
-{# MACROS #}
+{#  #}
 {% macro renderCell(cell) %}
-{% if cell.role %}{{ renderValueWithRole(cell) }}{% else %}{{ renderValue(cell) }}{% endif %}
+{% if cell.role %} {{- renderValueWithRole(cell) -}} {% else %} {{- renderValue(cell) -}} {% endif %}
 {% endmacro %}
-{% macro renderValueWithRole(cell) %}[.{{ cell.role }}]#{{ renderValue(cell) }}#{% endmacro %}
-{% macro renderValue(cell) %}++{{ cell.value | replace({'|': '\|'}) }}++{% endmacro %}
+{#  #}
+{% macro renderValueWithRole(cell) %}
+{{- "[.#{cell.role}]##{renderValue(cell)}#" -}}
+{% endmacro %}
+{#  #}
+{% macro renderValue(cell) %}
+{% if cell.value == null %}
+{% elseif cell.value == '' %}
+{{- '+""+' -}}
+{% else %}
+{% set NEEDS_ENCODING = '(^ +)|( +$)|(\t+)|([ \t]{2,})|([+]+)|([|]+)' %}
+{% set PLUS_SIGN = '&#43;' %}
+{% set TAB_SIGN = '&#x21E5;' %}
+{% set SPACE_SIGN = '&#x2423;' %}
+{{- cell.value | replaceInMatch(NEEDS_ENCODING, {'\|': '\\|', '\+': PLUS_SIGN, ' ': SPACE_SIGN, '\t': TAB_SIGN}, '++') -}}
+{% endif %}
+{% endmacro %}

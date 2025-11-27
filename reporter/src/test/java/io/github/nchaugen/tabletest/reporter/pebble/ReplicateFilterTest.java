@@ -20,7 +20,7 @@ class ReplicateFilterTest {
             new AbstractExtension() {
                 @Override
                 public Map<String, Filter> getFilters() {
-                    return Map.of("replicate", new ReplicateFilter());
+                    return Map.of(ReplicateFilter.FILTER_NAME, new ReplicateFilter());
                 }
             })
         .loader(new StringLoader())

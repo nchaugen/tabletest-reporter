@@ -10,7 +10,6 @@ public class TableWithRolesTest {
 
     private static final String TABLE_CONTEXT_YAML = """
         title: Leap Year Rules
-        columnCount: 3
         headers:
           - value: Scenario
             role: scenario
