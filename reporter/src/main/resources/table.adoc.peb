@@ -21,22 +21,40 @@ a|{{ renderCell(cell) }}
 |===
 {#  #}
 {% macro renderCell(cell) %}
-{% if cell.role %} {{- renderValueWithRole(cell) -}} {% else %} {{- renderValue(cell) -}} {% endif %}
+{% if cell.role %} {{- renderValueWithRole(cell.role, cell.value, 0) -}} {% else %} {{- renderValue(cell.value, 0) -}} {% endif %}
 {% endmacro %}
 {#  #}
-{% macro renderValueWithRole(cell) %}
-{{- "[.#{cell.role}]##{renderValue(cell)}#" -}}
+{% macro renderValueWithRole(role, value, level) %}
+{{- "[.#{role}]##{renderValue(value, level)}#" -}}
 {% endmacro %}
 {#  #}
-{% macro renderValue(cell) %}
-{% if cell.value == null %}
-{% elseif cell.value == '' %}
+{% macro renderValue(value, level) %}
+{% if value == null %}
+{% elseif value is iterable %}
+{{- renderList(value, '.', level) -}}
+{% else %}
+{{ renderLiteral(value) }}
+{% endif %}
+{% endmacro %}
+{#  #}
+{% macro renderList(list, bullet, level) %}
+{% for value in list %}
+
+{{ ' ' | replicate(level*2) | join }} {{- bullet | replicate(level+1) | join -}} {% if value is iterable %} {empty} {{- renderValue(value, level+1) -}} {% else %} {{ renderValue(value, level+1) }}
+{% endif %}
+{% else %}
+{{- '{empty}' -}}
+{% endfor %}
+{% endmacro %}
+{#  #}
+{% macro renderLiteral(value) %}
+{% if value == '' %}
 {{- '+""+' -}}
 {% else %}
 {% set NEEDS_ENCODING = '(^ +)|( +$)|(\t+)|([ \t]{2,})|([+]+)|([|]+)' %}
 {% set PLUS_SIGN = '&#43;' %}
 {% set TAB_SIGN = '&#x21E5;' %}
 {% set SPACE_SIGN = '&#x2423;' %}
-{{- cell.value | replaceInMatch(NEEDS_ENCODING, {'\|': '\\|', '\+': PLUS_SIGN, ' ': SPACE_SIGN, '\t': TAB_SIGN}, '++') -}}
+{{- value | replaceInMatch(NEEDS_ENCODING, {'\|': '\\|', '\+': PLUS_SIGN, ' ': SPACE_SIGN, '\t': TAB_SIGN}, '++') -}}
 {% endif %}
 {% endmacro %}
