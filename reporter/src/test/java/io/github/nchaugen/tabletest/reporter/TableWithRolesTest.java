@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static io.github.nchaugen.tabletest.reporter.OutputFormat.ASCIIDOC;
-import static io.github.nchaugen.tabletest.reporter.OutputFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
+import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class BasicTableReportTest {
+public class TableWithRolesTest {
 
     private static @TempDir Path tempDir;
     private static Path inDir;
@@ -27,10 +27,8 @@ public class BasicTableReportTest {
 
     private static final String TABLE_CONTEXT_YAML = """
         title: Leap Year Rules with Single Example
-        
         description: |
-            The leap year rules should be well-known.
-        
+          The leap year rules should be well-known.
         columnCount: 3
         headers:
           - value: Scenario
@@ -39,41 +37,41 @@ public class BasicTableReportTest {
           - value: Is Leap Year?
             role: expectation
         rows:
-            - - value: "Not divisible by 4"
-                role: scenario
-              - value: "2001"
-              - value: "No"
-                role: expectation
-            - - value: "Divisible by 4"
-                role: scenario
-              - value: "2004"
-              - value: "Yes"
-                role: expectation
+          - - value: "Not divisible by 4"
+              role: scenario
+            - value: "2001"
+            - value: "No"
+              role: expectation
+          - - value: "Divisible by 4"
+              role: scenario
+            - value: "2004"
+            - value: "Yes"
+              role: expectation
         """;
 
     @Test
-    void should_produce_asciidoc_from_table_context_file() throws IOException {
+    void should_add_roles_for_asciidoc() throws IOException {
         new TableTestReporter().report(ASCIIDOC, inDir, outDir);
 
         assertThat(Files.readAllLines(outDir.resolve("table.adoc")))
             .containsExactly(
-                "== +Leap Year Rules with Single Example+",
+                "== ++Leap Year Rules with Single Example++",
                 "",
                 "The leap year rules should be well-known.",
                 "",
                 "[%header,cols=\"1,1,1\"]",
                 "|===",
-                "|++Scenario++",
+                "|[.scenario]#++Scenario++#",
                 "|++Year++",
-                "|++Is Leap Year?++",
+                "|[.expectation]#++Is Leap Year?++#",
                 "",
-                "a|++Not divisible by 4++",
+                "a|[.scenario]#++Not divisible by 4++#",
                 "a|++2001++",
-                "a|++No++",
+                "a|[.expectation]#++No++#",
                 "",
-                "a|++Divisible by 4++",
+                "a|[.scenario]#++Divisible by 4++#",
                 "a|++2004++",
-                "a|++Yes++",
+                "a|[.expectation]#++Yes++#",
                 "",
                 "|==="
             );
@@ -81,7 +79,7 @@ public class BasicTableReportTest {
     }
 
     @Test
-    void should_produce_markdown_from_table_context_file() throws IOException {
+    void should_ignore_roles_for_markdown() throws IOException {
         new TableTestReporter().report(MARKDOWN, inDir, outDir);
 
         assertThat(Files.readAllLines(outDir.resolve("table.md")))

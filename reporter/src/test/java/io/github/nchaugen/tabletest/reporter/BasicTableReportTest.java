@@ -1,6 +1,6 @@
 package io.github.nchaugen.tabletest.reporter;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -8,21 +8,24 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
+import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class EndToEndTest {
+public class BasicTableReportTest {
 
-    private Path inDir;
-    private Path outDir;
+    private static @TempDir Path tempDir;
+    private static Path inDir;
+    private static Path outDir;
 
-    @BeforeEach
-    void setUp(@TempDir Path tempDir) throws IOException {
+    @BeforeAll
+    static void setUp() throws IOException {
         inDir = Files.createDirectory(tempDir.resolve("in"));
         outDir = Files.createDirectory(tempDir.resolve("out"));
-        Files.writeString(inDir.resolve("tabletest.yaml"), TABLE_TEST_YAML);
+        Files.writeString(inDir.resolve("table.yaml"), TABLE_CONTEXT_YAML);
     }
 
-    public static final String TABLE_TEST_YAML = """
+    private static final String TABLE_CONTEXT_YAML = """
         title: Leap Year Rules with Single Example
         
         description: |
@@ -31,28 +34,22 @@ public class EndToEndTest {
         columnCount: 3
         headers:
           - value: Scenario
-            role: scenario
           - value: Year
           - value: Is Leap Year?
-            role: expectation
         rows:
             - - value: "Not divisible by 4"
-                role: scenario
               - value: "2001"
               - value: "No"
-                role: expectation
             - - value: "Divisible by 4"
-                role: scenario
               - value: "2004"
               - value: "Yes"
-                role: expectation
         """;
 
     @Test
-    void shouldProcessTableTestResultFileAndProduceAsciiDoc() throws IOException {
-        new TableTestReporter().report(OutputFormat.ASCIIDOC, inDir, outDir);
+    void should_produce_asciidoc_from_table_context_file() throws IOException {
+        new TableTestReporter().report(ASCIIDOC, inDir, outDir);
 
-        assertThat(Files.readAllLines(outDir.resolve("tabletest.adoc")))
+        assertThat(Files.readAllLines(outDir.resolve("table.adoc")))
             .containsExactly(
                 "== +Leap Year Rules with Single Example+",
                 "",
@@ -78,10 +75,10 @@ public class EndToEndTest {
     }
 
     @Test
-    void shouldProcessTableTestResultFileAndProduceMarkdown() throws IOException {
-        new TableTestReporter().report(OutputFormat.MARKDOWN, inDir, outDir);
+    void should_produce_markdown_from_table_context_file() throws IOException {
+        new TableTestReporter().report(MARKDOWN, inDir, outDir);
 
-        assertThat(Files.readAllLines(outDir.resolve("tabletest.md")))
+        assertThat(Files.readAllLines(outDir.resolve("table.md")))
             .containsExactly(
                 "## Leap Year Rules with Single Example",
                 "",

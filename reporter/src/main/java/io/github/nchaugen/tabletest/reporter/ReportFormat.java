@@ -3,7 +3,7 @@ package io.github.nchaugen.tabletest.reporter;
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 
-public enum OutputFormat {
+public enum ReportFormat {
     ASCIIDOC(".adoc"),
     MARKDOWN(".md");
 
@@ -13,7 +13,7 @@ public enum OutputFormat {
 
     private final String extension;
 
-    OutputFormat(String extension) {
+    ReportFormat(String extension) {
         this.extension = extension;
     }
 
