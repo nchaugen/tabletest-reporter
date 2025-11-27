@@ -2,20 +2,22 @@
 
 {{ description }}
 
-[%header,cols="{% for i in 2..columnCount %}1,{% endfor %}1"]
+[%header,cols="{{ '1' | replicate(columnCount) | join(',') }}"]
 |===
 {% for header in headers %}
-|{% if header.role %}[.{{ header.role }}]#{% endif %}
-++{{ header.value }}++{% if header.role %}#{% endif %}
+|{{ renderCell(header) }}
 
 {% endfor %}
 
 {% for row in rows %}
 {% for cell in row %}
-a|{% if cell.role %}[.{{ cell.role }}]#{% endif %}
-++{{ cell.value }}++{% if cell.role %}#{% endif %}
+a|{{ renderCell(cell) }}
 
 {% endfor %}
 
 {% endfor %}
 |===
+{# MACROS #}
+{% macro renderCell(cell) %}
+{% if cell.role %}[.{{ cell.role }}]#++{{ cell.value }}++#{% else %}++{{ cell.value }}++{% endif %}
+{% endmacro %}

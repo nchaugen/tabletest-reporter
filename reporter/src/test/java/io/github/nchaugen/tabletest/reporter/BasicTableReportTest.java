@@ -51,7 +51,7 @@ public class BasicTableReportTest {
 
         assertThat(Files.readAllLines(outDir.resolve("table.adoc")))
             .containsExactly(
-                "== +Leap Year Rules with Single Example+",
+                "== ++Leap Year Rules with Single Example++",
                 "",
                 "The leap year rules should be well-known.",
                 "",

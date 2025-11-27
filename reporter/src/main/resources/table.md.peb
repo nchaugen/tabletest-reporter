@@ -5,7 +5,7 @@
 
 |{% for header in headers %} {{ header.value }} |{% endfor %}
 
-|{% for i in 1..columnCount %} --- |{% endfor %}
+|{{ ' --- |' | replicate(columnCount) | join }}
 
 {% for row in rows %}
 |{% for cell in row %} {{ cell.value }} |{% endfor %}
