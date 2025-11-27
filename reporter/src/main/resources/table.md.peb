@@ -5,11 +5,15 @@
 {{ description }}
 {% endif %}
 
-|{% for header in headers %} {{ header.value }} |{% endfor %}
+|{% for header in headers %} {{ renderCell(header) }} |{% endfor %}
 
 |{{ ' --- |' | replicate(columnCount) | join }}
 
 {% for row in rows %}
-|{% for cell in row %} {{ cell.value }} |{% endfor %}
+|{% for cell in row %} {{ renderCell(cell) }} |{% endfor %}
 
 {% endfor %}
+{# MACROS #}
+{% macro renderCell(cell) %}
+{{ cell.value | replace({'|': '\|'}) }}
+{% endmacro %}
