@@ -1,0 +1,17 @@
+== +{{ title }}+
+
+{{ description }}
+
+[%header,cols="{% for i in 2..columnCount %}1,{% endfor %}1"]
+|===
+{% for header in headers %}
+|++{{ header.value }}++
+{% endfor %}
+
+{% for row in rows %}
+{% for cell in row %}
+a|++{{ cell.value }}++
+{% endfor %}
+
+{% endfor %}
+|===
