@@ -6,33 +6,32 @@ import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TableWithListTest {
+public class TableWithMapTest {
 
     private static final String TABLE_CONTEXT_YAML = """
-        title: List values
+        title: Map values
         headers:
           - value: "a"
           - value: "b"
           - value: "c"
         rows:
-          - - value: []
-              type: "list"
+          - - value: {}
+              type: "map"
             - value:
-              - 1
-              - 2
-              - 3
-              type: "list"
+                a: "1"
+                b: "2"
+                c: "3"
+              type: "map"
             - value:
-              - "|"
-              - "|"
-              type: "list"
+                b: "||"
+              type: "map"
         """;
 
     @Test
     void supported_in_asciidoc() {
         assertThat(ASCIIDOC.renderTable(Context.fromYaml(TABLE_CONTEXT_YAML)))
             .isEqualTo("""
-                == ++List values++
+                == ++Map values++
                 
                 [%header,cols="1,1,1"]
                 |===
@@ -42,12 +41,11 @@ public class TableWithListTest {
                 
                 a|{empty}
                 a|
-                * ++1++
-                * ++2++
-                * ++3++
+                ++a++:: ++1++
+                ++b++:: ++2++
+                ++c++:: ++3++
                 a|
-                * \\|
-                * \\|
+                ++b++:: \\|\\|
                 
                 |===
                 """
@@ -58,11 +56,11 @@ public class TableWithListTest {
     void supported_in_markdown() {
         assertThat(MARKDOWN.renderTable(Context.fromYaml(TABLE_CONTEXT_YAML)))
             .isEqualTo("""
-                ## List values
+                ## Map values
                 
                 | a | b | c |
                 | --- | --- | --- |
-                | [] | [1, 2, 3] | [\\|, \\|] |
+                | [:] | [a: 1, b: 2, c: 3] | [b: \\|\\|] |
                 """
             );
     }

@@ -1,3 +1,4 @@
+{% import "macros.md.peb" %}
 ## {{ title }}
 
 {% if description %}
@@ -13,16 +14,3 @@
 |{% for cell in row %} {{ renderCell(cell) }} |{% endfor %}
 
 {% endfor %}
-{# MACROS #}
-{% macro renderCell(cell) %}
-{% if cell.value == null %}
-{% elseif cell.value == '' %}
-{{- '""' -}}
-{% else %}
-{% set NEEDS_ENCODING = '(^ +)|( +$)|(\t+)|([ \t]{2,})|([|]+)' %}
-{% set PLUS_SIGN = '&#43;' %}
-{% set TAB_SIGN = '&#x21E5;' %}
-{% set SPACE_SIGN = '&#x2423;' %}
-{{- cell.value | replaceInMatch(NEEDS_ENCODING, {'\|': '\\|', ' ': SPACE_SIGN, '\t': TAB_SIGN}) -}}
-{% endif %}
-{% endmacro %}

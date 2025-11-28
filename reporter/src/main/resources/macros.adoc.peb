@@ -1,0 +1,94 @@
+{# Macros for rendering table cells in AsciiDoc format #}
+
+{% macro renderCell(cell) %}
+    {%- if cell.role -%}
+        {{- renderValueWithRole(cell.role, cell.value, 0) -}}
+    {%- else -%}
+        {{- renderValue(cell.value, 0) -}}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro renderValueWithRole(role, value, level) %}
+    {{- "[.#{role}]##{renderValue(value, level)}#" -}}
+{% endmacro %}
+
+{% macro renderValue(value, level) %}
+    {%- if value == null -%}
+    {%- elseif value is iterable -%}
+        {{- renderList(value, level) -}}
+    {%- elseif value is map -%}
+        {{- renderMap(value, level) -}}
+    {%- else -%}
+        {{- renderLiteral(value) -}}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro renderList(list, level) %}
+    {%- for value in list %}
+
+{# intentional newline above #}
+        {{- indent(level) }} {{- bullet(level) -}}
+        {%- if value is iterable %}
+            {{- ' {empty}' }}
+            {{- renderValue(value, level+1) }}
+        {%- else %}
+            {{- ' ' + renderValue(value, level+1) }}
+        {%- endif %}
+    {%- else %}
+        {{- '{empty}' }}
+    {%- endfor %}
+{% endmacro %}
+
+{% macro renderMap(map, level) %}
+    {%- for entry in map %}
+
+{# intentional newline above #}
+        {{- indent(level) }} {{- "++#{entry.key}++" }} {{- termDelimiter(level) -}}
+        {%- if entry.value is iterable %}
+            {{- ' {empty}' }}
+            {{- renderValue(entry.value, level+1) }}
+        {%- elseif entry.value is map %}
+            {{- ' {empty}' }}
+            {{- renderMap(entry.value, level+1) }}
+        {%- else %}
+            {{- ' ' + renderValue(entry.value, level+1) }}
+        {%- endif %}
+    {%- else %}
+        {{- '{empty}' }}
+    {%- endfor %}
+{% endmacro %}
+
+{% macro indent(level) %}
+{#    {{- ' ' | replicate(level*2) | join }}#}
+{% endmacro %}
+
+{% macro bullet(level) %}
+    {{- bulletSign(level) | replicate(level+1) | join -}}
+{% endmacro %}
+
+{% macro termDelimiter(level) %}
+    {{- ':' | replicate(level+2) | join -}}
+{% endmacro %}
+
+{% macro renderLiteral(value) %}
+    {%- if value == '' -%}
+        {{- '+""+' -}}
+    {%- else -%}
+        {#- regex below matches characters that need encoding and whitespace that would otherwise be trimmed  #}
+        {%- set NEEDS_ENCODING = '(^ +)|( +$)|(\t+)|([ \t]{2,})|([+]+)|([|]+)' -%}
+        {%- set PIPE = '\\|' -%}
+        {%- set PLUS = '&#43;' -%}
+        {%- set TAB = '&#x21E5;' -%}
+        {%- set SPACE = '&#x2423;' -%}
+        {{- value | replaceInMatch(NEEDS_ENCODING, {'\|': PIPE, '\+': PLUS, ' ': SPACE, '\t': TAB}, '++') -}}
+    {%- endif -%}
+{% endmacro %}
+
+{# to be overridable #}
+{% macro bulletSign(level) %}
+    {%- block list_bullet %} {{- '*' -}} {%- endblock %}
+{% endmacro %}
+
+{% macro listStyle(level) %}
+    {%- block list_style %} {%- endblock %}
+{% endmacro %}
