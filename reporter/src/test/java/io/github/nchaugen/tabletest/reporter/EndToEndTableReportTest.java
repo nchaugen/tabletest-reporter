@@ -26,22 +26,19 @@ public class EndToEndTableReportTest {
     }
 
     private static final String TABLE_CONTEXT_YAML = """
-        title: Leap Year Rules with Single Example
-        
-        description: |
-            The leap year rules should be well-known.
-        
-        headers:
-          - value: Scenario
-          - value: Year
-          - value: Is Leap Year?
-        rows:
-            - - value: "Not divisible by 4"
-              - value: "2001"
-              - value: "No"
-            - - value: "Divisible by 4"
-              - value: "2004"
-              - value: "Yes"
+        "title": "Leap Year Rules with Single Example"
+        "description": "The leap year rules should be well-known."
+        "headers":
+          - "value": "Scenario"
+          - "value": "Year"
+          - "value": "Is Leap Year?"
+        "rows":
+            - - "value": "Not divisible by 4"
+              - "value": "2001"
+              - "value": "No"
+            - - "value": "Divisible by 4"
+              - "value": "2004"
+              - "value": "Yes"
         """;
 
     @Test

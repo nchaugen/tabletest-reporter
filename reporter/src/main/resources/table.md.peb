@@ -4,6 +4,7 @@
 {% if description %}
 
 {{ description }}
+
 {% endif %}
 
 |{% for header in headers %} {{ renderCell(header) }} |{% endfor %}

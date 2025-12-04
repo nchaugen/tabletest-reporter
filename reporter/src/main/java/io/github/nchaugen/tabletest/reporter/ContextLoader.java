@@ -12,11 +12,11 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
 
-public class Context {
+public class ContextLoader {
 
     private final Yaml yaml;
 
-    public Context() {
+    public ContextLoader() {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setDefaultScalarStyle(DumperOptions.ScalarStyle.DOUBLE_QUOTED);

@@ -7,14 +7,14 @@ import java.util.Map;
 
 public class TableTestReporter {
 
-    private final Context context = new Context();
+    private final ContextLoader contextLoader = new ContextLoader();
 
     public void report(ReportFormat format, Path inDir, Path outDir) throws IOException {
         try (var files = Files.list(inDir)) {
             files
                 .filter(it -> it.toString().endsWith(".yaml"))
                 .map(inPath -> createOutPath(format, outDir, inPath))
-                .map(it -> readContext(it.outPath(), it.inPath()))
+                .map(it -> loadContext(it.outPath(), it.inPath()))
                 .map(it -> renderContent(format, it.outPath(), it.context()))
                 .forEach(it -> writeFile(it.outPath(), it.content()));
         }
@@ -25,8 +25,8 @@ public class TableTestReporter {
         return new OutPathAndInPath(outDir.resolve(fileName), inPath);
     }
 
-    private OutPathAndContext readContext(Path outPath, Path inPath) {
-        return new OutPathAndContext(outPath, context.fromYaml(inPath));
+    private OutPathAndContext loadContext(Path outPath, Path inPath) {
+        return new OutPathAndContext(outPath, contextLoader.fromYaml(inPath));
     }
 
     private OutPathAndContent renderContent(ReportFormat format, Path outPath, Map<String, Object> context) {

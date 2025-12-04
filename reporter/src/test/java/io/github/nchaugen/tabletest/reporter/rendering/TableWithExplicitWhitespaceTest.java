@@ -1,5 +1,6 @@
-package io.github.nchaugen.tabletest.reporter;
+package io.github.nchaugen.tabletest.reporter.rendering;
 
+import io.github.nchaugen.tabletest.reporter.ContextLoader;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -10,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableWithExplicitWhitespaceTest {
 
-    private final Map<String, Object> context = new Context().fromYaml("""
+    private final Map<String, Object> context = new ContextLoader().fromYaml("""
         title: Explicit whitespace
         headers:
           - value: "a"

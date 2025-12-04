@@ -1,5 +1,6 @@
-package io.github.nchaugen.tabletest.reporter;
+package io.github.nchaugen.tabletest.reporter.rendering;
 
+import io.github.nchaugen.tabletest.reporter.ContextLoader;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -8,44 +9,36 @@ import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TableWithMapTest {
+public class TableWithPipeTest {
 
-    private final Map<String, Object> context = new Context().fromYaml("""
-        title: Map values
+    private final Map<String, Object> context = new ContextLoader().fromYaml("""
+        title: Escaped pipes
         headers:
           - value: "a"
           - value: "b"
-          - value: "c"
+          - value: "a|b"
         rows:
-          - - value: {}
-            - value:
-                a: "1"
-                b: "2"
-                c: "3"
-            - value:
-                b: "||"
+          - - value: "|"
+            - value: '|'
+            - value: "Text with | character"
         """);
 
     @Test
     void supported_in_asciidoc() {
         assertThat(ASCIIDOC.renderTable(context))
             .isEqualTo("""
-                == ++Map values++
+                == ++Escaped pipes++
                 
                 [%header,cols="1,1,1"]
                 |===
                 |++a++
                 |++b++
-                |++c++
+                |++a++\\|++b++
                 
-                a| {empty}
-                a|
-                ++a++:: ++1++
-                ++b++:: ++2++
-                ++c++:: ++3++
-                a|
-                ++b++:: \\|\\|
-                
+                a|\\|
+                a|\\|
+                a|++Text with ++\\|++ character++
+
                 |===
                 """
             );
@@ -55,11 +48,11 @@ public class TableWithMapTest {
     void supported_in_markdown() {
         assertThat(MARKDOWN.renderTable(context))
             .isEqualTo("""
-                ## Map values
+                ## Escaped pipes
                 
-                | a | b | c |
+                | a | b | a\\|b |
                 | --- | --- | --- |
-                | [:] | [a: 1, b: 2, c: 3] | [b: \\|\\|] |
+                | \\| | \\| | Text with \\| character |
                 """
             );
     }
