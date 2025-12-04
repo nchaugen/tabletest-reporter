@@ -12,14 +12,14 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ReplaceInMatchFilterTest {
+class FilterReplaceInMatchTest {
 
     private static final PebbleEngine ENGINE = new PebbleEngine.Builder()
         .extension(
             new AbstractExtension() {
                 @Override
                 public Map<String, Filter> getFilters() {
-                    return Map.of(ReplaceInMatchFilter.FILTER_NAME, new ReplaceInMatchFilter());
+                    return Map.of(FilterReplaceInMatch.NAME, new FilterReplaceInMatch());
                 }
             })
         .loader(new StringLoader())

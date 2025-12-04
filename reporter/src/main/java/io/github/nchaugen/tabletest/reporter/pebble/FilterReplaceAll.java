@@ -10,9 +10,9 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.pebble.PebbleExtension.requireNotNull;
 
-public class ReplaceAllFilter implements Filter {
+public class FilterReplaceAll implements Filter {
 
-    public static final String FILTER_NAME = "replaceAll";
+    public static final String NAME = "replaceAll";
     private static final String REPLACE_PAIRS = "replace_pairs";
 
     @Override

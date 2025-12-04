@@ -8,33 +8,30 @@ import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TableWithListTest {
+public class TableWithSetTest {
 
     private final Map<String, Object> context = new Context().fromYaml("""
-        title: List values
-        headers:
-          - value: "a"
-          - value: "b"
-          - value: "c"
-        rows:
-          - - value: []
-              type: "list"
-            - value:
-              - 1
-              - 2
-              - 3
-              type: "list"
-            - value:
-              - "|"
-              - "|"
-              type: "list"
+        "title": "Set values"
+        "headers":
+        - "value": "a"
+        - "value": "b"
+        - "value": "c"
+        "rows":
+        - - "value": !!set {
+              }
+          - "value": !!set
+              "1": !!null "null"
+              "2": !!null "null"
+              "3": !!null "null"
+          - "value": !!set
+              "||": !!null "null"
         """);
 
     @Test
     void supported_in_asciidoc() {
         assertThat(ASCIIDOC.renderTable(context))
             .isEqualTo("""
-                == ++List values++
+                == ++Set values++
                 
                 [%header,cols="1,1,1"]
                 |===
@@ -48,8 +45,7 @@ public class TableWithListTest {
                 * ++2++
                 * ++3++
                 a|
-                * \\|
-                * \\|
+                * \\|\\|
                 
                 |===
                 """
@@ -60,11 +56,11 @@ public class TableWithListTest {
     void supported_in_markdown() {
         assertThat(MARKDOWN.renderTable(context))
             .isEqualTo("""
-                ## List values
+                ## Set values
                 
                 | a | b | c |
                 | --- | --- | --- |
-                | [] | [1, 2, 3] | [\\|, \\|] |
+                | {} | {1, 2, 3} | {\\|\\|} |
                 """
             );
     }

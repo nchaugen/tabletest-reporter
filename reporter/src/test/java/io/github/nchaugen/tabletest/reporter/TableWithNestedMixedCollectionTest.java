@@ -8,49 +8,53 @@ import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TableWithNestedListTest {
+public class TableWithNestedMixedCollectionTest {
 
     private final Map<String, Object> context = new Context().fromYaml("""
-        title: Nested list
-        headers:
-          - value: "a"
-        rows:
-          - - value:
-              - - "1"
-                - "2"
-                - "3"
-              - - "a"
-                - "b"
-                - "c"
-              - - "#"
-                - "$"
-                - "%"
-              type: "list"
+        "title": "Nested mixed collection"
+        "headers":
+        - "value": "a"
+        - "value": "b"
+        "rows":
+        - - "value":
+              "a":
+              - "1"
+              - "2"
+              "b": !!set
+                "3": !!null "null"
+                "4": !!null "null"
+              "c": "5"
+          - "value": !!set
+              ? "A": "1"
+              : !!null "null"
+              ? "B": "2"
+              : !!null "null"
         """);
 
     @Test
     void supported_in_asciidoc() {
         assertThat(ASCIIDOC.renderTable(context))
             .isEqualTo("""
-                == ++Nested list++
+                == ++Nested mixed collection++
                 
-                [%header,cols="1"]
+                [%header,cols="1,1"]
                 |===
                 |++a++
+                |++b++
                 
                 a|
-                * {empty}
+                ++a++::
                 ** ++1++
                 ** ++2++
+                ++b++::
                 ** ++3++
+                ** ++4++
+                ++c++:: ++5++
+                a|
                 * {empty}
-                ** ++a++
-                ** ++b++
-                ** ++c++
+                ++A++::: ++1++
                 * {empty}
-                ** ++#++
-                ** ++$++
-                ** ++%++
+                ++B++::: ++2++
                 
                 |===
                 """
@@ -61,11 +65,11 @@ public class TableWithNestedListTest {
     void supported_in_markdown() {
         assertThat(MARKDOWN.renderTable(context))
             .isEqualTo("""
-                ## Nested list
+                ## Nested mixed collection
                 
-                | a |
-                | --- |
-                | [[1, 2, 3], [a, b, c], [#, $, %]] |
+                | a | b |
+                | --- | --- |
+                | [a: [1, 2], b: {3, 4}, c: 5] | {[A: 1], [B: 2]} |
                 """
             );
     }

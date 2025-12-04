@@ -7,6 +7,8 @@ import java.util.Map;
 
 public class TableTestReporter {
 
+    private final Context context = new Context();
+
     public void report(ReportFormat format, Path inDir, Path outDir) throws IOException {
         try (var files = Files.list(inDir)) {
             files
@@ -24,7 +26,7 @@ public class TableTestReporter {
     }
 
     private OutPathAndContext readContext(Path outPath, Path inPath) {
-        return new OutPathAndContext(outPath, Context.fromYaml(inPath.toFile()));
+        return new OutPathAndContext(outPath, context.fromYaml(inPath));
     }
 
     private OutPathAndContent renderContent(ReportFormat format, Path outPath, Map<String, Object> context) {

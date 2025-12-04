@@ -13,14 +13,14 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ReplicateFilterTest {
+class FilterReplicateTest {
 
     private static final PebbleEngine ENGINE = new PebbleEngine.Builder()
         .extension(
             new AbstractExtension() {
                 @Override
                 public Map<String, Filter> getFilters() {
-                    return Map.of(ReplicateFilter.FILTER_NAME, new ReplicateFilter());
+                    return Map.of(FilterReplicate.NAME, new FilterReplicate());
                 }
             })
         .loader(new StringLoader())

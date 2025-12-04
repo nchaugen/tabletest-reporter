@@ -8,48 +8,43 @@ import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TableWithListTest {
+public class TableWithNestedMapTest {
 
     private final Map<String, Object> context = new Context().fromYaml("""
-        title: List values
+        title: Nested map values
         headers:
           - value: "a"
           - value: "b"
-          - value: "c"
         rows:
-          - - value: []
-              type: "list"
+          - - value:
+                a: {}
+                b: {}
             - value:
-              - 1
-              - 2
-              - 3
-              type: "list"
-            - value:
-              - "|"
-              - "|"
-              type: "list"
+                a:
+                  A: "1"
+                b:
+                  B: "2"
         """);
 
     @Test
     void supported_in_asciidoc() {
         assertThat(ASCIIDOC.renderTable(context))
             .isEqualTo("""
-                == ++List values++
+                == ++Nested map values++
                 
-                [%header,cols="1,1,1"]
+                [%header,cols="1,1"]
                 |===
                 |++a++
                 |++b++
-                |++c++
                 
-                a|{empty}
                 a|
-                * ++1++
-                * ++2++
-                * ++3++
+                ++a++:: {empty}
+                ++b++:: {empty}
                 a|
-                * \\|
-                * \\|
+                ++a++::
+                ++A++::: ++1++
+                ++b++::
+                ++B++::: ++2++
                 
                 |===
                 """
@@ -60,11 +55,11 @@ public class TableWithListTest {
     void supported_in_markdown() {
         assertThat(MARKDOWN.renderTable(context))
             .isEqualTo("""
-                ## List values
+                ## Nested map values
                 
-                | a | b | c |
-                | --- | --- | --- |
-                | [] | [1, 2, 3] | [\\|, \\|] |
+                | a | b |
+                | --- | --- |
+                | [a: [:], b: [:]] | [a: [A: 1], b: [B: 2]] |
                 """
             );
     }

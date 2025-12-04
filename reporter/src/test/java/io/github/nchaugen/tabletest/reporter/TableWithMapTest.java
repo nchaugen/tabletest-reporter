@@ -2,13 +2,15 @@ package io.github.nchaugen.tabletest.reporter;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableWithMapTest {
 
-    private static final String TABLE_CONTEXT_YAML = """
+    private final Map<String, Object> context = new Context().fromYaml("""
         title: Map values
         headers:
           - value: "a"
@@ -16,20 +18,17 @@ public class TableWithMapTest {
           - value: "c"
         rows:
           - - value: {}
-              type: "map"
             - value:
                 a: "1"
                 b: "2"
                 c: "3"
-              type: "map"
             - value:
                 b: "||"
-              type: "map"
-        """;
+        """);
 
     @Test
     void supported_in_asciidoc() {
-        assertThat(ASCIIDOC.renderTable(Context.fromYaml(TABLE_CONTEXT_YAML)))
+        assertThat(ASCIIDOC.renderTable(context))
             .isEqualTo("""
                 == ++Map values++
                 
@@ -39,7 +38,7 @@ public class TableWithMapTest {
                 |++b++
                 |++c++
                 
-                a|{empty}
+                a| {empty}
                 a|
                 ++a++:: ++1++
                 ++b++:: ++2++
@@ -54,7 +53,7 @@ public class TableWithMapTest {
 
     @Test
     void supported_in_markdown() {
-        assertThat(MARKDOWN.renderTable(Context.fromYaml(TABLE_CONTEXT_YAML)))
+        assertThat(MARKDOWN.renderTable(context))
             .isEqualTo("""
                 ## Map values
                 

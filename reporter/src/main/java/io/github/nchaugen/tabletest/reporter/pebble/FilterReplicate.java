@@ -10,9 +10,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class ReplicateFilter implements Filter {
+public class FilterReplicate implements Filter {
 
-    public static final String FILTER_NAME = "replicate";
+    public static final String NAME = "replicate";
     private static final String TIMES = "times";
 
     @Override
@@ -24,7 +24,7 @@ public class ReplicateFilter implements Filter {
             case Long l -> l.intValue();
             default -> throw new PebbleException(
                 null,
-                MessageFormat.format("Unexpected value ''{0}'' for argument ''{1}'' in filter ''{2}''", value, TIMES, FILTER_NAME),
+                MessageFormat.format("Unexpected value ''{0}'' for argument ''{1}'' in filter ''{2}''", value, TIMES, NAME),
                 lineNumber,
                 self.getName()
             );

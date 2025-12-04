@@ -2,13 +2,15 @@ package io.github.nchaugen.tabletest.reporter;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableWithExplicitWhitespaceTest {
 
-    private static final String TABLE_CONTEXT_YAML = """
+    private final Map<String, Object> context = new Context().fromYaml("""
         title: Explicit whitespace
         headers:
           - value: "a"
@@ -24,11 +26,11 @@ public class TableWithExplicitWhitespaceTest {
             - value: "a bc  def"
             - value: "\t"
             - value: "\t "
-        """;
+        """);
 
     @Test
     void supported_in_asciidoc() {
-        assertThat(ASCIIDOC.renderTable(Context.fromYaml(TABLE_CONTEXT_YAML)))
+        assertThat(ASCIIDOC.renderTable(context))
             .isEqualTo("""
                 == ++Explicit whitespace++
                 
@@ -55,7 +57,7 @@ public class TableWithExplicitWhitespaceTest {
 
     @Test
     void supported_in_markdown() {
-        assertThat(MARKDOWN.renderTable(Context.fromYaml(TABLE_CONTEXT_YAML)))
+        assertThat(MARKDOWN.renderTable(context))
             .isEqualTo("""
                 ## Explicit whitespace
                 

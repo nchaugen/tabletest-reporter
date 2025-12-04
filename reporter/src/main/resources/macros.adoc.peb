@@ -14,6 +14,8 @@
 
 {% macro renderValue(value, level) %}
     {%- if value == null -%}
+    {%- elseif value is set -%}
+        {{- renderSet(value, level) -}}
     {%- elseif value is iterable -%}
         {{- renderList(value, level) -}}
     {%- elseif value is map -%}
@@ -23,11 +25,27 @@
     {%- endif -%}
 {% endmacro %}
 
+{% macro renderSet(set, level) %}
+    {%- for value in set %}
+
+{# intentional newline above #}
+        {{- indent(level) }} {{- bullet(setBullet(level), level) -}}
+        {%- if (value is iterable) or (value is map) %}
+            {{- ' {empty}' }}
+            {{- renderValue(value, level+1) }}
+        {%- else %}
+            {{- ' ' + renderValue(value, level+1) }}
+        {%- endif %}
+    {%- else %}
+        {{- '{empty}' }}
+    {%- endfor %}
+{% endmacro %}
+
 {% macro renderList(list, level) %}
     {%- for value in list %}
 
 {# intentional newline above #}
-        {{- indent(level) }} {{- bullet(level) -}}
+        {{- indent(level) }} {{- bullet(listBullet(level), level) -}}
         {%- if value is iterable %}
             {{- ' {empty}' }}
             {{- renderValue(value, level+1) }}
@@ -44,17 +62,14 @@
 
 {# intentional newline above #}
         {{- indent(level) }} {{- "++#{entry.key}++" }} {{- termDelimiter(level) -}}
-        {%- if entry.value is iterable %}
-            {{- ' {empty}' }}
+        {%- if (entry.value is iterable) or (entry.value is map) %}
+            {{- '' }}
             {{- renderValue(entry.value, level+1) }}
-        {%- elseif entry.value is map %}
-            {{- ' {empty}' }}
-            {{- renderMap(entry.value, level+1) }}
         {%- else %}
             {{- ' ' + renderValue(entry.value, level+1) }}
         {%- endif %}
     {%- else %}
-        {{- '{empty}' }}
+        {{- ' {empty}' }}
     {%- endfor %}
 {% endmacro %}
 
@@ -62,8 +77,8 @@
 {#    {{- ' ' | replicate(level*2) | join }}#}
 {% endmacro %}
 
-{% macro bullet(level) %}
-    {{- bulletSign(level) | replicate(level+1) | join -}}
+{% macro bullet(bulletSign, level) %}
+    {{- bulletSign | replicate(level+1) | join -}}
 {% endmacro %}
 
 {% macro termDelimiter(level) %}
@@ -85,10 +100,18 @@
 {% endmacro %}
 
 {# to be overridable #}
-{% macro bulletSign(level) %}
+{% macro listBullet(level) %}
     {%- block list_bullet %} {{- '*' -}} {%- endblock %}
 {% endmacro %}
 
 {% macro listStyle(level) %}
     {%- block list_style %} {%- endblock %}
+{% endmacro %}
+
+{% macro setBullet(level) %}
+    {%- block set_bullet %} {{- '*' -}} {%- endblock %}
+{% endmacro %}
+
+{% macro setStyle(level) %}
+    {%- block set_style %} {%- endblock %}
 {% endmacro %}

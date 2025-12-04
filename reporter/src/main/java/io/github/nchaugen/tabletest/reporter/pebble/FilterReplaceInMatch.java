@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 
 import static io.github.nchaugen.tabletest.reporter.pebble.PebbleExtension.requireNotNull;
 
-public class ReplaceInMatchFilter implements Filter {
+public class FilterReplaceInMatch implements Filter {
 
-    public static final String FILTER_NAME = "replaceInMatch";
+    public static final String NAME = "replaceInMatch";
     private static final String PATTERN = "pattern";
     private static final String REPLACE_PAIRS = "replace_pairs";
     private static final String PASSTHROUGH_MARKER = "passthrough_marker";

@@ -2,13 +2,15 @@ package io.github.nchaugen.tabletest.reporter;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableWithRolesTest {
 
-    private static final String TABLE_CONTEXT_YAML = """
+    private final Map<String, Object> context = new Context().fromYaml("""
         title: Leap Year Rules
         headers:
           - value: Scenario
@@ -27,11 +29,11 @@ public class TableWithRolesTest {
             - value: "2004"
             - value: "Yes"
               role: expectation
-        """;
+        """);
 
     @Test
     void should_add_roles_for_asciidoc() {
-        assertThat(ASCIIDOC.renderTable(Context.fromYaml(TABLE_CONTEXT_YAML)))
+        assertThat(ASCIIDOC.renderTable(context))
             .isEqualTo("""
                 == ++Leap Year Rules++
                 
@@ -56,7 +58,7 @@ public class TableWithRolesTest {
 
     @Test
     void should_ignore_roles_for_markdown() {
-        assertThat(MARKDOWN.renderTable(Context.fromYaml(TABLE_CONTEXT_YAML)))
+        assertThat(MARKDOWN.renderTable(context))
             .isEqualTo("""
                 ## Leap Year Rules
                 
