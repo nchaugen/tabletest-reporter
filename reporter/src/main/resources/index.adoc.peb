@@ -1,0 +1,11 @@
+{% import "macros.adoc.peb" %}
+= ++{{ title ? title : name }}++
+
+{% if description %}
+{{ description }}
+
+
+{% endif %}
+{% for child in contents %}
+* xref:./{{ child.path }}{{ child.type == "index" ? "" : ".adoc"  }}[++{{ child.name }}++]
+{% endfor %}

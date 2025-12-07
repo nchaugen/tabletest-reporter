@@ -1,0 +1,12 @@
+{% import "macros.md.peb" %}
+# {{ title ? title : name }}
+
+{% if description %}
+
+{{ description }}
+
+{% endif %}
+
+{% for child in contents %}
+* [{{ child.name }}](./{{ child.path }}{{ child.type == "index" ? "" : ".md"  }})
+{% endfor %}

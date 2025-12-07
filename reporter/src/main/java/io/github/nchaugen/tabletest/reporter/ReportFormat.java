@@ -21,6 +21,8 @@ public enum ReportFormat {
 
     private static final PebbleTemplate ASCIIDOC_TABLE_TEMPLATE = ENGINE.getTemplate("table.adoc.peb");
     private static final PebbleTemplate MARKDOWN_TABLE_TEMPLATE = ENGINE.getTemplate("table.md.peb");
+    private static final PebbleTemplate ASCIIDOC_INDEX_TEMPLATE = ENGINE.getTemplate("index.adoc.peb");
+    private static final PebbleTemplate MARKDOWN_INDEX_TEMPLATE = ENGINE.getTemplate("index.md.peb");
 
     private final String extension;
 
@@ -33,12 +35,20 @@ public enum ReportFormat {
     }
 
     public String renderTable(Map<String, Object> context) {
+        return render(tableTemplate(), context);
+    }
+
+    public String renderIndex(Map<String, Object> context) {
+        return render(indexTemplate(), context);
+    }
+
+    private String render(PebbleTemplate tableTemplate, Map<String, Object> context) {
         try {
             Writer writer = new StringWriter();
-            tableTemplate().evaluate(writer, context);
+            tableTemplate.evaluate(writer, context);
             return writer.toString();
         } catch (IOException e) {
-            throw new UncheckedIOException("Failed to render table in " + this + " with context: " + context.get("title"), e);
+            throw new UncheckedIOException("Failed to render file in " + this + " with context: " + context.get("title"), e);
         }
     }
 
@@ -46,6 +56,13 @@ public enum ReportFormat {
         return switch (this) {
             case ASCIIDOC -> ASCIIDOC_TABLE_TEMPLATE;
             case MARKDOWN -> MARKDOWN_TABLE_TEMPLATE;
+        };
+    }
+
+    private PebbleTemplate indexTemplate() {
+        return switch (this) {
+            case ASCIIDOC -> ASCIIDOC_INDEX_TEMPLATE;
+            case MARKDOWN -> MARKDOWN_INDEX_TEMPLATE;
         };
     }
 }

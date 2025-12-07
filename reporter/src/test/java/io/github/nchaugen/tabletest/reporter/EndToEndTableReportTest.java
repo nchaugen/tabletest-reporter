@@ -21,9 +21,17 @@ public class EndToEndTableReportTest {
     @BeforeAll
     static void setUp() throws IOException {
         inDir = Files.createDirectory(tempDir.resolve("in"));
+        Path testClassDir = Files.createDirectory(inDir.resolve("org.example.CalendarTest"));
+        Files.writeString(testClassDir.resolve("Calendar Calculations.yaml"), TEST_CLASS_CONTEXT_YAML);
+        Path tableDir = Files.createDirectory(testClassDir.resolve("leapYearRules(java.time.Year, boolean)"));
+        Files.writeString(tableDir.resolve("Leap Year Rules.yaml"), TABLE_CONTEXT_YAML);
         outDir = Files.createDirectory(tempDir.resolve("out"));
-        Files.writeString(inDir.resolve("table.yaml"), TABLE_CONTEXT_YAML);
     }
+
+    private static final String TEST_CLASS_CONTEXT_YAML = """
+        "title": "Calendar"
+        "description": "Various rules for calendar calculations."
+        """;
 
     private static final String TABLE_CONTEXT_YAML = """
         "title": "Leap Year Rules with Single Example"
@@ -45,7 +53,23 @@ public class EndToEndTableReportTest {
     void should_produce_asciidoc_file_from_table_context_file() throws IOException {
         new TableTestReporter().report(ASCIIDOC, inDir, outDir);
 
-        assertThat(Files.readAllLines(outDir.resolve("table.adoc")))
+        assertThat(Files.readAllLines(outDir.resolve("index.adoc")))
+            .containsExactly(
+                "= ++example++",
+                "",
+                "* xref:./calendar-calculations[++Calendar Calculations++]"
+            );
+
+        assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.adoc")))
+            .containsExactly(
+                "= ++Calendar++",
+                "",
+                "Various rules for calendar calculations.",
+                "",
+                "* xref:./leap-year-rules.adoc[++Leap Year Rules++]"
+            );
+
+        assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("leap-year-rules.adoc")))
             .containsExactly(
                 "== ++Leap Year Rules with Single Example++",
                 "",
@@ -74,7 +98,23 @@ public class EndToEndTableReportTest {
     void should_produce_markdown_file_from_table_context_file() throws IOException {
         new TableTestReporter().report(MARKDOWN, inDir, outDir);
 
-        assertThat(Files.readAllLines(outDir.resolve("table.md")))
+        assertThat(Files.readAllLines(outDir.resolve("index.md")))
+            .containsExactly(
+                "# example",
+                "",
+                "* [Calendar Calculations](./calendar-calculations)"
+            );
+
+        assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.md")))
+            .containsExactly(
+                "# Calendar",
+                "",
+                "Various rules for calendar calculations.",
+                "",
+                "* [Leap Year Rules](./leap-year-rules.md)"
+            );
+
+        assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("leap-year-rules.md")))
             .containsExactly(
                 "## Leap Year Rules with Single Example",
                 "",

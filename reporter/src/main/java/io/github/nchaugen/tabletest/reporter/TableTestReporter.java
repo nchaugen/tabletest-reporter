@@ -3,46 +3,67 @@ package io.github.nchaugen.tabletest.reporter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import static java.util.Collections.emptyList;
 
 public class TableTestReporter {
 
     private final ContextLoader contextLoader = new ContextLoader();
 
-    public void report(ReportFormat format, Path inDir, Path outDir) throws IOException {
-        try (var files = Files.list(inDir)) {
-            files
-                .filter(it -> it.toString().endsWith(".yaml"))
-                .map(inPath -> createOutPath(format, outDir, inPath))
-                .map(it -> loadContext(it.outPath(), it.inPath()))
-                .map(it -> renderContent(format, it.outPath(), it.context()))
-                .forEach(it -> writeFile(it.outPath(), it.content()));
-        }
+    public void report(ReportFormat format, Path inDir, Path outDir) {
+        report(ReportTree.process(inDir), format, inDir, outDir);
     }
 
-    private static OutPathAndInPath createOutPath(ReportFormat format, Path outDir, Path inPath) {
-        String fileName = inPath.getFileName().toString().replaceAll(".yaml$", format.extension());
-        return new OutPathAndInPath(outDir.resolve(fileName), inPath);
+    private void report(Map<String, Object> tree, ReportFormat format, Path inDir, Path outDir) {
+        Path relativeOutPath = Path.of("./" + tree.get("outPath"));
+        List<Map<String, Object>> contents = ((List<Map<String, Object>>) tree.getOrDefault("contents", emptyList()));
+
+        Map<String, Object> context = loadContext(inDir, tree.get("resource"));
+        context.put("name", tree.get("name"));
+        context.put("contents", contents.stream()
+            .map(content -> {
+                    Map<String, Object> contentMap = new HashMap<>();
+                    contentMap.put("name", content.get("name"));
+                    contentMap.put("path", relativeOutPath.relativize(Path.of("./" + content.get("outPath"))));
+                    contentMap.put("type", content.get("type"));
+                    return contentMap;
+                }
+            ).toList());
+
+        boolean isIndex = "index".equals(tree.get("type"));
+
+        Path outPath = isIndex
+            ? outDir.resolve(relativeOutPath).resolve("index" + format.extension())
+            : outDir.resolve(relativeOutPath + format.extension());
+
+        String content = isIndex
+            ? format.renderIndex(context)
+            : format.renderTable(context);
+
+        writeContent(outPath, content);
+
+        contents.forEach(child -> report(child, format, inDir, outDir));
     }
 
-    private OutPathAndContext loadContext(Path outPath, Path inPath) {
-        return new OutPathAndContext(outPath, contextLoader.fromYaml(inPath));
-    }
-
-    private OutPathAndContent renderContent(ReportFormat format, Path outPath, Map<String, Object> context) {
-        return new OutPathAndContent(outPath, format.renderTable(context));
-    }
-
-    private void writeFile(Path outFile, String content) {
+    private static void writeContent(Path outPath, String content) {
         try {
-            Files.writeString(outFile, content);
+            Files.createDirectories(outPath.getParent());
+            Files.writeString(outPath, content);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to write output file " + outFile, e);
+            throw new RuntimeException("Failed to write output file " + outPath, e);
         }
     }
 
-    private record OutPathAndInPath(Path outPath, Path inPath) {}
-    private record OutPathAndContext(Path outPath, Map<String, Object> context) {}
-    private record OutPathAndContent(Path outPath, String content) {}
+    private Map<String, Object> loadContext(Path inDir, Object resourcePath) {
+        return new HashMap<>(
+            resourcePath != null
+                ? contextLoader.fromYaml(inDir.resolve((String) resourcePath))
+                : Collections.emptyMap()
+        );
+    }
 
 }

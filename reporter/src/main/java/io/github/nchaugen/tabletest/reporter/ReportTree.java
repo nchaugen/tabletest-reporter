@@ -1,5 +1,7 @@
 package io.github.nchaugen.tabletest.reporter;
 
+import com.github.slugify.Slugify;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,9 +21,17 @@ import static java.util.stream.Collectors.joining;
 public class ReportTree {
 
     private static final String YAML_EXTENSION = ".yaml";
-    public static final Path ROOT_PATH = Path.of("." + File.separator);
+    private static final Path ROOT_PATH = Path.of("." + File.separator);
+    private static final Slugify SLUGIFIER = Slugify.builder().build();
 
-    public static Map<String, Object> walk(Path dir) {
+    /**
+     * Processes the top-level directory where TableTest .yaml files have been created during test run
+     * and builds a nested map structure describing the desired report structure.
+     *
+     * @param dir junit-jupiter output directory
+     * @return nested map structure describing the desired report structure
+     */
+    public static Map<String, Object> process(Path dir) {
         return Optional.ofNullable(dir)
             .map(ReportTree::findTableTestOutputFiles)
             .map(ReportTree::findTargets)
@@ -29,6 +39,11 @@ public class ReportTree {
             .orElseThrow(() -> new NullPointerException("argument `dir` cannot be null"));
     }
 
+    /**
+     * Walks the given directory and returns all files ending with .yaml as paths relative to the given directory.
+     * @param dir junit-jupiter output directory
+     * @return List of relative paths to .yaml files
+     */
     static List<Path> findTableTestOutputFiles(Path dir) {
         try (var paths = Files.walk(dir)) {
             return paths.filter(ReportTree::isTableTestOutputFile)
@@ -39,10 +54,32 @@ public class ReportTree {
         }
     }
 
-    private static boolean isTableTestOutputFile(Path p) {
-        return p.toFile().isFile() && p.toString().endsWith(YAML_EXTENSION);
+    /**
+     * Decides whether the given path is a TableTest output file.
+     */
+    private static boolean isTableTestOutputFile(Path path) {
+        return path.toFile().isFile() && path.toString().endsWith(YAML_EXTENSION);
     }
 
+    /**
+     * Builds a list of target output files from the given list of input files:
+     * <ul>
+     * <li>All TableTest methods (will have a corresponding .yaml input file)</li>
+     * <li>All Test classes with TableTest methods (might have corresponding .yaml input files)</li>
+     * <li>Packages containing targeted Test classes (if there is more than one)</li>
+     * </ul>
+     * <p>
+     * An index file with a table of contents will be generated for each package and test class.
+     * <p>
+     * Packages are targeted to organize Test classes in a hierarchical structure, e.g. the test classes
+     * com.example.product.ProductTest and com.example.order.OrderTest will be organized in the following structure:
+     * <ul>
+     * <li>product<ul><li>ProductTest</li></ul></li>
+     * <li>order<ul><li>OrderTest</li></ul></li>
+     * </ul>
+     * @param files list of input TableTest yaml files
+     * @return list of target output files
+     */
     static List<Target> findTargets(List<Path> files) {
         return Optional.ofNullable(files)
             .map(ReportTree::generateAllTargets)
@@ -52,23 +89,56 @@ public class ReportTree {
             .orElseThrow(() -> new NullPointerException("argument `files` cannot be null"));
     }
 
+    /**
+     * Builds a nested map structure describing the desired report structure with all available information to make
+     * available to the renderer.
+     * <p>
+     * Index nodes will contain the following information:
+     * <ul>
+     * <li>type: "index"</li>
+     * <li>name: name of the package or test class</li>
+     * <li>outPath: sluggified path for the rendered index file</li>
+     * <li>resource: path to the corresponding .yaml file (if available)</li>
+     * <li>contents: list of child nodes</li>
+     * </ul>
+     * <p>
+     * Table leaf-nodes will contain the following information:
+     * <ul>
+     * <li>type: "table"</li>
+     * <li>name: name of the table (derived from the .yaml file name)</li>
+     * <li>outPath: slugified path for the rendered table file</li>
+     * <li>resource: path to the corresponding .yaml file</li>
+     * </ul>
+     * @param targets list of target output files
+     * @return desired report structure
+     */
     static Map<String, Object> buildTree(List<Target> targets) {
         if (targets.isEmpty() || targets.size() == 1 && targets.getFirst().hasNoResource()) return Map.of();
         Target root = findRoot(targets);
         return buildTree(root, List.of(root), targets);
     }
 
+    /**
+     * Finds the root node in the given list of targets.
+     */
     private static Target findRoot(List<Target> targets) {
         return targets.stream().min(comparing(Target::path)).orElseThrow();
     }
 
+    /**
+     * Recursively builds the nested map structure
+     * @param node next node to process
+     * @param path path to next node from root
+     * @param targets list of all available targets
+     * @return nested map structure
+     */
     private static Map<String, Object> buildTree(Target node, List<Target> path, List<Target> targets) {
         List<Target> children = targets.stream().filter(node::isParentOf).toList();
 
         Map<String, Object> context = new HashMap<>();
         context.put("type", children.isEmpty() ? "table" : "index");
         if (node.hasName()) context.put("name", node.name());
-        context.put("outPath", path.stream().map(Target::pathName).collect(joining(File.separator)));
+        context.put("outPath", createOutPath(path));
         if (node.hasResource()) context.put("resource", node.resource().toString());
         if (!children.isEmpty()) {
             context.put(
@@ -80,14 +150,30 @@ public class ReportTree {
         return context;
     }
 
+    /**
+     * Converts a list of targets to a slugified path string
+     */
+    private static String createOutPath(List<Target> path) {
+        return path.stream().map(Target::pathName).map(SLUGIFIER::slugify).collect(joining(File.separator));
+    }
+
+    /**
+     * Adds a target to the immutable path list
+     */
     private static List<Target> concat(List<Target> path, Target node) {
         return Stream.concat(path.stream(), Stream.of(node)).toList();
     }
 
+    /**
+     * Sorts a list of targets by their path, the shortest first
+     */
     private static List<Target> sortByTarget(List<Target> targets) {
         return targets.stream().sorted(comparing(Target::path)).toList();
     }
 
+    /**
+     * Removes duplicate targets from the given list, keeping the ones with most information
+     */
     private static List<Target> removeDuplicates(List<Target> targets) {
         return targets.stream()
             .collect(Collectors.groupingBy(Target::path))
@@ -97,6 +183,9 @@ public class ReportTree {
             .toList();
     }
 
+    /**
+     * Picks the point where the package hierarchy starts branching as the root of the output structure
+     */
     private static List<Target> pickNearestRoot(List<Target> targets) {
         long resourceCount = countResources(targets);
         Map<Boolean, List<Target>> rootCandidates = partitionByRootCandidacy(targets, resourceCount);
@@ -107,10 +196,22 @@ public class ReportTree {
             .toList();
     }
 
+    /**
+     * Count the number of targets with a resource file, i.e. the original number of input .yaml files.
+     */
     private static long countResources(List<Target> targets) {
         return targets.stream().filter(Target::hasResource).count();
     }
 
+    /**
+     * Partitions the given list of targets into two groups:
+     * <ul>
+     * <li></li>Targets that are potential root nodes</li>
+     * <li></li>Targets that are not potential root nodes</li>
+     * </ul>
+     * <p>
+     * Potential root nodes are identified by their path being the start of all targets with resource files.
+     */
     private static Map<Boolean, List<Target>> partitionByRootCandidacy(List<Target> targets, long resourceCount) {
         return targets.stream()
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
@@ -121,12 +222,19 @@ public class ReportTree {
             ));
     }
 
+    /**
+     * Finds the target with the most path segments in the given list of common roots
+     */
     private static Target findNearestRoot(List<Target> commonRoots) {
         return commonRoots.stream()
             .max(comparing(target -> target.path().getNameCount()))
             .orElseGet(() -> Target.withPath("").withName(null));
     }
 
+    /**
+     * Expands the list of input files into a list of all possible target output files, i.e. adding an index file for
+     * each relevant test class and package
+     */
     private static List<Target> generateAllTargets(List<Path> files) {
         return files.stream()
             .map(ReportTree::directoryPerTestClassPackageComponents)
@@ -134,25 +242,35 @@ public class ReportTree {
             .toList();
     }
 
+    /**
+     * Finds the target instance to keep for a given file path, picking the one with a resource file if available,
+     * otherwise picking the first target in the list.
+     */
     private static Target pickTargetInstance(Map.Entry<Path, List<Target>> entry) {
         List<Target> candidates = entry.getValue();
         if (candidates.size() == 1) return candidates.getFirst();
         return candidates.stream()
             .filter(Target::hasResource)
             .findFirst()
-            .orElse(Target.withPath(entry.getKey()));
+            .orElse(candidates.getFirst());
     }
 
+    /**
+     * Uses the naming standard of junit-jupiter output directories to get the fully qualified name of each
+     * test class and creating a target path with directory per package component.
+     */
     private static Target directoryPerTestClassPackageComponents(Path file) {
-        // Top level directories are fully qualified name of Test Class
+        // JUnit puts published files in a directory per test class
         String className = file.getName(0).toString();
 
-        // Split the qualified class name into directory per package component
+        // Split the fully qualified class name into directory per package component
         Path classNamePath = prefix(file).resolve(className.replace('.', File.separatorChar));
 
         // Replace fully qualified class name directory with directory per package
-        Path remainingPath = (file.getRoot() == null ? ROOT_PATH : file.getRoot())
-            .resolve(className).relativize(file);
+        Path remainingPath = (file.getRoot() == null
+            ? ROOT_PATH
+            : file.getRoot()).resolve(className).relativize(file);
+
         return Target.withPath(classNamePath.resolve(remainingPath)).withResource(file);
     }
 
@@ -160,6 +278,9 @@ public class ReportTree {
         return file.getRoot() == null ? ROOT_PATH : file.getRoot();
     }
 
+    /**
+     * Generates a stream of ancestors for the given target, starting with the parent and ending with the root
+     */
     private static Stream<Target> getAllAncestors(Target target) {
         return Stream.iterate(
             target.mapPath(Path::getParent),
@@ -169,9 +290,9 @@ public class ReportTree {
     }
 
     /**
-     * Represents a target in the report tree. A Target can be in one of several states:
-     * 1. Path-only: Has path, but no resource or root flag (intermediate directory node)
-     * 2. With resource: Has path and resource - name derived from resource file (leaf node)
+     * Represents a target in the report structure. A Target can be in one of several states:
+     * 1. Path-only: Has path, but no resource (intermediate directory node)
+     * 2. With resource: Has path and resource - name derived from resource file
      * 3. Named: Has explicit name set via withName() - overrides derived name
      */
     public record Target(String name, Path path, Path resource) {
@@ -184,20 +305,17 @@ public class ReportTree {
         /**
          * Creates a Target with path. Name is derived from path's filename.
          */
-        public static Target withPath(Path target) {
-            String name = target != null && target.getFileName() != null ? target.getFileName().toString() : null;
-            return new Target(name, target, null);
-        }
-
-        public Target withResource(String resource) {
-            return withResource(Path.of(resource));
+        public static Target withPath(Path path) {
+            String name = path != null && path.getFileName() != null ? path.getFileName().toString() : null;
+            return new Target(name, path, null);
         }
 
         /**
          * Adds a resource to this Target. Name is replaced with resource filename (without .yaml extension).
          */
         public Target withResource(Path resource) {
-            return new Target(resource.getFileName().toString().replaceAll(YAML_EXTENSION + "$", ""), path, resource);
+            String name = resource.getFileName().toString().replaceAll(YAML_EXTENSION + "$", "");
+            return new Target(name, path, resource);
         }
 
         /**
