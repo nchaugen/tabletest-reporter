@@ -5,14 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.nchaugen</groupId>
-    <artifactId>tabletest-reporter-tools</artifactId>
+    <artifactId>tabletest-reporter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <inceptionYear>2025</inceptionYear>
 
-    <name>TableTest Reporter Tools</name>
-    <description>Tools to generate documentation from TableTest results (stand-alone, Maven and Gradle plugins).</description>
+    <name>TableTest Reporter</name>
+    <description>Tools to generate documentation from TableTest results (CLI, Maven and Gradle plugins).</description>
     <url>https://github.com/nchaugen/tabletest-reporter</url>
 
     <properties>
@@ -72,7 +72,7 @@
     </issueManagement>
 
     <scm>
-        <connection>scm:git:${repository.url</connection>
+        <connection>scm:git:${repository.url}</connection>
         <developerConnection>scm:git:${repository.url}</developerConnection>
         <url>${repository.url}</url>
         <tag>HEAD</tag>
@@ -86,30 +86,12 @@
     </distributionManagement>
 
     <modules>
-        <module>reporter</module>
+        <module>tabletest-reporter-core</module>
+        <module>tabletest-reporter-cli</module>
     </modules>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.4.1</version>
-                <executions>
-                    <execution>
-                        <goals><goal>enforce</goal></goals>
-                        <configuration>
-                            <rules>
-                                <enforceBytecodeVersion>
-                                    <maxJdkVersion>21</maxJdkVersion>
-                                    <ignoreClasses/>
-                                </enforceBytecodeVersion>
-                            </rules>
-                            <fail>true</fail>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- Add licence headers to all files. -->
             <plugin>
                 <groupId>com.mycila</groupId>
