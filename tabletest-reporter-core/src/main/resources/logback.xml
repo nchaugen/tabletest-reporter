@@ -1,0 +1,22 @@
+<configuration>
+
+    <!-- Simple console output with timestamp, level, logger name, and message -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Reduce noisy libraries -->
+    <logger name="org.apache.maven" level="WARN" />
+    <logger name="org.gradle" level="WARN" />
+    <logger name="org.slf4j" level="WARN" />
+
+    <logger name="io.github.nchaugen" level="INFO" />
+
+    <!-- Root logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+</configuration>
