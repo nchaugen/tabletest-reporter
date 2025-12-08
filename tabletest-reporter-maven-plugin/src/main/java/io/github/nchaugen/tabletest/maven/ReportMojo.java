@@ -28,7 +28,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-@Mojo(name = "report", defaultPhase = LifecyclePhase.SITE, threadSafe = true, requiresProject = true)
+@Mojo(name = "report", defaultPhase = LifecyclePhase.SITE, threadSafe = true)
 public final class ReportMojo extends AbstractMojo {
 
     @Parameter(property = "tabletest.report.format", defaultValue = "asciidoc")

@@ -80,7 +80,7 @@ class ReportMojoTest {
     }
 
     @Test
-    void execute_fails_when_input_directory_missing() throws Exception {
+    void execute_fails_when_input_directory_missing() {
         ReportMojo mojo = new ReportMojo();
         setField(mojo, "format", "markdown");
         setField(mojo, "inputDirectory", new File(tempDir.resolve("missing").toString()));
