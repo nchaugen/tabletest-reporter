@@ -11,6 +11,8 @@
     <version>0.1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <name>TableTest Reporter Core</name>
+
     <properties>
         <version.tabletest-parser>0.5.5</version.tabletest-parser>
         <version.snakeyaml>3.0.1</version.snakeyaml>
