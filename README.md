@@ -38,7 +38,7 @@ This also installs the artifacts to your local Maven repository for use by the G
 
 ## CLI usage
 
-Fat JAR path after build: `tabletest-reporter-cli/target/tabletest-reporter-cli-0.0.1-SNAPSHOT.jar`
+Fat JAR path after build: `tabletest-reporter-cli/target/tabletest-reporter-cli-0.1.0-SNAPSHOT.jar`
 
 Defaults:
 - format: `asciidoc`
@@ -48,13 +48,13 @@ Defaults:
 Run with defaults (from a project where TableTest has produced YAML under the build directory):
 
 ```
-java -jar tabletest-reporter-cli/target/tabletest-reporter-cli-0.0.1-SNAPSHOT.jar
+java -jar tabletest-reporter-cli/target/tabletest-reporter-cli-0.1.0-SNAPSHOT.jar
 ```
 
 Explicit arguments:
 
 ```
-java -jar tabletest-reporter-cli/target/tabletest-reporter-cli-0.0.1-SNAPSHOT.jar \
+java -jar tabletest-reporter-cli/target/tabletest-reporter-cli-0.1.0-SNAPSHOT.jar \
   -f markdown \
   -i target/junit-jupiter \
   -o target/generated-docs/tabletest
@@ -87,7 +87,7 @@ POM configuration example (bind to `site` or run on demand):
     <plugin>
       <groupId>io.github.nchaugen</groupId>
       <artifactId>tabletest-reporter-maven-plugin</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.1.0</version>
       <executions>
         <execution>
           <goals>
@@ -137,7 +137,7 @@ pluginManagement {
 
 ```
 plugins {
-  id("io.github.nchaugen.tabletest-reporter") version "0.0.1-SNAPSHOT"
+  id("io.github.nchaugen.tabletest-reporter") version "0.1.0"
 }
 
 tableTestReporter {
