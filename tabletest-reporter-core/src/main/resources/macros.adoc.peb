@@ -9,7 +9,12 @@
 {% endmacro %}
 
 {% macro renderValueWithRole(role, value, level) %}
-    {{- "[.#{role}]##{renderValue(value, level)}#" -}}
+    {%- if value is iterable or value is map -%}
+        {{- "[.#{role}]" -}}
+        {{- renderValue(value, level) -}}
+    {%- else -%}
+        {{- "[.#{role}]##{renderValue(value, level)}#" -}}
+    {%- endif -%}
 {% endmacro %}
 
 {% macro renderValue(value, level) %}

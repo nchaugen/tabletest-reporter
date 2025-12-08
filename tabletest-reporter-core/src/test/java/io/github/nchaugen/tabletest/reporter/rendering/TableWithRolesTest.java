@@ -12,23 +12,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TableWithRolesTest {
 
     private final Map<String, Object> context = new ContextLoader().fromYaml("""
-        title: Leap Year Rules
+        title: Year selection
         headers:
           - value: Scenario
             role: scenario
-          - value: Year
-          - value: Is Leap Year?
+          - value: Candidates
+          - value: Selected?
             role: expectation
         rows:
-          - - value: "Not divisible by 4"
+          - - value: "Select leap years"
               role: scenario
-            - value: "2001"
-            - value: "No"
-              role: expectation
-          - - value: "Divisible by 4"
-              role: scenario
-            - value: "2004"
-            - value: "Yes"
+            - value:
+              - "2000"
+              - "2001"
+              - "2002"
+              - "2003"
+              - "2004"
+            - value:
+              - "2004"
               role: expectation
         """);
 
@@ -36,21 +37,23 @@ public class TableWithRolesTest {
     void should_add_roles_for_asciidoc() {
         assertThat(ASCIIDOC.renderTable(context))
             .isEqualTo("""
-                == ++Leap Year Rules++
+                == ++Year selection++
                 
                 [%header,cols="1,1,1"]
                 |===
                 |[.scenario]#++Scenario++#
-                |++Year++
-                |[.expectation]#++Is Leap Year?++#
+                |++Candidates++
+                |[.expectation]#++Selected?++#
                 
-                a|[.scenario]#++Not divisible by 4++#
-                a|++2001++
-                a|[.expectation]#++No++#
-                
-                a|[.scenario]#++Divisible by 4++#
-                a|++2004++
-                a|[.expectation]#++Yes++#
+                a|[.scenario]#++Select leap years++#
+                a|
+                * ++2000++
+                * ++2001++
+                * ++2002++
+                * ++2003++
+                * ++2004++
+                a|[.expectation]
+                * ++2004++
                 
                 |===
                 """
@@ -61,12 +64,11 @@ public class TableWithRolesTest {
     void should_ignore_roles_for_markdown() {
         assertThat(MARKDOWN.renderTable(context))
             .isEqualTo("""
-                ## Leap Year Rules
+                ## Year selection
                 
-                | Scenario | Year | Is Leap Year? |
+                | Scenario | Candidates | Selected? |
                 | --- | --- | --- |
-                | Not divisible by 4 | 2001 | No |
-                | Divisible by 4 | 2004 | Yes |
+                | Select leap years | [2000, 2001, 2002, 2003, 2004] | [2004] |
                 """
             );
     }
