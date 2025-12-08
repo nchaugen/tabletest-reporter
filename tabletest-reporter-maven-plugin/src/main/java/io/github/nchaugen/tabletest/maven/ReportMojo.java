@@ -52,6 +52,9 @@ public final class ReportMojo extends AbstractMojo {
             }
 
             new TableTestReporter().report(reportFormat, in, out);
+        } catch (MojoFailureException e) {
+            // Propagate user/config failures as-is without wrapping
+            throw e;
         } catch (IllegalArgumentException e) {
             throw new MojoFailureException(e.getMessage(), e);
         } catch (Exception e) {
