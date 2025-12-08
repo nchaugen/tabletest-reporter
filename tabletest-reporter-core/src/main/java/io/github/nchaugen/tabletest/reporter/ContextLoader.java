@@ -15,8 +15,8 @@
  */
 package io.github.nchaugen.tabletest.reporter;
 
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
+import org.snakeyaml.engine.v2.api.Load;
+import org.snakeyaml.engine.v2.api.LoadSettings;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -29,20 +29,14 @@ import static java.util.stream.Collectors.joining;
 
 public class ContextLoader {
 
-    private final Yaml yaml;
+    private final Load yaml;
 
     public ContextLoader() {
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        options.setDefaultScalarStyle(DumperOptions.ScalarStyle.DOUBLE_QUOTED);
-        options.setIndent(2);
-        options.setSplitLines(false);
-        options.setDereferenceAliases(true);
-        options.setAllowUnicode(true);
-        options.setLineBreak(DumperOptions.LineBreak.getPlatformLineBreak());
-        options.setPrettyFlow(true);
+        LoadSettings settings = LoadSettings.builder()
+            .setAllowNonScalarKeys(true)
+            .build();
 
-        yaml = new Yaml(options);
+        yaml = new Load(settings);
     }
 
     public Map<String, Object> fromYaml(Path path) {
@@ -54,6 +48,6 @@ public class ContextLoader {
     }
 
     public Map<String, Object> fromYaml(String value) {
-        return yaml.load(value);
+        return (Map<String, Object>) yaml.loadFromString(value);
     }
 }

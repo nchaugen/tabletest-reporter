@@ -15,7 +15,7 @@
 
     <properties>
         <version.tabletest-parser>0.5.5</version.tabletest-parser>
-        <version.snakeyaml>2.5</version.snakeyaml>
+        <version.snakeyaml>3.0.1</version.snakeyaml>
         <version.pebble>4.0.0</version.pebble>
         <version.slugify>3.0.7</version.slugify>
 
@@ -31,8 +31,8 @@
             <version>${version.tabletest-parser}</version>
         </dependency>
         <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
+            <groupId>org.snakeyaml</groupId>
+            <artifactId>snakeyaml-engine</artifactId>
             <version>${version.snakeyaml}</version>
         </dependency>
         <dependency>
