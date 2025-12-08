@@ -87,7 +87,7 @@ POM configuration example (bind to `site` or run on demand):
     <plugin>
       <groupId>io.github.nchaugen</groupId>
       <artifactId>tabletest-reporter-maven-plugin</artifactId>
-      <version>0.1.0</version>
+      <version>0.1.1</version>
       <executions>
         <execution>
           <goals>
@@ -137,7 +137,7 @@ pluginManagement {
 
 ```
 plugins {
-  id("io.github.nchaugen.tabletest-reporter") version "0.1.0"
+  id("io.github.nchaugen.tabletest-reporter") version "0.1.1"
 }
 
 tableTestReporter {
