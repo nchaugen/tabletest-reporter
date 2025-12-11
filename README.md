@@ -15,10 +15,13 @@ TableTest Reporter generates documentation from [TableTest](https://github.com/n
 ## Requirements
 
 - Java 21+
+- JUnit 5.12+
 
+Popular frameworks SpringBoot and Quarkus includes JUnit in their distributions. SpringBoot versions from 3.5.0 and Quarkus versions from 3.21.2 include a recent enough JUnit version for TableTest-Reporter to work.
 
 ## Modules
 
+- `tabletest-reporter-junit` – JUnit extension to collect TableTest information during test runs
 - `tabletest-reporter-core` – core rendering engine (pure Java library)
 - `tabletest-reporter-cli` – command-line runner (fat JAR)
 - `tabletest-reporter-maven-plugin` – Maven plugin goal `tabletest-reporter:report`
@@ -34,6 +37,80 @@ mvn -q clean install
 ```
 
 This also installs the artifacts to your local Maven repository for use by the Gradle plugin.
+
+## Collecting TableTest Results and Metadata
+
+The `tabletest-reporter-junit` module is a JUnit extension that automatically publishes YAML files during test execution. It collects TableTest results and metadata, making them available for report generation by the CLI, Maven plugin, or Gradle plugin.
+
+### Installation
+
+Add the dependency to your test scope:
+
+**Maven:**
+```xml
+<dependency>
+    <groupId>io.github.nchaugen</groupId>
+    <artifactId>tabletest-reporter-junit</artifactId>
+    <version>0.1.1</version>
+    <scope>test</scope>
+</dependency>
+```
+
+**Gradle:**
+```kotlin
+testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.1.1")
+```
+
+### Automatic Activation
+
+The extension is automatically activated via JUnit's ServiceLoader mechanism when present on the test classpath. No explicit configuration or annotations are required.
+
+When you run your tests, the extension publishes YAML files to `<buildDir>/junit-jupiter/` containing:
+
+- Test metadata (titles and descriptions)
+- Table structure (headers and rows)
+- Column roles (scenario, expectation)
+- Row execution results (pass/fail)
+
+### Metadata Collection
+
+The extension collects the following metadata:
+
+**Titles:** Use JUnit's standard `@DisplayName` annotation on test classes and methods. These become titles in the generated documentation.
+
+**Descriptions:** Use the TableTest `@Description` annotation to provide detailed explanations for test classes and methods.
+
+**Column Roles:**
+- Scenario columns (either implicitly defined or explictly marked with the `@Scenario` annotation)
+- Expectation columns are detected when headers end with `?`
+
+**Example:**
+```java
+@DisplayName("User Authentication")
+@Description("Tests for user login and authentication scenarios")
+class AuthenticationTest {
+
+    @DisplayName("Login Validation")
+    @Description("Validates login with various username/password combinations")
+    @TableTest("""
+        Scenario | Username | Password | Expected?
+        Success  | admin    | secret   | true
+        Failure  | guest    | wrong    | false
+        """)
+    void testLogin(String username, String password, boolean shouldSucceed) {
+        // test implementation
+    }
+}
+```
+
+### Integration Workflow
+
+1. **Write tests** with `@TableTest` annotations
+2. **Run tests** – YAML files are automatically generated
+3. **Generate reports** using one of:
+   - CLI: `java -jar tabletest-reporter-cli.jar`
+   - Maven: `mvn tabletest-reporter:report`
+   - Gradle: `./gradlew reportTableTests`
 
 
 ## CLI usage

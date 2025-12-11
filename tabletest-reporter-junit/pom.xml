@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.nchaugen</groupId>
+        <artifactId>tabletest-reporter</artifactId>
+        <version>0.1.2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>tabletest-reporter-junit</artifactId>
+    <version>0.1.2-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>TableTest Reporter JUnit Extension</name>
+
+    <properties>
+        <version.tabletest>0.5.7</version.tabletest>
+        <version.snakeyaml>3.0.1</version.snakeyaml>
+        <version.junit>6.0.1</version.junit>
+        <version.assertj>3.27.6</version.assertj>
+    </properties>
+
+    <dependencies>
+        <!-- JUnit Jupiter API for extension -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${version.junit}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- TableTest library for parser and JUnit integration -->
+        <dependency>
+            <groupId>io.github.nchaugen</groupId>
+            <artifactId>tabletest-parser</artifactId>
+            <version>${version.tabletest}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.nchaugen</groupId>
+            <artifactId>tabletest-junit</artifactId>
+            <version>${version.tabletest}</version>
+        </dependency>
+
+        <!-- YAML writing -->
+        <dependency>
+            <groupId>org.snakeyaml</groupId>
+            <artifactId>snakeyaml-engine</artifactId>
+            <version>${version.snakeyaml}</version>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-testkit</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${version.assertj}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

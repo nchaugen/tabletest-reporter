@@ -1,6 +1,8 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+### Added
+- JUnit extension to collect TableTest report data during test runs (tabletest-reporter-junit) 
 
 ## [0.1.1] - 2025-12-09
 ### Fixed

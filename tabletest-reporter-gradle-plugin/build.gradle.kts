@@ -1,10 +1,11 @@
 plugins {
     `java-gradle-plugin`
     `maven-publish`
+    id("com.gradle.plugin-publish") version "2.0.0"
 }
 
 group = "io.github.nchaugen"
-version = "0.1.0-SNAPSHOT"
+version = "0.1.1-SNAPSHOT"
 
 java {
     toolchain {
@@ -27,6 +28,9 @@ dependencies {
 }
 
 gradlePlugin {
+    website.set("https://github.com/nchaugen/tabletest-reporter")
+    vcsUrl.set("https://github.com/nchaugen/tabletest-reporter.git")
+
     plugins {
         create("tabletestReporter") {
             id = "io.github.nchaugen.tabletest-reporter"
