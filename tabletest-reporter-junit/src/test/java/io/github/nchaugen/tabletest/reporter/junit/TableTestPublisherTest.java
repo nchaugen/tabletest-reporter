@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
-class TableTestPublisherEndToEndTest {
+class TableTestPublisherTest {
 
     @TempDir
     Path tempDir;

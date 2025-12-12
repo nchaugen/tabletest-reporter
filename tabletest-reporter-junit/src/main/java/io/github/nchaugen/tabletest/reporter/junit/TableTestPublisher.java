@@ -35,12 +35,11 @@ import java.util.function.Supplier;
 
 public class TableTestPublisher implements TestWatcher, AfterAllCallback {
 
-    private static final ExtensionContext.Namespace NAMESPACE =
-        ExtensionContext.Namespace.create(TableTestPublisher.class);
-
     private static final YamlRenderer YAML_RENDERER = new YamlRenderer();
     private static final String FILENAME_PREFIX = "TABLETEST-";
     private static final String YAML_EXTENSION = ".yaml";
+
+    private final TableTestStore store = new TableTestStore();
 
 
     @Override
@@ -59,58 +58,38 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
             parentContext.getTestMethod().ifPresent(method -> {
                 TableTest tableTest = method.getAnnotation(TableTest.class);
                 if (tableTest != null) {
-                    // Mark that this class has TableTest methods
-                    getClassStore(parentContext).put("hasTableTests", true);
+                    // Ensure table metadata is stored (only happens once per test method)
+                    ensureTableMetadataStored(parentContext, tableTest);
 
-                    // Get invocation index
+                    // Store this invocation's result
                     int rowIndex = getInvocationIndex(context);
-
-                    // Store the row result
-                    storeRowResult(
-                        parentContext, new RowResult(
-                            rowIndex, passed, cause, context.getDisplayName()
-                        )
+                    store.storeRowResult(
+                        parentContext,
+                        new RowResult(rowIndex, passed, cause, context.getDisplayName())
                     );
-
-                    // Store the table and annotation for later republishing
-                    ExtensionContext.Store store = getTestMethodStore(parentContext);
-                    if (store.get("tableTest") == null) {
-                        store.put("tableTest", tableTest);
-                        String input = InputResolver.resolveInput(parentContext, tableTest);
-                        Table table = TableParser.parse(input);
-                        store.put("table", table);
-
-                        // Add this method context to the class-level list for republishing
-                        addMethodContextForRepublishing(parentContext);
-                    }
                 }
             });
         });
     }
 
-    private static void publishTable(ExtensionContext context, Table table, List<RowResult> rowResults) {
-        TableMetadata metadata = new JunitTableMetadata(context, table, rowResults);
+    /**
+     * Ensures table metadata is stored exactly once per test method.
+     * On first invocation: parses table, stores metadata, marks method for publishing.
+     * On subsequent invocations: does nothing (metadata already stored).
+     */
+    private void ensureTableMetadataStored(ExtensionContext methodContext, TableTest tableTest) {
+        if (store.hasTable(methodContext)) {
+            return; // Already stored
+        }
 
-        publishFile(
-            context,
-            getName(context, () -> context.getRequiredTestMethod().getName()),
-            (Path path) -> YAML_RENDERER.renderTable(table, metadata)
-        );
-    }
+        // Parse and store table
+        String input = InputResolver.resolveInput(methodContext, tableTest);
+        Table table = TableParser.parse(input);
+        store.storeTable(methodContext, table);
 
-    private static @NonNull String getName(ExtensionContext context, Supplier<String> defaultName) {
-        return context.getElement()
-            .filter(it -> it.isAnnotationPresent(DisplayName.class))
-            .map(__ -> context.getDisplayName())
-            .orElseGet(defaultName);
-    }
-
-    private static void publishFile(ExtensionContext context, String fileName, Function<Path, String> renderer) {
-        context.publishFile(
-            FILENAME_PREFIX + fileName + YAML_EXTENSION,
-            MediaType.TEXT_PLAIN_UTF_8,
-            path -> Files.writeString(path, renderer.apply(path))
-        );
+        // Mark this method for publishing and mark class as having table tests
+        store.addMethodForPublishing(methodContext);
+        store.markClassAsHavingTableTests(methodContext);
     }
 
     private static int getInvocationIndex(ExtensionContext context) {
@@ -131,69 +110,56 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
         return 0;
     }
 
-    private static void storeRowResult(ExtensionContext context, RowResult result) {
-        ExtensionContext.Store store = getTestMethodStore(context);
-        @SuppressWarnings("unchecked")
-        List<RowResult> results = (List<RowResult>) store.getOrComputeIfAbsent(
-            "rowResults",
-            key -> new java.util.ArrayList<RowResult>()
-        );
-        results.add(result);
-    }
-
-    private static ExtensionContext.Store getTestMethodStore(ExtensionContext context) {
-        return context.getStore(NAMESPACE);
-    }
-
-    private static ExtensionContext.Store getClassStore(ExtensionContext context) {
-        return context.getRoot().getStore(ExtensionContext.Namespace.create(
-            context.getRequiredTestClass()
-        ));
-    }
-
-    private static void addMethodContextForRepublishing(ExtensionContext methodContext) {
-        ExtensionContext.Store classStore = getClassStore(methodContext);
-        @SuppressWarnings("unchecked")
-        List<ExtensionContext> contexts = (List<ExtensionContext>) classStore.getOrComputeIfAbsent(
-            "methodContexts",
-            key -> new java.util.ArrayList<ExtensionContext>()
-        );
-        contexts.add(methodContext);
-    }
-
     @Override
     public void afterAll(ExtensionContext context) {
         publishTables(context);
         publishTestClass(context);
     }
 
-    @SuppressWarnings("unchecked")
     private void publishTables(ExtensionContext context) {
-        ExtensionContext.Store classStore = getClassStore(context);
-        List<ExtensionContext> methodContexts = (List<ExtensionContext>) classStore.get("methodContexts");
+        List<ExtensionContext> methodContexts = store.getMethodsToPublish(context);
 
-        if (methodContexts != null) {
-            for (ExtensionContext methodContext : methodContexts) {
-                ExtensionContext.Store methodStore = getTestMethodStore(methodContext);
-                TableTest tableTest = (TableTest) methodStore.get("tableTest");
-                Table table = (Table) methodStore.get("table");
-                List<RowResult> rowResults = (List<RowResult>) methodStore.get("rowResults");
+        for (ExtensionContext methodContext : methodContexts) {
+            Table table = store.getTable(methodContext);
+            List<RowResult> rowResults = store.getRowResults(methodContext);
 
-                if (tableTest != null && table != null && rowResults != null) {
-                    publishTable(methodContext, table, rowResults);
-                }
+            if (table != null && rowResults != null) {
+                publishTable(methodContext, table, rowResults);
             }
         }
     }
 
+    private static void publishTable(ExtensionContext context, Table table, List<RowResult> rowResults) {
+        TableMetadata metadata = new JunitTableMetadata(context, table, rowResults);
+
+        publishFile(
+            context,
+            getName(context, () -> context.getRequiredTestMethod().getName()),
+            (Path path) -> YAML_RENDERER.renderTable(table, metadata)
+        );
+    }
+
     public static void publishTestClass(ExtensionContext context) {
         publishFile(
-            context, getName(context, () -> context.getRequiredTestClass().getSimpleName()), (Path path) ->
-                YAML_RENDERER.renderClass(
-                    context.getDisplayName(),
-                    findDescription(context)
-                )
+            context,
+            getName(context, () -> context.getRequiredTestClass().getSimpleName()),
+            (Path path) -> YAML_RENDERER.renderClass(context.getDisplayName(), findDescription(context))
         );
+    }
+
+    private static void publishFile(ExtensionContext context, String fileName, Function<Path, String> renderer) {
+        context.publishFile(
+            FILENAME_PREFIX + fileName + YAML_EXTENSION,
+            MediaType.TEXT_PLAIN_UTF_8,
+            path -> Files.writeString(path, renderer.apply(path))
+        );
+    }
+
+    private static @NonNull String getName(ExtensionContext context, Supplier<String> defaultName) {
+        return context.getElement()
+            .filter(it -> it.isAnnotationPresent(DisplayName.class))
+            .map(__ -> context.getDisplayName())
+            .orElseGet(defaultName);
     }
 
     private static String findDescription(ExtensionContext context) {
