@@ -88,14 +88,13 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
         });
     }
 
-    private static void publishTable(ExtensionContext context, TableTest tableTest, Table table, List<RowResult> rowResults) {
+    private static void publishTable(ExtensionContext context, Table table, List<RowResult> rowResults) {
         TableMetadata metadata = new JunitTableMetadata(context, table, rowResults);
 
         publishFile(
-            context, getName(context, () -> context.getRequiredTestMethod().getName()), (Path path) -> {
-                TableFileIndex.save(metadata.title(), path, context);
-                return YAML_RENDERER.renderTable(table, metadata);
-            }
+            context,
+            getName(context, () -> context.getRequiredTestMethod().getName()),
+            (Path path) -> YAML_RENDERER.renderTable(table, metadata)
         );
     }
 
@@ -168,9 +167,9 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
         publishTestClass(context);
     }
 
+    @SuppressWarnings("unchecked")
     private void publishTables(ExtensionContext context) {
         ExtensionContext.Store classStore = getClassStore(context);
-        @SuppressWarnings("unchecked")
         List<ExtensionContext> methodContexts = (List<ExtensionContext>) classStore.get("methodContexts");
 
         if (methodContexts != null) {
@@ -178,11 +177,10 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
                 ExtensionContext.Store methodStore = getTestMethodStore(methodContext);
                 TableTest tableTest = (TableTest) methodStore.get("tableTest");
                 Table table = (Table) methodStore.get("table");
-                @SuppressWarnings("unchecked")
                 List<RowResult> rowResults = (List<RowResult>) methodStore.get("rowResults");
 
                 if (tableTest != null && table != null && rowResults != null) {
-                    publishTable(methodContext, tableTest, table, rowResults);
+                    publishTable(methodContext, table, rowResults);
                 }
             }
         }
@@ -193,16 +191,9 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
             context, getName(context, () -> context.getRequiredTestClass().getSimpleName()), (Path path) ->
                 YAML_RENDERER.renderClass(
                     context.getDisplayName(),
-                    findDescription(context),
-                    relativizeToIndex(path, TableFileIndex.allForTestClass(context))
+                    findDescription(context)
                 )
         );
-    }
-
-    private static List<TableFileEntry> relativizeToIndex(Path indexPath, List<TableFileEntry> tableFiles) {
-        return tableFiles.stream()
-            .map(it -> new TableFileEntry(it.title(), indexPath.getParent().relativize(it.path())))
-            .toList();
     }
 
     private static String findDescription(ExtensionContext context) {

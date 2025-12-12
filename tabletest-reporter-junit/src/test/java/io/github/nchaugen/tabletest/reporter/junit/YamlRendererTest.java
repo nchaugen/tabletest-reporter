@@ -3,7 +3,6 @@ package io.github.nchaugen.tabletest.reporter.junit;
 import io.github.nchaugen.tabletest.parser.TableParser;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
@@ -21,19 +20,10 @@ public class YamlRendererTest {
             """
                 "title": "Title of the Test Class"
                 "description": "A free-text description explaining what these tables are about."
-                "tables":
-                  "A Table": "path/to/a_table"
-                  "B Table": "path/to/b_table"
-                  "C Table": "path/to/c_table"
                 """,
             renderer.renderClass(
                 "Title of the Test Class",
-                "A free-text description explaining what these tables are about.",
-                List.of(
-                    new TableFileEntry("A Table", Path.of("path/to/a_table")),
-                    new TableFileEntry("B Table", Path.of("path/to/b_table")),
-                    new TableFileEntry("C Table", Path.of("path/to/c_table"))
-                )
+                "A free-text description explaining what these tables are about."
             )
         );
     }

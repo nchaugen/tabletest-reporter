@@ -191,14 +191,42 @@ class TableTestPublisherEndToEndTest {
         };
     }
 
-    private Path findYamlFile(Path baseDir, String methodName) throws IOException {
+    @Test
+    void shouldPublishTestClassYaml() throws IOException {
+        var results = EngineTestKit
+            .engine("junit-jupiter")
+            .selectors(selectClass(AllRowsPassTest.class))
+            .configurationParameter("junit.platform.output.dir", tempDir.toString())
+            .enableImplicitConfigurationParameters(true)
+            .outputDirectoryCreator(createOutputDirectoryCreator())
+            .execute();
+
+        results.testEvents()
+            .assertStatistics(stats -> stats
+                .started(3)
+                .succeeded(3)
+                .failed(0));
+
+        Path classYamlFile = findYamlFile(tempDir, "Verifying YAML Output");
+        assertTrue(Files.exists(classYamlFile), "Class YAML file should exist");
+
+        assertEquals(
+            """
+                "title": "Verifying YAML Output"
+                "description": "This test class verified that the published YAML files contain the expected output."
+                """,
+            Files.readString(classYamlFile)
+        );
+    }
+
+    private Path findYamlFile(Path baseDir, String name) throws IOException {
         try (var paths = Files.walk(baseDir)) {
             return paths
-                .filter(p -> p.toString().contains(methodName))
+                .filter(p -> p.toString().contains(name))
                 .filter(p -> p.getFileName().toString().startsWith("TABLETEST-"))
                 .filter(p -> p.getFileName().toString().endsWith(".yaml"))
                 .findFirst()
-                .orElseThrow(() -> new AssertionError("TABLETEST-*.yaml file not found for " + methodName));
+                .orElseThrow(() -> new AssertionError("TABLETEST-*.yaml file not found for " + name));
         }
     }
 

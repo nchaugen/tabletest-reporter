@@ -22,7 +22,6 @@ import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -62,8 +61,8 @@ class YamlRenderer {
             "rows", table.rows().stream()
                 .map(row ->
                     IntStream.range(0, table.columnCount())
-                    .mapToObj(i -> toValueMap(row.value(i), metadata.columnRoles().roleFor(i)))
-                    .toList()
+                        .mapToObj(i -> toValueMap(row.value(i), metadata.columnRoles().roleFor(i)))
+                        .toList()
                 )
                 .toList()
         );
@@ -80,16 +79,12 @@ class YamlRenderer {
     }
 
     /**
-     * Renders a test class index with references to all its table test files.
+     * Renders a test class with its metadata.
      */
-    String renderClass(String title, String description, List<TableFileEntry> tableFileEntries) {
+    String renderClass(String title, String description) {
         LinkedHashMap<String, Object> content = new LinkedHashMap<>();
         if (title != null) content.put("title", title);
         if (description != null) content.put("description", description);
-
-        LinkedHashMap<String, String> tables = new LinkedHashMap<>();
-        tableFileEntries.forEach(it -> tables.put(it.title(), it.path().toString()));
-        content.put("tables", tables);
 
         return yaml.dumpToString(content);
     }
@@ -109,9 +104,11 @@ class YamlRenderer {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("value", value);
         if (!roles.isEmpty()) {
-            map.put("roles", roles.stream()
-                .map(role -> role.name().toLowerCase())
-                .toList());
+            map.put(
+                "roles", roles.stream()
+                    .map(role -> role.name().toLowerCase())
+                    .toList()
+            );
         }
         return map;
     }
