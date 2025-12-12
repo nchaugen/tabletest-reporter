@@ -24,6 +24,7 @@ import org.snakeyaml.engine.v2.common.ScalarStyle;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 /**
@@ -104,11 +105,13 @@ class YamlRenderer {
         return map;
     }
 
-    private static Map<String, Object> toValueMap(Object value, CellRole role) {
+    private static Map<String, Object> toValueMap(Object value, Set<CellRole> roles) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("value", value);
-        if (role != CellRole.NONE) {
-            map.put("role", role.name().toLowerCase());
+        if (!roles.isEmpty()) {
+            map.put("roles", roles.stream()
+                .map(role -> role.name().toLowerCase())
+                .toList());
         }
         return map;
     }

@@ -15,7 +15,10 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
+
+import static java.util.Collections.unmodifiableSet;
 
 public class ColumnRoles {
     public static final ColumnRoles NO_ROLES = new ColumnRoles(-1, Set.of());
@@ -28,13 +31,14 @@ public class ColumnRoles {
         this.expectationIndices = expectationIndices;
     }
     
-    public CellRole roleFor(int columnIndex) {
-        if (columnIndex == scenarioIndex) {
-            return CellRole.SCENARIO;
-        }
+    public Set<CellRole> roleFor(int columnIndex) {
+        Set<CellRole> roles = new LinkedHashSet<>();
         if (expectationIndices.contains(columnIndex)) {
-            return CellRole.EXPECTATION;
+            roles.add(CellRole.EXPECTATION);
         }
-        return CellRole.NONE;
+        if (columnIndex == scenarioIndex) {
+            roles.add(CellRole.SCENARIO);
+        }
+        return unmodifiableSet(roles);
     }
 }

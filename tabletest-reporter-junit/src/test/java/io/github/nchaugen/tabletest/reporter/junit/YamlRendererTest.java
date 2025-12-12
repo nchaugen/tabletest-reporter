@@ -71,69 +71,32 @@ public class YamlRendererTest {
     }
 
     @Test
-    void shouldAddRoleForExpectationCells() {
-        assertEquals(//language=yaml
-            """
-                "headers":
-                - "value": "a?"
-                  "role": "expectation"
-                - "value": "b?"
-                  "role": "expectation"
-                - "value": "c?"
-                  "role": "expectation"
-                - "value": "d?"
-                  "role": "expectation"
-                - "value": "e?"
-                  "role": "expectation"
-                "rows":
-                - - "value": !!set {}
-                    "role": "expectation"
-                  - "value":
-                    - "1"
-                    - "2"
-                    - "3"
-                    "role": "expectation"
-                  - "value": "3"
-                    "role": "expectation"
-                  - "value": !!null "null"
-                    "role": "expectation"
-                  - "value":
-                      "a": "1"
-                      "b": "2"
-                      "c": "3"
-                    "role": "expectation"
-                """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a? | b?      | c? | d? | e?
-                    {} | [1,2,3] | 3  |    | [a:1,b:2,c:3]
-                    """),
-                new StubTableMetadata(new ColumnRoles(-1, Set.of(0, 1, 2, 3, 4)))
-            )
-        );
-    }
-
-    @Test
     void shouldAddRoleForScenarioCells() {
         assertEquals(//language=yaml
             """
                 "headers":
                 - "value": "scenario"
-                  "role": "scenario"
+                  "roles":
+                  - "scenario"
                 - "value": "input"
                 - "value": "output?"
-                  "role": "expectation"
+                  "roles":
+                  - "expectation"
                 "rows":
                 - - "value": "add"
-                    "role": "scenario"
+                    "roles":
+                    - "scenario"
                   - "value": "5"
                   - "value": "5"
-                    "role": "expectation"
+                    "roles":
+                    - "expectation"
                 - - "value": "multiply"
-                    "role": "scenario"
+                    "roles":
+                    - "scenario"
                   - "value": "3"
                   - "value": "15"
-                    "role": "expectation"
+                    "roles":
+                    - "expectation"
                 """,
             renderer.renderTable(
                 TableParser.parse("""
@@ -142,6 +105,61 @@ public class YamlRendererTest {
                     multiply | 3     | 15
                     """),
                 new StubTableMetadata(new ColumnRoles(0, Set.of(2)))
+            )
+        );
+    }
+
+    @Test
+    void shouldAddRoleForExpectationCells() {
+        assertEquals(//language=yaml
+            """
+                "headers":
+                - "value": "a?"
+                  "roles":
+                  - "expectation"
+                  - "scenario"
+                - "value": "b?"
+                  "roles":
+                  - "expectation"
+                - "value": "c?"
+                  "roles":
+                  - "expectation"
+                - "value": "d?"
+                  "roles":
+                  - "expectation"
+                - "value": "e?"
+                  "roles":
+                  - "expectation"
+                "rows":
+                - - "value": !!set {}
+                    "roles":
+                    - "expectation"
+                    - "scenario"
+                  - "value":
+                    - "1"
+                    - "2"
+                    - "3"
+                    "roles":
+                    - "expectation"
+                  - "value": "3"
+                    "roles":
+                    - "expectation"
+                  - "value": !!null "null"
+                    "roles":
+                    - "expectation"
+                  - "value":
+                      "a": "1"
+                      "b": "2"
+                      "c": "3"
+                    "roles":
+                    - "expectation"
+                """,
+            renderer.renderTable(
+                TableParser.parse("""
+                    a? | b?      | c? | d? | e?
+                    {} | [1,2,3] | 3  |    | [a:1,b:2,c:3]
+                    """),
+                new StubTableMetadata(new ColumnRoles(0, Set.of(0, 1, 2, 3, 4)))
             )
         );
     }

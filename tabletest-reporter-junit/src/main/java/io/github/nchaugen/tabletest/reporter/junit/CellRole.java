@@ -16,7 +16,6 @@
 package io.github.nchaugen.tabletest.reporter.junit;
 
 public enum CellRole {
-    NONE,
     EXPECTATION,
     SCENARIO
 }

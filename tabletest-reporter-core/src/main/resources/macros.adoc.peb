@@ -1,19 +1,19 @@
 {# Macros for rendering table cells in AsciiDoc format #}
 
 {% macro renderCell(cell) %}
-    {%- if cell.role -%}
-        {{- renderValueWithRole(cell.role, cell.value, 0) -}}
+    {%- if cell.roles is not empty -%}
+        {{- renderValueWithRoles(cell.roles, cell.value, 0) -}}
     {%- else -%}
         {{- renderValue(cell.value, 0) -}}
     {%- endif -%}
 {% endmacro %}
 
-{% macro renderValueWithRole(role, value, level) %}
+{% macro renderValueWithRoles(roles, value, level) %}
     {%- if value is iterable or value is map -%}
-        {{- "[.#{role}]" -}}
+        {{-  "[" -}} {%- for role in roles -%} {{- ".#{role}" -}} {%- endfor -%} {{- "]" }}
         {{- renderValue(value, level) -}}
     {%- else -%}
-        {{- "[.#{role}]##{renderValue(value, level)}#" -}}
+        {{-  "[" -}} {%- for role in roles -%} {{- ".#{role}" -}} {%- endfor -%} {{- "]##{renderValue(value, level)}#" -}}
     {%- endif -%}
 {% endmacro %}
 

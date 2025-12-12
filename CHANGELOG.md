@@ -3,9 +3,10 @@
 ## [Unreleased]
 ### Added
 - JUnit extension to collect TableTest report data during test runs (tabletest-reporter-junit)
+- Multiple roles supported per cell in published YAML
 ### Changed
-- YAML files now prefixed with `TABLETEST-` to avoid conflicts with other YAML files
-- Output file name for TableTest methods without `@DisplayName` now based on method name only without parameters
+- YAML files prefixed with `TABLETEST-` to avoid conflicts with other YAML files
+- Output file name for TableTest methods either explicit `@DisplayName` or method name (without parameters)
 
 ## [0.1.1] - 2025-12-09
 ### Fixed

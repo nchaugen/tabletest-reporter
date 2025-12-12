@@ -15,13 +15,17 @@ public class TableWithRolesTest {
         title: Year selection
         headers:
           - value: Scenario
-            role: scenario
+            roles:
+            - "scenario"
           - value: Candidates
           - value: Selected?
-            role: expectation
+            roles:
+            - "expectation"
+            - "passed"
         rows:
           - - value: "Select leap years"
-              role: scenario
+              roles:
+              - "scenario"
             - value:
               - "2000"
               - "2001"
@@ -30,7 +34,9 @@ public class TableWithRolesTest {
               - "2004"
             - value:
               - "2004"
-              role: expectation
+              roles:
+              - "expectation"
+              - "passed"
         """);
 
     @Test
@@ -43,7 +49,7 @@ public class TableWithRolesTest {
                 |===
                 |[.scenario]#++Scenario++#
                 |++Candidates++
-                |[.expectation]#++Selected?++#
+                |[.expectation.passed]#++Selected?++#
                 
                 a|[.scenario]#++Select leap years++#
                 a|
@@ -52,7 +58,7 @@ public class TableWithRolesTest {
                 * ++2002++
                 * ++2003++
                 * ++2004++
-                a|[.expectation]
+                a|[.expectation.passed]
                 * ++2004++
                 
                 |===
