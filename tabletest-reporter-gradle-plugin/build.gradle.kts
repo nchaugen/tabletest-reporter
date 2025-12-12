@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.nchaugen"
-version = "0.1.1-SNAPSHOT"
+version = "0.1.2-SNAPSHOT"
 
 java {
     toolchain {

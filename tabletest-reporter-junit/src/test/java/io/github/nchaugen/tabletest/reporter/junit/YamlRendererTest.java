@@ -12,11 +12,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class YamlRendererTest {
 
-    private static final TableMetadata NO_METADATA = new EmptyTableMetadata();
+    private static final TableMetadata NO_METADATA = new StubTableMetadata(List.of());
     private final YamlRenderer renderer = new YamlRenderer();
 
     @Test
-    void shouldRenderTestIndex() {
+    void shouldRenderClass() {
         assertEquals(
             """
                 "title": "Title of the Test Class"
@@ -26,7 +26,8 @@ public class YamlRendererTest {
                   "B Table": "path/to/b_table"
                   "C Table": "path/to/c_table"
                 """,
-            renderer.renderTestIndex("Title of the Test Class",
+            renderer.renderClass(
+                "Title of the Test Class",
                 "A free-text description explaining what these tables are about.",
                 List.of(
                     new TableFileEntry("A Table", Path.of("path/to/a_table")),
@@ -55,24 +56,16 @@ public class YamlRendererTest {
                     a | b
                     1 | 2
                     """),
-                new EmptyTableMetadata() {
-                    @Override
-                    public String title() {
-                        return "Table Title";
-                    }
-
-                    @Override
-                    public String description() {
-                        return """
-                            This is a description of the __table__.
-                            
-                            It can span multiple lines, and include lists and formatting:
-                            
-                            - List item 1
-                            - List item 2
-                            """;
-                    }
-                }
+                new StubTableMetadata(
+                    "Table Title", """
+                    This is a description of the __table__.
+                    
+                    It can span multiple lines, and include lists and formatting:
+                    
+                    - List item 1
+                    - List item 2
+                    """
+                )
             )
         );
     }
@@ -115,12 +108,7 @@ public class YamlRendererTest {
                     a? | b?      | c? | d? | e?
                     {} | [1,2,3] | 3  |    | [a:1,b:2,c:3]
                     """),
-                new EmptyTableMetadata() {
-                    @Override
-                    public ColumnRoles columnRoles() {
-                        return new ColumnRoles(-1, Set.of(0, 1, 2, 3, 4));
-                    }
-                }
+                new StubTableMetadata(new ColumnRoles(-1, Set.of(0, 1, 2, 3, 4)))
             )
         );
     }
@@ -153,12 +141,7 @@ public class YamlRendererTest {
                     add      | 5     | 5
                     multiply | 3     | 15
                     """),
-                new EmptyTableMetadata() {
-                    @Override
-                    public ColumnRoles columnRoles() {
-                        return new ColumnRoles(0, Set.of(2));
-                    }
-                }
+                new StubTableMetadata(new ColumnRoles(0, Set.of(2)))
             )
         );
     }
@@ -443,20 +426,83 @@ public class YamlRendererTest {
         );
     }
 
-    private static class EmptyTableMetadata implements TableMetadata {
-        @Override
-        public ColumnRoles columnRoles() {
-            return NO_ROLES;
+    @Test
+    void shouldIncludeRowResultsInYaml() {
+
+        String yaml = renderer.renderTable(
+            TableParser.parse("""
+                a | b
+                1 | 2
+                3 | 4
+                """),
+            new StubTableMetadata(
+                List.of(
+                    new RowResult(0, true, null, "test[1]"),
+                    new RowResult(1, false, new AssertionError("Expected 4"), "test[2]")
+                )
+            )
+        );
+
+        assertEquals(
+            """
+                "headers":
+                - "value": "a"
+                - "value": "b"
+                "rows":
+                - - "value": "1"
+                  - "value": "2"
+                - - "value": "3"
+                  - "value": "4"
+                "rowResults":
+                - "rowIndex": !!int "0"
+                  "passed": !!bool "true"
+                  "displayName": "test[1]"
+                - "rowIndex": !!int "1"
+                  "passed": !!bool "false"
+                  "displayName": "test[2]"
+                  "errorMessage": "Expected 4"
+                """, yaml
+        );
+    }
+
+    private record StubTableMetadata(
+        String title,
+        String description,
+        ColumnRoles columnRoles,
+        List<RowResult> results
+    ) implements TableMetadata {
+
+        public StubTableMetadata(String title, String description) {
+            this(title, description, NO_ROLES, List.of());
+        }
+
+        public StubTableMetadata(ColumnRoles columnRoles) {
+            this(null, null, columnRoles, List.of());
+        }
+
+        public StubTableMetadata(List<RowResult> results) {
+            this(null, null, NO_ROLES, results);
         }
 
         @Override
         public String title() {
-            return null;
+            return title;
         }
 
         @Override
         public String description() {
-            return null;
+            return description;
+        }
+
+        @Override
+        public ColumnRoles columnRoles() {
+            return columnRoles;
+        }
+
+        @Override
+        public List<RowResult> rowResults() {
+            return results;
         }
     }
+
 }

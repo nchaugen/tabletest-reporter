@@ -22,9 +22,9 @@ public class EndToEndTableReportTest {
     static void setUp() throws IOException {
         inDir = Files.createDirectory(tempDir.resolve("in"));
         Path testClassDir = Files.createDirectory(inDir.resolve("org.example.CalendarTest"));
-        Files.writeString(testClassDir.resolve("Calendar Calculations.yaml"), TEST_CLASS_CONTEXT_YAML);
+        Files.writeString(testClassDir.resolve("TABLETEST-Calendar Calculations.yaml"), TEST_CLASS_CONTEXT_YAML);
         Path tableDir = Files.createDirectory(testClassDir.resolve("leapYearRules(java.time.Year, boolean)"));
-        Files.writeString(tableDir.resolve("Leap Year Rules.yaml"), TABLE_CONTEXT_YAML);
+        Files.writeString(tableDir.resolve("TABLETEST-Leap Year Rules.yaml"), TABLE_CONTEXT_YAML);
         outDir = Files.createDirectory(tempDir.resolve("out"));
     }
 

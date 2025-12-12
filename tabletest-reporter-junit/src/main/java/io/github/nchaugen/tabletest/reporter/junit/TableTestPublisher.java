@@ -20,6 +20,8 @@ import io.github.nchaugen.tabletest.junit.InputResolver;
 import io.github.nchaugen.tabletest.junit.TableTest;
 import io.github.nchaugen.tabletest.parser.Table;
 import io.github.nchaugen.tabletest.parser.TableParser;
+import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.MediaType;
@@ -29,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class TableTestPublisher implements TestWatcher, AfterAllCallback {
 
@@ -36,6 +39,7 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
         ExtensionContext.Namespace.create(TableTestPublisher.class);
 
     private static final YamlRenderer YAML_RENDERER = new YamlRenderer();
+    private static final String FILENAME_PREFIX = "TABLETEST-";
     private static final String YAML_EXTENSION = ".yaml";
 
 
@@ -62,9 +66,11 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
                     int rowIndex = getInvocationIndex(context);
 
                     // Store the row result
-                    storeRowResult(parentContext, new RowResult(
-                        rowIndex, passed, cause, context.getDisplayName()
-                    ));
+                    storeRowResult(
+                        parentContext, new RowResult(
+                            rowIndex, passed, cause, context.getDisplayName()
+                        )
+                    );
 
                     // Store the table and annotation for later republishing
                     ExtensionContext.Store store = getTestMethodStore(parentContext);
@@ -86,16 +92,23 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
         TableMetadata metadata = new JunitTableMetadata(context, table, rowResults);
 
         publishFile(
-            context, metadata.title(), (Path path) -> {
+            context, getName(context, () -> context.getRequiredTestMethod().getName()), (Path path) -> {
                 TableFileIndex.save(metadata.title(), path, context);
                 return YAML_RENDERER.renderTable(table, metadata);
             }
         );
     }
 
+    private static @NonNull String getName(ExtensionContext context, Supplier<String> defaultName) {
+        return context.getElement()
+            .filter(it -> it.isAnnotationPresent(DisplayName.class))
+            .map(__ -> context.getDisplayName())
+            .orElseGet(defaultName);
+    }
+
     private static void publishFile(ExtensionContext context, String fileName, Function<Path, String> renderer) {
         context.publishFile(
-            fileName + YAML_EXTENSION,
+            FILENAME_PREFIX + fileName + YAML_EXTENSION,
             MediaType.TEXT_PLAIN_UTF_8,
             path -> Files.writeString(path, renderer.apply(path))
         );
@@ -151,14 +164,11 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
 
     @Override
     public void afterAll(ExtensionContext context) {
-        // Republish all tables with collected row results
-        republishTablesWithResults(context);
-
-        // Publish test index
-        publishTestIndex(context);
+        publishTables(context);
+        publishTestClass(context);
     }
 
-    private void republishTablesWithResults(ExtensionContext context) {
+    private void publishTables(ExtensionContext context) {
         ExtensionContext.Store classStore = getClassStore(context);
         @SuppressWarnings("unchecked")
         List<ExtensionContext> methodContexts = (List<ExtensionContext>) classStore.get("methodContexts");
@@ -178,10 +188,10 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
         }
     }
 
-    public static void publishTestIndex(ExtensionContext context) {
+    public static void publishTestClass(ExtensionContext context) {
         publishFile(
-            context, context.getDisplayName(), (Path path) ->
-                YAML_RENDERER.renderTestIndex(
+            context, getName(context, () -> context.getRequiredTestClass().getSimpleName()), (Path path) ->
+                YAML_RENDERER.renderClass(
                     context.getDisplayName(),
                     findDescription(context),
                     relativizeToIndex(path, TableFileIndex.allForTestClass(context))

@@ -2,7 +2,10 @@
 
 ## [Unreleased]
 ### Added
-- JUnit extension to collect TableTest report data during test runs (tabletest-reporter-junit) 
+- JUnit extension to collect TableTest report data during test runs (tabletest-reporter-junit)
+### Changed
+- YAML files now prefixed with `TABLETEST-` to avoid conflicts with other YAML files
+- Output file name for TableTest methods without `@DisplayName` now based on method name only without parameters
 
 ## [0.1.1] - 2025-12-09
 ### Fixed

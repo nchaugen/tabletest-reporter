@@ -35,6 +35,7 @@ import static java.util.stream.Collectors.joining;
 
 public class ReportTree {
 
+    private static final String FILENAME_PREFIX = "TABLETEST-";
     private static final String YAML_EXTENSION = ".yaml";
     private static final Path ROOT_PATH = Path.of("." + File.separator);
     private static final Slugify SLUGIFIER = Slugify.builder().build();
@@ -73,7 +74,9 @@ public class ReportTree {
      * Decides whether the given path is a TableTest output file.
      */
     private static boolean isTableTestOutputFile(Path path) {
-        return path.toFile().isFile() && path.toString().endsWith(YAML_EXTENSION);
+        return path.toFile().isFile()
+            && path.getFileName().toString().startsWith(FILENAME_PREFIX)
+            && path.getFileName().toString().endsWith(YAML_EXTENSION);
     }
 
     /**
@@ -329,7 +332,9 @@ public class ReportTree {
          * Adds a resource to this Target. Name is replaced with resource filename (without .yaml extension).
          */
         public Target withResource(Path resource) {
-            String name = resource.getFileName().toString().replaceAll(YAML_EXTENSION + "$", "");
+            String name = resource.getFileName().toString()
+                .replaceAll("^TABLETEST-", "")
+                .replaceAll(YAML_EXTENSION + "$", "");
             return new Target(name, path, resource);
         }
 

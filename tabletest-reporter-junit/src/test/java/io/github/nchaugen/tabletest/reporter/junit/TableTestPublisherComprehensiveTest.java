@@ -16,6 +16,7 @@
 package io.github.nchaugen.tabletest.reporter.junit;
 
 import io.github.nchaugen.tabletest.junit.TableTest;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -49,17 +50,7 @@ class TableTestPublisherComprehensiveTest {
             .selectors(selectClass(AllRowsPassTest.class))
             .configurationParameter("junit.platform.output.dir", tempDir.toString())
             .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(new OutputDirectoryCreator() {
-                @Override
-                public Path getRootDirectory() {
-                    return tempDir;
-                }
-
-                @Override
-                public Path createOutputDirectory(TestDescriptor testDescriptor) throws IOException {
-                    return tempDir;
-                }
-            })
+            .outputDirectoryCreator(createOutputDirectoryCreator())
             .execute();
 
         // Verify test execution
@@ -100,17 +91,7 @@ class TableTestPublisherComprehensiveTest {
             .selectors(selectClass(OneRowFailsTest.class))
             .configurationParameter("junit.platform.output.dir", tempDir.toString())
             .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(new OutputDirectoryCreator() {
-                @Override
-                public Path getRootDirectory() {
-                    return tempDir;
-                }
-
-                @Override
-                public Path createOutputDirectory(TestDescriptor testDescriptor) throws IOException {
-                    return tempDir;
-                }
-            })
+            .outputDirectoryCreator(createOutputDirectoryCreator())
             .execute();
 
         // Verify test execution
@@ -140,13 +121,28 @@ class TableTestPublisherComprehensiveTest {
         assertTrue(content.contains("\"errorMessage\":"), "Failed row should have error message");
     }
 
+    private @NonNull OutputDirectoryCreator createOutputDirectoryCreator() {
+        return new OutputDirectoryCreator() {
+            @Override
+            public Path getRootDirectory() {
+                return tempDir;
+            }
+
+            @Override
+            public Path createOutputDirectory(TestDescriptor testDescriptor) throws IOException {
+                return tempDir;
+            }
+        };
+    }
+
     private Path findYamlFile(Path baseDir, String methodName) throws IOException {
         try (var paths = Files.walk(baseDir)) {
             return paths
                 .filter(p -> p.toString().contains(methodName))
-                .filter(p -> p.toString().endsWith(".yaml"))
+                .filter(p -> p.getFileName().toString().startsWith("TABLETEST-"))
+                .filter(p -> p.getFileName().toString().endsWith(".yaml"))
                 .findFirst()
-                .orElseThrow(() -> new AssertionError("YAML file not found for " + methodName));
+                .orElseThrow(() -> new AssertionError("TABLETEST-*.yaml file not found for " + methodName));
         }
     }
 

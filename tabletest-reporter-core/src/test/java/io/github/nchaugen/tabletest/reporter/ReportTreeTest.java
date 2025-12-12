@@ -18,11 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ReportTreeTest {
 
     @TableTest("""
-        Scenario         | Directories           | Files                                                              | Resources?
-        No yaml files    | [a.a/c, a.a/d, a.b/c] | []                                                                 | []
-        Only leaf files  | [a.a/c, a.a/d, a.b/c] | [a.a/c/x.yaml, a.a/d/y.yaml, a.b/c/x.yaml]                         | [a.a/c/x.yaml, a.a/d/y.yaml, a.b/c/x.yaml]
-        Files in all     | [a.a/c, a.a/d, a.b/c] | [a.a/A.yaml, a.a/c/x.yaml, a.a/d/y.yaml, a.b/B.yaml, a.b/c/x.yaml] | [a.a/A.yaml, a.a/c/x.yaml, a.a/d/y.yaml, a.b/B.yaml, a.b/c/x.yaml]
-        Non-yaml ignored | [a.a/c, a.a/d, a.b/c] | [a.a/z.txt, a.a/c/x.xml, a.a/d/y.gif, a.b/w.md, a.b/c/x.adoc]      | []
+        Scenario         | Directories           | Files                                                                                                                | Resources?
+        No yaml files    | [a.a/c, a.a/d, a.b/c] | []                                                                                                                   | []
+        Only leaf files  | [a.a/c, a.a/d, a.b/c] | [a.a/c/TABLETEST-x.yaml, a.a/d/TABLETEST-y.yaml, a.b/c/TABLETEST-x.yaml]                                             | [a.a/c/TABLETEST-x.yaml, a.a/d/TABLETEST-y.yaml, a.b/c/TABLETEST-x.yaml]
+        Files in all     | [a.a/c, a.a/d, a.b/c] | [a.a/TABLETEST-A.yaml, a.a/c/TABLETEST-x.yaml, a.a/d/TABLETEST-y.yaml, a.b/TABLETEST-B.yaml, a.b/c/TABLETEST-x.yaml] | [a.a/TABLETEST-A.yaml, a.a/c/TABLETEST-x.yaml, a.a/d/TABLETEST-y.yaml, a.b/TABLETEST-B.yaml, a.b/c/TABLETEST-x.yaml]
+        Non-yaml ignored | [a.a/c, a.a/d, a.b/c] | [a.a/TABLETEST-z.txt, a.a/c/TABLETEST-x.xml, a.a/d/TABLETEST-y.gif, a.b/TABLETEST-w.md, a.b/c/TABLETEST-x.adoc]      | []
         """)
     void shouldFindTableTestOutputFiles(@Scenario String scenario, List<String> directories, List<String> files, List<Path> expected, @TempDir Path tempDir) {
         directories.forEach(dir -> {
@@ -76,11 +76,11 @@ public class ReportTreeTest {
         Files.createDirectories(tempDir.resolve("pkg.T1/table2"));
         Files.createDirectories(tempDir.resolve("pkg.T2/table1"));
 
-        Files.createFile(tempDir.resolve("pkg.T1/T1Test.yaml"));
-        Files.createFile(tempDir.resolve("pkg.T1/table1/tabletest1.yaml"));
-        Files.createFile(tempDir.resolve("pkg.T1/table2/tabletest2.yaml"));
-        Files.createFile(tempDir.resolve("pkg.T2/T2Test.yaml"));
-        Files.createFile(tempDir.resolve("pkg.T2/table1/tabletest1.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T1/TABLETEST-T1Test.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T1/table1/TABLETEST-tabletest1.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T1/table2/TABLETEST-tabletest2.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T2/TABLETEST-T2Test.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T2/table1/TABLETEST-tabletest1.yaml"));
 
         Map<String, Object> tree = ReportTree.process(tempDir);
 
@@ -95,25 +95,25 @@ public class ReportTreeTest {
                   - type: index
                     name: T1Test
                     outPath: /t1test
-                    resource: pkg.T1/T1Test.yaml
+                    resource: pkg.T1/TABLETEST-T1Test.yaml
                     contents:
                       - type: table
                         name: tabletest1
                         outPath: /t1test/tabletest1
-                        resource: pkg.T1/table1/tabletest1.yaml
+                        resource: pkg.T1/table1/TABLETEST-tabletest1.yaml
                       - type: table
                         name: tabletest2
                         outPath: /t1test/tabletest2
-                        resource: pkg.T1/table2/tabletest2.yaml
+                        resource: pkg.T1/table2/TABLETEST-tabletest2.yaml
                   - type: index
                     name: T2Test
                     outPath: /t2test
-                    resource: pkg.T2/T2Test.yaml
+                    resource: pkg.T2/TABLETEST-T2Test.yaml
                     contents:
                       - type: table
                         name: tabletest1
                         outPath: /t2test/tabletest1
-                        resource: pkg.T2/table1/tabletest1.yaml
+                        resource: pkg.T2/table1/TABLETEST-tabletest1.yaml
                 """)
             );
     }
@@ -124,11 +124,11 @@ public class ReportTreeTest {
         Files.createDirectories(tempDir.resolve("com.pkg.products.T1/table2"));
         Files.createDirectories(tempDir.resolve("com.pkg.orders.T2/table1"));
 
-        Files.createFile(tempDir.resolve("com.pkg.products.T1/T1Test.yaml"));
-        Files.createFile(tempDir.resolve("com.pkg.products.T1/table1/tabletest1.yaml"));
-        Files.createFile(tempDir.resolve("com.pkg.products.T1/table2/tabletest2.yaml"));
-        Files.createFile(tempDir.resolve("com.pkg.orders.T2/T2Test.yaml"));
-        Files.createFile(tempDir.resolve("com.pkg.orders.T2/table1/tabletest1.yaml"));
+        Files.createFile(tempDir.resolve("com.pkg.products.T1/TABLETEST-T1Test.yaml"));
+        Files.createFile(tempDir.resolve("com.pkg.products.T1/table1/TABLETEST-tabletest1.yaml"));
+        Files.createFile(tempDir.resolve("com.pkg.products.T1/table2/TABLETEST-tabletest2.yaml"));
+        Files.createFile(tempDir.resolve("com.pkg.orders.T2/TABLETEST-T2Test.yaml"));
+        Files.createFile(tempDir.resolve("com.pkg.orders.T2/table1/TABLETEST-tabletest1.yaml"));
 
         Map<String, Object> tree = ReportTree.process(tempDir);
 
@@ -147,16 +147,16 @@ public class ReportTreeTest {
                       - type: index
                         name: T1Test
                         outPath: /products/t1test
-                        resource: com.pkg.products.T1/T1Test.yaml
+                        resource: com.pkg.products.T1/TABLETEST-T1Test.yaml
                         contents:
                           - type: table
                             name: tabletest1
                             outPath: /products/t1test/tabletest1
-                            resource: com.pkg.products.T1/table1/tabletest1.yaml
+                            resource: com.pkg.products.T1/table1/TABLETEST-tabletest1.yaml
                           - type: table
                             name: tabletest2
                             outPath: /products/t1test/tabletest2
-                            resource: com.pkg.products.T1/table2/tabletest2.yaml
+                            resource: com.pkg.products.T1/table2/TABLETEST-tabletest2.yaml
                   - type: index
                     name: orders
                     outPath: /orders
@@ -164,12 +164,12 @@ public class ReportTreeTest {
                       - type: index
                         name: T2Test
                         outPath: /orders/t2test
-                        resource: com.pkg.orders.T2/T2Test.yaml
+                        resource: com.pkg.orders.T2/TABLETEST-T2Test.yaml
                         contents:
                           - type: table
                             name: tabletest1
                             outPath: /orders/t2test/tabletest1
-                            resource: com.pkg.orders.T2/table1/tabletest1.yaml
+                            resource: com.pkg.orders.T2/table1/TABLETEST-tabletest1.yaml
                 """)
             );
     }
@@ -181,11 +181,11 @@ public class ReportTreeTest {
         Files.createDirectories(tempDir.resolve("no.oth.orders.T2/table1"));
         Files.createDirectories(tempDir.resolve("no.pkg.packages.T1/table2"));
 
-        Files.createFile(tempDir.resolve("no.pkg.products.T1/T1Test.yaml"));
-        Files.createFile(tempDir.resolve("no.pkg.products.T1/table1/tabletest1.yaml"));
-        Files.createFile(tempDir.resolve("no.pkg.packages.T1/table2/tabletest2.yaml"));
-        Files.createFile(tempDir.resolve("no.oth.orders.T2/T2Test.yaml"));
-        Files.createFile(tempDir.resolve("no.oth.orders.T2/table1/tabletest1.yaml"));
+        Files.createFile(tempDir.resolve("no.pkg.products.T1/TABLETEST-T1Test.yaml"));
+        Files.createFile(tempDir.resolve("no.pkg.products.T1/table1/TABLETEST-tabletest1.yaml"));
+        Files.createFile(tempDir.resolve("no.pkg.packages.T1/table2/TABLETEST-tabletest2.yaml"));
+        Files.createFile(tempDir.resolve("no.oth.orders.T2/TABLETEST-T2Test.yaml"));
+        Files.createFile(tempDir.resolve("no.oth.orders.T2/table1/TABLETEST-tabletest1.yaml"));
 
         Map<String, Object> tree = ReportTree.process(tempDir);
 
@@ -208,12 +208,12 @@ public class ReportTreeTest {
                           - type: index
                             name: T1Test
                             outPath: /pkg/products/t1test
-                            resource: no.pkg.products.T1/T1Test.yaml
+                            resource: no.pkg.products.T1/TABLETEST-T1Test.yaml
                             contents:
                               - type: table
                                 name: tabletest1
                                 outPath: /pkg/products/t1test/tabletest1
-                                resource: no.pkg.products.T1/table1/tabletest1.yaml
+                                resource: no.pkg.products.T1/table1/TABLETEST-tabletest1.yaml
                       - type: index
                         name: packages
                         outPath: /pkg/packages
@@ -225,7 +225,7 @@ public class ReportTreeTest {
                               - type: table
                                 name: tabletest2
                                 outPath: /pkg/packages/t1/tabletest2
-                                resource: no.pkg.packages.T1/table2/tabletest2.yaml
+                                resource: no.pkg.packages.T1/table2/TABLETEST-tabletest2.yaml
                   - type: index
                     name: oth
                     outPath: /oth
@@ -237,12 +237,12 @@ public class ReportTreeTest {
                           - type: index
                             name: T2Test
                             outPath: /oth/orders/t2test
-                            resource: no.oth.orders.T2/T2Test.yaml
+                            resource: no.oth.orders.T2/TABLETEST-T2Test.yaml
                             contents:
                               - type: table
                                 name: tabletest1
                                 outPath: /oth/orders/t2test/tabletest1
-                                resource: no.oth.orders.T2/table1/tabletest1.yaml
+                                resource: no.oth.orders.T2/table1/TABLETEST-tabletest1.yaml
                 """)
             );
     }
@@ -253,9 +253,9 @@ public class ReportTreeTest {
         Files.createDirectories(tempDir.resolve("pkg.T1/table2"));
         Files.createDirectories(tempDir.resolve("pkg.T2/table1"));
 
-        Files.createFile(tempDir.resolve("pkg.T1/table1/tabletest1.yaml"));
-        Files.createFile(tempDir.resolve("pkg.T1/table2/tabletest2.yaml"));
-        Files.createFile(tempDir.resolve("pkg.T2/table1/tabletest1.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T1/table1/TABLETEST-tabletest1.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T1/table2/TABLETEST-tabletest2.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T2/table1/TABLETEST-tabletest1.yaml"));
 
         Map<String, Object> tree = ReportTree.process(tempDir);
 
@@ -274,11 +274,11 @@ public class ReportTreeTest {
                       - type: table
                         name: tabletest1
                         outPath: /t1/tabletest1
-                        resource: pkg.T1/table1/tabletest1.yaml
+                        resource: pkg.T1/table1/TABLETEST-tabletest1.yaml
                       - type: table
                         name: tabletest2
                         outPath: /t1/tabletest2
-                        resource: pkg.T1/table2/tabletest2.yaml
+                        resource: pkg.T1/table2/TABLETEST-tabletest2.yaml
                   - type: index
                     name: T2
                     outPath: /t2
@@ -286,7 +286,7 @@ public class ReportTreeTest {
                       - type: table
                         name: tabletest1
                         outPath: /t2/tabletest1
-                        resource: pkg.T2/table1/tabletest1.yaml
+                        resource: pkg.T2/table1/TABLETEST-tabletest1.yaml
                 """)
             );
     }
@@ -297,10 +297,10 @@ public class ReportTreeTest {
         Files.createDirectories(tempDir.resolve("org.example.FirstTest/another_test(java.time.LocalDate, boolean)"));
         Files.createDirectories(tempDir.resolve("org.example.SecondTest/table test(java.lang.String, java.lang.Class)"));
 
-        Files.createFile(tempDir.resolve("org.example.FirstTest/table_test(java.util.List, org.example.Domain)/Leap Year Rules.yaml"));
-        Files.createFile(tempDir.resolve("org.example.FirstTest/another_test(java.time.LocalDate, boolean)/another_test (LocalDate, boolean).yaml"));
-        Files.createFile(tempDir.resolve("org.example.SecondTest/A Custom Test Title!.yaml"));
-        Files.createFile(tempDir.resolve("org.example.SecondTest/table test(java.lang.String, java.lang.Class)/table test (String, Class).yaml"));
+        Files.createFile(tempDir.resolve("org.example.FirstTest/table_test(java.util.List, org.example.Domain)/TABLETEST-Leap Year Rules.yaml"));
+        Files.createFile(tempDir.resolve("org.example.FirstTest/another_test(java.time.LocalDate, boolean)/TABLETEST-another_test.yaml"));
+        Files.createFile(tempDir.resolve("org.example.SecondTest/TABLETEST-A Custom Test Title!.yaml"));
+        Files.createFile(tempDir.resolve("org.example.SecondTest/table test(java.lang.String, java.lang.Class)/TABLETEST-table test.yaml"));
 
         Map<String, Object> tree = ReportTree.process(tempDir);
 
@@ -319,20 +319,20 @@ public class ReportTreeTest {
                       - type: table
                         name: Leap Year Rules
                         outPath: /firsttest/leap-year-rules
-                        resource: org.example.FirstTest/table_test(java.util.List, org.example.Domain)/Leap Year Rules.yaml
+                        resource: org.example.FirstTest/table_test(java.util.List, org.example.Domain)/TABLETEST-Leap Year Rules.yaml
                       - type: table
-                        name: another_test (LocalDate, boolean)
-                        outPath: /firsttest/another_test-localdate-boolean
-                        resource: org.example.FirstTest/another_test(java.time.LocalDate, boolean)/another_test (LocalDate, boolean).yaml
+                        name: another_test
+                        outPath: /firsttest/another_test
+                        resource: org.example.FirstTest/another_test(java.time.LocalDate, boolean)/TABLETEST-another_test.yaml
                   - type: index
                     name: A Custom Test Title!
                     outPath: /a-custom-test-title
-                    resource: org.example.SecondTest/A Custom Test Title!.yaml
+                    resource: org.example.SecondTest/TABLETEST-A Custom Test Title!.yaml
                     contents:
                       - type: table
-                        name: table test (String, Class)
-                        outPath: /a-custom-test-title/table-test-string-class
-                        resource: org.example.SecondTest/table test(java.lang.String, java.lang.Class)/table test (String, Class).yaml
+                        name: table test
+                        outPath: /a-custom-test-title/table-test
+                        resource: org.example.SecondTest/table test(java.lang.String, java.lang.Class)/TABLETEST-table test.yaml
                 """)
             );
     }
@@ -343,9 +343,9 @@ public class ReportTreeTest {
         Files.createDirectories(tempDir.resolve("pkg.T1/Nested/table2"));
         Files.createDirectories(tempDir.resolve("pkg.T1/Nested/DeeplyNested/table1"));
 
-        Files.createFile(tempDir.resolve("pkg.T1/table1/tabletest1.yaml"));
-        Files.createFile(tempDir.resolve("pkg.T1/Nested/table2/tabletest2.yaml"));
-        Files.createFile(tempDir.resolve("pkg.T1/Nested/DeeplyNested/table1/tabletest1.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T1/table1/TABLETEST-tabletest1.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T1/Nested/table2/TABLETEST-tabletest2.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T1/Nested/DeeplyNested/table1/TABLETEST-tabletest1.yaml"));
 
         Map<String, Object> tree = ReportTree.process(tempDir);
 
@@ -360,7 +360,7 @@ public class ReportTreeTest {
                   - type: table
                     name: tabletest1
                     outPath: /tabletest1
-                    resource: pkg.T1/table1/tabletest1.yaml
+                    resource: pkg.T1/table1/TABLETEST-tabletest1.yaml
                   - type: index
                     name: Nested
                     outPath: /nested
@@ -368,7 +368,7 @@ public class ReportTreeTest {
                       - type: table
                         name: tabletest2
                         outPath: /nested/tabletest2
-                        resource: pkg.T1/Nested/table2/tabletest2.yaml
+                        resource: pkg.T1/Nested/table2/TABLETEST-tabletest2.yaml
                       - type: index
                         name: DeeplyNested
                         outPath: /nested/deeplynested
@@ -376,7 +376,7 @@ public class ReportTreeTest {
                           - type: table
                             name: tabletest1
                             outPath: /nested/deeplynested/tabletest1
-                            resource: pkg.T1/Nested/DeeplyNested/table1/tabletest1.yaml
+                            resource: pkg.T1/Nested/DeeplyNested/table1/TABLETEST-tabletest1.yaml
                 """)
             );
     }

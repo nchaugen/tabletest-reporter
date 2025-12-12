@@ -81,7 +81,7 @@ class YamlRenderer {
     /**
      * Renders a test class index with references to all its table test files.
      */
-    String renderTestIndex(String title, String description, List<TableFileEntry> tableFileEntries) {
+    String renderClass(String title, String description, List<TableFileEntry> tableFileEntries) {
         LinkedHashMap<String, Object> content = new LinkedHashMap<>();
         if (title != null) content.put("title", title);
         if (description != null) content.put("description", description);
