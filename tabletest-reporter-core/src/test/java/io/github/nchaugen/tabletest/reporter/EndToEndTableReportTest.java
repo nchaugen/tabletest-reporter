@@ -57,7 +57,7 @@ public class EndToEndTableReportTest {
             .containsExactly(
                 "= ++example++",
                 "",
-                "* xref:./calendar-calculations[++calendar-calculations++]"
+                "* xref:./calendar-calculations[++Calendar++]"
             );
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.adoc")))
@@ -66,7 +66,7 @@ public class EndToEndTableReportTest {
                 "",
                 "Various rules for calendar calculations.",
                 "",
-                "* xref:./leap-year-rules.adoc[++leap-year-rules++]"
+                "* xref:./leap-year-rules.adoc[++Leap Year Rules with Single Example++]"
             );
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("leap-year-rules.adoc")))
@@ -102,7 +102,7 @@ public class EndToEndTableReportTest {
             .containsExactly(
                 "# example",
                 "",
-                "* [calendar-calculations](./calendar-calculations)"
+                "* [Calendar](./calendar-calculations)"
             );
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.md")))
@@ -111,7 +111,7 @@ public class EndToEndTableReportTest {
                 "",
                 "Various rules for calendar calculations.",
                 "",
-                "* [leap-year-rules](./leap-year-rules.md)"
+                "* [Leap Year Rules with Single Example](./leap-year-rules.md)"
             );
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("leap-year-rules.md")))

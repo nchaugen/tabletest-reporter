@@ -8,5 +8,5 @@
 {% endif %}
 
 {% for child in contents %}
-* [{{ child.name }}](./{{ child.path }}{{ child.type == "index" ? "" : ".md"  }})
+* [{{ child.title ? child.title : child.name }}](./{{ child.path }}{{ child.type == "index" ? "" : ".md"  }})
 {% endfor %}

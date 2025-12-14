@@ -7,5 +7,5 @@
 
 {% endif %}
 {% for child in contents %}
-* xref:./{{ child.path }}{{ child.type == "index" ? "" : ".adoc"  }}[++{{ child.name }}++]
+* xref:./{{ child.path }}{{ child.type == "index" ? "" : ".adoc"  }}[++{{ child.title ? child.title : child.name }}++]
 {% endfor %}

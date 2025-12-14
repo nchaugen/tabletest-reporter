@@ -45,6 +45,16 @@ public class TableTestReporter {
                     contentMap.put("name", content.get("name"));
                     contentMap.put("path", relativeOutPath.relativize(Path.of("./" + content.get("outPath"))));
                     contentMap.put("type", content.get("type"));
+
+                    Object resource = content.get("resource");
+                    if (resource != null) {
+                        Map<String, Object> childContext = loadContext(inDir, resource);
+                        Object title = childContext.get("title");
+                        if (title != null) {
+                            contentMap.put("title", title);
+                        }
+                    }
+
                     return contentMap;
                 }
             ).toList());
