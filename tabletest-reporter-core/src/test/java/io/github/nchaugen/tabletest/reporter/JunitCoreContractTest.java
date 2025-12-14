@@ -86,20 +86,57 @@ class JunitCoreContractTest {
             .toList();
 
         assertThat(yamlFiles)
-            .describedAs("Should create YAML files for nested classes")
-            .hasSizeGreaterThan(1);
+            .describedAs("Should create YAML files for nested classes and their tables")
+            .hasSize(4);
 
-        boolean hasNestedClassDirectory = Files.walk(tempDir)
-            .anyMatch(p -> p.toString().contains("Nested") || p.toString().contains("nested"));
+        long testClassFiles = yamlFiles.stream()
+            .filter(p -> p.getFileName().toString().contains("-class"))
+            .count();
 
-        assertThat(hasNestedClassDirectory)
-            .describedAs("Should create directories for nested classes")
+        assertThat(testClassFiles)
+            .describedAs("Should create test class YAML files (with '-class' suffix)")
+            .isEqualTo(2);
+
+        Path outerClassYaml = yamlFiles.stream()
+            .filter(p -> p.getFileName().toString().equals("TABLETEST-outer-test-class.yaml"))
+            .findFirst()
+            .orElse(null);
+
+        assertThat(outerClassYaml)
+            .describedAs("Should create test class YAML for outer class")
+            .isNotNull()
+            .exists();
+
+        Path nestedClassYaml = yamlFiles.stream()
+            .filter(p -> p.getFileName().toString().equals("TABLETEST-nested-test-class.yaml"))
+            .findFirst()
+            .orElse(null);
+
+        assertThat(nestedClassYaml)
+            .describedAs("Should create test class YAML for nested class")
+            .isNotNull()
+            .exists();
+
+        List<Path> allFiles = Files.walk(tempDir).toList();
+        boolean allFilesInRoot = yamlFiles.stream()
+            .allMatch(f -> f.getParent().equals(tempDir));
+
+        assertThat(allFilesInRoot)
+            .describedAs("Currently, junit extension creates all YAML files in root directory (no subdirectories). Files: " + yamlFiles)
             .isTrue();
 
         Map<String, Object> tree = ReportTree.process(tempDir);
         assertThat(tree)
             .describedAs("Core should handle nested class structure")
             .isNotNull();
+
+        assertThat(tree.get("type")).isEqualTo("index");
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> contents = (List<Map<String, Object>>) tree.get("contents");
+        assertThat(contents)
+            .describedAs("Should have nested structure in report tree")
+            .isNotEmpty();
     }
 
     @Test
