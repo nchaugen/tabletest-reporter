@@ -6,12 +6,10 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
-import static io.github.nchaugen.tabletest.reporter.junit.ColumnRoles.NO_ROLES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class YamlRendererTest {
 
-    private static final TableMetadata NO_METADATA = new StubTableMetadata(List.of());
     private final YamlRenderer renderer = new YamlRenderer();
 
     @Test
@@ -44,16 +42,17 @@ public class YamlRendererTest {
                   - "value": "2"
                 """,
             renderer.render(
-                new StubTableMetadata(
-                    "Table Title", """
-                    This is a description of the __table__.
-                    
-                    It can span multiple lines, and include lists and formatting:
-                    
-                    - List item 1
-                    - List item 2
-                    """
-                ).toTableTestData(
+                new TableMetadata()
+                    .withTitle("Table Title")
+                    .withDescription("""
+                        This is a description of the __table__.
+                        
+                        It can span multiple lines, and include lists and formatting:
+                        
+                        - List item 1
+                        - List item 2
+                        """)
+                    .toTableTestData(
                     TableParser.parse("""
                         a | b
                         1 | 2
@@ -92,7 +91,8 @@ public class YamlRendererTest {
                     - "expectation"
                 """,
             renderer.render(
-                new StubTableMetadata(new ColumnRoles(0, Set.of(2)))
+                new TableMetadata()
+                    .withColumnRoles(new ColumnRoles(0, Set.of(2)))
                     .toTableTestData(
                         TableParser.parse("""
                             scenario | input | output?
@@ -150,7 +150,8 @@ public class YamlRendererTest {
                     - "expectation"
                 """,
             renderer.render(
-                new StubTableMetadata(new ColumnRoles(0, Set.of(0, 1, 2, 3, 4)))
+                new TableMetadata()
+                    .withColumnRoles(new ColumnRoles(0, Set.of(0, 1, 2, 3, 4)))
                     .toTableTestData(
                         TableParser.parse("""
                             a? | b?      | c? | d? | e?
@@ -181,7 +182,7 @@ public class YamlRendererTest {
                   - "value": "\\t "
                 """,
             renderer.render(
-                NO_METADATA.toTableTestData(
+                new TableMetadata().toTableTestData(
                     TableParser.parse("""
                         a | b  | c d   | " e "     | f    | g
                           | "" | "   " | a bc  def | '\t' | '\t '
@@ -205,7 +206,7 @@ public class YamlRendererTest {
                   - "value": "Text with | character"
                 """,
             renderer.render(
-                NO_METADATA.toTableTestData(
+                new TableMetadata().toTableTestData(
                     TableParser.parse("""
                         ++  | +   | 'a|b'
                         "|" | '|' | "Text with | character"
@@ -234,7 +235,7 @@ public class YamlRendererTest {
                     - "|"
                 """,
             renderer.render(
-                NO_METADATA.toTableTestData(
+                new TableMetadata().toTableTestData(
                     TableParser.parse("""
                         a  | b         | c
                         [] | [1,2,3] | ['|', "|"]
@@ -260,7 +261,7 @@ public class YamlRendererTest {
                     - - []
                 """,
             renderer.render(
-                NO_METADATA.toTableTestData(
+                new TableMetadata().toTableTestData(
                     TableParser.parse("""
                         a  | b    | c
                         [] | [[]] | [[[]]]
@@ -289,7 +290,7 @@ public class YamlRendererTest {
                       - "%"
                 """,
             renderer.render(
-                NO_METADATA.toTableTestData(
+                new TableMetadata().toTableTestData(
                     TableParser.parse("""
                         a
                         [[1,2,3],[a,b,c],[#,$,%]]
@@ -317,7 +318,7 @@ public class YamlRendererTest {
                       "||": !!null "null"
                 """,
             renderer.render(
-                NO_METADATA.toTableTestData(
+                new TableMetadata().toTableTestData(
                     TableParser.parse("""
                         a  | b   | c
                         {} | {1,2,3} | {"||"}
@@ -352,7 +353,7 @@ public class YamlRendererTest {
                       : !!null "null"
                 """,
             renderer.render(
-                NO_METADATA.toTableTestData(
+                new TableMetadata().toTableTestData(
                     TableParser.parse("""
                         a
                         {{1,2,3}, {a,b,c}, {#,$,%}}
@@ -380,7 +381,7 @@ public class YamlRendererTest {
                       "b": "||"
                 """,
             renderer.render(
-                NO_METADATA.toTableTestData(
+                new TableMetadata().toTableTestData(
                     TableParser.parse("""
                         a   | b             | c
                         [:] | [a:1,b:2,c:3] | [b: "||"]
@@ -408,7 +409,7 @@ public class YamlRendererTest {
                         "B": "2"
                 """,
             renderer.render(
-                NO_METADATA.toTableTestData(
+                new TableMetadata().toTableTestData(
                     TableParser.parse("""
                         a                | b
                         [a: [:], b: [:]] | [a: [A: 1],b: [B: 2]]
@@ -441,7 +442,7 @@ public class YamlRendererTest {
                       : !!null "null"
                 """,
             renderer.render(
-                NO_METADATA.toTableTestData(
+                new TableMetadata().toTableTestData(
                     TableParser.parse("""
                         a                            | b
                         [a: [1, 2], b: {3, 4}, c: 5] | {[A: 1], [B: 2]}
@@ -455,12 +456,12 @@ public class YamlRendererTest {
     void shouldIncludeRowResultsInYaml() {
 
         String yaml = renderer.render(
-            new StubTableMetadata(
-                List.of(
+            new TableMetadata()
+                .withRowResults(List.of(
                     new RowResult(0, true, null, "test[1]"),
                     new RowResult(1, false, new AssertionError("Expected 4"), "test[2]")
-                )
-            ).toTableTestData(
+                ))
+                .toTableTestData(
                 TableParser.parse("""
                     a | b
                     1 | 2
@@ -491,44 +492,6 @@ public class YamlRendererTest {
         );
     }
 
-    private record StubTableMetadata(
-        String title,
-        String description,
-        ColumnRoles columnRoles,
-        List<RowResult> results
-    ) implements TableMetadata {
 
-        public StubTableMetadata(String title, String description) {
-            this(title, description, NO_ROLES, List.of());
-        }
-
-        public StubTableMetadata(ColumnRoles columnRoles) {
-            this(null, null, columnRoles, List.of());
-        }
-
-        public StubTableMetadata(List<RowResult> results) {
-            this(null, null, NO_ROLES, results);
-        }
-
-        @Override
-        public String title() {
-            return title;
-        }
-
-        @Override
-        public String description() {
-            return description;
-        }
-
-        @Override
-        public ColumnRoles columnRoles() {
-            return columnRoles;
-        }
-
-        @Override
-        public List<RowResult> rowResults() {
-            return results;
-        }
-    }
 
 }

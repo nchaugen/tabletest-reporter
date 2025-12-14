@@ -130,7 +130,7 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
     }
 
     private static void publishTable(ExtensionContext context, Table table, List<RowResult> rowResults) {
-        TableMetadata metadata = new JunitTableMetadata(context, table, rowResults);
+        TableMetadata metadata = JunitMetadataExtractor.extract(context, table, rowResults);
         TableTestData data = metadata.toTableTestData(table);
 
         publishFile(

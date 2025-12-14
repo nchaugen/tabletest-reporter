@@ -24,36 +24,43 @@ import java.util.stream.IntStream;
 
 import static java.util.Collections.unmodifiableSet;
 
-public interface TableMetadata {
-    String title();
-    String description();
-    ColumnRoles columnRoles();
-    default RowRoles rowRoles() {
-        return RowRoles.NO_ROLES;
-    }
-    default List<RowResult> rowResults() {
-        return List.of();
+public record TableMetadata(
+    String title,
+    String description,
+    ColumnRoles columnRoles,
+    RowRoles rowRoles,
+    List<RowResult> rowResults
+) {
+    public TableMetadata {
+        columnRoles = columnRoles != null ? columnRoles : ColumnRoles.NO_ROLES;
+        rowRoles = rowRoles != null ? rowRoles : RowRoles.NO_ROLES;
+        rowResults = rowResults != null ? rowResults : List.of();
     }
 
-    default Set<CellRole> columnRolesFor(int colIndex) {
-        return columnRoles().roleFor(colIndex);
+    public TableMetadata() {
+        this(null, null, null, null, null);
+    }
+
+    public TableMetadata withTitle(String title) {
+        return new TableMetadata(title, description, columnRoles, rowRoles, rowResults);
+    }
+
+    public TableMetadata withDescription(String description) {
+        return new TableMetadata(title, description, columnRoles, rowRoles, rowResults);
+    }
+
+    public TableMetadata withColumnRoles(ColumnRoles columnRoles) {
+        return new TableMetadata(title, description, columnRoles, rowRoles, rowResults);
+    }
+
+    public TableMetadata withRowResults(List<RowResult> rowResults) {
+        return new TableMetadata(title, description, columnRoles, rowRoles, rowResults);
     }
 
     /**
-     * Combines column roles and row roles into a single set for the given indices.
-     * Maintains order: column roles first (expectation, scenario), then row roles (passed, failed).
+     * Converts this metadata and the given table into structured data ready for serialization.
      */
-    default Set<CellRole> combineRoles(int colIndex, int rowIndex) {
-        Set<CellRole> combined = new java.util.LinkedHashSet<>();
-        combined.addAll(columnRoles().roleFor(colIndex));
-        combined.addAll(rowRoles().roleFor(rowIndex));
-        return unmodifiableSet(combined);
-    }
-
-    /**
-     * Converts this metadata and the given table into structured data ready for serialisation.
-     */
-    default TableTestData toTableTestData(Table table) {
+    public TableTestData toTableTestData(Table table) {
         List<CellData> headers = IntStream.range(0, table.columnCount())
             .mapToObj(i -> new CellData(table.header(i), columnRolesFor(i)))
             .toList();
@@ -70,11 +77,26 @@ public interface TableMetadata {
             ))
             .toList();
 
-        List<RowResultData> rowResultData = rowResults().stream()
+        List<RowResultData> rowResultData = rowResults.stream()
             .map(RowResultData::from)
             .toList();
 
-        return new TableTestData(title(), description(), headers, rowData, rowResultData);
+        return new TableTestData(title, description, headers, rowData, rowResultData);
+    }
+
+    private Set<CellRole> columnRolesFor(int colIndex) {
+        return columnRoles.roleFor(colIndex);
+    }
+
+    /**
+     * Combines column roles and row roles into a single set for the given indices.
+     * Maintains order: column roles first (expectation, scenario), then row roles (passed, failed).
+     */
+    private Set<CellRole> combineRoles(int colIndex, int rowIndex) {
+        Set<CellRole> combined = new java.util.LinkedHashSet<>();
+        combined.addAll(columnRoles.roleFor(colIndex));
+        combined.addAll(rowRoles.roleFor(rowIndex));
+        return unmodifiableSet(combined);
     }
 
 }

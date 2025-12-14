@@ -26,51 +26,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-class JunitTableMetadata implements TableMetadata {
-    private final String title;
-    private final String description;
-    private final ColumnRoles columnRoles;
-    private final RowRoles rowRoles;
-    private final List<RowResult> rowResults;
+class JunitMetadataExtractor {
 
-    public JunitTableMetadata(ExtensionContext context, Table table, List<RowResult> rowResults) {
-        this.title = context.getDisplayName();
-        this.description = findTableDescription(context);
-        this.columnRoles = extractColumnRoles(context, table);
-        this.rowResults = rowResults != null ? rowResults : List.of();
-        this.rowRoles = new RowRoles(table, this.rowResults, columnRoles.scenarioIndex());
+    static TableMetadata extract(ExtensionContext context, Table table, List<RowResult> rowResults) {
+        String title = context.getDisplayName();
+        String description = findTableDescription(context);
+        ColumnRoles columnRoles = extractColumnRoles(context, table);
+        List<RowResult> results = rowResults != null ? rowResults : List.of();
+        RowRoles rowRoles = new RowRoles(table, results, columnRoles.scenarioIndex());
+        
+        return new TableMetadata(title, description, columnRoles, rowRoles, results);
     }
 
-    private ColumnRoles extractColumnRoles(ExtensionContext context, Table table) {
+    private static ColumnRoles extractColumnRoles(ExtensionContext context, Table table) {
         return new ColumnRoles(
             findScenarioIndex(context, table),
             findExpectationIndices(table)
         );
-    }
-
-    @Override
-    public ColumnRoles columnRoles() {
-        return columnRoles;
-    }
-
-    @Override
-    public String title() {
-        return title;
-    }
-
-    @Override
-    public String description() {
-        return description;
-    }
-
-    @Override
-    public RowRoles rowRoles() {
-        return rowRoles;
-    }
-
-    @Override
-    public List<RowResult> rowResults() {
-        return rowResults;
     }
 
     private static int findScenarioIndex(ExtensionContext context, Table table) {
