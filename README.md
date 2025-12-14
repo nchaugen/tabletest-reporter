@@ -18,7 +18,9 @@ Popular frameworks like Spring Boot (3.5.0+) and Quarkus (3.21.2+) include compa
 
 ## Step 1: Add the JUnit Extension
 
-Add the TableTest Reporter JUnit extension to your test dependencies. This extension automatically collects test information when you run your tests.
+Add the TableTest Reporter JUnit extension to your test dependencies and enable JUnit's automatic extension detection.
+
+### Add Dependency
 
 **Maven:**
 ```xml
@@ -35,7 +37,59 @@ Add the TableTest Reporter JUnit extension to your test dependencies. This exten
 testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.1.1")
 ```
 
-The extension activates automatically via JUnit's ServiceLoader mechanism—no configuration or annotations required.
+### Enable Automatic Extension Detection
+
+The extension uses JUnit's ServiceLoader mechanism to activate automatically. You must configure JUnit to enable automatic extension detection.
+
+**Recommended: JUnit Platform Properties**
+
+Create `src/test/resources/junit-platform.properties`:
+
+```properties
+junit.jupiter.extensions.autodetection.enabled=true
+```
+
+This approach works with any build tool (Maven, Gradle, etc.) and keeps JUnit configuration with your test code.
+
+**Alternative: Build Tool Configuration**
+
+If you prefer to configure this in your build file:
+
+<details>
+<summary>Maven (Surefire Plugin)</summary>
+
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>3.5.2</version>
+      <configuration>
+        <properties>
+          <configurationParameters>
+            junit.jupiter.extensions.autodetection.enabled=true
+          </configurationParameters>
+        </properties>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+```
+</details>
+
+<details>
+<summary>Gradle (Test Task)</summary>
+
+```kotlin
+tasks.test {
+    useJUnitPlatform()
+    systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
+}
+```
+</details>
+
+With this configuration, the extension activates automatically—no test annotations required.
 
 ## Step 2: Write Your Tests
 
