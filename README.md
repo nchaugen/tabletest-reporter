@@ -1,50 +1,24 @@
 # TableTest Reporter
 
-TableTest Reporter generates documentation from [TableTest](https://github.com/nchaugen/tabletest) results (YAML emitted by the JUnit `TableTest` extension). It renders AsciiDoc or Markdown files that you can publish with your documentation tooling.
+TableTest Reporter generates documentation from your [TableTest](https://github.com/nchaugen/tabletest) tests. It turns your test tables into readable AsciiDoc or Markdown documentation that you can publish alongside your project docs.
 
+## Quick Start
 
-## Features
-
-- Generates documentation for TableTest methods and test classes
-- Produces index per package and test class with navigation
-- Built-in AsciiDoc and Markdown output formats
-- Extensible templates (Pebble)
-- Thin runners: CLI, Maven plugin, Gradle plugin
-
+1. Add the JUnit extension to your test dependencies
+2. Run your tests (YAML files are generated automatically)
+3. Run the reporter plugin to generate documentation
 
 ## Requirements
 
 - Java 21+
 - JUnit 5.12+
+- [TableTest](https://github.com/nchaugen/tabletest) for your tests
 
-Popular frameworks SpringBoot and Quarkus includes JUnit in their distributions. SpringBoot versions from 3.5.0 and Quarkus versions from 3.21.2 include a recent enough JUnit version for TableTest-Reporter to work.
+Popular frameworks like Spring Boot (3.5.0+) and Quarkus (3.21.2+) include compatible JUnit versions.
 
-## Modules
+## Step 1: Add the JUnit Extension
 
-- `tabletest-reporter-junit` – JUnit extension to collect TableTest information during test runs
-- `tabletest-reporter-core` – core rendering engine (pure Java library)
-- `tabletest-reporter-cli` – command-line runner (fat JAR)
-- `tabletest-reporter-maven-plugin` – Maven plugin goal `tabletest-reporter:report`
-- `tabletest-reporter-gradle-plugin` – Gradle plugin (standalone subproject)
-
-
-## Build
-
-Build core, CLI, and Maven plugin with Maven:
-
-```
-mvn -q clean install
-```
-
-This also installs the artifacts to your local Maven repository for use by the Gradle plugin.
-
-## Collecting TableTest Results and Metadata
-
-The `tabletest-reporter-junit` module is a JUnit extension that automatically publishes YAML files during test execution. It collects TableTest results and metadata, making them available for report generation by the CLI, Maven plugin, or Gradle plugin.
-
-### Installation
-
-Add the dependency to your test scope:
+Add the TableTest Reporter JUnit extension to your test dependencies. This extension automatically collects test information when you run your tests.
 
 **Maven:**
 ```xml
@@ -61,30 +35,12 @@ Add the dependency to your test scope:
 testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.1.1")
 ```
 
-### Automatic Activation
+The extension activates automatically via JUnit's ServiceLoader mechanism—no configuration or annotations required.
 
-The extension is automatically activated via JUnit's ServiceLoader mechanism when present on the test classpath. No explicit configuration or annotations are required.
+## Step 2: Write Your Tests
 
-When you run your tests, the extension publishes YAML files to `<buildDir>/junit-jupiter/` containing:
+Write your TableTest tests as usual. The reporter uses standard JUnit annotations to enhance the generated documentation:
 
-- Test metadata (titles and descriptions)
-- Table structure (headers and rows)
-- Column roles (scenario, expectation)
-- Row execution results (pass/fail)
-
-### Metadata Collection
-
-The extension collects the following metadata:
-
-**Titles:** Use JUnit's standard `@DisplayName` annotation on test classes and methods. These become titles in the generated documentation.
-
-**Descriptions:** Use the TableTest `@Description` annotation to provide detailed explanations for test classes and methods.
-
-**Column Roles:**
-- Scenario columns (either implicitly defined or explictly marked with the `@Scenario` annotation)
-- Expectation columns are detected when headers end with `?`
-
-**Example:**
 ```java
 @DisplayName("User Authentication")
 @Description("Tests for user login and authentication scenarios")
@@ -103,86 +59,36 @@ class AuthenticationTest {
 }
 ```
 
-### Filename Conventions
+**What gets collected:**
+- **Titles:** From `@DisplayName` annotations (class and method level)
+- **Descriptions:** From TableTest `@Description` annotations
+- **Table structure:** Headers, rows, and column roles (scenario vs expectation columns)
+- **Test results:** Pass/fail status for each row
 
-The extension transforms test class and method names into web-friendly kebab-case filenames. The transformation strategy is automatically detected based on the naming convention used:
+## Step 3: Run Your Tests
 
-**Names with spaces** (from `@DisplayName` or Kotlin backtick names):
-- Converted using slugify (spaces and special characters to hyphens)
-- Example: `"Leap Year Rules"` → `leap-year-rules.yaml`
-- Example: `"A Custom Test Title!"` → `a-custom-test-title.yaml`
+Run your tests normally. The extension automatically generates YAML files in `<buildDir>/junit-jupiter/`:
 
-**Names with underscores** (snake_case):
-- Underscores converted to hyphens
-- Example: `leap_year_rules` → `leap-year-rules.yaml`
-- Example: `test_method_name` → `test-method-name.yaml`
+```bash
+# Maven
+mvn test
 
-**Names without spaces or underscores** (camelCase/PascalCase):
-- Converted to kebab-case with special acronym handling
-- Example: `LeapYearRules` → `leap-year-rules.yaml`
-- Example: `XMLParser` → `xml-parser.yaml`
-- Example: `parseHTMLDocument` → `parse-html-document.yaml`
-
-**Mixed conventions**:
-- Example: `test_method with spaces` → `test-method-with-spaces.yaml`
-- Example: `Test_Method_Name` → `test-method-name.yaml`
-
-All generated YAML files are prefixed with `TABLETEST-` for easy identification.
-
-### Integration Workflow
-
-1. **Write tests** with `@TableTest` annotations
-2. **Run tests** – YAML files are automatically generated
-3. **Generate reports** using one of:
-   - CLI: `java -jar tabletest-reporter-cli.jar`
-   - Maven: `mvn tabletest-reporter:report`
-   - Gradle: `./gradlew reportTableTests`
-
-
-## CLI usage
-
-Fat JAR path after build: `tabletest-reporter-cli/target/tabletest-reporter-cli-0.1.0-SNAPSHOT.jar`
-
-Defaults:
-- format: `asciidoc`
-- input: `<buildDir>/junit-jupiter` (prefers `./target/junit-jupiter`, else `./build/junit-jupiter`)
-- output: `<buildDir>/generated-docs/tabletest` (mirrors the same build dir)
-
-Run with defaults (from a project where TableTest has produced YAML under the build directory):
-
-```
-java -jar tabletest-reporter-cli/target/tabletest-reporter-cli-0.1.0-SNAPSHOT.jar
+# Gradle
+./gradlew test
 ```
 
-Explicit arguments:
+Each TableTest method produces a YAML file with prefix `TABLETEST-`. File names are web-friendly kebab-case versions of your test names:
+- `"Login Validation"` → `TABLETEST-login-validation.yaml`
+- `testUserPermissions` → `TABLETEST-test-user-permissions.yaml`
+- `leap_year_rules` → `TABLETEST-leap-year-rules.yaml`
 
-```
-java -jar tabletest-reporter-cli/target/tabletest-reporter-cli-0.1.0-SNAPSHOT.jar \
-  -f markdown \
-  -i target/junit-jupiter \
-  -o target/generated-docs/tabletest
-```
+## Step 4: Generate Documentation
 
-Exit codes:
-- `0` success
-- `2` usage error (unknown format or missing input directory)
-- `1` unexpected runtime failure
+Choose your build tool and run the reporter to generate AsciiDoc or Markdown documentation.
 
+### Maven Plugin
 
-## Maven plugin usage
-
-Ad-hoc goal invocation (defaults shown below):
-
-```
-mvn io.github.nchaugen:tabletest-reporter-maven-plugin:report
-```
-
-Properties (all optional):
-- `-Dtabletest.report.format=asciidoc|markdown` (default: `asciidoc`)
-- `-Dtabletest.report.inputDirectory=...` (default: `${project.build.directory}/junit-jupiter`)
-- `-Dtabletest.report.outputDirectory=...` (default: `${project.build.directory}/generated-docs/tabletest`)
-
-POM configuration example (bind to `site` or run on demand):
+Add the plugin to your `pom.xml`:
 
 ```xml
 <build>
@@ -198,72 +104,114 @@ POM configuration example (bind to `site` or run on demand):
           </goals>
         </execution>
       </executions>
-      <!-- Optional overrides -->
-      <configuration>
-        <format>asciidoc</format>
-        <inputDirectory>${project.build.directory}/junit-jupiter</inputDirectory>
-        <outputDirectory>${project.build.directory}/generated-docs/tabletest</outputDirectory>
-      </configuration>
     </plugin>
   </plugins>
-  
 </build>
 ```
 
-
-## Gradle plugin usage
-
-The Gradle plugin lives in `tabletest-reporter-gradle-plugin` as a standalone subproject.
-
-Publish locally (once per version):
-
-```
-# From repo root – ensure core is installed so Gradle can resolve it
-mvn -q -DskipTests install
-
-# From the Gradle plugin subproject
-cd tabletest-reporter-gradle-plugin
-gradle publishToMavenLocal
+Run the plugin:
+```bash
+mvn tabletest-reporter:report
 ```
 
-In a consumer Gradle project:
+Documentation is generated to `target/generated-docs/tabletest/`.
 
-`settings.gradle.kts`:
-
+**Configuration options:**
+```xml
+<configuration>
+  <format>asciidoc</format>  <!-- or 'markdown' -->
+  <inputDirectory>${project.build.directory}/junit-jupiter</inputDirectory>
+  <outputDirectory>${project.build.directory}/generated-docs/tabletest</outputDirectory>
+</configuration>
 ```
-pluginManagement {
-  repositories { mavenLocal(); gradlePluginPortal() }
-}
+
+Or use command-line properties:
+```bash
+mvn tabletest-reporter:report -Dtabletest.report.format=markdown
 ```
 
-`build.gradle.kts`:
+### Gradle Plugin
 
-```
+Add the plugin to your `build.gradle.kts`:
+
+```kotlin
 plugins {
   id("io.github.nchaugen.tabletest-reporter") version "0.1.1"
 }
-
-tableTestReporter {
-  // optional overrides
-  // format.set("markdown")
-  // inputDir.set(layout.buildDirectory.dir("junit-jupiter"))
-  // outputDir.set(layout.buildDirectory.dir("generated-docs/tabletest"))
-}
 ```
 
-Run:
-
-```
+Run the task:
+```bash
 ./gradlew reportTableTests
 ```
 
-Defaults:
-- format: `asciidoc`
-- input: `build/junit-jupiter`
-- output: `build/generated-docs/tabletest`
+Documentation is generated to `build/generated-docs/tabletest/`.
 
+**Configuration options:**
+```kotlin
+tableTestReporter {
+  format.set("markdown")  // default: "asciidoc"
+  inputDir.set(layout.buildDirectory.dir("junit-jupiter"))
+  outputDir.set(layout.buildDirectory.dir("generated-docs/tabletest"))
+}
+```
 
-## Templates
+## Output Structure
 
-TableTest Reporter uses [Pebble Templates](https://pebbletemplates.io) as the templating engine. You can tweak the provided AsciiDoc/Markdown templates or supply your own to customize the output.
+The reporter generates documentation that mirrors your test package structure:
+
+```
+generated-docs/tabletest/
+├── index.adoc                           # Root index with all packages
+├── com/
+│   └── example/
+│       ├── index.adoc                   # Package index
+│       ├── authentication-test.adoc     # Test class index
+│       ├── login-validation.adoc        # Individual test method
+│       └── password-reset.adoc
+```
+
+**Generated files:**
+- **Root index:** Lists all packages with links
+- **Package indexes:** List all test classes in that package
+- **Test class indexes:** List all test methods in that class
+- **Test method pages:** Full table with test data and results
+
+File names are kebab-case versions of your test class and method names, making them URL-friendly for web publishing.
+
+## Publishing Your Documentation
+
+The generated AsciiDoc or Markdown files can be published with standard documentation tools:
+
+- **AsciiDoc:** Use Asciidoctor Maven/Gradle plugins to convert to HTML
+- **Markdown:** Use your static site generator (Jekyll, Hugo, MkDocs, etc.)
+- **GitHub Pages:** Commit the generated files to your docs directory
+
+---
+
+## Advanced Topics
+
+### For Plugin Developers
+
+**CLI Usage:**
+
+The CLI can be used standalone if you're building custom tooling:
+
+```bash
+java -jar tabletest-reporter-cli.jar \
+  -f markdown \
+  -i target/junit-jupiter \
+  -o target/generated-docs/tabletest
+```
+
+**Building from Source:**
+
+```bash
+# Build core, CLI, and Maven plugin
+mvn clean install
+
+# Build Gradle plugin (separate subproject)
+cd tabletest-reporter-gradle-plugin
+gradle publishToMavenLocal
+```
 
