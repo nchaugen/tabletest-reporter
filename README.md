@@ -103,6 +103,32 @@ class AuthenticationTest {
 }
 ```
 
+### Filename Conventions
+
+The extension transforms test class and method names into web-friendly kebab-case filenames. The transformation strategy is automatically detected based on the naming convention used:
+
+**Names with spaces** (from `@DisplayName` or Kotlin backtick names):
+- Converted using slugify (spaces and special characters to hyphens)
+- Example: `"Leap Year Rules"` → `leap-year-rules.yaml`
+- Example: `"A Custom Test Title!"` → `a-custom-test-title.yaml`
+
+**Names with underscores** (snake_case):
+- Underscores converted to hyphens
+- Example: `leap_year_rules` → `leap-year-rules.yaml`
+- Example: `test_method_name` → `test-method-name.yaml`
+
+**Names without spaces or underscores** (camelCase/PascalCase):
+- Converted to kebab-case with special acronym handling
+- Example: `LeapYearRules` → `leap-year-rules.yaml`
+- Example: `XMLParser` → `xml-parser.yaml`
+- Example: `parseHTMLDocument` → `parse-html-document.yaml`
+
+**Mixed conventions**:
+- Example: `test_method with spaces` → `test-method-with-spaces.yaml`
+- Example: `Test_Method_Name` → `test-method-name.yaml`
+
+All generated YAML files are prefixed with `TABLETEST-` for easy identification.
+
 ### Integration Workflow
 
 1. **Write tests** with `@TableTest` annotations
