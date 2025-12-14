@@ -127,4 +127,100 @@ public class EndToEndTableReportTest {
             );
     }
 
+    @Test
+    void should_render_failed_rows_section_in_asciidoc() throws IOException {
+        Path testDir = Files.createDirectory(tempDir.resolve("with-failures"));
+        Path inDirWithFailures = Files.createDirectory(testDir.resolve("in"));
+        Path testClassDir = Files.createDirectory(inDirWithFailures.resolve("org.example.MathTest"));
+        Files.writeString(testClassDir.resolve("TABLETEST-math-test.yaml"), """
+            "title": "Math Test"
+            """);
+        Path tableDir = Files.createDirectory(testClassDir.resolve("addition(int, int, int)"));
+        Files.writeString(tableDir.resolve("TABLETEST-addition.yaml"), """
+            "title": "Addition Test"
+            "description": "Testing addition with some failures."
+            "headers":
+              - "value": "a"
+              - "value": "b"
+              - "value": "sum?"
+            "rows":
+                - - "value": "1"
+                  - "value": "1"
+                  - "value": "2"
+                - - "value": "2"
+                  - "value": "2"
+                  - "value": "5"
+                - - "value": "3"
+                  - "value": "3"
+                  - "value": "6"
+            "rowResults":
+              - "rowIndex": !!int "1"
+                "passed": !!bool "true"
+                "displayName": "[1] 1 + 1 = 2"
+              - "rowIndex": !!int "2"
+                "passed": !!bool "false"
+                "displayName": "[2] 2 + 2 = 5"
+                "errorMessage": "expected: <5> but was: <4>"
+              - "rowIndex": !!int "3"
+                "passed": !!bool "true"
+                "displayName": "[3] 3 + 3 = 6"
+            """);
+        Path outDirWithFailures = Files.createDirectory(testDir.resolve("out"));
+
+        new TableTestReporter().report(ASCIIDOC, inDirWithFailures, outDirWithFailures);
+
+        assertThat(Files.readString(outDirWithFailures.resolve("math-test/addition.adoc")))
+            .contains("=== Failed Rows")
+            .contains("*[2] 2 + 2 = 5*")
+            .contains("expected: <5> but was: <4>");
+    }
+
+    @Test
+    void should_render_failed_rows_section_in_markdown() throws IOException {
+        Path testDir = Files.createDirectory(tempDir.resolve("with-failures-md"));
+        Path inDirWithFailures = Files.createDirectory(testDir.resolve("in"));
+        Path testClassDir = Files.createDirectory(inDirWithFailures.resolve("org.example.MathTest"));
+        Files.writeString(testClassDir.resolve("TABLETEST-math-test.yaml"), """
+            "title": "Math Test"
+            """);
+        Path tableDir = Files.createDirectory(testClassDir.resolve("addition(int, int, int)"));
+        Files.writeString(tableDir.resolve("TABLETEST-addition.yaml"), """
+            "title": "Addition Test"
+            "description": "Testing addition with some failures."
+            "headers":
+              - "value": "a"
+              - "value": "b"
+              - "value": "sum?"
+            "rows":
+                - - "value": "1"
+                  - "value": "1"
+                  - "value": "2"
+                - - "value": "2"
+                  - "value": "2"
+                  - "value": "5"
+                - - "value": "3"
+                  - "value": "3"
+                  - "value": "6"
+            "rowResults":
+              - "rowIndex": !!int "1"
+                "passed": !!bool "true"
+                "displayName": "[1] 1 + 1 = 2"
+              - "rowIndex": !!int "2"
+                "passed": !!bool "false"
+                "displayName": "[2] 2 + 2 = 5"
+                "errorMessage": "expected: <5> but was: <4>"
+              - "rowIndex": !!int "3"
+                "passed": !!bool "true"
+                "displayName": "[3] 3 + 3 = 6"
+            """);
+        Path outDirWithFailures = Files.createDirectory(testDir.resolve("out"));
+
+        new TableTestReporter().report(MARKDOWN, inDirWithFailures, outDirWithFailures);
+
+        assertThat(Files.readString(outDirWithFailures.resolve("math-test/addition.md")))
+            .contains("### Failed Rows")
+            .contains("**[2] 2 + 2 = 5**")
+            .contains("expected: <5> but was: <4>");
+    }
+
 }

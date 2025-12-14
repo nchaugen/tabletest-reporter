@@ -15,3 +15,26 @@
 |{% for cell in row %} {{ renderCell(cell) }} |{% endfor %}
 
 {% endfor %}
+{% if rowResults is not empty %}
+{% set hasFailures = false %}
+{% for result in rowResults %}
+{% if not result.passed %}
+{% set hasFailures = true %}
+{% endif %}
+{% endfor %}
+{% if hasFailures %}
+
+### Failed Rows
+
+{% for result in rowResults %}
+{% if not result.passed %}
+**{{ result.displayName }}**
+
+```
+{{ result.errorMessage }}
+```
+
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endif %}
