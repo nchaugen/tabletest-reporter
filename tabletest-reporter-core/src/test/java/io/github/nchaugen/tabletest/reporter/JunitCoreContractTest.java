@@ -140,6 +140,59 @@ class JunitCoreContractTest {
     }
 
     @Test
+    void shouldVerifyOutputDirectoryCreatorBehavior() throws IOException {
+        Path customOutputDir = tempDir.resolve("with-custom-creator");
+        Files.createDirectories(customOutputDir);
+
+        OutputDirectoryCreator creatorThatCreatesSubdirectories = new OutputDirectoryCreator() {
+            @Override
+            public Path getRootDirectory() {
+                return customOutputDir;
+            }
+
+            @Override
+            public Path createOutputDirectory(TestDescriptor testDescriptor) throws IOException {
+                String uniqueId = testDescriptor.getUniqueId().toString();
+                String sanitized = uniqueId.replaceAll("[^a-zA-Z0-9]", "_");
+                Path subdir = customOutputDir.resolve(sanitized);
+                return Files.createDirectories(subdir);
+            }
+        };
+
+        EngineTestKit
+            .engine("junit-jupiter")
+            .selectors(selectClass(OuterTestClass.class))
+            .configurationParameter("junit.platform.output.dir", customOutputDir.toString())
+            .enableImplicitConfigurationParameters(true)
+            .outputDirectoryCreator(creatorThatCreatesSubdirectories)
+            .execute();
+
+        List<Path> yamlFiles = Files.walk(customOutputDir)
+            .filter(p -> p.toString().endsWith(".yaml"))
+            .toList();
+
+        List<Path> directories = Files.walk(customOutputDir)
+            .filter(Files::isDirectory)
+            .filter(p -> !p.equals(customOutputDir))
+            .toList();
+
+        assertThat(yamlFiles)
+            .describedAs("Should create YAML files")
+            .isNotEmpty();
+
+        assertThat(directories)
+            .describedAs("OutputDirectoryCreator that creates subdirectories will have files in subdirectories")
+            .isNotEmpty();
+
+        boolean allFilesInSubdirectories = yamlFiles.stream()
+            .noneMatch(f -> f.getParent().equals(customOutputDir));
+
+        assertThat(allFilesInSubdirectories)
+            .describedAs("When OutputDirectoryCreator creates subdirectories, files go into those subdirectories")
+            .isTrue();
+    }
+
+    @Test
     void shouldPreserveFilenameTransformations() throws IOException {
         EngineTestKit
             .engine("junit-jupiter")
