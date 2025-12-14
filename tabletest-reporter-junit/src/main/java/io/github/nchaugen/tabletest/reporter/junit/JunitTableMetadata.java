@@ -18,6 +18,7 @@ package io.github.nchaugen.tabletest.reporter.junit;
 import io.github.nchaugen.tabletest.junit.Description;
 import io.github.nchaugen.tabletest.junit.Scenario;
 import io.github.nchaugen.tabletest.parser.Table;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.util.List;
@@ -29,7 +30,7 @@ import java.util.stream.IntStream;
 class JunitMetadataExtractor {
 
     static TableMetadata extract(ExtensionContext context, Table table, List<RowResult> rowResults) {
-        String title = context.getDisplayName();
+        String title = getTitle(context);
         String description = findTableDescription(context);
         ColumnRoles columnRoles = extractColumnRoles(context, table);
         List<RowResult> results = rowResults != null ? rowResults : List.of();
@@ -37,6 +38,19 @@ class JunitMetadataExtractor {
 
         return new TableMetadata(title, description, columnRoles, rowRoles, results);
     }
+
+    private static String getTitle(ExtensionContext context) {
+        return context.getTestMethod()
+            .map(testMethod -> {
+                if (testMethod.isAnnotationPresent(DisplayName.class)) {
+                    return context.getDisplayName();
+                } else {
+                    return TitleTransformer.toTitle(testMethod.getName());
+                }
+            })
+            .orElse(context.getDisplayName());
+    }
+
 
     private static ColumnRoles extractColumnRoles(ExtensionContext context, Table table) {
         return new ColumnRoles(
