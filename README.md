@@ -163,21 +163,23 @@ The reporter generates documentation that mirrors your test package structure:
 ```
 generated-docs/tabletest/
 ├── index.adoc                           # Root index with all packages
-├── com/
-│   └── example/
-│       ├── index.adoc                   # Package index
-│       ├── authentication-test.adoc     # Test class index
-│       ├── login-validation.adoc        # Individual test method
-│       └── password-reset.adoc
+└── com/
+    └── example/
+        ├── index.adoc                   # Package index
+        └── authentication-test/         # Test class directory
+            ├── index.adoc               # Test class index
+            ├── login-validation.adoc    # Individual test method
+            └── password-reset.adoc      # Individual test method
 ```
 
-**Generated files:**
+**Generated structure:**
 - **Root index:** Lists all packages with links
-- **Package indexes:** List all test classes in that package
-- **Test class indexes:** List all test methods in that class
-- **Test method pages:** Full table with test data and results
+- **Package indexes:** List all test classes in that package (each in `index.adoc`)
+- **Test class directories:** Each test class gets its own directory
+- **Test class index:** Lists all test methods in that class (`index.adoc` in the class directory)
+- **Test method pages:** Individual files with full table data and results
 
-File names are kebab-case versions of your test class and method names, making them URL-friendly for web publishing.
+Directory and file names are kebab-case versions of your test class and method names, making them URL-friendly for web publishing.
 
 ## Publishing Your Documentation
 
