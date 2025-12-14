@@ -19,32 +19,32 @@ import io.github.nchaugen.tabletest.parser.Table;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * Tracks pass/fail status for table rows based on test execution results.
+ * Determines pass/fail roles for table rows based on test execution results.
  * Handles both regular rows and rows with set expansion, where multiple test results
  * correspond to a single table row.
  */
 public class RowRoles {
-    public static final RowRoles NO_ROLES = new RowRoles(null, List.of());
+    public static final RowRoles NO_ROLES = new RowRoles();
 
-    private static final Pattern DISPLAY_NAME_PATTERN = Pattern.compile("^\\[(\\d+)]\\s+(.*)$");
-
-    private final Table table;
+    private final Optional<Table> table;
     private final List<RowResult> rowResults;
-    private final int scenarioIndex;
+    private final ColumnRoles columnRoles;
 
-    public RowRoles(Table table, List<RowResult> rowResults) {
-        this(table, rowResults, -1);
+    private RowRoles() {
+        this.table = Optional.empty();
+        this.rowResults = List.of();
+        this.columnRoles = ColumnRoles.NO_ROLES;
     }
 
-    public RowRoles(Table table, List<RowResult> rowResults, int scenarioIndex) {
-        this.table = table;
+    public RowRoles(Table table, List<RowResult> rowResults, ColumnRoles columnRoles) {
+        this.table = Optional.of(table);
         this.rowResults = rowResults;
-        this.scenarioIndex = scenarioIndex;
+        this.columnRoles = columnRoles;
     }
 
     /**
@@ -56,17 +56,18 @@ public class RowRoles {
      * @return Set containing PASSED or FAILED role, or empty set if no results found
      */
     public Set<CellRole> roleFor(int rowIndex) {
-        if (table == null || rowResults.isEmpty()) {
+        if (table.isEmpty() || rowResults.isEmpty()) {
             return Collections.emptySet();
         }
 
-        // Get the expected row display name pattern from the table
-        String expectedDisplayNamePattern = buildExpectedDisplayName(rowIndex);
-
-        // Find all results that match this row (handles set expansion)
-        List<RowResult> matchingResults = rowResults.stream()
-            .filter(result -> matchesRow(result.displayName(), expectedDisplayNamePattern, rowIndex))
-            .toList();
+        // Find all test results that match this row
+        OptionalInt scenarioIndex = columnRoles.scenarioIndex();
+        List<RowResult> matchingResults = RowResultMatcher.findMatchingResults(
+            rowIndex,
+            table.get(),
+            scenarioIndex,
+            rowResults
+        );
 
         if (matchingResults.isEmpty()) {
             return Collections.emptySet();
@@ -75,92 +76,5 @@ public class RowRoles {
         // If ANY result failed, mark the row as FAILED
         boolean anyFailed = matchingResults.stream().anyMatch(result -> !result.passed());
         return Set.of(anyFailed ? CellRole.FAILED : CellRole.PASSED);
-    }
-
-    /**
-     * Builds the expected display name for a table row.
-     * - If scenario column exists: returns the scenario value
-     * - Otherwise: returns null (will use fuzzy matching for non-scenario rows)
-     */
-    private String buildExpectedDisplayName(int rowIndex) {
-        var rows = table.rows();
-        if (rowIndex >= rows.size()) {
-            return "";
-        }
-
-        var row = rows.get(rowIndex);
-
-        // If there's a scenario column, use its value
-        if (scenarioIndex >= 0 && scenarioIndex < table.columnCount()) {
-            return String.valueOf(row.value(scenarioIndex));
-        }
-
-        // For rows without scenario column, return null to indicate fuzzy matching
-        return null;
-    }
-
-    /**
-     * Checks if a test result display name matches the expected row pattern.
-     * Display name format: "[index] displayName" or "[index] displayName (params)"
-     * We match on the displayName part (before any parentheses for expansion params).
-     */
-    private boolean matchesRow(String actualDisplayName, String expectedPattern, int rowIndex) {
-        Matcher matcher = DISPLAY_NAME_PATTERN.matcher(actualDisplayName);
-        if (!matcher.matches()) {
-            return false;
-        }
-
-        String displayNamePart = matcher.group(2);
-
-        // Remove expansion parameters (everything from first '(' onwards)
-        int parenIndex = displayNamePart.indexOf('(');
-        if (parenIndex >= 0) {
-            displayNamePart = displayNamePart.substring(0, parenIndex).trim();
-        }
-
-        // If there's a scenario column, do exact matching
-        if (expectedPattern != null) {
-            return displayNamePart.equals(expectedPattern);
-        }
-
-        // For rows without scenario column, use fuzzy matching
-        // This handles set expansion where display names vary
-        return matchesRowWithoutScenario(displayNamePart, rowIndex);
-    }
-
-    /**
-     * Matches a display name against a row when there's no scenario column.
-     * Handles set expansion by checking if non-Set values match their positions.
-     */
-    private boolean matchesRowWithoutScenario(String displayNamePart, int rowIndex) {
-        var rows = table.rows();
-        if (rowIndex >= rows.size()) {
-            return false;
-        }
-
-        var row = rows.get(rowIndex);
-        String[] displayValues = displayNamePart.split(",\\s*");
-
-        // If the number of display values doesn't match column count, no match
-        if (displayValues.length != table.columnCount()) {
-            return false;
-        }
-
-        // Check if non-Set values in the row match the corresponding display values
-        for (int i = 0; i < table.columnCount(); i++) {
-            Object rowValue = row.value(i);
-
-            // Skip Set values (these will vary in display names due to expansion)
-            if (rowValue instanceof java.util.Set) {
-                continue;
-            }
-
-            // Check if the non-Set value matches the display name at this position
-            if (!String.valueOf(rowValue).equals(displayValues[i])) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

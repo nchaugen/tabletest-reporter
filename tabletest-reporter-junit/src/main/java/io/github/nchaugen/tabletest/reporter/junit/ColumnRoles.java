@@ -16,22 +16,27 @@
 package io.github.nchaugen.tabletest.reporter.junit;
 
 import java.util.LinkedHashSet;
+import java.util.OptionalInt;
 import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
 
 public class ColumnRoles {
-    public static final ColumnRoles NO_ROLES = new ColumnRoles(-1, Set.of());
+    public static final ColumnRoles NO_ROLES = new ColumnRoles(OptionalInt.empty(), Set.of());
 
-    private final int scenarioIndex;
+    private final OptionalInt scenarioIndex;
     private final Set<Integer> expectationIndices;
-    
+
     public ColumnRoles(int scenarioIndex, Set<Integer> expectationIndices) {
+        this(scenarioIndex >= 0 ? OptionalInt.of(scenarioIndex) : OptionalInt.empty(), expectationIndices);
+    }
+
+    public ColumnRoles(OptionalInt scenarioIndex, Set<Integer> expectationIndices) {
         this.scenarioIndex = scenarioIndex;
         this.expectationIndices = expectationIndices;
     }
 
-    public int scenarioIndex() {
+    public OptionalInt scenarioIndex() {
         return scenarioIndex;
     }
 
@@ -40,7 +45,7 @@ public class ColumnRoles {
         if (expectationIndices.contains(columnIndex)) {
             roles.add(CellRole.EXPECTATION);
         }
-        if (columnIndex == scenarioIndex) {
+        if (scenarioIndex.isPresent() && columnIndex == scenarioIndex.getAsInt()) {
             roles.add(CellRole.SCENARIO);
         }
         return unmodifiableSet(roles);

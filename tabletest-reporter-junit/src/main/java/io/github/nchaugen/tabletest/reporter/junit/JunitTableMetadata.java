@@ -33,8 +33,8 @@ class JunitMetadataExtractor {
         String description = findTableDescription(context);
         ColumnRoles columnRoles = extractColumnRoles(context, table);
         List<RowResult> results = rowResults != null ? rowResults : List.of();
-        RowRoles rowRoles = new RowRoles(table, results, columnRoles.scenarioIndex());
-        
+        RowRoles rowRoles = new RowRoles(table, results, columnRoles);
+
         return new TableMetadata(title, description, columnRoles, rowRoles, results);
     }
 
@@ -45,9 +45,9 @@ class JunitMetadataExtractor {
         );
     }
 
-    private static int findScenarioIndex(ExtensionContext context, Table table) {
-        return getExplicitScenarioColumn(context)
-            .orElseGet(() -> getImplicitScenarioColumn(context, table).orElse(-1));
+    private static OptionalInt findScenarioIndex(ExtensionContext context, Table table) {
+        OptionalInt explicit = getExplicitScenarioColumn(context);
+        return explicit.isPresent() ? explicit : getImplicitScenarioColumn(context, table);
     }
 
     private static OptionalInt getExplicitScenarioColumn(ExtensionContext context) {
