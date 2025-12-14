@@ -17,5 +17,7 @@ package io.github.nchaugen.tabletest.reporter.junit;
 
 public enum CellRole {
     EXPECTATION,
-    SCENARIO
+    SCENARIO,
+    PASSED,
+    FAILED
 }

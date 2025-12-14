@@ -30,7 +30,11 @@ public class ColumnRoles {
         this.scenarioIndex = scenarioIndex;
         this.expectationIndices = expectationIndices;
     }
-    
+
+    public int scenarioIndex() {
+        return scenarioIndex;
+    }
+
     public Set<CellRole> roleFor(int columnIndex) {
         Set<CellRole> roles = new LinkedHashSet<>();
         if (expectationIndices.contains(columnIndex)) {

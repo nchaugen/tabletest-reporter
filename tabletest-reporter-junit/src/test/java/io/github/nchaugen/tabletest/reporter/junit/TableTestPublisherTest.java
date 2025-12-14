@@ -72,23 +72,38 @@ class TableTestPublisherTest {
                   - "scenario"
                 "rows":
                 - - "value": "1"
+                    "roles":
+                    - "passed"
                   - "value": "1"
+                    "roles":
+                    - "passed"
                   - "value": "2"
                     "roles":
                     - "expectation"
                     - "scenario"
+                    - "passed"
                 - - "value": "2"
+                    "roles":
+                    - "passed"
                   - "value": "2"
+                    "roles":
+                    - "passed"
                   - "value": "4"
                     "roles":
                     - "expectation"
                     - "scenario"
+                    - "passed"
                 - - "value": "3"
+                    "roles":
+                    - "passed"
                   - "value": "3"
+                    "roles":
+                    - "passed"
                   - "value": "6"
                     "roles":
                     - "expectation"
                     - "scenario"
+                    - "passed"
                 "rowResults":
                 - "rowIndex": !!int "1"
                   "passed": !!bool "true"
@@ -120,12 +135,12 @@ class TableTestPublisherTest {
                 .succeeded(2)
                 .failed(1));
 
-        Path yamlFile = findYamlFile(tempDir, "One row pass");
+        Path yamlFile = findYamlFile(tempDir, "One row fails");
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
         assertEquals(
             """
-                "title": "One row pass"
+                "title": "One row fails"
                 "description": "Verifying published result when there is a row failure."
                 "headers":
                 - "value": "Scenario"
@@ -140,27 +155,45 @@ class TableTestPublisherTest {
                 - - "value": "Should pass"
                     "roles":
                     - "scenario"
+                    - "passed"
                   - "value": "1"
+                    "roles":
+                    - "passed"
                   - "value": "1"
+                    "roles":
+                    - "passed"
                   - "value": "2"
                     "roles":
                     - "expectation"
+                    - "passed"
                 - - "value": "Should fail"
                     "roles":
                     - "scenario"
+                    - "failed"
                   - "value": "2"
+                    "roles":
+                    - "failed"
                   - "value": "2"
+                    "roles":
+                    - "failed"
                   - "value": "5"
                     "roles":
                     - "expectation"
+                    - "failed"
                 - - "value": "Should also pass"
                     "roles":
                     - "scenario"
+                    - "passed"
                   - "value": "3"
+                    "roles":
+                    - "passed"
                   - "value": "3"
+                    "roles":
+                    - "passed"
                   - "value": "6"
                     "roles":
                     - "expectation"
+                    - "passed"
                 "rowResults":
                 - "rowIndex": !!int "1"
                   "passed": !!bool "true"
@@ -219,6 +252,181 @@ class TableTestPublisherTest {
         );
     }
 
+    @Test
+    void shouldPublishYamlForSetExpansionWithScenario() throws IOException {
+        var results = EngineTestKit
+            .engine("junit-jupiter")
+            .selectors(selectClass(SetExpansionTest.class))
+            .configurationParameter("junit.platform.output.dir", tempDir.toString())
+            .enableImplicitConfigurationParameters(true)
+            .outputDirectoryCreator(createOutputDirectoryCreator())
+            .execute();
+
+        results.testEvents()
+            .assertStatistics(stats -> stats
+                .started(8)
+                .succeeded(6)
+                .failed(2));
+
+        Path yamlFile = findYamlFile(tempDir, "One expanded row with scenario name fails");
+        assertTrue(Files.exists(yamlFile), "YAML file should exist");
+
+        assertEquals(
+            """
+                "title": "One expanded row with scenario name fails"
+                "headers":
+                - "value": "Scenario"
+                  "roles":
+                  - "scenario"
+                - "value": "a"
+                - "value": "b"
+                - "value": "sum?"
+                  "roles":
+                  - "expectation"
+                "rows":
+                - - "value": "Should pass"
+                    "roles":
+                    - "scenario"
+                    - "passed"
+                  - "value": "1"
+                    "roles":
+                    - "passed"
+                  - "value": "1"
+                    "roles":
+                    - "passed"
+                  - "value": "2"
+                    "roles":
+                    - "expectation"
+                    - "passed"
+                - - "value": "Should fail for one"
+                    "roles":
+                    - "scenario"
+                    - "failed"
+                  - "value": "2"
+                    "roles":
+                    - "failed"
+                  - "value": !!set
+                      "2": !!null "null"
+                      "3": !!null "null"
+                    "roles":
+                    - "failed"
+                  - "value": "5"
+                    "roles":
+                    - "expectation"
+                    - "failed"
+                - - "value": "Should also pass"
+                    "roles":
+                    - "scenario"
+                    - "passed"
+                  - "value": "3"
+                    "roles":
+                    - "passed"
+                  - "value": "3"
+                    "roles":
+                    - "passed"
+                  - "value": "6"
+                    "roles":
+                    - "expectation"
+                    - "passed"
+                "rowResults":
+                - "rowIndex": !!int "1"
+                  "passed": !!bool "true"
+                  "displayName": "[1] Should pass"
+                - "rowIndex": !!int "2"
+                  "passed": !!bool "false"
+                  "displayName": "[2] Should fail for one (b = 2)"
+                  "errorMessage": "expected: <5> but was: <4>"
+                - "rowIndex": !!int "3"
+                  "passed": !!bool "true"
+                  "displayName": "[3] Should fail for one (b = 3)"
+                - "rowIndex": !!int "4"
+                  "passed": !!bool "true"
+                  "displayName": "[4] Should also pass"
+                """,
+            Files.readString(yamlFile)
+        );
+    }
+
+    @Test
+    void shouldPublishYamlForSetExpansionWithoutScenario() throws IOException {
+        var results = EngineTestKit
+            .engine("junit-jupiter")
+            .selectors(selectClass(SetExpansionTest.class))
+            .configurationParameter("junit.platform.output.dir", tempDir.toString())
+            .enableImplicitConfigurationParameters(true)
+            .outputDirectoryCreator(createOutputDirectoryCreator())
+            .execute();
+
+        results.testEvents()
+            .assertStatistics(stats -> stats
+                .started(8)
+                .succeeded(6)
+                .failed(2));
+
+        Path yamlFile = findYamlFile(tempDir, "One expanded row without scenario name fails");
+        assertTrue(Files.exists(yamlFile), "YAML file should exist");
+
+        assertEquals(
+            """
+                "title": "One expanded row without scenario name fails"
+                "headers":
+                - "value": "a"
+                - "value": "b"
+                - "value": "sum?"
+                  "roles":
+                  - "expectation"
+                "rows":
+                - - "value": "1"
+                    "roles":
+                    - "passed"
+                  - "value": "1"
+                    "roles":
+                    - "passed"
+                  - "value": "2"
+                    "roles":
+                    - "expectation"
+                    - "passed"
+                - - "value": "2"
+                    "roles":
+                    - "failed"
+                  - "value": !!set
+                      "2": !!null "null"
+                      "3": !!null "null"
+                    "roles":
+                    - "failed"
+                  - "value": "5"
+                    "roles":
+                    - "expectation"
+                    - "failed"
+                - - "value": "3"
+                    "roles":
+                    - "passed"
+                  - "value": "3"
+                    "roles":
+                    - "passed"
+                  - "value": "6"
+                    "roles":
+                    - "expectation"
+                    - "passed"
+                "rowResults":
+                - "rowIndex": !!int "1"
+                  "passed": !!bool "true"
+                  "displayName": "[1] 1, 1, 2"
+                - "rowIndex": !!int "2"
+                  "passed": !!bool "false"
+                  "displayName": "[2] 2, 2, 5"
+                  "errorMessage": "expected: <5> but was: <4>"
+                - "rowIndex": !!int "3"
+                  "passed": !!bool "true"
+                  "displayName": "[3] 2, 3, 5"
+                - "rowIndex": !!int "4"
+                  "passed": !!bool "true"
+                  "displayName": "[4] 3, 3, 6"
+                """,
+            Files.readString(yamlFile)
+        );
+    }
+
     private Path findYamlFile(Path baseDir, String name) throws IOException {
         try (var paths = Files.walk(baseDir)) {
             return paths
@@ -252,7 +460,7 @@ class TableTestPublisherTest {
 
     @ExtendWith(TableTestPublisher.class)
     public static class OneRowFailsTest {
-        @DisplayName("One row pass")
+        @DisplayName("One row fails")
         @Description("Verifying published result when there is a row failure.")
         @TableTest("""
             Scenario         | a | b | sum?
@@ -261,6 +469,31 @@ class TableTestPublisherTest {
             Should also pass | 3 | 3 | 6
             """)
         public void oneRowFails(int a, int b, int sum) {
+            assertEquals(sum, a + b);
+        }
+    }
+
+    @ExtendWith(TableTestPublisher.class)
+    public static class SetExpansionTest {
+        @DisplayName("One expanded row with scenario name fails")
+        @TableTest("""
+            Scenario            | a | b      | sum?
+            Should pass         | 1 | 1      | 2
+            Should fail for one | 2 | {2, 3} | 5
+            Should also pass    | 3 | 3      | 6
+            """)
+        public void oneRowWithScenarioFails(int a, int b, int sum) {
+            assertEquals(sum, a + b);
+        }
+
+        @DisplayName("One expanded row without scenario name fails")
+        @TableTest("""
+            a | b      | sum?
+            1 | 1      | 2
+            2 | {2, 3} | 5
+            3 | 3      | 6
+            """)
+        public void oneRowWithoutScenarioFails(int a, int b, int sum) {
             assertEquals(sum, a + b);
         }
     }

@@ -30,6 +30,7 @@ class JunitTableMetadata implements TableMetadata {
     private final String title;
     private final String description;
     private final ColumnRoles columnRoles;
+    private final RowRoles rowRoles;
     private final List<RowResult> rowResults;
 
     public JunitTableMetadata(ExtensionContext context, Table table, List<RowResult> rowResults) {
@@ -37,6 +38,7 @@ class JunitTableMetadata implements TableMetadata {
         this.description = findTableDescription(context);
         this.columnRoles = extractColumnRoles(context, table);
         this.rowResults = rowResults != null ? rowResults : List.of();
+        this.rowRoles = new RowRoles(table, this.rowResults, columnRoles.scenarioIndex());
     }
 
     private ColumnRoles extractColumnRoles(ExtensionContext context, Table table) {
@@ -59,6 +61,11 @@ class JunitTableMetadata implements TableMetadata {
     @Override
     public String description() {
         return description;
+    }
+
+    @Override
+    public RowRoles rowRoles() {
+        return rowRoles;
     }
 
     @Override

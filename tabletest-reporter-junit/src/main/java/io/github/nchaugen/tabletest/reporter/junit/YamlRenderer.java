@@ -15,6 +15,7 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
+import io.github.nchaugen.tabletest.parser.Row;
 import io.github.nchaugen.tabletest.parser.Table;
 import org.snakeyaml.engine.v2.api.Dump;
 import org.snakeyaml.engine.v2.api.DumpSettings;
@@ -22,6 +23,7 @@ import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -53,17 +55,19 @@ class YamlRenderer {
 
         content.put(
             "headers", IntStream.range(0, table.columnCount())
-                .mapToObj(i -> toValueMap(table.header(i), metadata.columnRoles().roleFor(i)))
+                .mapToObj(i -> toValueMap(table.header(i), metadata.columnRolesFor(i)))
                 .toList()
         );
 
+        List<Row> rows = table.rows();
         content.put(
-            "rows", table.rows().stream()
-                .map(row ->
-                    IntStream.range(0, table.columnCount())
-                        .mapToObj(i -> toValueMap(row.value(i), metadata.columnRoles().roleFor(i)))
-                        .toList()
-                )
+            "rows", IntStream.range(0, rows.size())
+                .mapToObj(rowIndex -> IntStream.range(0, table.columnCount())
+                    .mapToObj(colIndex -> toValueMap(
+                        rows.get(rowIndex).value(colIndex),
+                        metadata.combineRoles(colIndex, rowIndex)
+                    ))
+                    .toList())
                 .toList()
         );
 

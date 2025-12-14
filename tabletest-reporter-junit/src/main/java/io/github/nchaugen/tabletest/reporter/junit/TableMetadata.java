@@ -16,12 +16,33 @@
 package io.github.nchaugen.tabletest.reporter.junit;
 
 import java.util.List;
+import java.util.Set;
+
+import static java.util.Collections.unmodifiableSet;
 
 public interface TableMetadata {
     String title();
     String description();
     ColumnRoles columnRoles();
+    default RowRoles rowRoles() {
+        return RowRoles.NO_ROLES;
+    }
     default List<RowResult> rowResults() {
         return List.of();
+    }
+
+    default Set<CellRole> columnRolesFor(int colIndex) {
+        return columnRoles().roleFor(colIndex);
+    }
+
+    /**
+     * Combines column roles and row roles into a single set for the given indices.
+     * Maintains order: column roles first (expectation, scenario), then row roles (passed, failed).
+     */
+    default Set<CellRole> combineRoles(int colIndex, int rowIndex) {
+        Set<CellRole> combined = new java.util.LinkedHashSet<>();
+        combined.addAll(columnRoles().roleFor(colIndex));
+        combined.addAll(rowRoles().roleFor(rowIndex));
+        return unmodifiableSet(combined);
     }
 }
