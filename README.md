@@ -158,28 +158,46 @@ tableTestReporter {
 
 ## Output Structure
 
-The reporter generates documentation that mirrors your test package structure:
+The reporter generates documentation that mirrors your test package structure. The output starts at the point where your package structure branches.
 
+**Single test class** (`com.example.AuthenticationTest`):
 ```
 generated-docs/tabletest/
-├── index.adoc                           # Root index with all packages
-└── com/
-    └── example/
-        ├── index.adoc                   # Package index
-        └── authentication-test/         # Test class directory
-            ├── index.adoc               # Test class index
-            ├── login-validation.adoc    # Individual test method
-            └── password-reset.adoc      # Individual test method
+├── index.adoc                    # Test class index
+├── login-validation.adoc         # Test method
+└── password-reset.adoc           # Test method
 ```
 
-**Generated structure:**
-- **Root index:** Lists all packages with links
-- **Package indexes:** List all test classes in that package (each in `index.adoc`)
-- **Test class directories:** Each test class gets its own directory
-- **Test class index:** Lists all test methods in that class (`index.adoc` in the class directory)
-- **Test method pages:** Individual files with full table data and results
+**Multiple classes in one package** (`com.example.AuthenticationTest` and `com.example.OrderTest`):
+```
+generated-docs/tabletest/
+├── index.adoc                    # Package index for 'example'
+├── authentication-test/
+│   ├── index.adoc                # Test class index
+│   ├── login-validation.adoc
+│   └── password-reset.adoc
+└── order-test/
+    ├── index.adoc
+    └── place-order.adoc
+```
 
-Directory and file names are kebab-case versions of your test class and method names, making them URL-friendly for web publishing.
+**Multiple packages** (`com.example.*` and `com.tools.*`):
+```
+generated-docs/tabletest/
+├── index.adoc                    # Package index for 'com'
+├── example/
+│   ├── index.adoc                # Package index for 'example'
+│   └── authentication-test/
+│       ├── index.adoc
+│       └── login-validation.adoc
+└── tools/
+    ├── index.adoc                # Package index for 'tools'
+    └── parser-test/
+        ├── index.adoc
+        └── parse-json.adoc
+```
+
+The structure eliminates redundant directory levels—only the branching parts of your package hierarchy appear in the output. Directory and file names are kebab-case versions of your package, class, and method names.
 
 ## Publishing Your Documentation
 
