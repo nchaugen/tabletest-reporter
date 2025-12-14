@@ -141,8 +141,9 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
     }
 
     public static void publishTestClass(ExtensionContext context) {
-        TestClassData data = new TestClassData(context.getDisplayName(), findDescription(context));
-        
+        String title = getTitle(context);
+        TestClassData data = new TestClassData(title, findDescription(context));
+
         publishFile(
             context,
             getName(context, () -> context.getRequiredTestClass().getSimpleName()),
@@ -164,6 +165,18 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
             .filter(it -> it.isAnnotationPresent(DisplayName.class))
             .map(__ -> context.getDisplayName())
             .orElseGet(defaultName);
+    }
+
+    private static String getTitle(ExtensionContext context) {
+        return context.getTestClass()
+            .map(testClass -> {
+                if (testClass.isAnnotationPresent(DisplayName.class)) {
+                    return context.getDisplayName();
+                } else {
+                    return TitleTransformer.toTitle(testClass.getSimpleName());
+                }
+            })
+            .orElse(context.getDisplayName());
     }
 
     private static String findDescription(ExtensionContext context) {

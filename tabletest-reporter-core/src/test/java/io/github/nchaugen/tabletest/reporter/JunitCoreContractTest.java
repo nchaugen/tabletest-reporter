@@ -193,6 +193,33 @@ class JunitCoreContractTest {
     }
 
     @Test
+    void shouldGenerateTitleForClassesWithoutDisplayName() throws IOException {
+        EngineTestKit
+            .engine("junit-jupiter")
+            .selectors(selectClass(LeapYearRulesTest.class))
+            .configurationParameter("junit.platform.output.dir", tempDir.toString())
+            .enableImplicitConfigurationParameters(true)
+            .outputDirectoryCreator(createOutputDirectoryCreator())
+            .execute();
+
+        Path testClassYaml = Files.walk(tempDir)
+            .filter(p -> p.getFileName().toString().equals("TABLETEST-leap-year-rules-test.yaml"))
+            .findFirst()
+            .orElse(null);
+
+        assertThat(testClassYaml)
+            .describedAs("Should create test class YAML file")
+            .isNotNull()
+            .exists();
+
+        String yamlContent = Files.readString(testClassYaml);
+
+        assertThat(yamlContent)
+            .describedAs("Should contain human-readable title transformed from class name")
+            .contains("\"title\": \"Leap Year Rules Test\"");
+    }
+
+    @Test
     void shouldPreserveFilenameTransformations() throws IOException {
         EngineTestKit
             .engine("junit-jupiter")
@@ -285,6 +312,17 @@ class JunitCoreContractTest {
             """)
         void testMethodInCamelCase(int input, int output) {
             assertThat(input).isEqualTo(output);
+        }
+    }
+
+    @ExtendWith(TableTestPublisher.class)
+    static class LeapYearRulesTest {
+        @TableTest("""
+            Year | IsLeapYear?
+            2020 | true
+            """)
+        void shouldDetermineLeapYear(int year, boolean isLeapYear) {
+            assertThat(year % 4 == 0).isEqualTo(isLeapYear);
         }
     }
 }
