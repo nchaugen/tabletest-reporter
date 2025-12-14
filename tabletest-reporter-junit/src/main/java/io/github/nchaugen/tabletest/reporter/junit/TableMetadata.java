@@ -15,8 +15,12 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
+import io.github.nchaugen.tabletest.parser.Row;
+import io.github.nchaugen.tabletest.parser.Table;
+
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import static java.util.Collections.unmodifiableSet;
 
@@ -45,4 +49,32 @@ public interface TableMetadata {
         combined.addAll(rowRoles().roleFor(rowIndex));
         return unmodifiableSet(combined);
     }
+
+    /**
+     * Converts this metadata and the given table into structured data ready for serialisation.
+     */
+    default TableTestData toTableTestData(Table table) {
+        List<CellData> headers = IntStream.range(0, table.columnCount())
+            .mapToObj(i -> new CellData(table.header(i), columnRolesFor(i)))
+            .toList();
+
+        List<Row> rows = table.rows();
+        List<RowData> rowData = IntStream.range(0, rows.size())
+            .mapToObj(rowIndex -> new RowData(
+                IntStream.range(0, table.columnCount())
+                    .mapToObj(colIndex -> new CellData(
+                        rows.get(rowIndex).value(colIndex),
+                        combineRoles(colIndex, rowIndex)
+                    ))
+                    .toList()
+            ))
+            .toList();
+
+        List<RowResultData> rowResultData = rowResults().stream()
+            .map(RowResultData::from)
+            .toList();
+
+        return new TableTestData(title(), description(), headers, rowData, rowResultData);
+    }
+
 }

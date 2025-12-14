@@ -131,19 +131,22 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
 
     private static void publishTable(ExtensionContext context, Table table, List<RowResult> rowResults) {
         TableMetadata metadata = new JunitTableMetadata(context, table, rowResults);
+        TableTestData data = metadata.toTableTestData(table);
 
         publishFile(
             context,
             getName(context, () -> context.getRequiredTestMethod().getName()),
-            (Path path) -> YAML_RENDERER.renderTable(table, metadata)
+            (Path path) -> YAML_RENDERER.render(data)
         );
     }
 
     public static void publishTestClass(ExtensionContext context) {
+        TestClassData data = new TestClassData(context.getDisplayName(), findDescription(context));
+        
         publishFile(
             context,
             getName(context, () -> context.getRequiredTestClass().getSimpleName()),
-            (Path path) -> YAML_RENDERER.renderClass(context.getDisplayName(), findDescription(context))
+            (Path path) -> YAML_RENDERER.render(data)
         );
     }
 

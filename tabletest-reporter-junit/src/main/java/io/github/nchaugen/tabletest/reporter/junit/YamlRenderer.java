@@ -15,18 +15,10 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.parser.Row;
-import io.github.nchaugen.tabletest.parser.Table;
 import org.snakeyaml.engine.v2.api.Dump;
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.IntStream;
 
 /**
  * Renders table tests and test indices to YAML format.
@@ -46,75 +38,17 @@ class YamlRenderer {
     private final Dump yaml = new Dump(SETTINGS);
 
     /**
-     * Renders a table with its metadata and row results to YAML.
+     * Renders table test data to YAML.
      */
-    String renderTable(Table table, TableMetadata metadata) {
-        LinkedHashMap<String, Object> content = new LinkedHashMap<>();
-        if (metadata.title() != null) content.put("title", metadata.title());
-        if (metadata.description() != null) content.put("description", metadata.description());
-
-        content.put(
-            "headers", IntStream.range(0, table.columnCount())
-                .mapToObj(i -> toValueMap(table.header(i), metadata.columnRolesFor(i)))
-                .toList()
-        );
-
-        List<Row> rows = table.rows();
-        content.put(
-            "rows", IntStream.range(0, rows.size())
-                .mapToObj(rowIndex -> IntStream.range(0, table.columnCount())
-                    .mapToObj(colIndex -> toValueMap(
-                        rows.get(rowIndex).value(colIndex),
-                        metadata.combineRoles(colIndex, rowIndex)
-                    ))
-                    .toList())
-                .toList()
-        );
-
-        if (!metadata.rowResults().isEmpty()) {
-            content.put(
-                "rowResults", metadata.rowResults().stream()
-                    .map(this::toRowResultMap)
-                    .toList()
-            );
-        }
-
-        return yaml.dumpToString(content);
+    String render(TableTestData data) {
+        return yaml.dumpToString(data.toMap());
     }
 
     /**
-     * Renders a test class with its metadata.
+     * Renders test class data to YAML.
      */
-    String renderClass(String title, String description) {
-        LinkedHashMap<String, Object> content = new LinkedHashMap<>();
-        if (title != null) content.put("title", title);
-        if (description != null) content.put("description", description);
-
-        return yaml.dumpToString(content);
-    }
-
-    private Map<String, Object> toRowResultMap(RowResult result) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("rowIndex", result.rowIndex());
-        map.put("passed", result.passed());
-        map.put("displayName", result.displayName());
-        if (result.cause() != null) {
-            map.put("errorMessage", result.cause().getMessage());
-        }
-        return map;
-    }
-
-    private static Map<String, Object> toValueMap(Object value, Set<CellRole> roles) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("value", value);
-        if (!roles.isEmpty()) {
-            map.put(
-                "roles", roles.stream()
-                    .map(role -> role.name().toLowerCase())
-                    .toList()
-            );
-        }
-        return map;
+    String render(TestClassData data) {
+        return yaml.dumpToString(data.toMap());
     }
 
 }

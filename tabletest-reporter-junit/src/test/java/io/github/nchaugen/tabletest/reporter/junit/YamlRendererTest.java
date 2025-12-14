@@ -21,9 +21,11 @@ public class YamlRendererTest {
                 "title": "Title of the Test Class"
                 "description": "A free-text description explaining what these tables are about."
                 """,
-            renderer.renderClass(
-                "Title of the Test Class",
-                "A free-text description explaining what these tables are about."
+            renderer.render(
+                new TestClassData(
+                    "Title of the Test Class",
+                    "A free-text description explaining what these tables are about."
+                )
             )
         );
     }
@@ -41,11 +43,7 @@ public class YamlRendererTest {
                 - - "value": "1"
                   - "value": "2"
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a | b
-                    1 | 2
-                    """),
+            renderer.render(
                 new StubTableMetadata(
                     "Table Title", """
                     This is a description of the __table__.
@@ -55,6 +53,11 @@ public class YamlRendererTest {
                     - List item 1
                     - List item 2
                     """
+                ).toTableTestData(
+                    TableParser.parse("""
+                        a | b
+                        1 | 2
+                        """)
                 )
             )
         );
@@ -88,13 +91,15 @@ public class YamlRendererTest {
                     "roles":
                     - "expectation"
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    scenario | input | output?
-                    add      | 5     | 5
-                    multiply | 3     | 15
-                    """),
+            renderer.render(
                 new StubTableMetadata(new ColumnRoles(0, Set.of(2)))
+                    .toTableTestData(
+                        TableParser.parse("""
+                            scenario | input | output?
+                            add      | 5     | 5
+                            multiply | 3     | 15
+                            """)
+                    )
             )
         );
     }
@@ -144,12 +149,14 @@ public class YamlRendererTest {
                     "roles":
                     - "expectation"
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a? | b?      | c? | d? | e?
-                    {} | [1,2,3] | 3  |    | [a:1,b:2,c:3]
-                    """),
+            renderer.render(
                 new StubTableMetadata(new ColumnRoles(0, Set.of(0, 1, 2, 3, 4)))
+                    .toTableTestData(
+                        TableParser.parse("""
+                            a? | b?      | c? | d? | e?
+                            {} | [1,2,3] | 3  |    | [a:1,b:2,c:3]
+                            """)
+                    )
             )
         );
     }
@@ -173,12 +180,13 @@ public class YamlRendererTest {
                   - "value": "\\t"
                   - "value": "\\t "
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a | b  | c d   | " e "     | f    | g
-                      | "" | "   " | a bc  def | '\t' | '\t '
-                    """),
-                NO_METADATA
+            renderer.render(
+                NO_METADATA.toTableTestData(
+                    TableParser.parse("""
+                        a | b  | c d   | " e "     | f    | g
+                          | "" | "   " | a bc  def | '\t' | '\t '
+                        """)
+                )
             )
         );
     }
@@ -196,12 +204,13 @@ public class YamlRendererTest {
                   - "value": "|"
                   - "value": "Text with | character"
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    ++  | +   | 'a|b'
-                    "|" | '|' | "Text with | character"
-                    """),
-                NO_METADATA
+            renderer.render(
+                NO_METADATA.toTableTestData(
+                    TableParser.parse("""
+                        ++  | +   | 'a|b'
+                        "|" | '|' | "Text with | character"
+                        """)
+                )
             )
         );
     }
@@ -224,12 +233,13 @@ public class YamlRendererTest {
                     - "|"
                     - "|"
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a  | b         | c
-                    [] | [1,2,3] | ['|', "|"]
-                    """),
-                NO_METADATA
+            renderer.render(
+                NO_METADATA.toTableTestData(
+                    TableParser.parse("""
+                        a  | b         | c
+                        [] | [1,2,3] | ['|', "|"]
+                        """)
+                )
             )
         );
     }
@@ -249,12 +259,13 @@ public class YamlRendererTest {
                   - "value":
                     - - []
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a  | b    | c
-                    [] | [[]] | [[[]]]
-                    """),
-                NO_METADATA
+            renderer.render(
+                NO_METADATA.toTableTestData(
+                    TableParser.parse("""
+                        a  | b    | c
+                        [] | [[]] | [[[]]]
+                        """)
+                )
             )
         );
     }
@@ -277,12 +288,13 @@ public class YamlRendererTest {
                       - "$"
                       - "%"
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a
-                    [[1,2,3],[a,b,c],[#,$,%]]
-                    """),
-                NO_METADATA
+            renderer.render(
+                NO_METADATA.toTableTestData(
+                    TableParser.parse("""
+                        a
+                        [[1,2,3],[a,b,c],[#,$,%]]
+                        """)
+                )
             )
         );
     }
@@ -304,12 +316,13 @@ public class YamlRendererTest {
                   - "value": !!set
                       "||": !!null "null"
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a  | b   | c
-                    {} | {1,2,3} | {"||"}
-                    """),
-                NO_METADATA
+            renderer.render(
+                NO_METADATA.toTableTestData(
+                    TableParser.parse("""
+                        a  | b   | c
+                        {} | {1,2,3} | {"||"}
+                        """)
+                )
             )
         );
     }
@@ -338,12 +351,13 @@ public class YamlRendererTest {
                         "%": !!null "null"
                       : !!null "null"
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a
-                    {{1,2,3}, {a,b,c}, {#,$,%}}
-                    """),
-                NO_METADATA
+            renderer.render(
+                NO_METADATA.toTableTestData(
+                    TableParser.parse("""
+                        a
+                        {{1,2,3}, {a,b,c}, {#,$,%}}
+                        """)
+                )
             )
         );
     }
@@ -365,12 +379,13 @@ public class YamlRendererTest {
                   - "value":
                       "b": "||"
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a   | b             | c
-                    [:] | [a:1,b:2,c:3] | [b: "||"]
-                    """),
-                NO_METADATA
+            renderer.render(
+                NO_METADATA.toTableTestData(
+                    TableParser.parse("""
+                        a   | b             | c
+                        [:] | [a:1,b:2,c:3] | [b: "||"]
+                        """)
+                )
             )
         );
     }
@@ -392,12 +407,13 @@ public class YamlRendererTest {
                       "b":
                         "B": "2"
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a                | b
-                    [a: [:], b: [:]] | [a: [A: 1],b: [B: 2]]
-                    """),
-                NO_METADATA
+            renderer.render(
+                NO_METADATA.toTableTestData(
+                    TableParser.parse("""
+                        a                | b
+                        [a: [:], b: [:]] | [a: [A: 1],b: [B: 2]]
+                        """)
+                )
             )
         );
     }
@@ -424,12 +440,13 @@ public class YamlRendererTest {
                       ? "B": "2"
                       : !!null "null"
                 """,
-            renderer.renderTable(
-                TableParser.parse("""
-                    a                            | b
-                    [a: [1, 2], b: {3, 4}, c: 5] | {[A: 1], [B: 2]}
-                    """),
-                NO_METADATA
+            renderer.render(
+                NO_METADATA.toTableTestData(
+                    TableParser.parse("""
+                        a                            | b
+                        [a: [1, 2], b: {3, 4}, c: 5] | {[A: 1], [B: 2]}
+                        """)
+                )
             )
         );
     }
@@ -437,17 +454,18 @@ public class YamlRendererTest {
     @Test
     void shouldIncludeRowResultsInYaml() {
 
-        String yaml = renderer.renderTable(
-            TableParser.parse("""
-                a | b
-                1 | 2
-                3 | 4
-                """),
+        String yaml = renderer.render(
             new StubTableMetadata(
                 List.of(
                     new RowResult(0, true, null, "test[1]"),
                     new RowResult(1, false, new AssertionError("Expected 4"), "test[2]")
                 )
+            ).toTableTestData(
+                TableParser.parse("""
+                    a | b
+                    1 | 2
+                    3 | 4
+                    """)
             )
         );
 
