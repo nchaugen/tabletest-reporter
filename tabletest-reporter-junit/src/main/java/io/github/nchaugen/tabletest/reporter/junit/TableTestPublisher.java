@@ -151,8 +151,9 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
     }
 
     private static void publishFile(ExtensionContext context, String fileName, Function<Path, String> renderer) {
+        String transformedFileName = FilenameTransformer.transform(fileName);
         context.publishFile(
-            FILENAME_PREFIX + fileName + YAML_EXTENSION,
+            FILENAME_PREFIX + transformedFileName + YAML_EXTENSION,
             MediaType.TEXT_PLAIN_UTF_8,
             path -> Files.writeString(path, renderer.apply(path))
         );

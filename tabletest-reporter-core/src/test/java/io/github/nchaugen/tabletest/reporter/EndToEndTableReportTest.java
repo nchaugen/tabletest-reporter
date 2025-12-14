@@ -22,9 +22,9 @@ public class EndToEndTableReportTest {
     static void setUp() throws IOException {
         inDir = Files.createDirectory(tempDir.resolve("in"));
         Path testClassDir = Files.createDirectory(inDir.resolve("org.example.CalendarTest"));
-        Files.writeString(testClassDir.resolve("TABLETEST-Calendar Calculations.yaml"), TEST_CLASS_CONTEXT_YAML);
+        Files.writeString(testClassDir.resolve("TABLETEST-calendar-calculations.yaml"), TEST_CLASS_CONTEXT_YAML);
         Path tableDir = Files.createDirectory(testClassDir.resolve("leapYearRules(java.time.Year, boolean)"));
-        Files.writeString(tableDir.resolve("TABLETEST-Leap Year Rules.yaml"), TABLE_CONTEXT_YAML);
+        Files.writeString(tableDir.resolve("TABLETEST-leap-year-rules.yaml"), TABLE_CONTEXT_YAML);
         outDir = Files.createDirectory(tempDir.resolve("out"));
     }
 
@@ -57,7 +57,7 @@ public class EndToEndTableReportTest {
             .containsExactly(
                 "= ++example++",
                 "",
-                "* xref:./calendar-calculations[++Calendar Calculations++]"
+                "* xref:./calendar-calculations[++calendar-calculations++]"
             );
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.adoc")))
@@ -66,7 +66,7 @@ public class EndToEndTableReportTest {
                 "",
                 "Various rules for calendar calculations.",
                 "",
-                "* xref:./leap-year-rules.adoc[++Leap Year Rules++]"
+                "* xref:./leap-year-rules.adoc[++leap-year-rules++]"
             );
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("leap-year-rules.adoc")))
@@ -102,7 +102,7 @@ public class EndToEndTableReportTest {
             .containsExactly(
                 "# example",
                 "",
-                "* [Calendar Calculations](./calendar-calculations)"
+                "* [calendar-calculations](./calendar-calculations)"
             );
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.md")))
@@ -111,7 +111,7 @@ public class EndToEndTableReportTest {
                 "",
                 "Various rules for calendar calculations.",
                 "",
-                "* [Leap Year Rules](./leap-year-rules.md)"
+                "* [leap-year-rules](./leap-year-rules.md)"
             );
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("leap-year-rules.md")))

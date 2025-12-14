@@ -15,8 +15,6 @@
  */
 package io.github.nchaugen.tabletest.reporter;
 
-import com.github.slugify.Slugify;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,7 +36,6 @@ public class ReportTree {
     private static final String FILENAME_PREFIX = "TABLETEST-";
     private static final String YAML_EXTENSION = ".yaml";
     private static final Path ROOT_PATH = Path.of("." + File.separator);
-    private static final Slugify SLUGIFIER = Slugify.builder().build();
 
     /**
      * Processes the top-level directory where TableTest .yaml files have been created during test run
@@ -169,10 +166,11 @@ public class ReportTree {
     }
 
     /**
-     * Converts a list of targets to a slugified path string
+     * Converts a list of targets to a path string.
+     * Filenames are already transformed by the junit module before YAML files are created.
      */
     private static String createOutPath(List<Target> path) {
-        return path.stream().map(Target::pathName).map(SLUGIFIER::slugify).collect(joining(File.separator));
+        return path.stream().map(Target::pathName).collect(joining(File.separator));
     }
 
     /**
@@ -324,7 +322,9 @@ public class ReportTree {
          * Creates a Target with path. Name is derived from path's filename.
          */
         public static Target withPath(Path path) {
-            String name = path != null && path.getFileName() != null ? path.getFileName().toString() : null;
+            String name = path != null && path.getFileName() != null
+                ? path.getFileName().toString()
+                : null;
             return new Target(name, path, null);
         }
 
@@ -369,7 +369,7 @@ public class ReportTree {
         }
 
         public String pathName() {
-            return isRoot() ? "." : name();
+            return isRoot() ? "" : name().toLowerCase();
         }
 
         private boolean isRoot() {

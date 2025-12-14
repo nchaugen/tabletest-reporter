@@ -297,10 +297,11 @@ public class ReportTreeTest {
         Files.createDirectories(tempDir.resolve("org.example.FirstTest/another_test(java.time.LocalDate, boolean)"));
         Files.createDirectories(tempDir.resolve("org.example.SecondTest/table test(java.lang.String, java.lang.Class)"));
 
-        Files.createFile(tempDir.resolve("org.example.FirstTest/table_test(java.util.List, org.example.Domain)/TABLETEST-Leap Year Rules.yaml"));
-        Files.createFile(tempDir.resolve("org.example.FirstTest/another_test(java.time.LocalDate, boolean)/TABLETEST-another_test.yaml"));
-        Files.createFile(tempDir.resolve("org.example.SecondTest/TABLETEST-A Custom Test Title!.yaml"));
-        Files.createFile(tempDir.resolve("org.example.SecondTest/table test(java.lang.String, java.lang.Class)/TABLETEST-table test.yaml"));
+        Files.createFile(tempDir.resolve("org.example.FirstTest/TABLETEST-first-test.yaml"));
+        Files.createFile(tempDir.resolve("org.example.FirstTest/table_test(java.util.List, org.example.Domain)/TABLETEST-leap-year-rules.yaml"));
+        Files.createFile(tempDir.resolve("org.example.FirstTest/another_test(java.time.LocalDate, boolean)/TABLETEST-another-test.yaml"));
+        Files.createFile(tempDir.resolve("org.example.SecondTest/TABLETEST-a-custom-test-title.yaml"));
+        Files.createFile(tempDir.resolve("org.example.SecondTest/table test(java.lang.String, java.lang.Class)/TABLETEST-table-test.yaml"));
 
         Map<String, Object> tree = ReportTree.process(tempDir);
 
@@ -313,26 +314,27 @@ public class ReportTreeTest {
                 outPath: ""
                 contents:
                   - type: index
-                    name: FirstTest
-                    outPath: /firsttest
+                    name: first-test
+                    outPath: /first-test
+                    resource: org.example.FirstTest/TABLETEST-first-test.yaml
                     contents:
                       - type: table
-                        name: Leap Year Rules
-                        outPath: /firsttest/leap-year-rules
-                        resource: org.example.FirstTest/table_test(java.util.List, org.example.Domain)/TABLETEST-Leap Year Rules.yaml
+                        name: leap-year-rules
+                        outPath: /first-test/leap-year-rules
+                        resource: org.example.FirstTest/table_test(java.util.List, org.example.Domain)/TABLETEST-leap-year-rules.yaml
                       - type: table
-                        name: another_test
-                        outPath: /firsttest/another_test
-                        resource: org.example.FirstTest/another_test(java.time.LocalDate, boolean)/TABLETEST-another_test.yaml
+                        name: another-test
+                        outPath: /first-test/another-test
+                        resource: org.example.FirstTest/another_test(java.time.LocalDate, boolean)/TABLETEST-another-test.yaml
                   - type: index
-                    name: A Custom Test Title!
+                    name: a-custom-test-title
                     outPath: /a-custom-test-title
-                    resource: org.example.SecondTest/TABLETEST-A Custom Test Title!.yaml
+                    resource: org.example.SecondTest/TABLETEST-a-custom-test-title.yaml
                     contents:
                       - type: table
-                        name: table test
+                        name: table-test
                         outPath: /a-custom-test-title/table-test
-                        resource: org.example.SecondTest/table test(java.lang.String, java.lang.Class)/TABLETEST-table test.yaml
+                        resource: org.example.SecondTest/table test(java.lang.String, java.lang.Class)/TABLETEST-table-test.yaml
                 """)
             );
     }
@@ -343,6 +345,9 @@ public class ReportTreeTest {
         Files.createDirectories(tempDir.resolve("pkg.T1/Nested/table2"));
         Files.createDirectories(tempDir.resolve("pkg.T1/Nested/DeeplyNested/table1"));
 
+        Files.createFile(tempDir.resolve("pkg.T1/TABLETEST-T1.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T1/Nested/TABLETEST-nested.yaml"));
+        Files.createFile(tempDir.resolve("pkg.T1/Nested/DeeplyNested/TABLETEST-deeply-nested.yaml"));
         Files.createFile(tempDir.resolve("pkg.T1/table1/TABLETEST-tabletest1.yaml"));
         Files.createFile(tempDir.resolve("pkg.T1/Nested/table2/TABLETEST-tabletest2.yaml"));
         Files.createFile(tempDir.resolve("pkg.T1/Nested/DeeplyNested/table1/TABLETEST-tabletest1.yaml"));
@@ -354,29 +359,36 @@ public class ReportTreeTest {
             .ignoringCollectionOrder()
             .isEqualTo(new ContextLoader().fromYaml("""
                 type: index
-                name: T1
+                name: pkg
                 outPath: ""
                 contents:
-                  - type: table
-                    name: tabletest1
-                    outPath: /tabletest1
-                    resource: pkg.T1/table1/TABLETEST-tabletest1.yaml
                   - type: index
-                    name: Nested
-                    outPath: /nested
+                    name: T1
+                    outPath: /t1
+                    resource: pkg.T1/TABLETEST-T1.yaml
                     contents:
                       - type: table
-                        name: tabletest2
-                        outPath: /nested/tabletest2
-                        resource: pkg.T1/Nested/table2/TABLETEST-tabletest2.yaml
+                        name: tabletest1
+                        outPath: /t1/tabletest1
+                        resource: pkg.T1/table1/TABLETEST-tabletest1.yaml
                       - type: index
-                        name: DeeplyNested
-                        outPath: /nested/deeplynested
+                        name: nested
+                        outPath: /t1/nested
+                        resource: pkg.T1/Nested/TABLETEST-nested.yaml
                         contents:
                           - type: table
-                            name: tabletest1
-                            outPath: /nested/deeplynested/tabletest1
-                            resource: pkg.T1/Nested/DeeplyNested/table1/TABLETEST-tabletest1.yaml
+                            name: tabletest2
+                            outPath: /t1/nested/tabletest2
+                            resource: pkg.T1/Nested/table2/TABLETEST-tabletest2.yaml
+                          - type: index
+                            name: deeply-nested
+                            outPath: /t1/nested/deeply-nested
+                            resource: pkg.T1/Nested/DeeplyNested/TABLETEST-deeply-nested.yaml
+                            contents:
+                              - type: table
+                                name: tabletest1
+                                outPath: /t1/nested/deeply-nested/tabletest1
+                                resource: pkg.T1/Nested/DeeplyNested/table1/TABLETEST-tabletest1.yaml
                 """)
             );
     }

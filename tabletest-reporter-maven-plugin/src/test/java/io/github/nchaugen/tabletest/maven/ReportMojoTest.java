@@ -40,13 +40,13 @@ class ReportMojoTest {
         Path tableDir = testClassDir.resolve("leapYearRules(java.time.Year, boolean)");
         Files.createDirectories(tableDir);
 
-        Files.writeString(testClassDir.resolve("TABLETEST-Calendar Calculations.yaml"), """
+        Files.writeString(testClassDir.resolve("TABLETEST-calendar-calculations.yaml"), """
             "title": "Calendar"
             "description": "Various rules for calendar calculations."
             """
         );
 
-        Files.writeString(tableDir.resolve("TABLETEST-Leap Year Rules.yaml"), """
+        Files.writeString(tableDir.resolve("TABLETEST-leap-year-rules.yaml"), """
             "title": "Leap Year Rules with Single Example"
             "description": "The leap year rules should be well-known."
             "headers":

@@ -428,13 +428,15 @@ class TableTestPublisherTest {
     }
 
     private Path findYamlFile(Path baseDir, String name) throws IOException {
+        // Transform the name to match the filename transformation applied by TableTestPublisher
+        String transformedName = FilenameTransformer.transform(name);
         try (var paths = Files.walk(baseDir)) {
             return paths
-                .filter(p -> p.toString().contains(name))
+                .filter(p -> p.toString().contains(transformedName))
                 .filter(p -> p.getFileName().toString().startsWith("TABLETEST-"))
                 .filter(p -> p.getFileName().toString().endsWith(".yaml"))
                 .findFirst()
-                .orElseThrow(() -> new AssertionError("TABLETEST-*.yaml file not found for " + name));
+                .orElseThrow(() -> new AssertionError("TABLETEST-*.yaml file not found for " + name + " (transformed to: " + transformedName + ")"));
         }
     }
 

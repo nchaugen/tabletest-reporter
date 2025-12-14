@@ -14,8 +14,9 @@
     <name>TableTest Reporter JUnit Extension</name>
 
     <properties>
-        <version.tabletest>0.5.7</version.tabletest>
+        <version.tabletest>0.5.8-SNAPSHOT</version.tabletest>
         <version.snakeyaml>3.0.1</version.snakeyaml>
+        <version.slugify>3.0.7</version.slugify>
         <version.junit>6.0.1</version.junit>
         <version.assertj>3.27.6</version.assertj>
     </properties>
@@ -27,6 +28,13 @@
             <artifactId>junit-jupiter-api</artifactId>
             <version>${version.junit}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- Slugify for filename transformation -->
+        <dependency>
+            <groupId>com.github.slugify</groupId>
+            <artifactId>slugify</artifactId>
+            <version>${version.slugify}</version>
         </dependency>
 
         <!-- TableTest library for parser and JUnit integration -->
