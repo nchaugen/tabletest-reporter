@@ -187,7 +187,6 @@ The generated AsciiDoc or Markdown files can be published with standard document
 
 - **AsciiDoc:** Use Asciidoctor Maven/Gradle plugins to convert to HTML
 - **Markdown:** Use your static site generator (Jekyll, Hugo, MkDocs, etc.)
-- **GitHub Pages:** Commit the generated files to your docs directory
 
 ---
 
