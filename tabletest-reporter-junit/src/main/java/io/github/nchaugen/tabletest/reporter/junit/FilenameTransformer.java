@@ -54,40 +54,7 @@ public class FilenameTransformer {
     }
 
     private static String camelCaseToKebab(String name) {
-        if (name.length() <= 1) {
-            return name.toLowerCase();
-        }
-
-        StringBuilder result = new StringBuilder();
-        char[] chars = name.toCharArray();
-
-        for (int i = 0; i < chars.length; i++) {
-            char current = chars[i];
-            boolean isUpperCase = Character.isUpperCase(current);
-
-            if (isUpperCase) {
-                boolean isFirstChar = i == 0;
-                boolean nextIsLowerCase = i + 1 < chars.length && Character.isLowerCase(chars[i + 1]);
-                boolean prevIsLowerCase = i > 0 && Character.isLowerCase(chars[i - 1]);
-                boolean prevIsDigit = i > 0 && Character.isDigit(chars[i - 1]);
-                boolean prevIsUpperCase = i > 0 && Character.isUpperCase(chars[i - 1]);
-
-                boolean shouldAddHyphen = !isFirstChar && (
-                    prevIsLowerCase ||
-                    prevIsDigit ||
-                    (prevIsUpperCase && nextIsLowerCase)
-                );
-
-                if (shouldAddHyphen) {
-                    result.append('-');
-                }
-
-                result.append(Character.toLowerCase(current));
-            } else {
-                result.append(current);
-            }
-        }
-
-        return SLUGIFIER.slugify(result.toString());
+        String withHyphens = CamelCaseSplitter.split(name, '-', Character::toLowerCase);
+        return SLUGIFIER.slugify(withHyphens);
     }
 }
