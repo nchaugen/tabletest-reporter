@@ -128,4 +128,33 @@ class RowResultMatcherTest {
         boolean result = RowResultMatcher.matchesRow(actualDisplayName, Optional.empty(), table, 0);
         assertEquals(matches, result);
     }
+
+    @Test
+    void shouldMatchEmptyStringScenario() {
+        // Based on JavaScenarioNameTest: "" in table should match JUnit display of ""
+        // Table: "" in scenario column
+        Table table = TableParser.parse("Scenario|value\n\"\"|foo");
+
+        // JUnit displays empty string ("") as: [2] ""
+        // The display name contains literal quotes around empty string
+        boolean result = RowResultMatcher.matchesRow("[2] \"\"", Optional.of("\"\""), table, 0);
+        assertTrue(result, "Should match empty string scenario - JUnit displays \\\"\\\" for empty string parameter");
+    }
+
+    @Test
+    void shouldMatchNullScenario() {
+        // Based on JavaScenarioNameTest: empty cell (null) should match JUnit display "null"
+        // Table: empty cell in scenario column (parsed as null)
+        Table table = TableParser.parse("Scenario|value\n|foo");
+
+        Object scenarioValue = table.rows().get(0).value(0);
+
+        // Empty cells are parsed as null
+        // JUnit displays null parameters as: [1] null
+        // But String.valueOf(null) returns "null" which should match
+        String expectedPattern = scenarioValue == null ? "null" : String.valueOf(scenarioValue);
+
+        boolean result = RowResultMatcher.matchesRow("[1] null", Optional.of(expectedPattern), table, 0);
+        assertTrue(result, "Should match null scenario - JUnit displays 'null' for null parameter");
+    }
 }

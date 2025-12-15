@@ -63,8 +63,12 @@ class RowResultMatcher {
      * Builds the expected display name for a table row.
      * - If scenario column exists: returns Optional with the scenario value
      * - Otherwise: returns empty Optional (will use fuzzy matching for non-scenario rows)
+     * <p>
+     * Handles JUnit's display name formatting:
+     * - null values are displayed as "null"
+     * - empty strings are displayed as "" (with quotes)
      */
-    private static Optional<String> buildExpectedDisplayName(int rowIndex, Table table, OptionalInt scenarioIndex) {
+    static Optional<String> buildExpectedDisplayName(int rowIndex, Table table, OptionalInt scenarioIndex) {
         var rows = table.rows();
         if (rowIndex >= rows.size()) {
             return Optional.of("");
@@ -76,12 +80,29 @@ class RowResultMatcher {
         if (scenarioIndex.isPresent()) {
             int index = scenarioIndex.getAsInt();
             if (index < table.columnCount()) {
-                return Optional.of(String.valueOf(row.value(index)));
+                Object value = row.value(index);
+                return Optional.of(formatForJUnitDisplay(value));
             }
         }
 
         // For rows without scenario column, return empty to indicate fuzzy matching
         return Optional.empty();
+    }
+
+    /**
+     * Formats a value as JUnit would display it in test names.
+     * - null → "null"
+     * - empty string → "\"\"" (with quotes)
+     * - other values → String.valueOf(value)
+     */
+    private static String formatForJUnitDisplay(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        if (value instanceof String str && str.isEmpty()) {
+            return "\"\"";
+        }
+        return String.valueOf(value);
     }
 
     /**
