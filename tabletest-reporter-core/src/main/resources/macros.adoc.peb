@@ -9,7 +9,7 @@
 {% endmacro %}
 
 {% macro renderValueWithRoles(roles, value, level) %}
-    {%- if value is iterable or value is map -%}
+    {%- if (value is null) or ((value is iterable or value is map) and value is not empty) -%}
         {{-  "[" -}} {%- for role in roles -%} {{- ".#{role}" -}} {%- endfor -%} {{- "]" }}
         {{- renderValue(value, level) -}}
     {%- else -%}
@@ -51,7 +51,7 @@
 
 {# intentional newline above #}
         {{- indent(level) }} {{- bullet(listBullet(level), level) -}}
-        {%- if value is iterable %}
+        {%- if (value is iterable) or (value is map) %}
             {{- ' {empty}' }}
             {{- renderValue(value, level+1) }}
         {%- else %}
@@ -67,14 +67,14 @@
 
 {# intentional newline above #}
         {{- indent(level) }} {{- "++#{entry.key}++" }} {{- termDelimiter(level) -}}
-        {%- if (entry.value is iterable) or (entry.value is map) %}
+        {%- if ((entry.value is iterable) or (entry.value is map)) and entry.value is not empty %}
             {{- '' }}
             {{- renderValue(entry.value, level+1) }}
         {%- else %}
             {{- ' ' + renderValue(entry.value, level+1) }}
         {%- endif %}
     {%- else %}
-        {{- ' {empty}' }}
+        {{- '{empty}' }}
     {%- endfor %}
 {% endmacro %}
 

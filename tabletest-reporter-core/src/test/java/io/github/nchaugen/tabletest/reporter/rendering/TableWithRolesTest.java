@@ -21,19 +21,43 @@ public class TableWithRolesTest {
           - value: Selected?
             roles:
             - "expectation"
-            - "passed"
         rows:
           - - value: "Select leap years"
               roles:
               - "scenario"
+              - "passed"
             - value:
               - "2000"
               - "2001"
               - "2002"
               - "2003"
               - "2004"
+              roles:
+              - "passed"
             - value:
               - "2004"
+              roles:
+              - "expectation"
+              - "passed"
+          - - value: "Empty years"
+              roles:
+              - "scenario"
+              - "passed"
+            - value: !!set {}
+              roles:
+              - "passed"
+            - value: []
+              roles:
+              - "expectation"
+              - "passed"
+          - - value: "Empty map and null"
+              roles:
+              - "scenario"
+              - "passed"
+            - value: {}
+              roles:
+              - "passed"
+            - value: !!null "null"
               roles:
               - "expectation"
               - "passed"
@@ -49,10 +73,10 @@ public class TableWithRolesTest {
                 |===
                 |[.scenario]#++Scenario++#
                 |++Candidates++
-                |[.expectation.passed]#++Selected?++#
+                |[.expectation]#++Selected?++#
                 
-                a|[.scenario]#++Select leap years++#
-                a|
+                a|[.scenario.passed]#++Select leap years++#
+                a|[.passed]
                 * ++2000++
                 * ++2001++
                 * ++2002++
@@ -60,6 +84,14 @@ public class TableWithRolesTest {
                 * ++2004++
                 a|[.expectation.passed]
                 * ++2004++
+                
+                a|[.scenario.passed]#++Empty years++#
+                a|[.passed]#{empty}#
+                a|[.expectation.passed]#{empty}#
+                
+                a|[.scenario.passed]#++Empty map and null++#
+                a|[.passed]#{empty}#
+                a|[.expectation.passed]
                 
                 |===
                 """
@@ -75,6 +107,8 @@ public class TableWithRolesTest {
                 | Scenario | Candidates | Selected? |
                 | --- | --- | --- |
                 | Select leap years | [2000, 2001, 2002, 2003, 2004] | [2004] |
+                | Empty years | {} | [] |
+                | Empty map and null | [:] |  |
                 """
             );
     }

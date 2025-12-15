@@ -7,6 +7,8 @@
     {%- if value == null %}
     {%- elseif value is set -%}
         {{- renderSet(value) -}}
+    {%- elseif value is iterable -%}
+        {{- renderList(value) -}}
     {%- elseif value is map -%}
         {{- renderMap(value) -}}
     {%- elseif value == '' %}
@@ -29,6 +31,16 @@
         {{- '' }}
     {%- endfor %}
     {{- '}' -}}
+{% endmacro %}
+
+{% macro renderList(list) %}
+    {{- '[' -}}
+    {%- for value in list %}
+        {{- renderValue(value) -}} {{- loop.last ? '' : ', ' -}}
+    {%- else %}
+        {{- '' }}
+    {%- endfor %}
+    {{- ']' -}}
 {% endmacro %}
 
 {% macro renderMap(map) %}

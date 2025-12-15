@@ -39,7 +39,7 @@ public class TableWithMapTest {
                 |++b++
                 |++c++
                 
-                a| {empty}
+                a|{empty}
                 a|
                 ++a++:: ++1++
                 ++b++:: ++2++

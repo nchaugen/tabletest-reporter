@@ -15,7 +15,6 @@ public class TableWithNestedMixedCollectionTest {
         "title": "Nested mixed collection"
         "headers":
         - "value": "a"
-        - "value": "b"
         "rows":
         - - "value":
               "a":
@@ -25,11 +24,14 @@ public class TableWithNestedMixedCollectionTest {
                 "3": !!null "null"
                 "4": !!null "null"
               "c": "5"
-          - "value": !!set
+        - - "value": !!set
               ? "A": "1"
               : !!null "null"
               ? "B": "2"
               : !!null "null"
+        - - "value":
+              - "A": "1"
+              - "B": "2"
         """);
 
     @Test
@@ -38,10 +40,9 @@ public class TableWithNestedMixedCollectionTest {
             .isEqualTo("""
                 == ++Nested mixed collection++
                 
-                [%header,cols="1,1"]
+                [%header,cols="1"]
                 |===
                 |++a++
-                |++b++
                 
                 a|
                 ++a++::
@@ -51,6 +52,13 @@ public class TableWithNestedMixedCollectionTest {
                 ** ++3++
                 ** ++4++
                 ++c++:: ++5++
+
+                a|
+                * {empty}
+                ++A++::: ++1++
+                * {empty}
+                ++B++::: ++2++
+                
                 a|
                 * {empty}
                 ++A++::: ++1++
@@ -68,9 +76,11 @@ public class TableWithNestedMixedCollectionTest {
             .isEqualTo("""
                 ## Nested mixed collection
                 
-                | a | b |
-                | --- | --- |
-                | [a: [1, 2], b: {3, 4}, c: 5] | {[A: 1], [B: 2]} |
+                | a |
+                | --- |
+                | [a: [1, 2], b: {3, 4}, c: 5] |
+                | {[A: 1], [B: 2]} |
+                | [[A: 1], [B: 2]] |
                 """
             );
     }
