@@ -31,4 +31,19 @@ class TitleTransformerTest {
     void shouldTransformNonDisplayNameToTitle(String input, String expectedTitle) {
         assertEquals(expectedTitle, TitleTransformer.toTitle(input));
     }
+
+    @TableTest("""
+        Method Name With Parameters                                    | Expected Title?
+        testMethod(java.lang.String)                                   | Test Method
+        validateInput(java.lang.String, java.lang.Integer)             | Validate Input
+        processData(java.util.List, java.util.Map)                     | Process Data
+        handleComplexTypes(java.util.List<java.lang.String>)           | Handle Complex Types
+        multipleGenericParams(java.util.Map<K, V>, java.util.List<T>) | Multiple Generic Params
+        simpleTest()                                                   | Simple Test
+        parseHTMLDocument(java.lang.String, boolean)                   | Parse HTML Document
+        """)
+    void shouldStripParameterTypesFromMethodNames(String input, String expectedTitle) {
+        String methodName = input.contains("(") ? input.substring(0, input.indexOf('(')) : input;
+        assertEquals(expectedTitle, TitleTransformer.toTitle(methodName));
+    }
 }
