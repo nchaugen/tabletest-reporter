@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.nchaugen"
-version = "0.1.2-SNAPSHOT"
+version = "0.2.0"
 
 java {
     toolchain {
@@ -36,7 +36,8 @@ gradlePlugin {
             id = "io.github.nchaugen.tabletest-reporter"
             implementationClass = "io.github.nchaugen.tabletest.gradle.TableTestReporterPlugin"
             displayName = "TableTest Reporter"
-            description = "Generate AsciiDoc or Markdown docs from TableTest YAML outputs"
+            description = "Generate AsciiDoc or Markdown docs from TableTest results"
+            tags.set(listOf("testing", "bdd", "documentation", "tabletest", "asciidoc", "markdown"))
         }
     }
 }
