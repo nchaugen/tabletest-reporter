@@ -27,11 +27,12 @@ import java.util.function.Function;
 class CamelCaseSplitter {
 
     /**
-     * Splits camelCase/PascalCase name with custom separator and character transformation.
+     * Splits camelCase/PascalCase name with custom separator.
+     * Character transformation is applied after splitting.
      *
-     * @param name              the camelCase name to split
-     * @param separator         separator to insert between words
-     * @param charTransform     transformation to apply to each character
+     * @param name          the camelCase name to split
+     * @param separator     separator to insert between words
+     * @param charTransform transformation to apply to each character
      * @return the split name with separators and transformed characters
      */
     static String split(String name, char separator, Function<Character, Character> charTransform) {
@@ -39,40 +40,68 @@ class CamelCaseSplitter {
             return name;
         }
 
+        String splitName = splitAtWordBoundaries(name, separator);
+        return applyCharTransform(splitName, charTransform);
+    }
+
+    /**
+     * Splits camelCase at word boundaries, inserting separator.
+     * Pure function with no side effects.
+     */
+    private static String splitAtWordBoundaries(String name, char separator) {
         if (name.length() == 1) {
-            return String.valueOf(charTransform.apply(name.charAt(0)));
+            return name;
         }
 
         StringBuilder result = new StringBuilder();
         char[] chars = name.toCharArray();
 
         for (int i = 0; i < chars.length; i++) {
-            char current = chars[i];
-            boolean isUpperCase = Character.isUpperCase(current);
-
-            if (isUpperCase) {
-                boolean isFirstChar = i == 0;
-                boolean nextIsLowerCase = i + 1 < chars.length && Character.isLowerCase(chars[i + 1]);
-                boolean prevIsLowerCase = i > 0 && Character.isLowerCase(chars[i - 1]);
-                boolean prevIsDigit = i > 0 && Character.isDigit(chars[i - 1]);
-                boolean prevIsUpperCase = i > 0 && Character.isUpperCase(chars[i - 1]);
-
-                boolean shouldAddSeparator = !isFirstChar && (
-                    prevIsLowerCase ||
-                    prevIsDigit ||
-                    (prevIsUpperCase && nextIsLowerCase)
-                );
-
-                if (shouldAddSeparator) {
-                    result.append(separator);
-                }
-
-                result.append(charTransform.apply(current));
-            } else {
-                result.append(charTransform.apply(current));
+            if (shouldInsertSeparatorBefore(chars, i)) {
+                result.append(separator);
             }
+            result.append(chars[i]);
         }
 
+        return result.toString();
+    }
+
+    /**
+     * Determines if a separator should be inserted before position i.
+     * Handles acronyms correctly (e.g., "XMLParser" → "XML-Parser").
+     */
+    private static boolean shouldInsertSeparatorBefore(char[] chars, int i) {
+        if (i == 0) {
+            return false;
+        }
+
+        char current = chars[i];
+        if (!Character.isUpperCase(current)) {
+            return false;
+        }
+
+        char prev = chars[i - 1];
+        boolean prevIsLowerCase = Character.isLowerCase(prev);
+        boolean prevIsDigit = Character.isDigit(prev);
+
+        if (prevIsLowerCase || prevIsDigit) {
+            return true;
+        }
+
+        // Handle acronym boundary: "XMLParser" → i points to 'P'
+        boolean prevIsUpperCase = Character.isUpperCase(prev);
+        boolean nextIsLowerCase = i + 1 < chars.length && Character.isLowerCase(chars[i + 1]);
+        return prevIsUpperCase && nextIsLowerCase;
+    }
+
+    /**
+     * Applies character transformation to each character.
+     */
+    private static String applyCharTransform(String text, Function<Character, Character> transform) {
+        StringBuilder result = new StringBuilder(text.length());
+        for (int i = 0; i < text.length(); i++) {
+            result.append(transform.apply(text.charAt(i)));
+        }
         return result.toString();
     }
 }
