@@ -30,30 +30,13 @@ import java.util.stream.IntStream;
 class JunitMetadataExtractor {
 
     static TableMetadata extract(ExtensionContext context, Table table, List<RowResult> rowResults) {
-        String title = getTitle(context);
+        String title = JunitTitleExtractor.extractMethodTitle(context);
         String description = findTableDescription(context);
         ColumnRoles columnRoles = extractColumnRoles(context, table);
         List<RowResult> results = rowResults != null ? rowResults : List.of();
         RowRoles rowRoles = new RowRoles(table, results, columnRoles);
 
         return new TableMetadata(title, description, columnRoles, rowRoles, results);
-    }
-
-    private static String getTitle(ExtensionContext context) {
-        return context.getTestMethod()
-            .map(testMethod -> {
-                if (testMethod.isAnnotationPresent(DisplayName.class)) {
-                    return context.getDisplayName();
-                } else {
-                    String methodName = testMethod.getName();
-                    int paramStart = methodName.indexOf('(');
-                    if (paramStart > 0) {
-                        methodName = methodName.substring(0, paramStart);
-                    }
-                    return TitleTransformer.toTitle(methodName);
-                }
-            })
-            .orElse(context.getDisplayName());
     }
 
 
