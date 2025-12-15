@@ -45,7 +45,12 @@ class JunitMetadataExtractor {
                 if (testMethod.isAnnotationPresent(DisplayName.class)) {
                     return context.getDisplayName();
                 } else {
-                    return TitleTransformer.toTitle(testMethod.getName());
+                    String methodName = testMethod.getName();
+                    int paramStart = methodName.indexOf('(');
+                    if (paramStart > 0) {
+                        methodName = methodName.substring(0, paramStart);
+                    }
+                    return TitleTransformer.toTitle(methodName);
                 }
             })
             .orElse(context.getDisplayName());
