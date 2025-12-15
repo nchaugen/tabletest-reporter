@@ -14,12 +14,11 @@
     <name>TableTest Reporter Core</name>
 
     <properties>
-        <version.tabletest-parser>0.5.8-SNAPSHOT</version.tabletest-parser>
+        <version.tabletest>0.5.8</version.tabletest>
         <version.snakeyaml>3.0.1</version.snakeyaml>
         <version.pebble>4.0.0</version.pebble>
         <version.logback>1.5.21</version.logback>
 
-        <version.tabletest-junit>0.5.8-SNAPSHOT</version.tabletest-junit>
         <version.junit>6.0.1</version.junit>
         <version.assertj>3.27.6</version.assertj>
     </properties>
@@ -28,7 +27,7 @@
         <dependency>
             <groupId>io.github.nchaugen</groupId>
             <artifactId>tabletest-parser</artifactId>
-            <version>${version.tabletest-parser}</version>
+            <version>${version.tabletest}</version>
         </dependency>
         <dependency>
             <groupId>org.snakeyaml</groupId>
@@ -56,7 +55,7 @@
         <dependency>
             <groupId>io.github.nchaugen</groupId>
             <artifactId>tabletest-junit</artifactId>
-            <version>${version.tabletest-junit}</version>
+            <version>${version.tabletest}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
