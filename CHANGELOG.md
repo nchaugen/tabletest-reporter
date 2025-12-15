@@ -1,12 +1,14 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+
+## [0.2.0] - 2025-12-15
 ### Added
 - JUnit extension to collect TableTest report data during test runs (tabletest-reporter-junit)
 - Multiple roles supported per cell in published YAML
 - Roles added to signal if a row passed or failed
 - CamelCase and snake_case aware slugified YAML file name generation
-- Human readable titles for test classes without `@DisplayName` annotation
+- Human-readable titles for test classes and methods without `@DisplayName` annotation
 - Test class and package index pages rendered with proper title of child pages 
 ### Changed
 - YAML files prefixed with `TABLETEST-` to avoid conflicts with other YAML files
