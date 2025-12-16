@@ -23,28 +23,21 @@ fi
 
 echo "Found $YAML_FILES YAML files"
 
-# Get CLI jar path
-CLI_JAR="../../tabletest-reporter-cli/target/tabletest-reporter-cli-0.2.1-SNAPSHOT.jar"
-if [ ! -f "$CLI_JAR" ]; then
-    echo "ERROR: CLI jar not found: $CLI_JAR"
-    exit 1
-fi
+# Generate Markdown documentation with Maven plugin
+echo "Generating Markdown documentation with Maven plugin..."
+mvn tabletest-reporter:report -Dtabletest.report.format=markdown
 
-# Test AsciiDoc generation
-echo "Generating AsciiDoc documentation with CLI..."
-OUTPUT_DIR="target/docs/asciidoc"
-java -jar "$CLI_JAR" -f asciidoc -i "$YAML_DIR" -o "$OUTPUT_DIR"
-
+OUTPUT_DIR="target/generated-docs/tabletest"
 if [ ! -d "$OUTPUT_DIR" ]; then
-    echo "ERROR: AsciiDoc output directory not created"
+    echo "ERROR: Output directory not created"
     exit 1
 fi
 
-ADOC_FILES=$(find "$OUTPUT_DIR" -name "*.adoc" | wc -l | tr -d ' ')
-if [ "$ADOC_FILES" -lt 1 ]; then
-    echo "ERROR: No AsciiDoc files generated"
+MD_FILES=$(find "$OUTPUT_DIR" -name "*.md" | wc -l | tr -d ' ')
+if [ "$MD_FILES" -lt 1 ]; then
+    echo "ERROR: No Markdown files generated"
     exit 1
 fi
 
-echo "Generated $ADOC_FILES AsciiDoc files"
+echo "Generated $MD_FILES Markdown files"
 echo "SUCCESS"

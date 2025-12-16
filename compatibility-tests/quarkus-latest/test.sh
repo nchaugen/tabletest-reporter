@@ -23,9 +23,9 @@ fi
 
 echo "Found $YAML_FILES YAML files"
 
-# Use Maven plugin to generate Markdown documentation
-echo "Generating Markdown documentation with Maven plugin..."
-mvn io.github.nchaugen:tabletest-reporter-maven-plugin:0.2.1-SNAPSHOT:report -Dtabletest.report.format=markdown
+# Generate AsciiDoc documentation with Maven plugin
+echo "Generating AsciiDoc documentation with Maven plugin..."
+mvn tabletest-reporter:report
 
 OUTPUT_DIR="target/generated-docs/tabletest"
 if [ ! -d "$OUTPUT_DIR" ]; then
@@ -33,11 +33,11 @@ if [ ! -d "$OUTPUT_DIR" ]; then
     exit 1
 fi
 
-MD_FILES=$(find "$OUTPUT_DIR" -name "*.md" | wc -l | tr -d ' ')
-if [ "$MD_FILES" -lt 1 ]; then
-    echo "ERROR: No Markdown files generated"
+ADOC_FILES=$(find "$OUTPUT_DIR" -name "*.adoc" | wc -l | tr -d ' ')
+if [ "$ADOC_FILES" -lt 1 ]; then
+    echo "ERROR: No AsciiDoc files generated"
     exit 1
 fi
 
-echo "Generated $MD_FILES Markdown files"
+echo "Generated $ADOC_FILES AsciiDoc files"
 echo "SUCCESS"

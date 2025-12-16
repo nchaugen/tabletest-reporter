@@ -23,20 +23,13 @@ fi
 
 echo "Found $YAML_FILES YAML files"
 
-# Get CLI jar path
-CLI_JAR="../../tabletest-reporter-cli/target/tabletest-reporter-cli-0.2.1-SNAPSHOT.jar"
-if [ ! -f "$CLI_JAR" ]; then
-    echo "ERROR: CLI jar not found: $CLI_JAR"
-    exit 1
-fi
+# Generate AsciiDoc documentation with Maven plugin
+echo "Generating AsciiDoc documentation with Maven plugin..."
+mvn tabletest-reporter:report
 
-# Test AsciiDoc generation
-echo "Generating AsciiDoc documentation..."
-OUTPUT_DIR="target/docs/asciidoc"
-java -jar "$CLI_JAR" -f asciidoc -i "$YAML_DIR" -o "$OUTPUT_DIR"
-
+OUTPUT_DIR="target/generated-docs/tabletest"
 if [ ! -d "$OUTPUT_DIR" ]; then
-    echo "ERROR: AsciiDoc output directory not created"
+    echo "ERROR: Output directory not created"
     exit 1
 fi
 

@@ -52,6 +52,11 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${version.plugin.surefire}</version>
             </plugin>
+            <plugin>
+                <groupId>io.github.nchaugen</groupId>
+                <artifactId>tabletest-reporter-maven-plugin</artifactId>
+                <version>${version.tabletest-reporter}</version>
+            </plugin>
         </plugins>
     </build>
 </project>
