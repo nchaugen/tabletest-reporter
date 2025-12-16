@@ -76,6 +76,9 @@ If you prefer to configure this in your build file:
   </plugins>
 </build>
 ```
+
+**Note for Quarkus projects:** If your Quarkus project already has `junit-platform.properties` for other JUnit configuration, you should use the Surefire plugin configuration above instead of adding `junit.jupiter.extensions.autodetection.enabled=true` to the properties file. Older Quarkus versions had conflicts with custom `junit-platform.properties` settings.
+
 </details>
 
 <details>
