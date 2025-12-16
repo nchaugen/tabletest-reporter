@@ -16,6 +16,7 @@
         <junit.version>6.0.1</junit.version>
         <tabletest.version>0.5.8</tabletest.version>
         <tabletest-reporter.version>0.2.1-SNAPSHOT</tabletest-reporter.version>
+        <version.plugin.surefire>3.5.2</version.plugin.surefire>
     </properties>
 
     <dependencies>
@@ -49,7 +50,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>${version.plugin.surefire}</version>
             </plugin>
         </plugins>
     </build>

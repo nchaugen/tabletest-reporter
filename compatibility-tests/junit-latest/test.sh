@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Testing: JUnit 6.0.1 (latest) with junit-platform.properties"
+echo "Testing: JUnit latest with junit-platform.properties"
 
 # Run tests to generate YAML files
 echo "Running tests..."
