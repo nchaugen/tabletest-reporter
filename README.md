@@ -154,13 +154,6 @@ Add the plugin to your `pom.xml`:
       <groupId>io.github.nchaugen</groupId>
       <artifactId>tabletest-reporter-maven-plugin</artifactId>
       <version>0.2.0</version>
-      <executions>
-        <execution>
-          <goals>
-            <goal>report</goal>
-          </goals>
-        </execution>
-      </executions>
     </plugin>
   </plugins>
 </build>
@@ -170,6 +163,8 @@ Run the plugin:
 ```bash
 mvn tabletest-reporter:report
 ```
+
+**Note:** The `<executions>` section is optional. Include it only if you want the plugin to run automatically during a specific Maven phase.
 
 Documentation is generated to `target/generated-docs/tabletest/`.
 
