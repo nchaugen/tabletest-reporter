@@ -6,7 +6,7 @@ This directory contains compatibility tests that verify TableTest Reporter works
 
 | Test Project | Framework | Version | Build Tool | Autodetection Method | Output Format | Reporter |
 |--------------|-----------|---------|------------|---------------------|---------------|----------|
-| junit-latest | JUnit | 6.0.1 | Maven | junit-platform.properties | AsciiDoc | Maven plugin |
+| junit-latest | JUnit | 6.0.1 | Maven | Surefire plugin | AsciiDoc | Maven plugin |
 | spring-boot-min | Spring Boot | 3.5.0 | Maven | Surefire plugin | AsciiDoc | CLI |
 | spring-boot-latest | Spring Boot | 4.0.0 | Maven | junit-platform.properties | Markdown | Maven plugin |
 | quarkus-min | Quarkus | 3.21.2 | Maven | Surefire plugin (workaround) | Markdown | CLI |
