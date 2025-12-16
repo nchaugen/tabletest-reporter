@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Testing: Spring Boot 3.5.7 (latest) with junit-platform.properties"
+echo "Testing: Spring Boot latest with junit-platform.properties"
 
 # Run tests to generate YAML files
 echo "Running tests..."

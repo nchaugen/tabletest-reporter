@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Testing: Quarkus 3.21.2 (minimum) with Surefire plugin (workaround)"
+echo "Testing: Quarkus minimum with Surefire plugin (workaround)"
 
 # Run tests to generate YAML files
 echo "Running tests..."

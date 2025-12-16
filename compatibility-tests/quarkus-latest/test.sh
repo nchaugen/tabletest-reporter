@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Testing: Quarkus 3.30.3 (latest) with junit-platform.properties"
+echo "Testing: Quarkus latest with junit-platform.properties"
 
 # Run tests to generate YAML files
 echo "Running tests..."

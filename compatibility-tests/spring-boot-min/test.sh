@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Testing: Spring Boot 3.5.0 (minimum) with Surefire plugin configuration"
+echo "Testing: Spring Boot minimum with Surefire plugin configuration"
 
 # Run tests to generate YAML files
 echo "Running tests..."

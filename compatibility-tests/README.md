@@ -8,7 +8,7 @@ This directory contains compatibility tests that verify TableTest Reporter works
 |--------------|-----------|---------|------------|---------------------|---------------|----------|
 | junit-latest | JUnit | 6.0.1 | Maven | junit-platform.properties | AsciiDoc | CLI |
 | spring-boot-min | Spring Boot | 3.5.0 | Maven | Surefire plugin | Markdown | Maven plugin |
-| spring-boot-latest | Spring Boot | 3.5.7 | Maven | junit-platform.properties | AsciiDoc | CLI |
+| spring-boot-latest | Spring Boot | 4.0.0 | Maven | junit-platform.properties | AsciiDoc | CLI |
 | quarkus-min | Quarkus | 3.21.2 | Maven | Surefire plugin (workaround) | Markdown | Maven plugin |
 | quarkus-latest | Quarkus | 3.30.3 | Maven | junit-platform.properties | AsciiDoc | CLI |
 
@@ -67,4 +67,4 @@ To add a new compatibility test:
 
 - **Quarkus LogManager Warning**: Expected warning about LogManager in Quarkus tests
 - **Quarkus Workaround**: Quarkus minimum uses Surefire plugin instead of junit-platform.properties to avoid conflicts
-- **Spring Boot 4.0**: Not included due to JUnit Platform version alignment issues (will be addressed in future)
+- **Gradle Plugin**: Not yet tested due to JUnit Platform compatibility issues with Gradle test runners (will be addressed in future)
