@@ -4,9 +4,9 @@ set -e
 
 echo "Testing: Quarkus latest with junit-platform.properties"
 
-# Run tests to generate YAML files
-echo "Running tests..."
-mvn clean test
+# Run tests and generate report (report runs automatically in verify phase)
+echo "Running tests and generating report..."
+mvn clean verify
 
 # Check YAML files were generated
 YAML_DIR="target/junit-jupiter"
@@ -22,10 +22,6 @@ if [ "$YAML_FILES" -lt 2 ]; then
 fi
 
 echo "Found $YAML_FILES YAML files"
-
-# Generate AsciiDoc documentation with Maven plugin
-echo "Generating AsciiDoc documentation with Maven plugin..."
-mvn tabletest-reporter:report
 
 OUTPUT_DIR="target/generated-docs/tabletest"
 if [ ! -d "$OUTPUT_DIR" ]; then

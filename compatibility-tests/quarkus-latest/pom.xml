@@ -67,6 +67,14 @@
                 <groupId>io.github.nchaugen</groupId>
                 <artifactId>tabletest-reporter-maven-plugin</artifactId>
                 <version>${version.tabletest-reporter}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <phase>verify</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
