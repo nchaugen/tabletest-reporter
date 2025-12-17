@@ -45,19 +45,19 @@ if [ -f .git/hooks/pre-commit.beads ]; then
     bash .git/hooks/pre-commit.beads
 fi
 
-# 2. Quick build check (no tests, just compilation)
+# 2. Build and run unit tests
 echo ""
-echo "Checking build..."
-if ! mvn clean install -DskipTests -q; then
-    echo -e "${RED}✗ Build failed${NC}"
-    echo "Fix the build errors before committing"
+echo "Building and running tests..."
+if ! mvn clean install -q; then
+    echo -e "${RED}✗ Build or tests failed${NC}"
+    echo "Fix the errors before committing"
     exit 1
 fi
-echo -e "${GREEN}✓ Build successful${NC}"
+echo -e "${GREEN}✓ Build and tests successful${NC}"
 
 echo -e "${GREEN}✓ Pre-commit checks passed${NC}"
 echo ""
-echo "Reminder: Run 'bash compatibility-tests/run-tests.sh' before pushing"
+echo "Reminder: Compatibility tests will run before push"
 exit 0
 EOF
 

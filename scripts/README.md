@@ -12,8 +12,8 @@ bash scripts/install-git-hooks.sh
 
 **Pre-commit hook** (runs on `git commit`):
 - Syncs beads changes
-- Quick build check (`mvn clean install -DskipTests`)
-- Takes ~5 seconds
+- Build and run unit tests (`mvn clean install`)
+- Takes ~10 seconds
 
 **Pre-push hook** (runs on `git push`):
 - Syncs beads changes
