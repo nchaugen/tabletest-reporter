@@ -164,7 +164,7 @@ Run the plugin:
 mvn tabletest-reporter:report
 ```
 
-**Note:** The `<executions>` section is optional. Include it only if you want the plugin to run automatically during a specific Maven phase.
+**Note:** An `<executions>` section can be added if you want the plugin to run automatically during a specific Maven phase.
 
 Documentation is generated to `target/generated-docs/tabletest/`.
 
