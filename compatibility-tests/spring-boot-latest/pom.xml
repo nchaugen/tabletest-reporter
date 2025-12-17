@@ -63,7 +63,6 @@
                 <version>${version.tabletest-reporter}</version>
                 <configuration>
                     <format>markdown</format>
-                    <outputDirectory>${project.build.directory}/custom-reports</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>

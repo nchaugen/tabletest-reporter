@@ -25,7 +25,7 @@ echo "Found $YAML_FILES YAML files"
 
 # Generate Markdown documentation with Maven plugin
 echo "Generating Markdown documentation with Maven plugin..."
-mvn tabletest-reporter:report -Dtabletest.report.format=markdown
+mvn tabletest-reporter:report
 
 OUTPUT_DIR="target/generated-docs/tabletest"
 if [ ! -d "$OUTPUT_DIR" ]; then
@@ -40,4 +40,22 @@ if [ "$MD_FILES" -lt 1 ]; then
 fi
 
 echo "Generated $MD_FILES Markdown files"
+
+# Test custom outputDirectory configuration
+echo "Testing custom outputDirectory configuration..."
+mvn tabletest-reporter:report -Dtabletest.report.outputDirectory=target/custom-reports
+
+CUSTOM_DIR="target/custom-reports"
+if [ ! -d "$CUSTOM_DIR" ]; then
+    echo "ERROR: Custom output directory not created"
+    exit 1
+fi
+
+CUSTOM_MD_FILES=$(find "$CUSTOM_DIR" -name "*.md" | wc -l | tr -d ' ')
+if [ "$CUSTOM_MD_FILES" -lt 1 ]; then
+    echo "ERROR: No Markdown files generated in custom directory"
+    exit 1
+fi
+
+echo "Generated $CUSTOM_MD_FILES Markdown files in custom directory"
 echo "SUCCESS"
