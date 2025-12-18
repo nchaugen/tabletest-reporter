@@ -20,6 +20,7 @@ CLI_JAR=$(find_cli_jar)
 
 # Test AsciiDoc generation with CLI
 echo "Generating AsciiDoc documentation with CLI..."
+YAML_DIR="target/junit-jupiter"
 OUTPUT_DIR="target/docs/asciidoc"
 java -jar "$CLI_JAR" -f asciidoc -i "$YAML_DIR" -o "$OUTPUT_DIR"
 

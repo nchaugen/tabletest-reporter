@@ -60,3 +60,16 @@ find_cli_jar() {
     fi
     echo "$cli_jar"
 }
+
+# Get Maven plugin version dynamically (version-independent)
+# Returns the version string or exits with error
+get_maven_plugin_version() {
+    local plugin_jar=$(find ../../tabletest-reporter-maven-plugin/target -name "tabletest-reporter-maven-plugin-*-SNAPSHOT.jar" 2>/dev/null | head -n 1)
+    if [ -z "$plugin_jar" ] || [ ! -f "$plugin_jar" ]; then
+        echo "ERROR: Maven plugin jar not found in ../../tabletest-reporter-maven-plugin/target"
+        exit 1
+    fi
+    # Extract version from filename: tabletest-reporter-maven-plugin-0.2.1-SNAPSHOT.jar -> 0.2.1-SNAPSHOT
+    local version=$(basename "$plugin_jar" | sed 's/tabletest-reporter-maven-plugin-//' | sed 's/.jar$//')
+    echo "$version"
+}
