@@ -9,6 +9,18 @@ See README.md
 
 **CRITICAL**: You must NEVER commit or push changes without explicit user approval.
 
+## Git Safety Rules - NEVER VIOLATE THESE
+
+🚨 **ABSOLUTE PROHIBITIONS** 🚨
+- **NEVER** use `git commit --amend` on commits already pushed to remote
+- **NEVER** use `git push --force` or `git push --force-with-lease` to main/master
+- **NEVER** rewrite history on main/master branch
+- **NEVER** commit or push without explicit user approval
+
+If you need to fix a commit message after pushing:
+1. Create a NEW commit with the fix (e.g., "docs: fix commit message format")
+2. Push normally with `git push`
+
 ## Workflow Steps
 
 1. **Make changes** as requested by the user
@@ -16,7 +28,10 @@ See README.md
 3. **Show what changed**: Use `git diff` to show the user what you've changed
 4. **Explain the changes**: Briefly explain what you did and why
 5. **Wait for approval**: Ask "Should I commit and push these changes?"
-6. **Only after user says yes**: Run the commit and push commands
+6. **Only after user says yes**:
+   - Run `git add` and `git commit` (the commit-msg hook will validate format)
+   - Run `git push` (NOT force push)
+   - If commit is rejected by hook, fix and create NEW commit (don't amend if already pushed)
 
 ## Example Sessions
 
