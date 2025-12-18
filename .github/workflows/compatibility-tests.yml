@@ -1,4 +1,4 @@
-name: Compatibility Tests
+name: CI
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  compatibility-tests:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,6 +19,12 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
+
+    - name: Build and verify Maven modules
+      run: mvn clean verify
+
+    - name: Build and verify Gradle plugin
+      run: ./gradlew clean build
 
     - name: Run compatibility tests
       run: |
