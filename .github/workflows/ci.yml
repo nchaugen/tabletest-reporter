@@ -26,7 +26,7 @@ jobs:
     - name: Build and verify Gradle plugin
       run: |
         cd tabletest-reporter-gradle-plugin
-        ./gradlew clean build
+        ./gradlew clean build publishToMavenLocal
 
     - name: Run compatibility tests
       run: |
