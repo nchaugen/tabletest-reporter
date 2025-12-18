@@ -2,8 +2,8 @@
 
 ## [Unreleased]
 ### Fixed
-- Test method parameter types not included in generate test title
-- Adds passed/failed roles correctly for null and empty string scenario names 
+- Parameter types no longer included in the test title generated from the method name
+- Passed/failed roles now added correctly when scenario name is null or empty string 
 
 ## [0.2.0] - 2025-12-15
 ### Added

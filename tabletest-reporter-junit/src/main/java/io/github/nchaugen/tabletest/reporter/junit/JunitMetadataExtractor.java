@@ -18,7 +18,6 @@ package io.github.nchaugen.tabletest.reporter.junit;
 import io.github.nchaugen.tabletest.junit.Description;
 import io.github.nchaugen.tabletest.junit.Scenario;
 import io.github.nchaugen.tabletest.parser.Table;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import java.util.List;
