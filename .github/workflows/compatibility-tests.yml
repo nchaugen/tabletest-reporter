@@ -24,7 +24,9 @@ jobs:
       run: mvn clean verify
 
     - name: Build and verify Gradle plugin
-      run: ./gradlew clean build
+      run: |
+        cd tabletest-reporter-gradle-plugin
+        ./gradlew clean build
 
     - name: Run compatibility tests
       run: |
