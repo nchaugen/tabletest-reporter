@@ -1,6 +1,9 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+### Fixed
+- Test method parameter types not included in generate test title
+- Adds passed/failed roles correctly for null and empty string scenario names 
 
 ## [0.2.0] - 2025-12-15
 ### Added
