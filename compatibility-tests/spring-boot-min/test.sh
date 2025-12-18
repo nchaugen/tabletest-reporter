@@ -23,10 +23,10 @@ fi
 
 echo "Found $YAML_FILES YAML files"
 
-# Get CLI jar path
-CLI_JAR="../../tabletest-reporter-cli/target/tabletest-reporter-cli-0.2.1-SNAPSHOT.jar"
-if [ ! -f "$CLI_JAR" ]; then
-    echo "ERROR: CLI jar not found: $CLI_JAR"
+# Get CLI jar path (detect version dynamically)
+CLI_JAR=$(find ../../tabletest-reporter-cli/target -name "tabletest-reporter-cli-*-SNAPSHOT.jar" 2>/dev/null | head -n 1)
+if [ -z "$CLI_JAR" ] || [ ! -f "$CLI_JAR" ]; then
+    echo "ERROR: CLI jar not found in ../../tabletest-reporter-cli/target"
     exit 1
 fi
 
