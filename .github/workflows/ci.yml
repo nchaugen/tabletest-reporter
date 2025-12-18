@@ -20,8 +20,8 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Build and verify Maven modules
-      run: mvn clean verify
+    - name: Build and install Maven modules
+      run: mvn clean install
 
     - name: Build and verify Gradle plugin
       run: |
