@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.rendering.AsciiDocValidator.assertValidAsciiDoc;
 import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,17 +31,20 @@ public class IndexTest {
 
     @Test
     void supported_in_asciidoc() {
-        assertThat(ASCIIDOC.renderIndex(context))
+        String rendered = ASCIIDOC.renderIndex(context);
+
+        assertThat(rendered)
             .isEqualTo("""
                 = ++Title of the Test Class++
-                
+
                 A free-text description explaining what these tables are about.
-                
+
                 * xref:./path/to/a_table.adoc[++A Table++]
                 * xref:./path/to/b_table.adoc[++B Table++]
                 * xref:./path/to/c_table.adoc[++C Table++]
                 """
             );
+        assertValidAsciiDoc(rendered);
     }
 
     @Test

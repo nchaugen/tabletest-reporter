@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.rendering.AsciiDocValidator.assertValidAsciiDoc;
 import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,14 +38,16 @@ public class TableWithNestedSetTest {
 
     @Test
     void supported_in_asciidoc() {
-        assertThat(ASCIIDOC.renderTable(context))
+        String rendered = ASCIIDOC.renderTable(context);
+
+        assertThat(rendered)
             .isEqualTo("""
                 == ++Nested set values++
-                
+
                 [%header,cols="1"]
                 |===
                 |++a++
-                
+
                 a|
                 * {empty}
                 ** ++1++
@@ -58,10 +61,11 @@ public class TableWithNestedSetTest {
                 ** ++#++
                 ** ++$++
                 ** ++%++
-                
+
                 |===
                 """
             );
+        assertValidAsciiDoc(rendered);
     }
 
     @Test

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.rendering.AsciiDocValidator.assertValidAsciiDoc;
 import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,16 +31,18 @@ public class TableWithMapTest {
 
     @Test
     void supported_in_asciidoc() {
-        assertThat(ASCIIDOC.renderTable(context))
+        String rendered = ASCIIDOC.renderTable(context);
+
+        assertThat(rendered)
             .isEqualTo("""
                 == ++Map values++
-                
+
                 [%header,cols="1,1,1"]
                 |===
                 |++a++
                 |++b++
                 |++c++
-                
+
                 a|{empty}
                 a|
                 ++a++:: ++1++
@@ -47,10 +50,11 @@ public class TableWithMapTest {
                 ++c++:: ++3++
                 a|
                 ++b++:: \\|\\|
-                
+
                 |===
                 """
             );
+        assertValidAsciiDoc(rendered);
     }
 
     @Test

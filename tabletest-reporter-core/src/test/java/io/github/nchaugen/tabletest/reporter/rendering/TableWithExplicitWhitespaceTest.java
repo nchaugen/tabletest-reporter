@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.rendering.AsciiDocValidator.assertValidAsciiDoc;
 import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,10 +33,12 @@ public class TableWithExplicitWhitespaceTest {
 
     @Test
     void supported_in_asciidoc() {
-        assertThat(ASCIIDOC.renderTable(context))
+        String rendered = ASCIIDOC.renderTable(context);
+
+        assertThat(rendered)
             .isEqualTo("""
                 == ++Explicit whitespace++
-                
+
                 [%header,cols="1,1,1,1,1,1"]
                 |===
                 |++a++
@@ -44,17 +47,18 @@ public class TableWithExplicitWhitespaceTest {
                 |&#x2423;++e++&#x2423;
                 |++f++
                 |++g++
-                
+
                 a|
                 a|+""+
                 a|&#x2423;&#x2423;&#x2423;
                 a|++a bc++&#x2423;&#x2423;++def++
                 a|&#x21E5;
                 a|&#x21E5;&#x2423;
-                
+
                 |===
                 """
             );
+        assertValidAsciiDoc(rendered);
     }
 
     @Test

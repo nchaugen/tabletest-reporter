@@ -22,6 +22,7 @@
         <version.junit>6.0.1</version.junit>
         <version.assertj>3.27.6</version.assertj>
         <version.commonmark>0.24.0</version.commonmark>
+        <version.asciidoctorj>3.0.0</version.asciidoctorj>
     </properties>
 
     <dependencies>
@@ -87,6 +88,12 @@
             <groupId>org.commonmark</groupId>
             <artifactId>commonmark</artifactId>
             <version>${version.commonmark}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctorj</artifactId>
+            <version>${version.asciidoctorj}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

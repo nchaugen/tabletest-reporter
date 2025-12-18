@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.rendering.AsciiDocValidator.assertValidAsciiDoc;
 import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -66,16 +67,18 @@ public class TableWithRolesTest {
 
     @Test
     void should_add_roles_for_asciidoc() {
-        assertThat(ASCIIDOC.renderTable(context))
+        String rendered = ASCIIDOC.renderTable(context);
+
+        assertThat(rendered)
             .isEqualTo("""
                 == ++Year selection++
-                
+
                 [%header,cols="1,1,1"]
                 |===
                 |[.scenario]#++Scenario++#
                 |++Candidates++
                 |[.expectation]#++Selected?++#
-                
+
                 a|[.scenario.passed]#++Select leap years++#
                 a|[.passed]
                 * ++2000++
@@ -85,18 +88,19 @@ public class TableWithRolesTest {
                 * ++2004++
                 a|[.expectation.passed]
                 * ++2004++
-                
+
                 a|[.scenario.passed]#++Empty years++#
                 a|[.passed]#{empty}#
                 a|[.expectation.passed]#{empty}#
-                
+
                 a|[.scenario.passed]#++Empty map and null++#
                 a|[.passed]#{empty}#
                 a|[.expectation.passed]
-                
+
                 |===
                 """
             );
+        assertValidAsciiDoc(rendered);
     }
 
     @Test
