@@ -5,6 +5,7 @@ target/
 .kotlin
 .gradle/
 .java-version
+**/.java-version
 **/dependency-reduced-pom.xml
 
 ### IntelliJ IDEA ###

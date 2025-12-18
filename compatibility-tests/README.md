@@ -11,6 +11,7 @@ This directory contains compatibility tests that verify TableTest Reporter works
 | spring-boot-latest | Spring Boot | 4.0.0 | Maven | junit-platform.properties | Markdown | Maven plugin |
 | quarkus-min | Quarkus | 3.21.2 | Maven | Surefire plugin (workaround) | Markdown | CLI |
 | quarkus-latest | Quarkus | 3.30.3 | Maven | junit-platform.properties | AsciiDoc | Maven plugin |
+| gradle-latest | JUnit | 6.0.1 | Gradle | systemProperty | Markdown | Gradle plugin |
 
 ## Running Tests
 
@@ -48,8 +49,8 @@ Each test project contains:
 - **JUnit Integration**: Extension autodetection works correctly
 - **YAML Generation**: Test data is captured in YAML files
 - **Framework Compatibility**: Works with Spring Boot and Quarkus
-- **Build Tool Support**: Maven and Gradle (via Spring Boot)
-- **Documentation Generation**: CLI and Maven plugin can process YAML files
+- **Build Tool Support**: Maven and Gradle
+- **Documentation Generation**: CLI, Maven plugin, and Gradle plugin can process YAML files
 - **Output Formats**: Both AsciiDoc and Markdown generation work
 
 ## Adding New Tests
@@ -67,4 +68,4 @@ To add a new compatibility test:
 
 - **Quarkus LogManager Warning**: Expected warning about LogManager in Quarkus tests
 - **Quarkus Workaround**: Quarkus minimum uses Surefire plugin instead of junit-platform.properties to avoid conflicts
-- **Gradle Plugin**: Not yet tested due to JUnit Platform compatibility issues with Gradle test runners (will be addressed in future)
+- **Gradle Java Version**: Gradle compatibility test requires Java 21 (detected via JAVA_HOME) because Gradle 8.14 Kotlin DSL doesn't support Java 25
