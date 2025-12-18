@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Testing: Spring Boot latest with junit-platform.properties"
+echo "Testing: Spring Boot latest with inputDirectory and outputDirectory configuration"
 
 # Run tests to generate YAML files
 echo "Running tests..."
@@ -23,7 +23,7 @@ fi
 
 echo "Found $YAML_FILES YAML files"
 
-# Generate Markdown documentation with Maven plugin
+# Generate Markdown documentation with Maven plugin (default inputDirectory)
 echo "Generating Markdown documentation with Maven plugin..."
 mvn tabletest-reporter:report
 
@@ -41,21 +41,37 @@ fi
 
 echo "Generated $MD_FILES Markdown files"
 
-# Test custom outputDirectory configuration
-echo "Testing custom outputDirectory configuration..."
-mvn tabletest-reporter:report -Dtabletest.report.outputDirectory=target/custom-reports
+# Test custom inputDirectory and outputDirectory configuration
+# Copy YAML files to 'build' directory to simulate non-standard build output location
+echo "Testing custom inputDirectory and outputDirectory configuration..."
+mkdir -p build/junit-jupiter
+cp -r target/junit-jupiter/* build/junit-jupiter/
 
-CUSTOM_DIR="target/custom-reports"
-if [ ! -d "$CUSTOM_DIR" ]; then
-    echo "ERROR: Custom output directory not created"
+# Verify YAML files were copied
+BUILD_YAML_FILES=$(find build/junit-jupiter -name "TABLETEST-*.yaml" | wc -l | tr -d ' ')
+if [ "$BUILD_YAML_FILES" -lt 2 ]; then
+    echo "ERROR: Failed to copy YAML files to build directory"
     exit 1
 fi
 
-CUSTOM_MD_FILES=$(find "$CUSTOM_DIR" -name "*.md" | wc -l | tr -d ' ')
-if [ "$CUSTOM_MD_FILES" -lt 1 ]; then
-    echo "ERROR: No Markdown files generated in custom directory"
+echo "Copied $BUILD_YAML_FILES YAML files to build/junit-jupiter"
+
+# Generate documentation from 'build' directory using inputDirectory parameter
+mvn tabletest-reporter:report \
+    -Dtabletest.report.inputDirectory=build/junit-jupiter \
+    -Dtabletest.report.outputDirectory=build/generated-docs
+
+BUILD_OUTPUT_DIR="build/generated-docs"
+if [ ! -d "$BUILD_OUTPUT_DIR" ]; then
+    echo "ERROR: Custom input/output directory test failed - output not created"
     exit 1
 fi
 
-echo "Generated $CUSTOM_MD_FILES Markdown files in custom directory"
+BUILD_MD_FILES=$(find "$BUILD_OUTPUT_DIR" -name "*.md" | wc -l | tr -d ' ')
+if [ "$BUILD_MD_FILES" -lt 1 ]; then
+    echo "ERROR: No Markdown files generated from custom inputDirectory"
+    exit 1
+fi
+
+echo "Generated $BUILD_MD_FILES Markdown files from custom inputDirectory and outputDirectory"
 echo "SUCCESS"
