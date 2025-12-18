@@ -1,6 +1,8 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+### Added
+- Configurable expectation column pattern via `tabletest.reporter.expectation.pattern` configuration parameter
 ### Fixed
 - Parameter types no longer included in the test title generated from the method name
 - Passed/failed roles now added correctly when scenario name is null or empty string 

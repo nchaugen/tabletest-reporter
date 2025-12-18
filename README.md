@@ -51,6 +51,8 @@ junit.jupiter.extensions.autodetection.enabled=true
 
 This approach works with any build tool (Maven, Gradle, etc.) and keeps JUnit configuration with your test code.
 
+You can also use `junit-platform.properties` to configure TableTest Reporter behaviour. See [Configuration Options](#configuration-options) for details.
+
 **Alternative: Build Tool Configuration**
 
 If you prefer to configure this in your build file:
@@ -261,6 +263,29 @@ The generated AsciiDoc or Markdown files can be published with standard document
 ---
 
 ## Advanced Topics
+
+### Configuration Options
+
+TableTest Reporter can be configured through [JUnit Platform configuration parameters](https://docs.junit.org/current/running-tests/configuration-parameters.html).
+
+**`tabletest.reporter.expectation.pattern`**
+
+Defines a regular expression pattern to identify expectation columns in your test tables. By default, columns ending with `?` are treated as expectations.
+
+Default: `.*\?$` (columns ending with question mark)
+
+Example in `junit-platform.properties`:
+
+```properties
+# Prefix convention: "Expected Result", "Expected Value"
+tabletest.reporter.expectation.pattern=^Expected.*
+
+# Suffix convention: "resultExpected", "valueExpected"
+tabletest.reporter.expectation.pattern=.*[Ee]xpected$
+
+# Parenthetical notation: "value (expected)"
+tabletest.reporter.expectation.pattern=.*\\(expected\\)$
+```
 
 ### For Plugin Developers
 

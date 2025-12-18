@@ -23,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -42,7 +43,7 @@ class JunitMetadataExtractor {
     private static ColumnRoles extractColumnRoles(ExtensionContext context, Table table) {
         return new ColumnRoles(
             findScenarioIndex(context, table),
-            findExpectationIndices(table)
+            findExpectationIndices(context, table)
         );
     }
 
@@ -63,9 +64,13 @@ class JunitMetadataExtractor {
             : OptionalInt.empty();
     }
 
-    private static Set<Integer> findExpectationIndices(Table table) {
+    private static Set<Integer> findExpectationIndices(ExtensionContext context, Table table) {
+        String patternString = context.getConfigurationParameter("tabletest.reporter.expectation.pattern")
+            .orElse(".*\\?$");
+        Pattern pattern = Pattern.compile(patternString);
+
         return IntStream.range(0, table.headers().size())
-            .filter(i -> table.header(i).endsWith("?"))
+            .filter(i -> pattern.matcher(table.header(i)).matches())
             .boxed()
             .collect(Collectors.toSet());
     }
