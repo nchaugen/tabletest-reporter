@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableWithRolesTest {
@@ -100,10 +101,12 @@ public class TableWithRolesTest {
 
     @Test
     void should_ignore_roles_for_markdown() {
-        assertThat(MARKDOWN.renderTable(context))
+        String rendered = MARKDOWN.renderTable(context);
+
+        assertThat(rendered)
             .isEqualTo("""
                 ## Year selection
-                
+
                 | Scenario | Candidates | Selected? |
                 | --- | --- | --- |
                 | Select leap years | [2000, 2001, 2002, 2003, 2004] | [2004] |
@@ -111,6 +114,7 @@ public class TableWithRolesTest {
                 | Empty map and null | [:] |  |
                 """
             );
+        assertValidMarkdown(rendered);
     }
 
 }

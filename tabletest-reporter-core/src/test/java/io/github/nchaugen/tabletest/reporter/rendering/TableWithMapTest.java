@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableWithMapTest {
@@ -54,15 +55,18 @@ public class TableWithMapTest {
 
     @Test
     void supported_in_markdown() {
-        assertThat(MARKDOWN.renderTable(context))
+        String rendered = MARKDOWN.renderTable(context);
+
+        assertThat(rendered)
             .isEqualTo("""
                 ## Map values
-                
+
                 | a | b | c |
                 | --- | --- | --- |
                 | [:] | [a: 1, b: 2, c: 3] | [b: \\|\\|] |
                 """
             );
+        assertValidMarkdown(rendered);
     }
 
 }

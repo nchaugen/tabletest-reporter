@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableWithNestedMixedCollectionTest {
@@ -72,10 +73,12 @@ public class TableWithNestedMixedCollectionTest {
 
     @Test
     void supported_in_markdown() {
-        assertThat(MARKDOWN.renderTable(context))
+        String rendered = MARKDOWN.renderTable(context);
+
+        assertThat(rendered)
             .isEqualTo("""
                 ## Nested mixed collection
-                
+
                 | a |
                 | --- |
                 | [a: [1, 2], b: {3, 4}, c: 5] |
@@ -83,6 +86,7 @@ public class TableWithNestedMixedCollectionTest {
                 | [[A: 1], [B: 2]] |
                 """
             );
+        assertValidMarkdown(rendered);
     }
 
 }

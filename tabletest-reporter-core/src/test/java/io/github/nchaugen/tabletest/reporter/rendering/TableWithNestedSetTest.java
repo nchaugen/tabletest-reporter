@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableWithNestedSetTest {
@@ -65,15 +66,18 @@ public class TableWithNestedSetTest {
 
     @Test
     void supported_in_markdown() {
-        assertThat(MARKDOWN.renderTable(context))
+        String rendered = MARKDOWN.renderTable(context);
+
+        assertThat(rendered)
             .isEqualTo("""
                 ## Nested set values
-                
+
                 | a |
                 | --- |
                 | {{1, 2, 3}, {a, b, c}, {#, $, %}} |
                 """
             );
+        assertValidMarkdown(rendered);
     }
 
 }

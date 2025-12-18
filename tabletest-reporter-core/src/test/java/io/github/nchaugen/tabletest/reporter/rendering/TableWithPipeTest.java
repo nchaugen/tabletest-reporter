@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableWithPipeTest {
@@ -46,15 +47,18 @@ public class TableWithPipeTest {
 
     @Test
     void supported_in_markdown() {
-        assertThat(MARKDOWN.renderTable(context))
+        String rendered = MARKDOWN.renderTable(context);
+
+        assertThat(rendered)
             .isEqualTo("""
                 ## Escaped pipes
-                
+
                 | a | b | a\\|b |
                 | --- | --- | --- |
                 | \\| | \\| | Text with \\| character |
                 """
             );
+        assertValidMarkdown(rendered);
     }
 
 }

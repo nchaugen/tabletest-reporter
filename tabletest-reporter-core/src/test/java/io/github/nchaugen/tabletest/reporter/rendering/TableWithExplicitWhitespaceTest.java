@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
 import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableWithExplicitWhitespaceTest {
@@ -58,15 +59,18 @@ public class TableWithExplicitWhitespaceTest {
 
     @Test
     void supported_in_markdown() {
-        assertThat(MARKDOWN.renderTable(context))
+        String rendered = MARKDOWN.renderTable(context);
+
+        assertThat(rendered)
             .isEqualTo("""
                 ## Explicit whitespace
-                
+
                 | a | b | c d | &#x2423;e&#x2423; | f | g |
                 | --- | --- | --- | --- | --- | --- |
                 |  | "" | &#x2423;&#x2423;&#x2423; | a bc&#x2423;&#x2423;def | &#x21E5; | &#x21E5;&#x2423; |
                 """
             );
+        assertValidMarkdown(rendered);
     }
 
 }
