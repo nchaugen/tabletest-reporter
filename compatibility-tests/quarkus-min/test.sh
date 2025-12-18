@@ -2,6 +2,10 @@
 
 set -e
 
+# Source common test functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../test-common.sh"
+
 echo "Testing: Quarkus minimum with Surefire plugin (workaround)"
 
 # Run tests to generate YAML files
@@ -9,35 +13,12 @@ echo "Running tests..."
 mvn clean test
 
 # Check YAML files were generated
-YAML_DIR="target/junit-jupiter"
-if [ ! -d "$YAML_DIR" ]; then
-    echo "ERROR: YAML directory not found: $YAML_DIR"
-    exit 1
-fi
-
-YAML_FILES=$(find "$YAML_DIR" -name "TABLETEST-*.yaml" | wc -l | tr -d ' ')
-if [ "$YAML_FILES" -lt 2 ]; then
-    echo "ERROR: Expected at least 2 YAML files, found $YAML_FILES"
-    exit 1
-fi
-
-echo "Found $YAML_FILES YAML files"
+validate_yaml_files "target/junit-jupiter"
 
 # Use Maven plugin to generate Markdown documentation
+# Note: Uses full coordinates including version because plugin is not configured in pom.xml
 echo "Generating Markdown documentation with Maven plugin..."
 mvn io.github.nchaugen:tabletest-reporter-maven-plugin:0.2.1-SNAPSHOT:report -Dtabletest.report.format=markdown
 
-OUTPUT_DIR="target/generated-docs/tabletest"
-if [ ! -d "$OUTPUT_DIR" ]; then
-    echo "ERROR: Output directory not created"
-    exit 1
-fi
-
-MD_FILES=$(find "$OUTPUT_DIR" -name "*.md" | wc -l | tr -d ' ')
-if [ "$MD_FILES" -lt 1 ]; then
-    echo "ERROR: No Markdown files generated"
-    exit 1
-fi
-
-echo "Generated $MD_FILES Markdown files"
+validate_output_files "target/generated-docs/tabletest" "*.md" "Markdown"
 echo "SUCCESS"

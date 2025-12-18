@@ -9,7 +9,7 @@ This directory contains compatibility tests that verify TableTest Reporter works
 | junit-latest | JUnit | 6.0.1 | Maven | Surefire plugin | AsciiDoc | Maven plugin |
 | spring-boot-min | Spring Boot | 3.5.0 | Maven | Surefire plugin | AsciiDoc | CLI |
 | spring-boot-latest | Spring Boot | 4.0.0 | Maven | junit-platform.properties | Markdown | Maven plugin |
-| quarkus-min | Quarkus | 3.21.2 | Maven | Surefire plugin (workaround) | Markdown | CLI |
+| quarkus-min | Quarkus | 3.21.2 | Maven | Surefire plugin (workaround) | Markdown | Maven plugin |
 | quarkus-latest | Quarkus | 3.30.3 | Maven | junit-platform.properties | AsciiDoc | Maven plugin |
 | gradle-latest | JUnit | 6.0.1 | Gradle | systemProperty | Markdown | Gradle plugin |
 
