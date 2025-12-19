@@ -1,6 +1,8 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+
+## [0.2.1] - 2025-12-19
 ### Added
 - Configurable expectation column pattern via `tabletest.reporter.expectation.pattern` configuration parameter
 ### Fixed
