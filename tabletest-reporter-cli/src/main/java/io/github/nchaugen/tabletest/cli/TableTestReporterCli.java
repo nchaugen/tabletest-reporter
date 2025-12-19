@@ -48,6 +48,10 @@ public final class TableTestReporterCli implements Callable<Integer> {
         defaultValue = "")
     private String outputDirArg;
 
+    @Option(names = {"-t", "--template-dir"},
+        description = "Custom template directory for overriding built-in templates")
+    private String templateDirArg;
+
     public static void main(String[] args) {
         int exit = new CommandLine(new TableTestReporterCli()).execute(args);
         System.exit(exit);
@@ -70,7 +74,8 @@ public final class TableTestReporterCli implements Callable<Integer> {
             }
 
             ReportFormat reportFormat = toFormat(format);
-            new TableTestReporter().report(reportFormat, in, out);
+            TableTestReporter reporter = createReporter();
+            reporter.report(reportFormat, in, out);
             return 0;
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
@@ -79,6 +84,22 @@ public final class TableTestReporterCli implements Callable<Integer> {
             System.err.printf("Failed to generate report: %s%n", e.getMessage());
             return 1;
         }
+    }
+
+    private TableTestReporter createReporter() {
+        if (templateDirArg == null || templateDirArg.isBlank()) {
+            return new TableTestReporter();
+        }
+
+        Path templateDir = Path.of(templateDirArg);
+        if (!Files.exists(templateDir)) {
+            throw new IllegalArgumentException("Template directory does not exist: " + templateDir.toAbsolutePath());
+        }
+        if (!Files.isDirectory(templateDir)) {
+            throw new IllegalArgumentException("Template path is not a directory: " + templateDir.toAbsolutePath());
+        }
+
+        return new TableTestReporter(templateDir);
     }
 
     private static ReportFormat toFormat(String str) {

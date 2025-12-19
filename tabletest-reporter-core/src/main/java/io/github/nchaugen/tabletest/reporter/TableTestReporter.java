@@ -28,7 +28,15 @@ import static java.util.Collections.emptyList;
 public class TableTestReporter {
 
     private final ContextLoader contextLoader = new ContextLoader();
-    private final TemplateEngine templateEngine = new TemplateEngine();
+    private final TemplateEngine templateEngine;
+
+    public TableTestReporter() {
+        this.templateEngine = new TemplateEngine();
+    }
+
+    public TableTestReporter(Path customTemplateDirectory) {
+        this.templateEngine = new TemplateEngine(customTemplateDirectory);
+    }
 
     public void report(ReportFormat format, Path inDir, Path outDir) {
         report(ReportTree.process(inDir), format, inDir, outDir);
