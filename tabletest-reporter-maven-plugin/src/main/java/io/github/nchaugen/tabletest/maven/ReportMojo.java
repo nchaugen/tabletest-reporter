@@ -40,6 +40,9 @@ public final class ReportMojo extends AbstractMojo {
     @Parameter(property = "tabletest.report.outputDirectory", defaultValue = "${project.build.directory}/generated-docs/tabletest")
     private File outputDirectory;
 
+    @Parameter(property = "tabletest.report.templateDirectory")
+    private File templateDirectory;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
@@ -51,7 +54,8 @@ public final class ReportMojo extends AbstractMojo {
                 throw new MojoFailureException("Input directory does not exist: " + in.toAbsolutePath());
             }
 
-            new TableTestReporter().report(reportFormat, in, out);
+            TableTestReporter reporter = createReporter();
+            reporter.report(reportFormat, in, out);
         } catch (MojoFailureException e) {
             // Propagate user/config failures as-is without wrapping
             throw e;
@@ -60,6 +64,22 @@ public final class ReportMojo extends AbstractMojo {
         } catch (Exception e) {
             throw new MojoExecutionException("Failed to generate TableTest report", e);
         }
+    }
+
+    private TableTestReporter createReporter() throws MojoFailureException {
+        if (templateDirectory == null) {
+            return new TableTestReporter();
+        }
+
+        Path templateDir = templateDirectory.toPath();
+        if (!Files.exists(templateDir)) {
+            throw new MojoFailureException("Template directory does not exist: " + templateDir.toAbsolutePath());
+        }
+        if (!Files.isDirectory(templateDir)) {
+            throw new MojoFailureException("Template path is not a directory: " + templateDir.toAbsolutePath());
+        }
+
+        return new TableTestReporter(templateDir);
     }
 
     private static ReportFormat toFormat(String str) {

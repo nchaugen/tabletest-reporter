@@ -20,12 +20,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ReportMojoTest {
 
@@ -74,9 +75,9 @@ class ReportMojoTest {
         mojo.execute();
 
         // Assert
-        assertTrue(Files.exists(outDir.resolve("index.adoc")));
-        assertTrue(Files.isDirectory(outDir.resolve("calendar-calculations")));
-        assertTrue(Files.exists(outDir.resolve("calendar-calculations").resolve("leap-year-rules.adoc")));
+        assertThat(outDir.resolve("index.adoc")).exists();
+        assertThat(outDir.resolve("calendar-calculations")).isDirectory();
+        assertThat(outDir.resolve("calendar-calculations").resolve("leap-year-rules.adoc")).exists();
     }
 
     @Test
@@ -86,8 +87,100 @@ class ReportMojoTest {
         setField(mojo, "inputDirectory", new File(tempDir.resolve("missing").toString()));
         setField(mojo, "outputDirectory", tempDir.resolve("out").toFile());
 
-        MojoFailureException ex = assertThrows(MojoFailureException.class, mojo::execute);
-        assertTrue(ex.getMessage().toLowerCase().contains("input directory"));
+        assertThatThrownBy(mojo::execute)
+            .isInstanceOf(MojoFailureException.class)
+            .hasMessageContaining("Input directory");
+    }
+
+    @Test
+    void execute_uses_custom_template_when_template_directory_provided() throws Exception {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path templateDir = setupCustomTemplateDirectory(tempDir);
+        Path outputDir = tempDir.resolve("out");
+
+        ReportMojo mojo = new ReportMojo();
+        setField(mojo, "format", "asciidoc");
+        setField(mojo, "inputDirectory", inputDir.toFile());
+        setField(mojo, "outputDirectory", outputDir.toFile());
+        setField(mojo, "templateDirectory", templateDir.toFile());
+
+        mojo.execute();
+
+        Path generatedFile = findGeneratedFile(outputDir);
+        String content = Files.readString(generatedFile);
+
+        assertThat(content).contains("CUSTOM HEADER");
+        assertThat(content).contains("Custom template content");
+        assertThat(content).contains("CUSTOM FOOTER");
+        assertThat(content).doesNotContain("[%header,cols=");
+    }
+
+    @Test
+    void execute_fails_when_template_directory_does_not_exist() throws IOException {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("out");
+        Path nonexistentDir = tempDir.resolve("nonexistent");
+
+        ReportMojo mojo = new ReportMojo();
+        setField(mojo, "format", "asciidoc");
+        setField(mojo, "inputDirectory", inputDir.toFile());
+        setField(mojo, "outputDirectory", outputDir.toFile());
+        setField(mojo, "templateDirectory", nonexistentDir.toFile());
+
+        assertThatThrownBy(mojo::execute)
+            .isInstanceOf(MojoFailureException.class)
+            .hasMessageContaining("Template directory does not exist");
+    }
+
+    @Test
+    void execute_fails_when_template_directory_is_not_a_directory() throws IOException {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("out");
+        Path notADirectory = tempDir.resolve("file.txt");
+        Files.writeString(notADirectory, "not a directory");
+
+        ReportMojo mojo = new ReportMojo();
+        setField(mojo, "format", "asciidoc");
+        setField(mojo, "inputDirectory", inputDir.toFile());
+        setField(mojo, "outputDirectory", outputDir.toFile());
+        setField(mojo, "templateDirectory", notADirectory.toFile());
+
+        assertThatThrownBy(mojo::execute)
+            .isInstanceOf(MojoFailureException.class)
+            .hasMessageContaining("Template path is not a directory");
+    }
+
+    private Path setupInputDirectory(Path parent) throws IOException {
+        Path inputDir = parent.resolve("input");
+        Files.createDirectories(inputDir);
+        Files.writeString(inputDir.resolve("test.yaml"), """
+            title: Test Table
+            headers:
+              - value: Column A
+            rows: []
+            """);
+        return inputDir;
+    }
+
+    private Path setupCustomTemplateDirectory(Path parent) throws IOException {
+        Path templateDir = parent.resolve("templates");
+        Files.createDirectories(templateDir);
+        Files.writeString(templateDir.resolve("table.adoc.peb"), """
+            = CUSTOM HEADER
+            == {{ title }}
+            Custom template content
+            = CUSTOM FOOTER
+            """);
+        return templateDir;
+    }
+
+    private Path findGeneratedFile(Path outputDir) throws IOException {
+        try (var files = Files.list(outputDir)) {
+            return files
+                .filter(p -> p.toString().endsWith(".adoc"))
+                .findFirst()
+                .orElseThrow();
+        }
     }
 
     private static void setField(Object target, String fieldName, Object value) {
