@@ -31,6 +31,7 @@ public abstract class TableTestReporterExtension {
     private final Property<String> format;
     private final DirectoryProperty inputDir;
     private final DirectoryProperty outputDir;
+    private final DirectoryProperty templateDir;
 
     @Inject
     public TableTestReporterExtension(ObjectFactory objects, ProjectLayout layout, ProviderFactory providers) {
@@ -39,6 +40,7 @@ public abstract class TableTestReporterExtension {
             .convention(layout.getBuildDirectory().dir("junit-jupiter"));
         this.outputDir = objects.directoryProperty()
             .convention(layout.getBuildDirectory().dir("generated-docs/tabletest"));
+        this.templateDir = objects.directoryProperty();
     }
 
     public Property<String> getFormat() {
@@ -51,5 +53,9 @@ public abstract class TableTestReporterExtension {
 
     public DirectoryProperty getOutputDir() {
         return outputDir;
+    }
+
+    public DirectoryProperty getTemplateDir() {
+        return templateDir;
     }
 }

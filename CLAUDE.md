@@ -148,7 +148,7 @@ Assistant: [commits and pushes]
 
 # Compatibility Testing Requirements
 
-The project has compatibility tests in `compatibility-tests/` that verify TableTest Reporter works across different frameworks and versions (JUnit, Spring Boot, Quarkus). These tests validate JUnit extension autodetection, YAML generation, documentation generation (CLI and Maven plugin), and output formats (AsciiDoc/Markdown).
+The project has compatibility tests in `compatibility-tests/` that verify TableTest Reporter works across different frameworks and versions (JUnit, Spring Boot, Quarkus). These tests validate JUnit extension autodetection, YAML generation, documentation generation (CLI, Maven plugin, and Gradle plugin), and output formats (AsciiDoc/Markdown).
 
 ## When Compatibility Tests MUST Be Run
 
@@ -159,6 +159,7 @@ Run `./compatibility-tests/run-tests.sh` before committing when making:
   - `tabletest-reporter-core` (report generation, template processing, Pebble filters)
   - `tabletest-reporter-cli` (CLI functionality)
   - `tabletest-reporter-maven-plugin` (Maven plugin functionality)
+  - `tabletest-reporter-gradle-plugin` (Gradle plugin functionality)
 
 - **API or format changes:**
   - YAML file format changes
@@ -193,4 +194,3 @@ Skip compatibility tests for:
 - CI/CD workflow changes (`.github/workflows/`)
 - Development tooling (`.gitignore`, `.idea/`, `scripts/`)
 - Beads issue tracking changes (`.beads/`)
-- Gradle plugin changes (not yet covered by compatibility tests)

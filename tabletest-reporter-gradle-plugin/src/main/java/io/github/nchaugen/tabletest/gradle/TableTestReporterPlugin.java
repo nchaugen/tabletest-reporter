@@ -17,7 +17,6 @@ package io.github.nchaugen.tabletest.gradle;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.tasks.TaskProvider;
 
 public class TableTestReporterPlugin implements Plugin<Project> {
 
@@ -28,11 +27,12 @@ public class TableTestReporterPlugin implements Plugin<Project> {
             .create("tableTestReporter", TableTestReporterExtension.class);
 
         // Register task and wire conventions from extension
-        TaskProvider<ReportTableTestsTask> task = project.getTasks().register(
+        project.getTasks().register(
             "reportTableTests", ReportTableTestsTask.class, t -> {
                 t.getFormat().convention(ext.getFormat());
                 t.getInputDir().convention(ext.getInputDir());
                 t.getOutputDir().convention(ext.getOutputDir());
+                t.getTemplateDir().convention(ext.getTemplateDir());
             }
         );
 

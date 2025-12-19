@@ -25,7 +25,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TableTestReporterPluginTest {
 
@@ -81,8 +82,95 @@ class TableTestReporterPluginTest {
 
         // Assert: default AsciiDoc outputs exist under build/generated-docs/tabletest
         Path outRoot = buildDir.resolve("generated-docs").resolve("tabletest");
-        assertTrue(Files.exists(outRoot.resolve("index.adoc")));
-        assertTrue(Files.isDirectory(outRoot.resolve("calendar-test")));
-        assertTrue(Files.exists(outRoot.resolve("calendar-test").resolve("leap-year-rules.adoc")));
+        assertThat(outRoot.resolve("index.adoc")).exists();
+        assertThat(outRoot.resolve("calendar-test")).isDirectory();
+        assertThat(outRoot.resolve("calendar-test").resolve("leap-year-rules.adoc")).exists();
+    }
+
+    @Test
+    void reportTask_uses_custom_template_when_template_dir_provided() throws IOException {
+        Path buildDir = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
+        Path inputRoot = setupInputDirectory(buildDir);
+        Path templateDir = setupCustomTemplateDirectory(projectDir);
+
+        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
+        ext.getTemplateDir().set(templateDir.toFile());
+
+        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
+        task.run();
+
+        Path generatedFile = findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"));
+        String content = Files.readString(generatedFile);
+
+        assertThat(content).contains("CUSTOM HEADER");
+        assertThat(content).contains("Custom template content");
+        assertThat(content).contains("CUSTOM FOOTER");
+        assertThat(content).doesNotContain("[%header,cols=");
+    }
+
+    @Test
+    void reportTask_fails_when_template_directory_does_not_exist() throws IOException {
+        Path buildDir = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
+        setupInputDirectory(buildDir);
+        Path nonexistentDir = projectDir.resolve("nonexistent");
+
+        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
+        ext.getTemplateDir().set(nonexistentDir.toFile());
+
+        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
+
+        assertThatThrownBy(task::run)
+            .hasMessageContaining("Template directory does not exist");
+    }
+
+    @Test
+    void reportTask_fails_when_template_directory_is_not_a_directory() throws IOException {
+        Path buildDir = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
+        setupInputDirectory(buildDir);
+        Path notADirectory = projectDir.resolve("file.txt");
+        Files.writeString(notADirectory, "not a directory");
+
+        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
+        ext.getTemplateDir().set(notADirectory.toFile());
+
+        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
+
+        assertThatThrownBy(task::run)
+            .hasMessageContaining("Template path is not a directory");
+    }
+
+    private Path setupInputDirectory(Path buildDir) throws IOException {
+        Path inputRoot = buildDir.resolve("junit-jupiter");
+        Path testClassDir = inputRoot.resolve("org.example.CalendarTest");
+        Files.createDirectories(testClassDir);
+
+        Files.writeString(testClassDir.resolve("test.yaml"), """
+            title: Test Table
+            headers:
+              - value: Column A
+            rows: []
+            """);
+        return inputRoot;
+    }
+
+    private Path setupCustomTemplateDirectory(Path parent) throws IOException {
+        Path templateDir = parent.resolve("templates");
+        Files.createDirectories(templateDir);
+        Files.writeString(templateDir.resolve("table.adoc.peb"), """
+            = CUSTOM HEADER
+            == {{ title }}
+            Custom template content
+            = CUSTOM FOOTER
+            """);
+        return templateDir;
+    }
+
+    private Path findGeneratedFile(Path outputDir) throws IOException {
+        try (var files = Files.list(outputDir)) {
+            return files
+                .filter(p -> p.toString().endsWith(".adoc"))
+                .findFirst()
+                .orElseThrow();
+        }
     }
 }

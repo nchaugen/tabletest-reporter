@@ -33,12 +33,14 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     private final Property<String> format;
     private final DirectoryProperty inputDir;
     private final DirectoryProperty outputDir;
+    private final DirectoryProperty templateDir;
 
     @Inject
     public ReportTableTestsTask() {
         this.format = getProject().getObjects().property(String.class);
         this.inputDir = getProject().getObjects().directoryProperty();
         this.outputDir = getProject().getObjects().directoryProperty();
+        this.templateDir = getProject().getObjects().directoryProperty();
         setGroup("documentation");
         setDescription("Generates AsciiDoc or Markdown documentation from TableTest YAML outputs");
     }
@@ -60,6 +62,13 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         return outputDir;
     }
 
+    @Optional
+    @InputDirectory
+    @PathSensitive(PathSensitivity.RELATIVE)
+    public DirectoryProperty getTemplateDir() {
+        return templateDir;
+    }
+
     @TaskAction
     public void run() {
         final String fmt = format.getOrElse("asciidoc");
@@ -73,24 +82,35 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         }
 
         try {
-            new TableTestReporter().report(reportFormat, in, out);
+            TableTestReporter reporter = createReporter();
+            reporter.report(reportFormat, in, out);
         } catch (Exception e) {
             throw new GradleException("Failed to generate TableTest report: " + e.getMessage(), e);
         }
     }
 
+    private TableTestReporter createReporter() {
+        if (!templateDir.isPresent()) {
+            return new TableTestReporter();
+        }
+
+        Path templateDirectory = templateDir.get().getAsFile().toPath();
+        if (!Files.exists(templateDirectory)) {
+            throw new GradleException("Template directory does not exist: " + templateDirectory.toAbsolutePath());
+        }
+        if (!Files.isDirectory(templateDirectory)) {
+            throw new GradleException("Template path is not a directory: " + templateDirectory.toAbsolutePath());
+        }
+
+        return new TableTestReporter(templateDirectory);
+    }
+
     private static ReportFormat toFormat(String str) {
         if (str == null || str.isBlank()) return ReportFormat.ASCIIDOC;
-        switch (str.trim().toLowerCase()) {
-            case "adoc":
-            case "asciidoc":
-            case "asciidoctor":
-                return ReportFormat.ASCIIDOC;
-            case "md":
-            case "markdown":
-                return ReportFormat.MARKDOWN;
-            default:
-                throw new GradleException("Unknown format: " + str + ". Use 'asciidoc' or 'markdown'.");
-        }
+        return switch (str.trim().toLowerCase()) {
+            case "adoc", "asciidoc", "asciidoctor" -> ReportFormat.ASCIIDOC;
+            case "md", "markdown" -> ReportFormat.MARKDOWN;
+            default -> throw new GradleException("Unknown format: " + str + ". Use 'asciidoc' or 'markdown'.");
+        };
     }
 }
