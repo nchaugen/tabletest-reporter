@@ -21,6 +21,32 @@ If you need to fix a commit message after pushing:
 1. Create a NEW commit with the fix (e.g., "docs: fix commit message format")
 2. Push normally with `git push`
 
+## Git Commit Message Format
+
+**CRITICAL: The commit-msg hook will reject commits that violate these rules**
+
+- **Use conventional commits** (feat:, fix:, docs:, refactor:, test:, chore:, etc.)
+- **Keep first line under 50 characters**
+- **NEVER add Claude Code attribution footer** - omit all AI attribution
+- First line should be imperative mood (e.g., "fix bug" not "fixed bug")
+
+Good examples:
+```
+feat: add template directory option to CLI
+fix: resolve resource leak in file stream
+docs: update compatibility testing guide
+refactor: extract helper methods in CLI tests
+```
+
+Bad examples:
+```
+feat: add --template-dir option to CLI with validation  (TOO LONG - 59 chars)
+Added new feature  (wrong: not conventional commits format)
+fix: resolve bug
+
+🤖 Generated with Claude Code  (NEVER DO THIS - hook will reject)
+```
+
 ## Workflow Steps
 
 1. **Make changes** as requested by the user
