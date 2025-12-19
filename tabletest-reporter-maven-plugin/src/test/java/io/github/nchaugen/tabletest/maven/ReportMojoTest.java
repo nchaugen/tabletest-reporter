@@ -106,7 +106,7 @@ class ReportMojoTest {
 
         mojo.execute();
 
-        Path generatedFile = findGeneratedFile(outputDir);
+        Path generatedFile = findGeneratedFile(outputDir, ".adoc");
         String content = Files.readString(generatedFile);
 
         assertThat(content).contains("CUSTOM HEADER");
@@ -150,14 +150,99 @@ class ReportMojoTest {
             .hasMessageContaining("Template path is not a directory");
     }
 
+    @Test
+    void execute_generates_markdown_when_format_is_markdown() throws Exception {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("out");
+
+        ReportMojo mojo = new ReportMojo();
+        setField(mojo, "format", "markdown");
+        setField(mojo, "inputDirectory", inputDir.toFile());
+        setField(mojo, "outputDirectory", outputDir.toFile());
+
+        mojo.execute();
+
+        Path generatedFile = findGeneratedFile(outputDir, ".md");
+        String content = Files.readString(generatedFile);
+
+        assertThat(content).contains("## Test Table");
+        assertThat(content).contains("| Column A |");
+        assertThat(content).contains("---");
+    }
+
+    @Test
+    void execute_accepts_md_as_format_alias() throws Exception {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("out");
+
+        ReportMojo mojo = new ReportMojo();
+        setField(mojo, "format", "md");
+        setField(mojo, "inputDirectory", inputDir.toFile());
+        setField(mojo, "outputDirectory", outputDir.toFile());
+
+        mojo.execute();
+
+        assertThat(findGeneratedFile(outputDir, ".md")).exists();
+    }
+
+    @Test
+    void execute_accepts_adoc_as_format_alias() throws Exception {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("out");
+
+        ReportMojo mojo = new ReportMojo();
+        setField(mojo, "format", "adoc");
+        setField(mojo, "inputDirectory", inputDir.toFile());
+        setField(mojo, "outputDirectory", outputDir.toFile());
+
+        mojo.execute();
+
+        assertThat(findGeneratedFile(outputDir, ".adoc")).exists();
+    }
+
+    @Test
+    void execute_fails_when_format_is_invalid() throws IOException {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("out");
+
+        ReportMojo mojo = new ReportMojo();
+        setField(mojo, "format", "invalid-format");
+        setField(mojo, "inputDirectory", inputDir.toFile());
+        setField(mojo, "outputDirectory", outputDir.toFile());
+
+        assertThatThrownBy(mojo::execute)
+            .isInstanceOf(MojoFailureException.class)
+            .hasMessageContaining("Unknown format");
+    }
+
+    @Test
+    void execute_uses_builtin_template_when_no_template_directory_provided() throws Exception {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("out");
+
+        ReportMojo mojo = new ReportMojo();
+        setField(mojo, "format", "asciidoc");
+        setField(mojo, "inputDirectory", inputDir.toFile());
+        setField(mojo, "outputDirectory", outputDir.toFile());
+
+        mojo.execute();
+
+        Path generatedFile = findGeneratedFile(outputDir, ".adoc");
+        String content = Files.readString(generatedFile);
+
+        assertThat(content).startsWith("==");
+        assertThat(content).contains("[%header,cols=");
+        assertThat(content).contains("|===");
+    }
+
     private Path setupInputDirectory(Path parent) throws IOException {
         Path inputDir = parent.resolve("input");
         Files.createDirectories(inputDir);
-        Files.writeString(inputDir.resolve("test.yaml"), """
-            title: Test Table
-            headers:
-              - value: Column A
-            rows: []
+        Files.writeString(inputDir.resolve("TABLETEST-test.yaml"), """
+            "title": "Test Table"
+            "headers":
+            - "value": "Column A"
+            "rows": []
             """);
         return inputDir;
     }
@@ -174,10 +259,10 @@ class ReportMojoTest {
         return templateDir;
     }
 
-    private Path findGeneratedFile(Path outputDir) throws IOException {
+    private Path findGeneratedFile(Path outputDir, String extension) throws IOException {
         try (var files = Files.list(outputDir)) {
             return files
-                .filter(p -> p.toString().endsWith(".adoc"))
+                .filter(p -> p.toString().endsWith(extension))
                 .findFirst()
                 .orElseThrow();
         }
