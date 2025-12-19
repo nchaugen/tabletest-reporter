@@ -1,6 +1,11 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+### Added
+- Custom template support with convention-based discovery
+- Template extension blocks (frontMatter, title, description, table/contents, footer) for customisation
+- Support for both template extension (child templates) and complete template replacement
+- CLI `--template-dir` option to specify custom template directory
 
 ## [0.2.1] - 2025-12-19
 ### Added

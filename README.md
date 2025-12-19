@@ -287,6 +287,118 @@ tabletest.reporter.expectation.pattern=.*[Ee]xpected$
 tabletest.reporter.expectation.pattern=.*\\(expected\\)$
 ```
 
+### Custom Templates
+
+TableTest Reporter uses [Pebble templates](https://pebbletemplates.io/) to generate documentation. You can customise the output by providing your own templates.
+
+**Two approaches:**
+
+1. **Template Extension** - Override specific parts (e.g., add front matter for Jekyll/Hugo)
+2. **Template Replacement** - Completely replace the built-in templates
+
+#### Convention-Based Discovery
+
+Custom templates are discovered automatically by naming convention:
+
+- `*-table.adoc.peb` or `*-table.md.peb` - Custom table templates
+- `*-index.adoc.peb` or `*-index.md.peb` - Custom index templates
+
+For example, `custom-table.adoc.peb` or `jekyll-table.md.peb` will be used automatically.
+
+**Precedence:**
+1. Exact match (e.g., `table.adoc.peb`) - complete replacement
+2. Pattern match (e.g., `custom-table.adoc.peb`) - extension template
+3. Built-in template - default
+
+#### Configuring Custom Template Directory
+
+**Maven Plugin:**
+```xml
+<configuration>
+  <templateDirectory>${project.basedir}/templates</templateDirectory>
+</configuration>
+```
+
+**Gradle Plugin:**
+```kotlin
+tableTestReporter {
+  templateDir.set(file("templates"))
+}
+```
+
+**CLI:**
+```bash
+java -jar tabletest-reporter-cli.jar \
+  --template-dir templates \
+  -f markdown \
+  -i target/junit-jupiter \
+  -o target/generated-docs/tabletest
+```
+
+#### Template Extension Example
+
+Extend built-in templates by overriding specific blocks. Create `jekyll-table.md.peb`:
+
+```pebble
+{% extends "table.md.peb" %}
+{% block frontMatter %}---
+layout: default
+title: {{ title }}
+---
+
+{% endblock %}
+```
+
+Available blocks for tables:
+- `frontMatter` - Content before the document (e.g., Jekyll/Hugo front matter)
+- `title` - Table title
+- `description` - Table description
+- `table` - Entire table
+  - `tableHeaders` - Table header row
+  - `tableRows` - Table body rows
+- `failures` - Failed row details section
+- `footer` - Content after the document
+
+Available blocks for indexes:
+- `frontMatter` - Content before the document
+- `title` - Index title
+- `description` - Index description
+- `contents` - List of child pages
+- `footer` - Content after the document
+
+#### Template Replacement Example
+
+Completely replace the built-in template. Create `table.adoc.peb`:
+
+```asciidoc
+= {{ title }}
+
+Custom header content here.
+
+[cols="{{ '1' | replicate(headers.size) | join(',') }}"]
+|===
+{% for header in headers %}
+|{{ header.value }}
+{% endfor %}
+
+{% for row in rows %}
+{% for cell in row %}
+|{{ cell.value }}
+{% endfor %}
+
+{% endfor %}
+|===
+
+Generated on {{ "now" | date("yyyy-MM-dd") }}
+```
+
+Template context includes:
+- `title` - Test display name
+- `description` - Test description
+- `headers` - List of header cells with `value` and `roles`
+- `rows` - List of rows, each containing cells with `value` and `roles`
+- `rowResults` - Test results with `displayName`, `passed`, and `errorMessage`
+
 ### For Plugin Developers
 
 **CLI Usage:**
