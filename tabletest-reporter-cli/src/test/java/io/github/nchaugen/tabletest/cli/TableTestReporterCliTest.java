@@ -30,7 +30,7 @@ class TableTestReporterCliTest {
 
         assertThat(exitCode).isZero();
 
-        Path generatedFile = findGeneratedFile(outputDir);
+        Path generatedFile = findGeneratedFile(outputDir, ".adoc");
         String content = Files.readString(generatedFile);
 
         assertThat(content).contains("CUSTOM HEADER");
@@ -52,7 +52,7 @@ class TableTestReporterCliTest {
 
         assertThat(exitCode).isZero();
 
-        Path generatedFile = findGeneratedFile(outputDir);
+        Path generatedFile = findGeneratedFile(outputDir, ".adoc");
         String content = Files.readString(generatedFile);
 
         assertThat(content).startsWith("==");
@@ -93,14 +93,92 @@ class TableTestReporterCliTest {
         assertThat(exitCode).isEqualTo(2);
     }
 
+    @Test
+    void generates_markdown_when_format_is_markdown() throws IOException {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("output");
+
+        int exitCode = runCli(
+            "--input", inputDir.toString(),
+            "--output", outputDir.toString(),
+            "--format", "markdown"
+        );
+
+        assertThat(exitCode).isZero();
+
+        Path generatedFile = findGeneratedFile(outputDir, ".md");
+        String content = Files.readString(generatedFile);
+
+        assertThat(content).contains("## Test Table");
+        assertThat(content).contains("| Column A |");
+        assertThat(content).contains("---");
+    }
+
+    @Test
+    void accepts_md_as_format_alias() throws IOException {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("output");
+
+        int exitCode = runCli(
+            "--input", inputDir.toString(),
+            "--output", outputDir.toString(),
+            "--format", "md"
+        );
+
+        assertThat(exitCode).isZero();
+        assertThat(findGeneratedFile(outputDir, ".md")).exists();
+    }
+
+    @Test
+    void accepts_adoc_as_format_alias() throws IOException {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("output");
+
+        int exitCode = runCli(
+            "--input", inputDir.toString(),
+            "--output", outputDir.toString(),
+            "--format", "adoc"
+        );
+
+        assertThat(exitCode).isZero();
+        assertThat(findGeneratedFile(outputDir, ".adoc")).exists();
+    }
+
+    @Test
+    void returns_error_when_format_is_invalid() throws IOException {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("output");
+
+        int exitCode = runCli(
+            "--input", inputDir.toString(),
+            "--output", outputDir.toString(),
+            "--format", "invalid-format"
+        );
+
+        assertThat(exitCode).isEqualTo(2);
+    }
+
+    @Test
+    void returns_error_when_input_directory_does_not_exist() {
+        Path nonexistentInput = tempDir.resolve("nonexistent");
+        Path outputDir = tempDir.resolve("output");
+
+        int exitCode = runCli(
+            "--input", nonexistentInput.toString(),
+            "--output", outputDir.toString()
+        );
+
+        assertThat(exitCode).isEqualTo(2);
+    }
+
     private Path setupInputDirectory(Path parent) throws IOException {
         Path inputDir = parent.resolve("input");
         Files.createDirectories(inputDir);
-        Files.writeString(inputDir.resolve("test.yaml"), """
-            title: Test Table
-            headers:
-              - value: Column A
-            rows: []
+        Files.writeString(inputDir.resolve("TABLETEST-test.yaml"), """
+            "title": "Test Table"
+            "headers":
+            - "value": "Column A"
+            "rows": []
             """);
         return inputDir;
     }
@@ -121,10 +199,10 @@ class TableTestReporterCliTest {
         return new CommandLine(new TableTestReporterCli()).execute(args);
     }
 
-    private Path findGeneratedFile(Path outputDir) throws IOException {
+    private Path findGeneratedFile(Path outputDir, String extension) throws IOException {
         try (var files = Files.list(outputDir)) {
             return files
-                .filter(p -> p.toString().endsWith(".adoc"))
+                .filter(p -> p.toString().endsWith(extension))
                 .findFirst()
                 .orElseThrow();
         }
