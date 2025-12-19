@@ -5,6 +5,55 @@ See AGENTS.md for workflow details.
 # Project Context
 See README.md
 
+# Code Quality Expectations
+
+This section highlights code quality patterns specific to this project. See ~/.claude/CLAUDE.md for general coding principles (Single Responsibility, TDD, immutability, etc.).
+
+## Resource Management
+- Always use try-with-resources for `AutoCloseable` resources (streams, files, etc.)
+- Example: `Files.list()`, `Files.walk()`, database connections
+```java
+// Good
+try (var files = Files.list(outputDir)) {
+    return files.filter(...).findFirst().orElseThrow();
+}
+
+// Bad - resource leak
+return Files.list(outputDir).filter(...).findFirst().orElseThrow();
+```
+
+## Method Extraction
+- Each method should do ONE thing with a clear, singular purpose
+- No combined operations (avoid names like `setupAndRun`, `validateAndProcess`)
+- Extract setup/utility logic into focused helper methods
+```java
+// Good
+Path inputDir = setupInputDirectory(tempDir);
+Path templateDir = setupCustomTemplateDirectory(tempDir);
+int exitCode = runCli(args);
+
+// Bad - combined operations
+Path dirs = setupDirectoriesAndRunCli(tempDir, args);
+```
+
+## Test Structure
+- Keep assertions visible in test methods (don't hide them in helpers)
+- Extract repetitive setup into helper methods
+- Helper methods should return values for test methods to assert on
+```java
+// Good
+Path generatedFile = findGeneratedFile(outputDir);
+String content = Files.readString(generatedFile);
+assertThat(content).contains("expected value");
+
+// Bad - assertion hidden in helper
+verifyGeneratedFileContains(outputDir, "expected value");
+```
+
+## Project-Specific Patterns
+- Prefer TableTest for parameterised tests (see global CLAUDE.md)
+- Use meaningful test names describing behaviour (e.g., `uses_custom_template_when_template_dir_provided`)
+
 # Commit and Push Workflow
 
 **CRITICAL**: You must NEVER commit or push changes without explicit user approval.
