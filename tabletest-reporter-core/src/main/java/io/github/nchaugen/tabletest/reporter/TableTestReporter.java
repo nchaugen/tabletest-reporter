@@ -28,6 +28,7 @@ import static java.util.Collections.emptyList;
 public class TableTestReporter {
 
     private final ContextLoader contextLoader = new ContextLoader();
+    private final TemplateEngine templateEngine = new TemplateEngine();
 
     public void report(ReportFormat format, Path inDir, Path outDir) {
         report(ReportTree.process(inDir), format, inDir, outDir);
@@ -66,8 +67,8 @@ public class TableTestReporter {
             : outDir.resolve(relativeOutPath + format.extension());
 
         String content = isIndex
-            ? format.renderIndex(context)
-            : format.renderTable(context);
+            ? templateEngine.renderIndex(format, context)
+            : templateEngine.renderTable(format, context);
 
         writeContent(outPath, content);
 

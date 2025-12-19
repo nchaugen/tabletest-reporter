@@ -1,6 +1,7 @@
 package io.github.nchaugen.tabletest.reporter.rendering;
 
 import io.github.nchaugen.tabletest.reporter.ContextLoader;
+import io.github.nchaugen.tabletest.reporter.TemplateEngine;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -12,6 +13,8 @@ import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class IndexTest {
+
+    private final TemplateEngine templateEngine = new TemplateEngine();
 
     private final Map<String, Object> context = new ContextLoader().fromYaml("""
         "title": "Title of the Test Class"
@@ -31,7 +34,7 @@ public class IndexTest {
 
     @Test
     void supported_in_asciidoc() {
-        String rendered = ASCIIDOC.renderIndex(context);
+        String rendered = templateEngine.renderIndex(ASCIIDOC, context);
 
         assertThat(rendered)
             .isEqualTo("""
@@ -49,7 +52,7 @@ public class IndexTest {
 
     @Test
     void supported_in_markdown() {
-        String rendered = MARKDOWN.renderIndex(context);
+        String rendered = templateEngine.renderIndex(MARKDOWN, context);
 
         assertThat(rendered)
             .isEqualTo("""

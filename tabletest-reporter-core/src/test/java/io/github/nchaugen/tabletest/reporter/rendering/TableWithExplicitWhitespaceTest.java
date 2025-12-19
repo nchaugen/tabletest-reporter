@@ -1,6 +1,7 @@
 package io.github.nchaugen.tabletest.reporter.rendering;
 
 import io.github.nchaugen.tabletest.reporter.ContextLoader;
+import io.github.nchaugen.tabletest.reporter.TemplateEngine;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -12,6 +13,8 @@ import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TableWithExplicitWhitespaceTest {
+
+    private final TemplateEngine templateEngine = new TemplateEngine();
 
     private final Map<String, Object> context = new ContextLoader().fromYaml("""
         title: Explicit whitespace
@@ -33,7 +36,7 @@ public class TableWithExplicitWhitespaceTest {
 
     @Test
     void supported_in_asciidoc() {
-        String rendered = ASCIIDOC.renderTable(context);
+        String rendered = templateEngine.renderTable(ASCIIDOC, context);
 
         assertThat(rendered)
             .isEqualTo("""
@@ -63,7 +66,7 @@ public class TableWithExplicitWhitespaceTest {
 
     @Test
     void supported_in_markdown() {
-        String rendered = MARKDOWN.renderTable(context);
+        String rendered = templateEngine.renderTable(MARKDOWN, context);
 
         assertThat(rendered)
             .isEqualTo("""
