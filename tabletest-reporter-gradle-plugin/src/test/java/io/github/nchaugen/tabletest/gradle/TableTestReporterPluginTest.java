@@ -99,7 +99,7 @@ class TableTestReporterPluginTest {
         ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
         task.run();
 
-        Path generatedFile = findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"));
+        Path generatedFile = findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"), ".adoc");
         String content = Files.readString(generatedFile);
 
         assertThat(content).contains("CUSTOM HEADER");
@@ -139,16 +139,93 @@ class TableTestReporterPluginTest {
             .hasMessageContaining("Template path is not a directory");
     }
 
+    @Test
+    void reportTask_generates_markdown_when_format_is_markdown() throws IOException {
+        Path buildDir = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
+        setupInputDirectory(buildDir);
+
+        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
+        ext.getFormat().set("markdown");
+
+        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
+        task.run();
+
+        Path generatedFile = findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"), ".md");
+        String content = Files.readString(generatedFile);
+
+        assertThat(content).contains("## Test Table");
+        assertThat(content).contains("| Column A |");
+        assertThat(content).contains("---");
+    }
+
+    @Test
+    void reportTask_accepts_md_as_format_alias() throws IOException {
+        Path buildDir = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
+        setupInputDirectory(buildDir);
+
+        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
+        ext.getFormat().set("md");
+
+        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
+        task.run();
+
+        assertThat(findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"), ".md")).exists();
+    }
+
+    @Test
+    void reportTask_accepts_adoc_as_format_alias() throws IOException {
+        Path buildDir = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
+        setupInputDirectory(buildDir);
+
+        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
+        ext.getFormat().set("adoc");
+
+        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
+        task.run();
+
+        assertThat(findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"), ".adoc")).exists();
+    }
+
+    @Test
+    void reportTask_fails_when_format_is_invalid() throws IOException {
+        Path buildDir = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
+        setupInputDirectory(buildDir);
+
+        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
+        ext.getFormat().set("invalid-format");
+
+        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
+
+        assertThatThrownBy(task::run)
+            .hasMessageContaining("Unknown format");
+    }
+
+    @Test
+    void reportTask_uses_builtin_template_when_no_template_dir_provided() throws IOException {
+        Path buildDir = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
+        setupInputDirectory(buildDir);
+
+        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
+        task.run();
+
+        Path generatedFile = findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"), ".adoc");
+        String content = Files.readString(generatedFile);
+
+        assertThat(content).startsWith("==");
+        assertThat(content).contains("[%header,cols=");
+        assertThat(content).contains("|===");
+    }
+
     private Path setupInputDirectory(Path buildDir) throws IOException {
         Path inputRoot = buildDir.resolve("junit-jupiter");
         Path testClassDir = inputRoot.resolve("org.example.CalendarTest");
         Files.createDirectories(testClassDir);
 
-        Files.writeString(testClassDir.resolve("test.yaml"), """
-            title: Test Table
-            headers:
-              - value: Column A
-            rows: []
+        Files.writeString(testClassDir.resolve("TABLETEST-test.yaml"), """
+            "title": "Test Table"
+            "headers":
+            - "value": "Column A"
+            "rows": []
             """);
         return inputRoot;
     }
@@ -165,10 +242,10 @@ class TableTestReporterPluginTest {
         return templateDir;
     }
 
-    private Path findGeneratedFile(Path outputDir) throws IOException {
+    private Path findGeneratedFile(Path outputDir, String extension) throws IOException {
         try (var files = Files.list(outputDir)) {
             return files
-                .filter(p -> p.toString().endsWith(".adoc"))
+                .filter(p -> p.toString().endsWith(extension))
                 .findFirst()
                 .orElseThrow();
         }
