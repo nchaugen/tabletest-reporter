@@ -311,3 +311,13 @@ cd tabletest-reporter-gradle-plugin
 gradle publishToMavenLocal
 ```
 
+**Setting Up Git Hooks:**
+
+The project includes git hooks for commit message validation and other checks that are handy when working with code agents. After cloning, enable them:
+
+```bash
+git config core.hooksPath git-hooks
+```
+
+This configures git to use the versioned hooks in the `git-hooks/` directory instead of `.git/hooks/`.
+

@@ -1,0 +1,45 @@
+#!/bin/bash
+# Pre-push hook: beads sync check and force-push protection
+
+set -e
+
+# Colours for output
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Colour
+
+echo "Running pre-push checks..."
+
+# Get current branch
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Check if this is a force push to main/master
+while read local_ref local_sha remote_ref remote_sha
+do
+    if [[ "$remote_ref" == "refs/heads/main" ]] || [[ "$remote_ref" == "refs/heads/master" ]]; then
+        # Check if git push was called with --force or --force-with-lease
+        # This checks the parent process command line
+        if ps -o command= -p $PPID | grep -qE '\-\-force|\-f[^a-z]'; then
+            echo -e "${RED}✗ BLOCKED: Force push to $remote_ref is not allowed${NC}"
+            echo ""
+            echo "Force pushing to main/master can rewrite history and cause problems."
+            echo ""
+            echo "If you need to fix a commit message or content:"
+            echo "  1. Create a new commit with the fix"
+            echo "  2. Push normally with: git push"
+            echo ""
+            exit 1
+        fi
+    fi
+done
+
+# Run beads pre-push checks if they exist
+if [ -f .git/hooks/pre-push.beads-original ]; then
+    bash .git/hooks/pre-push.beads-original "$@"
+fi
+
+echo ""
+echo -e "${GREEN}✓ Pre-push checks passed${NC}"
+echo ""
+echo "Note: Compatibility tests will run in CI (GitHub Actions)"
+exit 0

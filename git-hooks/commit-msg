@@ -1,0 +1,41 @@
+#!/bin/bash
+# Commit message validation hook
+# Validates commit message format according to CLAUDE.md rules
+
+set -e
+
+# Colours for output
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Colour
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Check for Claude Code attribution footer (should be omitted per CLAUDE.md)
+if echo "$COMMIT_MSG" | grep -q "Generated with.*Claude Code"; then
+    echo -e "${RED}✗ Commit message validation failed${NC}"
+    echo ""
+    echo "Your commit message contains Claude Code attribution footer."
+    echo "According to CLAUDE.md, this should be omitted:"
+    echo ""
+    echo "  ## Git Commit Messages"
+    echo "  - Use conventional commits (feat:, fix:, docs:, etc.)"
+    echo -e "  - ${YELLOW}Omit Claude Code attribution footer${NC}"
+    echo "  - Keep first line under 50 chars"
+    echo ""
+    echo "Please remove the footer and try again."
+    exit 1
+fi
+
+# Check first line length (should be under 50 chars)
+FIRST_LINE=$(echo "$COMMIT_MSG" | head -n 1)
+FIRST_LINE_LENGTH=${#FIRST_LINE}
+
+if [ $FIRST_LINE_LENGTH -gt 50 ]; then
+    echo -e "${YELLOW}⚠ Warning: First line is $FIRST_LINE_LENGTH characters (recommended: ≤50)${NC}"
+    echo "Consider shortening: $FIRST_LINE"
+    # This is just a warning, not blocking
+fi
+
+exit 0
