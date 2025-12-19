@@ -1,11 +1,19 @@
+{% block frontMatter %}{% endblock %}
 {% import "macros.adoc.peb" %}
+{% block title %}
 = ++{{ title ? title : name }}++
+{% endblock %}
 
+{% block description %}
 {% if description %}
 {{ description }}
 
 
 {% endif %}
+{% endblock %}
+{% block contents %}
 {% for child in contents %}
 * xref:./{{ child.path }}{{ child.type == "index" ? "" : ".adoc"  }}[++{{ child.title ? child.title : child.name }}++]
 {% endfor %}
+{% endblock %}
+{% block footer %}{% endblock %}

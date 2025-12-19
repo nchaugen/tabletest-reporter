@@ -1,20 +1,30 @@
+{% block frontMatter %}{% endblock %}
 {% import "macros.md.peb" %}
+{% block title %}
 ## {{ title }}
+{% endblock %}
 
+{% block description %}
 {% if description %}
 
 {{ description }}
 
 {% endif %}
+{% endblock %}
 
-|{% for header in headers %} {{ renderCell(header) }} |{% endfor %}
+{% block table %}
+|{% block tableHeaders %}{% for header in headers %} {{ renderCell(header) }} |{% endfor %}{% endblock %}
 
 |{{ ' --- |' | replicate(headers.size) | join }}
 
+{% block tableRows %}
 {% for row in rows %}
 |{% for cell in row %} {{ renderCell(cell) }} |{% endfor %}
 
 {% endfor %}
+{% endblock %}
+{% endblock %}
+{% block failures %}
 {% if rowResults is not empty %}
 {% set hasFailures = false %}
 {% for result in rowResults %}
@@ -38,3 +48,5 @@
 {% endfor %}
 {% endif %}
 {% endif %}
+{% endblock %}
+{% block footer %}{% endblock %}

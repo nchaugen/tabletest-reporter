@@ -27,10 +27,15 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
+import java.util.stream.Stream;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Template rendering engine.
@@ -46,19 +51,26 @@ public final class TemplateEngine {
     private final PebbleTemplate markdownIndexTemplate;
 
     public TemplateEngine() {
-        this(new ClasspathLoader());
+        this(new ClasspathLoader(), null);
     }
 
     public TemplateEngine(Path customTemplateDirectory) {
-        this(createDelegatingLoader(Objects.requireNonNull(customTemplateDirectory, "customTemplateDirectory")));
+        this(createDelegatingLoader(requireNonNull(customTemplateDirectory, "customTemplateDirectory")),
+            customTemplateDirectory);
     }
 
-    private TemplateEngine(Loader<?> loader) {
+    private TemplateEngine(Loader<?> loader, Path customTemplateDirectory) {
         PebbleEngine engine = createEngine(loader);
-        this.asciidocTableTemplate = engine.getTemplate("table.adoc.peb");
-        this.markdownTableTemplate = engine.getTemplate("table.md.peb");
-        this.asciidocIndexTemplate = engine.getTemplate("index.adoc.peb");
-        this.markdownIndexTemplate = engine.getTemplate("index.md.peb");
+
+        String asciidocTableName = discoverTemplate(customTemplateDirectory, "table.adoc.peb", "*-table.adoc.peb");
+        String markdownTableName = discoverTemplate(customTemplateDirectory, "table.md.peb", "*-table.md.peb");
+        String asciidocIndexName = discoverTemplate(customTemplateDirectory, "index.adoc.peb", "*-index.adoc.peb");
+        String markdownIndexName = discoverTemplate(customTemplateDirectory, "index.md.peb", "*-index.md.peb");
+
+        this.asciidocTableTemplate = engine.getTemplate(asciidocTableName);
+        this.markdownTableTemplate = engine.getTemplate(markdownTableName);
+        this.asciidocIndexTemplate = engine.getTemplate(asciidocIndexName);
+        this.markdownIndexTemplate = engine.getTemplate(markdownIndexName);
     }
 
     public String renderTable(ReportFormat format, Map<String, Object> context) {
@@ -91,6 +103,32 @@ public final class TemplateEngine {
             case ASCIIDOC -> asciidocIndexTemplate;
             case MARKDOWN -> markdownIndexTemplate;
         };
+    }
+
+    private String discoverTemplate(Path customTemplateDirectory, String defaultName, String pattern) {
+        if (customTemplateDirectory == null) {
+            return defaultName;
+        }
+
+        // Check for exact match first (replacement)
+        Path exactMatch = customTemplateDirectory.resolve(defaultName);
+        if (Files.exists(exactMatch)) {
+            return defaultName;
+        }
+
+        // Look for pattern match (extension)
+        try (Stream<Path> files = Files.list(customTemplateDirectory)) {
+            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
+            return files
+                .filter(Files::isRegularFile)
+                .filter(p -> matcher.matches(p.getFileName()))
+                .sorted()
+                .findFirst()
+                .map(p -> p.getFileName().toString())
+                .orElse(defaultName);
+        } catch (IOException e) {
+            return defaultName;
+        }
     }
 
     private static PebbleEngine createEngine(Loader<?> loader) {

@@ -1,12 +1,20 @@
+{% block frontMatter %}{% endblock %}
 {% import "macros.md.peb" %}
+{% block title %}
 # {{ title ? title : name }}
+{% endblock %}
 
+{% block description %}
 {% if description %}
 
 {{ description }}
 
 {% endif %}
+{% endblock %}
 
+{% block contents %}
 {% for child in contents %}
 * [{{ child.title ? child.title : child.name }}](./{{ child.path }}{{ child.type == "index" ? "" : ".md"  }})
 {% endfor %}
+{% endblock %}
+{% block footer %}{% endblock %}
