@@ -17,13 +17,20 @@ package io.github.nchaugen.tabletest.reporter;
 
 import io.github.nchaugen.tabletest.reporter.pebble.PebbleExtension;
 import io.pebbletemplates.pebble.PebbleEngine;
+import io.pebbletemplates.pebble.loader.ClasspathLoader;
+import io.pebbletemplates.pebble.loader.DelegatingLoader;
+import io.pebbletemplates.pebble.loader.FileLoader;
+import io.pebbletemplates.pebble.loader.Loader;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Template rendering engine.
@@ -33,14 +40,21 @@ import java.util.Map;
  */
 public final class TemplateEngine {
 
-    private final PebbleEngine engine;
     private final PebbleTemplate asciidocTableTemplate;
     private final PebbleTemplate markdownTableTemplate;
     private final PebbleTemplate asciidocIndexTemplate;
     private final PebbleTemplate markdownIndexTemplate;
 
     public TemplateEngine() {
-        this.engine = createEngine();
+        this(new ClasspathLoader());
+    }
+
+    public TemplateEngine(Path customTemplateDirectory) {
+        this(createDelegatingLoader(Objects.requireNonNull(customTemplateDirectory, "customTemplateDirectory")));
+    }
+
+    private TemplateEngine(Loader<?> loader) {
+        PebbleEngine engine = createEngine(loader);
         this.asciidocTableTemplate = engine.getTemplate("table.adoc.peb");
         this.markdownTableTemplate = engine.getTemplate("table.md.peb");
         this.asciidocIndexTemplate = engine.getTemplate("index.adoc.peb");
@@ -79,10 +93,17 @@ public final class TemplateEngine {
         };
     }
 
-    private static PebbleEngine createEngine() {
+    private static PebbleEngine createEngine(Loader<?> loader) {
         return new PebbleEngine.Builder()
+            .loader(loader)
             .autoEscaping(false)
             .extension(new PebbleExtension())
             .build();
+    }
+
+    private static Loader<?> createDelegatingLoader(Path customTemplateDirectory) {
+        FileLoader fileLoader = new FileLoader();
+        fileLoader.setPrefix(customTemplateDirectory.toString());
+        return new DelegatingLoader(Arrays.asList(fileLoader, new ClasspathLoader()));
     }
 }
