@@ -39,9 +39,21 @@ testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.2.1")
 
 ### Enable Automatic Extension Detection
 
-The extension uses JUnit's ServiceLoader mechanism to activate automatically. You must configure JUnit to enable automatic extension detection.
+The extension uses JUnit's ServiceLoader mechanism to activate automatically. You must enable JUnit's automatic extension detection by setting `junit.jupiter.extensions.autodetection.enabled=true`.
 
-**Recommended: JUnit Platform Properties**
+**Which approach should I use?**
+
+| Build Tool | Scenario | Recommended Approach |
+|------------|----------|---------------------|
+| **Any** | Standard projects | Option 1: `junit-platform.properties` |
+| **Maven** | Simple setup (no Surefire config) | Option 2: Maven property |
+| **Maven** | Already using Surefire plugin | Option 3: Surefire config |
+| **Maven** | Quarkus projects | Option 2: Maven property (avoids conflict) |
+| **Gradle** | Any Gradle project | Option 4: Gradle config |
+| **CLI** | Running tests directly | Option 5: Command-line argument |
+
+<details>
+<summary><b>Option 1: JUnit Platform Properties</b> (Recommended for most projects)</summary>
 
 Create `src/test/resources/junit-platform.properties`:
 
@@ -49,16 +61,41 @@ Create `src/test/resources/junit-platform.properties`:
 junit.jupiter.extensions.autodetection.enabled=true
 ```
 
-This approach works with any build tool (Maven, Gradle, etc.) and keeps JUnit configuration with your test code.
+**Pros:**
+- Works with any build tool (Maven, Gradle, CLI)
+- Configuration stays with test code
+- Can also configure TableTest Reporter options (see [Configuration Options](#configuration-options))
 
-You can also use `junit-platform.properties` to configure TableTest Reporter behaviour. See [Configuration Options](#configuration-options) for details.
+**Cons:**
+- Conflicts with Quarkus (which bundles its own `junit-platform.properties`)
 
-**Alternative: Build Tool Configuration**
-
-If you prefer to configure this in your build file:
+</details>
 
 <details>
-<summary>Maven (Surefire Plugin)</summary>
+<summary><b>Option 2: Maven Property</b> (Simplest for Maven)</summary>
+
+Add to your `pom.xml`:
+
+```xml
+<properties>
+    <junit.jupiter.extensions.autodetection.enabled>true</junit.jupiter.extensions.autodetection.enabled>
+</properties>
+```
+
+**Pros:**
+- Simplest Maven approach (no plugin configuration needed)
+- Works with Quarkus (no conflict)
+- Can be overridden from command line
+
+**Cons:**
+- Maven-specific
+
+</details>
+
+<details>
+<summary><b>Option 3: Maven Surefire Configuration</b></summary>
+
+If you're already configuring the Surefire plugin, add:
 
 ```xml
 <build>
@@ -79,12 +116,20 @@ If you prefer to configure this in your build file:
 </build>
 ```
 
-**Note for Quarkus projects:** If your Quarkus project already has `junit-platform.properties` for other JUnit configuration, you should use the Surefire plugin configuration above instead of adding `junit.jupiter.extensions.autodetection.enabled=true` to the properties file. Older Quarkus versions had conflicts with custom `junit-platform.properties` settings.
+**Pros:**
+- Standard approach when using Surefire plugin
+- All test configuration in one place
+
+**Cons:**
+- Requires Surefire plugin configuration
+- More verbose than Maven property approach
 
 </details>
 
 <details>
-<summary>Gradle (Test Task)</summary>
+<summary><b>Option 4: Gradle Configuration</b></summary>
+
+Add to your `build.gradle.kts`:
 
 ```kotlin
 tasks.test {
@@ -92,9 +137,45 @@ tasks.test {
     systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
 }
 ```
+
+**Pros:**
+- Standard Gradle approach for JUnit configuration
+- All test configuration in build file
+
+**Cons:**
+- Gradle-specific
+
 </details>
 
-With this configuration, the extension activates automatically—no test annotations required.
+<details>
+<summary><b>Option 5: Command Line</b></summary>
+
+For one-off test runs or CI/CD:
+
+**Maven:**
+```bash
+mvn test -Djunit.jupiter.extensions.autodetection.enabled=true
+```
+
+**Gradle:**
+```bash
+./gradlew test -Djunit.jupiter.extensions.autodetection.enabled=true
+```
+
+**Pros:**
+- No configuration files needed
+- Useful for CI/CD or one-off runs
+- Easy to override existing configuration
+
+**Cons:**
+- Must remember to pass the argument every time
+- Not suitable as permanent solution
+
+</details>
+
+---
+
+With any of these configurations, the extension activates automatically—no test annotations required.
 
 ## Step 2: Write Your Tests
 
