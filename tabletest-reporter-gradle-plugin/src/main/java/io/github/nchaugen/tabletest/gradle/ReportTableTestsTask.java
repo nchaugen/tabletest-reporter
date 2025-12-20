@@ -27,6 +27,12 @@ import javax.inject.Inject;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Gradle task for generating documentation from TableTest YAML outputs.
+ * <p>
+ * Reads YAML files produced by the TableTest JUnit extension and generates
+ * human-readable documentation in AsciiDoc or Markdown format.
+ */
 @CacheableTask
 public abstract class ReportTableTestsTask extends DefaultTask {
 
@@ -35,6 +41,9 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     private final DirectoryProperty outputDir;
     private final DirectoryProperty templateDir;
 
+    /**
+     * Creates a new task instance with default configuration.
+     */
     @Inject
     public ReportTableTestsTask() {
         this.format = getProject().getObjects().property(String.class);
@@ -45,23 +54,43 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         setDescription("Generates AsciiDoc or Markdown documentation from TableTest YAML outputs");
     }
 
+    /**
+     * Returns the output format property.
+     *
+     * @return property for specifying output format (asciidoc or markdown)
+     */
     @Optional
     @Input
     public Property<String> getFormat() {
         return format;
     }
 
+    /**
+     * Returns the input directory property.
+     *
+     * @return property for directory containing TableTest YAML files
+     */
     @InputDirectory
     @PathSensitive(PathSensitivity.RELATIVE)
     public DirectoryProperty getInputDir() {
         return inputDir;
     }
 
+    /**
+     * Returns the output directory property.
+     *
+     * @return property for directory where generated documentation will be written
+     */
     @OutputDirectory
     public DirectoryProperty getOutputDir() {
         return outputDir;
     }
 
+    /**
+     * Returns the template directory property.
+     *
+     * @return property for optional custom template directory
+     */
     @Optional
     @InputDirectory
     @PathSensitive(PathSensitivity.RELATIVE)
@@ -69,6 +98,11 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         return templateDir;
     }
 
+    /**
+     * Executes the task to generate documentation from TableTest YAML files.
+     *
+     * @throws GradleException if input directory does not exist or report generation fails
+     */
     @TaskAction
     public void run() {
         final String fmt = format.getOrElse("asciidoc");

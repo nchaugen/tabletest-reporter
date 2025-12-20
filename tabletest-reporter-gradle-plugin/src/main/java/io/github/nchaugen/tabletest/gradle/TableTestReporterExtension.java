@@ -33,6 +33,13 @@ public abstract class TableTestReporterExtension {
     private final DirectoryProperty outputDir;
     private final DirectoryProperty templateDir;
 
+    /**
+     * Creates a new extension instance with default configuration values.
+     *
+     * @param objects Gradle object factory for creating properties
+     * @param layout project layout for resolving build directory paths
+     * @param providers provider factory for creating providers
+     */
     @Inject
     public TableTestReporterExtension(ObjectFactory objects, ProjectLayout layout, ProviderFactory providers) {
         this.format = objects.property(String.class).convention("asciidoc");
@@ -43,18 +50,38 @@ public abstract class TableTestReporterExtension {
         this.templateDir = objects.directoryProperty();
     }
 
+    /**
+     * Returns the output format property.
+     *
+     * @return property for specifying output format (asciidoc or markdown)
+     */
     public Property<String> getFormat() {
         return format;
     }
 
+    /**
+     * Returns the input directory property.
+     *
+     * @return property for directory containing TableTest YAML files
+     */
     public DirectoryProperty getInputDir() {
         return inputDir;
     }
 
+    /**
+     * Returns the output directory property.
+     *
+     * @return property for directory where generated documentation will be written
+     */
     public DirectoryProperty getOutputDir() {
         return outputDir;
     }
 
+    /**
+     * Returns the template directory property.
+     *
+     * @return property for optional custom template directory
+     */
     public DirectoryProperty getTemplateDir() {
         return templateDir;
     }

@@ -18,7 +18,19 @@ package io.github.nchaugen.tabletest.gradle;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
+/**
+ * Gradle plugin for generating TableTest documentation.
+ * <p>
+ * Registers the {@code tableTestReporter} extension for configuration and the
+ * {@code reportTableTests} task for generating documentation from TableTest YAML files.
+ */
 public class TableTestReporterPlugin implements Plugin<Project> {
+
+    /**
+     * Creates a new plugin instance.
+     */
+    public TableTestReporterPlugin() {
+    }
 
     @Override
     public void apply(Project project) {
