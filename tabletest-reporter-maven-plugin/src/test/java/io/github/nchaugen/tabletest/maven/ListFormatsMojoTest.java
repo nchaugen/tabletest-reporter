@@ -19,7 +19,7 @@ class ListFormatsMojoTest {
     Path tempDir;
 
     @Test
-    void execute_logs_formats() throws Exception {
+    void execute_logs_formats() {
         ListFormatsMojo mojo = new ListFormatsMojo();
         List<String> logMessages = captureLogMessages(mojo);
 

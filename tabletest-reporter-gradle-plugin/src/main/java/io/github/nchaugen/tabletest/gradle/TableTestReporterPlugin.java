@@ -50,9 +50,9 @@ public class TableTestReporterPlugin implements Plugin<Project> {
 
         // Register list formats task
         project.getTasks().register(
-            "listTableTestReportFormats", ListFormatsTask.class, t -> {
-                t.getTemplateDir().convention(ext.getTemplateDir());
-            }
+            "listTableTestReportFormats",
+            ListFormatsTask.class,
+            t -> t.getTemplateDir().convention(ext.getTemplateDir())
         );
 
         // Make `build` depend on generation by default? Keep opt-in to avoid surprises.

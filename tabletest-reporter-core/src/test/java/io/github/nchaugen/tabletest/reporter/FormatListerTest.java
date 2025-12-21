@@ -24,7 +24,7 @@ class FormatListerTest {
         Formats sorted alphabetically | [table.zebra.peb, index.zebra.peb, table.aardvark.peb, index.aardvark.peb] | [aardvark, asciidoc, markdown, zebra]
         Single custom format          | [table.custom.peb, index.custom.peb]                                       | [asciidoc, custom, markdown]
         """)
-    void lists_formats(@Scenario String _scenario, List<String> templateFiles, List<String> expectedOutput,
+    void lists_formats(@Scenario String scenario, List<String> templateFiles, List<String> expectedOutput,
                       @TempDir Path tempDir) throws IOException {
         for (String file : templateFiles) {
             Path filePath = tempDir.resolve(file);

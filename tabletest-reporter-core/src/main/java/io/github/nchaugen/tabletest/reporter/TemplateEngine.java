@@ -40,7 +40,6 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Template rendering engine.
- *
  * Responsible for creating and configuring the Pebble template engine,
  * loading templates, and rendering them with context data.
  */

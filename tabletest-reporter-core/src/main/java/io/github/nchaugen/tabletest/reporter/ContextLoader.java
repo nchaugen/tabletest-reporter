@@ -47,6 +47,7 @@ public class ContextLoader {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public Map<String, Object> fromYaml(String value) {
         return (Map<String, Object>) yaml.loadFromString(value);
     }

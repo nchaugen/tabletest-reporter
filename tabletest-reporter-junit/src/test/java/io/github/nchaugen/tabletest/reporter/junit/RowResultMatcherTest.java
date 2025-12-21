@@ -73,8 +73,8 @@ class RowResultMatcherTest {
         List<RowResult> matches = RowResultMatcher.findMatchingResults(0, table, OptionalInt.of(0), results);
 
         assertEquals(1, matches.size());
-        assertEquals("[1] Test 1", matches.get(0).displayName());
-        assertTrue(matches.get(0).passed());
+        assertEquals("[1] Test 1", matches.getFirst().displayName());
+        assertTrue(matches.getFirst().passed());
     }
 
     @Test
@@ -88,7 +88,7 @@ class RowResultMatcherTest {
         List<RowResult> matches = RowResultMatcher.findMatchingResults(0, table, OptionalInt.empty(), results);
 
         assertEquals(1, matches.size());
-        assertEquals("[1] 1, 2", matches.get(0).displayName());
+        assertEquals("[1] 1, 2", matches.getFirst().displayName());
     }
 
     @Test
@@ -147,7 +147,7 @@ class RowResultMatcherTest {
         // Table: empty cell in scenario column (parsed as null)
         Table table = TableParser.parse("Scenario|value\n|foo");
 
-        Object scenarioValue = table.rows().get(0).value(0);
+        Object scenarioValue = table.rows().getFirst().value(0);
 
         // Empty cells are parsed as null
         // JUnit displays null parameters as: [1] null
