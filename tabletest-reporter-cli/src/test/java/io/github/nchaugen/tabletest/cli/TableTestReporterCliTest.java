@@ -4,7 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -171,6 +173,36 @@ class TableTestReporterCliTest {
         assertThat(exitCode).isEqualTo(2);
     }
 
+    @Test
+    void list_formats_exits_successfully_and_prints_formats() {
+        String output = captureOutput("--list-formats");
+        int exitCode = runCli("--list-formats");
+
+        assertThat(exitCode).isZero();
+        assertThat(output).contains("asciidoc").contains("markdown");
+    }
+
+    @Test
+    void list_formats_includes_custom_formats_when_template_dir_provided() throws IOException {
+        Path templateDir = tempDir.resolve("templates");
+        Files.createDirectories(templateDir);
+        Files.writeString(templateDir.resolve("table.html.peb"), "template");
+        Files.writeString(templateDir.resolve("index.html.peb"), "template");
+
+        String output = captureOutput("--list-formats", "--template-dir", templateDir.toString());
+
+        assertThat(output).contains("html");
+    }
+
+    @Test
+    void list_formats_handles_invalid_template_dir_gracefully() {
+        Path nonexistentDir = tempDir.resolve("nonexistent");
+
+        String output = captureOutput("--list-formats", "--template-dir", nonexistentDir.toString());
+
+        assertThat(output).contains("asciidoc");
+    }
+
     private Path setupInputDirectory(Path parent) throws IOException {
         Path inputDir = parent.resolve("input");
         Files.createDirectories(inputDir);
@@ -197,6 +229,18 @@ class TableTestReporterCliTest {
 
     private int runCli(String... args) {
         return new CommandLine(new TableTestReporterCli()).execute(args);
+    }
+
+    private String captureOutput(String... args) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        try {
+            System.setOut(new PrintStream(outputStream));
+            new CommandLine(new TableTestReporterCli()).execute(args);
+            return outputStream.toString();
+        } finally {
+            System.setOut(originalOut);
+        }
     }
 
     private Path findGeneratedFile(Path outputDir, String extension) throws IOException {

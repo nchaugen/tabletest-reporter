@@ -291,6 +291,33 @@ tableTestReporter {
 }
 ```
 
+### Listing Available Formats
+
+You can list all available output formats (built-in and custom) using the following commands:
+
+**Maven:**
+```bash
+mvn tabletest-reporter:list-formats
+```
+
+**Gradle:**
+```bash
+./gradlew listTableTestReportFormats
+```
+
+**CLI:**
+```bash
+tabletest-reporter --list-formats
+```
+
+The output shows all available formats, sorted alphabetically. By default, you'll see the built-in formats:
+```
+asciidoc
+markdown
+```
+
+When using custom templates with additional formats, those will also appear in the list.
+
 ## Output Structure
 
 The reporter generates documentation that mirrors your test package structure. The output starts at the point where your package structure branches.

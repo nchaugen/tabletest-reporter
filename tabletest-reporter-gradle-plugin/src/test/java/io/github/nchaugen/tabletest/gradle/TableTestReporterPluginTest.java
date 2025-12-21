@@ -216,6 +216,52 @@ class TableTestReporterPluginTest {
         assertThat(content).contains("|===");
     }
 
+    @Test
+    void listFormatsTask_is_registered() {
+        ListFormatsTask task = (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
+        assertThat(task).isNotNull();
+    }
+
+    @Test
+    void listFormatsTask_executes_successfully() {
+        ListFormatsTask task = (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
+        task.run();
+    }
+
+    @Test
+    void listFormatsTask_executes_with_custom_template_dir() throws IOException {
+        Path templateDir = setupCustomTemplateDirectory(projectDir);
+
+        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
+        ext.getTemplateDir().set(templateDir.toFile());
+
+        ListFormatsTask task = (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
+        task.run();
+    }
+
+    @Test
+    void listFormatsTask_handles_invalid_template_dir_gracefully() {
+        Path nonexistentDir = projectDir.resolve("nonexistent");
+
+        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
+        ext.getTemplateDir().set(nonexistentDir.toFile());
+
+        ListFormatsTask task = (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
+        task.run();
+    }
+
+    @Test
+    void listFormatsTask_handles_template_dir_that_is_file() throws IOException {
+        Path notADirectory = projectDir.resolve("file.txt");
+        Files.writeString(notADirectory, "not a directory");
+
+        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
+        ext.getTemplateDir().set(notADirectory.toFile());
+
+        ListFormatsTask task = (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
+        task.run();
+    }
+
     private Path setupInputDirectory(Path buildDir) throws IOException {
         Path inputRoot = buildDir.resolve("junit-jupiter");
         Path testClassDir = inputRoot.resolve("org.example.CalendarTest");

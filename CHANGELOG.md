@@ -9,6 +9,9 @@
 - Template extension blocks (frontMatter, title, description, table/contents, footer) for customisation
 - Support for both template extension (child templates) and complete template replacement
 - CLI `--template-dir` option to specify custom template directory
+- CLI `--list-formats` option to list all available output formats
+- Maven `list-formats` goal to list all available output formats
+- Gradle `listTableTestReportFormats` task to list all available output formats
 ### Changed
 - Renamed `ReportFormat` to `BuiltInFormat` for clarity between built-in and custom formats
 - Extracted duplicate format resolution logic into `FormatResolver` utility class

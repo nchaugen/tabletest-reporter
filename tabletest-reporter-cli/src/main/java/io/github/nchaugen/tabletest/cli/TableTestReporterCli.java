@@ -16,6 +16,7 @@
 package io.github.nchaugen.tabletest.cli;
 
 import io.github.nchaugen.tabletest.reporter.Format;
+import io.github.nchaugen.tabletest.reporter.FormatLister;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import picocli.CommandLine;
@@ -33,6 +34,10 @@ import java.util.concurrent.Callable;
     version = {"tabletest-reporter CLI"}
 )
 public final class TableTestReporterCli implements Callable<Integer> {
+
+    @Option(names = {"-l", "--list-formats"},
+        description = "List all available output formats and exit")
+    private boolean listFormats;
 
     @Option(names = {"-f", "--format"},
         description = "Report format: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})",
@@ -60,6 +65,13 @@ public final class TableTestReporterCli implements Callable<Integer> {
 
     @Override
     public Integer call() {
+        if (listFormats) {
+            Path templateDir = resolveTemplateDirLenient();
+            String formats = FormatLister.listFormats(templateDir);
+            System.out.println(formats);
+            return 0;
+        }
+
         try {
             Path buildDir = resolveBuildDir();
             Path in = inputDirArg == null || inputDirArg.isBlank()
@@ -76,7 +88,7 @@ public final class TableTestReporterCli implements Callable<Integer> {
 
             Path templateDir = resolveTemplateDir();
             Format reportFormat = FormatResolver.resolve(format, templateDir);
-            TableTestReporter reporter = createReporter();
+            TableTestReporter reporter = createReporter(templateDir);
             reporter.report(reportFormat, in, out);
             return 0;
         } catch (IllegalArgumentException e) {
@@ -88,8 +100,7 @@ public final class TableTestReporterCli implements Callable<Integer> {
         }
     }
 
-    private TableTestReporter createReporter() {
-        Path templateDir = resolveTemplateDir();
+    private TableTestReporter createReporter(Path templateDir) {
         return templateDir != null
             ? new TableTestReporter(templateDir)
             : new TableTestReporter();
@@ -106,6 +117,19 @@ public final class TableTestReporterCli implements Callable<Integer> {
         }
         if (!Files.isDirectory(templateDir)) {
             throw new IllegalArgumentException("Template path is not a directory: " + templateDir.toAbsolutePath());
+        }
+
+        return templateDir;
+    }
+
+    private Path resolveTemplateDirLenient() {
+        if (templateDirArg == null || templateDirArg.isBlank()) {
+            return null;
+        }
+
+        Path templateDir = Path.of(templateDirArg);
+        if (!Files.exists(templateDir) || !Files.isDirectory(templateDir)) {
+            return null;
         }
 
         return templateDir;
