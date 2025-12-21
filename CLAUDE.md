@@ -56,6 +56,44 @@ verifyGeneratedFileContains(outputDir, "expected value");
 - Prefer TableTest for parameterised tests (see global CLAUDE.md)
 - Use meaningful test names describing behaviour (e.g., `uses_custom_template_when_template_dir_provided`)
 
+## TableTest Consolidation Patterns
+When multiple test methods follow the same structure but vary only in inputs/outputs, consolidate them into a TableTest:
+
+**Good candidates for consolidation:**
+- Multiple tests with identical setup and assertion logic
+- Tests varying only in input data and expected outcomes
+- Validation tests checking different scenarios
+
+**Keep as separate @Test methods:**
+- Edge cases with null/empty inputs
+- Tests requiring complex setup (e.g., creating subdirectories)
+- Tests with fundamentally different assertion logic
+
+**TableTest best practices:**
+- Use `List<String>` for file lists: `[file1.txt, file2.txt]`
+- Use path notation for subdirectories: `[subdir/file.txt]`
+- Include `@Scenario String _scenario` when using `@TempDir` (parameter shift issue)
+- Create parent directories: `Files.createDirectories(filePath.getParent())`
+
+Example:
+```java
+@TableTest("""
+    Scenario          | Files                    | Expected
+    Single file       | [file.txt]               | [file]
+    Multiple files    | [a.txt, b.txt]           | [a, b]
+    Subdirectory      | [dir/file.txt]           | []
+    """)
+void discovers_files(@Scenario String _scenario, List<String> files, List<String> expected,
+                    @TempDir Path tempDir) throws IOException {
+    for (String file : files) {
+        Path path = tempDir.resolve(file);
+        Files.createDirectories(path.getParent());
+        Files.writeString(path, "content");
+    }
+    // assertions...
+}
+```
+
 # Commit and Push Workflow
 
 **CRITICAL**: You must NEVER commit or push changes without explicit user approval.
@@ -68,6 +106,8 @@ verifyGeneratedFileContains(outputDir, "expected value");
 - **NEVER** rewrite history on main/master branch
 - **NEVER** commit or push without explicit user approval
 
+**Amending commits is SAFE and ENCOURAGED before pushing** (e.g., to include hook-generated changes like copyright headers).
+
 If you need to fix a commit message after pushing:
 1. Create a NEW commit with the fix (e.g., "docs: fix commit message format")
 2. Push normally with `git push`
@@ -78,6 +118,8 @@ If you need to fix a commit message after pushing:
 
 - **Use conventional commits** (feat:, fix:, docs:, refactor:, test:, chore:, etc.)
 - **Keep first line under 50 characters**
+- **Keep messages concise** - single line preferred, no multi-line explanations
+- **Focus on what, not why** - the code diff shows the why
 - **NEVER add Claude Code attribution footer** - omit all AI attribution
 - First line should be imperative mood (e.g., "fix bug" not "fixed bug")
 
@@ -102,13 +144,31 @@ fix: resolve bug
 
 1. **Make changes** as requested by the user
 2. **Run compatibility tests if required**: Check the "Compatibility Testing Requirements" section below to determine if `./compatibility-tests/run-tests.sh` must be run before committing
-3. **Show what changed**: Use `git diff` to show the user what you've changed
-4. **Explain the changes**: Briefly explain what you did and why
-5. **Wait for approval**: Ask "Should I commit and push these changes?"
-6. **Only after user says yes**:
+3. **Update documentation for features**: See "Documentation Updates" section below
+4. **Show what changed**: Use `git diff` to show the user what you've changed
+5. **Explain the changes**: Briefly explain what you did and why
+6. **Wait for approval**: Ask "Should I commit and push these changes?"
+7. **Only after user says yes**:
    - Run `git add` and `git commit` (the commit-msg hook will validate format)
    - Run `git push` (NOT force push)
    - If commit is rejected by hook, fix and create NEW commit (don't amend if already pushed)
+
+## Documentation Updates for Features
+
+When adding new features, update documentation BEFORE asking for commit approval:
+
+1. **CHANGELOG.md** - Add user-facing changes to `[Unreleased]` section:
+   - `### Added` for new features visible to users
+   - `### Changed` for breaking changes or significant behaviour changes
+   - `### Fixed` for bug fixes
+   - Skip internal refactorings unless they affect users
+
+2. **README.md** - Add examples and usage instructions:
+   - Add new sections for major features
+   - Update configuration examples
+   - Include code examples showing how users will use the feature
+
+**Documentation-only changes** do not require running compatibility tests.
 
 ## Example Sessions
 
