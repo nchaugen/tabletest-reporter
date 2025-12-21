@@ -24,24 +24,33 @@ public class ReportTreeTest {
         Files in all     | [a.a/c, a.a/d, a.b/c] | [a.a/TABLETEST-A.yaml, a.a/c/TABLETEST-x.yaml, a.a/d/TABLETEST-y.yaml, a.b/TABLETEST-B.yaml, a.b/c/TABLETEST-x.yaml] | [a.a/TABLETEST-A.yaml, a.a/c/TABLETEST-x.yaml, a.a/d/TABLETEST-y.yaml, a.b/TABLETEST-B.yaml, a.b/c/TABLETEST-x.yaml]
         Non-yaml ignored | [a.a/c, a.a/d, a.b/c] | [a.a/TABLETEST-z.txt, a.a/c/TABLETEST-x.xml, a.a/d/TABLETEST-y.gif, a.b/TABLETEST-w.md, a.b/c/TABLETEST-x.adoc]      | []
         """)
-    void shouldFindTableTestOutputFiles(@Scenario String scenario, List<String> directories, List<String> files, List<Path> expected, @TempDir Path tempDir) {
-        directories.forEach(dir -> {
-            try {
-                Files.createDirectories(tempDir.resolve(dir));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        files.forEach(file -> {
-            try {
-                Files.createFile(tempDir.resolve(file));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+    void shouldFindTableTestOutputFiles(
+        @Scenario String scenario,
+        List<String> directories,
+        List<String> files,
+        List<Path> expected,
+        @TempDir Path tempDir
+    ) {
+        directories.forEach(dir -> createSubDir(tempDir, dir));
+        files.forEach(file -> createFile(tempDir, file));
 
         assertThat(ReportTree.findTableTestOutputFiles(tempDir)).containsExactlyElementsOf(expected);
+    }
+
+    private static void createFile(Path tempDir, String file) {
+        try {
+            Files.createFile(tempDir.resolve(file));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void createSubDir(Path tempDir, String dir) {
+        try {
+            Files.createDirectories(tempDir.resolve(dir));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @TableTest("""
@@ -82,40 +91,49 @@ public class ReportTreeTest {
         Files.createFile(tempDir.resolve("pkg.T2/TABLETEST-T2Test.yaml"));
         Files.createFile(tempDir.resolve("pkg.T2/table1/TABLETEST-tabletest1.yaml"));
 
-        Map<String, Object> tree = ReportTree.process(tempDir);
+        ReportNode tree = ReportTree.process(tempDir);
+
+        ReportNode expected = new IndexNode(
+            "pkg",
+            "",
+            null,
+            List.of(
+                new IndexNode(
+                    "T1Test",
+                    "/t1test",
+                    "pkg.T1/TABLETEST-T1Test.yaml",
+                    List.of(
+                        new TableNode(
+                            "tabletest1",
+                            "/t1test/tabletest1",
+                            "pkg.T1/table1/TABLETEST-tabletest1.yaml"
+                        ),
+                        new TableNode(
+                            "tabletest2",
+                            "/t1test/tabletest2",
+                            "pkg.T1/table2/TABLETEST-tabletest2.yaml"
+                        )
+                    )
+                ),
+                new IndexNode(
+                    "T2Test",
+                    "/t2test",
+                    "pkg.T2/TABLETEST-T2Test.yaml",
+                    List.of(
+                        new TableNode(
+                            "tabletest1",
+                            "/t2test/tabletest1",
+                            "pkg.T2/table1/TABLETEST-tabletest1.yaml"
+                        )
+                    )
+                )
+            )
+        );
 
         assertThat(tree)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
-            .isEqualTo(new ContextLoader().fromYaml("""
-                type: index
-                name: pkg
-                outPath: ""
-                contents:
-                  - type: index
-                    name: T1Test
-                    outPath: /t1test
-                    resource: pkg.T1/TABLETEST-T1Test.yaml
-                    contents:
-                      - type: table
-                        name: tabletest1
-                        outPath: /t1test/tabletest1
-                        resource: pkg.T1/table1/TABLETEST-tabletest1.yaml
-                      - type: table
-                        name: tabletest2
-                        outPath: /t1test/tabletest2
-                        resource: pkg.T1/table2/TABLETEST-tabletest2.yaml
-                  - type: index
-                    name: T2Test
-                    outPath: /t2test
-                    resource: pkg.T2/TABLETEST-T2Test.yaml
-                    contents:
-                      - type: table
-                        name: tabletest1
-                        outPath: /t2test/tabletest1
-                        resource: pkg.T2/table1/TABLETEST-tabletest1.yaml
-                """)
-            );
+            .isEqualTo(expected);
     }
 
     @Test
@@ -130,48 +148,63 @@ public class ReportTreeTest {
         Files.createFile(tempDir.resolve("com.pkg.orders.T2/TABLETEST-T2Test.yaml"));
         Files.createFile(tempDir.resolve("com.pkg.orders.T2/table1/TABLETEST-tabletest1.yaml"));
 
-        Map<String, Object> tree = ReportTree.process(tempDir);
+        ReportNode tree = ReportTree.process(tempDir);
+
+        ReportNode expected = new IndexNode(
+            "pkg",
+            "",
+            null,
+            List.of(
+                new IndexNode(
+                    "products",
+                    "/products",
+                    null,
+                    List.of(
+                        new IndexNode(
+                            "T1Test",
+                            "/products/t1test",
+                            "com.pkg.products.T1/TABLETEST-T1Test.yaml",
+                            List.of(
+                                new TableNode(
+                                    "tabletest1",
+                                    "/products/t1test/tabletest1",
+                                    "com.pkg.products.T1/table1/TABLETEST-tabletest1.yaml"
+                                ),
+                                new TableNode(
+                                    "tabletest2",
+                                    "/products/t1test/tabletest2",
+                                    "com.pkg.products.T1/table2/TABLETEST-tabletest2.yaml"
+                                )
+                            )
+                        )
+                    )
+                ),
+                new IndexNode(
+                    "orders",
+                    "/orders",
+                    null,
+                    List.of(
+                        new IndexNode(
+                            "T2Test",
+                            "/orders/t2test",
+                            "com.pkg.orders.T2/TABLETEST-T2Test.yaml",
+                            List.of(
+                                new TableNode(
+                                    "tabletest1",
+                                    "/orders/t2test/tabletest1",
+                                    "com.pkg.orders.T2/table1/TABLETEST-tabletest1.yaml"
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        );
 
         assertThat(tree)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
-            .isEqualTo(new ContextLoader().fromYaml("""
-                type: index
-                name: pkg
-                outPath: ""
-                contents:
-                  - type: index
-                    name: products
-                    outPath: /products
-                    contents:
-                      - type: index
-                        name: T1Test
-                        outPath: /products/t1test
-                        resource: com.pkg.products.T1/TABLETEST-T1Test.yaml
-                        contents:
-                          - type: table
-                            name: tabletest1
-                            outPath: /products/t1test/tabletest1
-                            resource: com.pkg.products.T1/table1/TABLETEST-tabletest1.yaml
-                          - type: table
-                            name: tabletest2
-                            outPath: /products/t1test/tabletest2
-                            resource: com.pkg.products.T1/table2/TABLETEST-tabletest2.yaml
-                  - type: index
-                    name: orders
-                    outPath: /orders
-                    contents:
-                      - type: index
-                        name: T2Test
-                        outPath: /orders/t2test
-                        resource: com.pkg.orders.T2/TABLETEST-T2Test.yaml
-                        contents:
-                          - type: table
-                            name: tabletest1
-                            outPath: /orders/t2test/tabletest1
-                            resource: com.pkg.orders.T2/table1/TABLETEST-tabletest1.yaml
-                """)
-            );
+            .isEqualTo(expected);
     }
 
     @Test
@@ -187,64 +220,91 @@ public class ReportTreeTest {
         Files.createFile(tempDir.resolve("no.oth.orders.T2/TABLETEST-T2Test.yaml"));
         Files.createFile(tempDir.resolve("no.oth.orders.T2/table1/TABLETEST-tabletest1.yaml"));
 
-        Map<String, Object> tree = ReportTree.process(tempDir);
+        ReportNode tree = ReportTree.process(tempDir);
+
+        ReportNode expected = new IndexNode(
+            "no",
+            "",
+            null,
+            List.of(
+                new IndexNode(
+                    "pkg",
+                    "/pkg",
+                    null,
+                    List.of(
+                        new IndexNode(
+                            "products",
+                            "/pkg/products",
+                            null,
+                            List.of(
+                                new IndexNode(
+                                    "T1Test",
+                                    "/pkg/products/t1test",
+                                    "no.pkg.products.T1/TABLETEST-T1Test.yaml",
+                                    List.of(
+                                        new TableNode(
+                                            "tabletest1",
+                                            "/pkg/products/t1test/tabletest1",
+                                            "no.pkg.products.T1/table1/TABLETEST-tabletest1.yaml"
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        new IndexNode(
+                            "packages",
+                            "/pkg/packages",
+                            null,
+                            List.of(
+                                new IndexNode(
+                                    "T1",
+                                    "/pkg/packages/t1",
+                                    null,
+                                    List.of(
+                                        new TableNode(
+                                            "tabletest2",
+                                            "/pkg/packages/t1/tabletest2",
+                                            "no.pkg.packages.T1/table2/TABLETEST-tabletest2.yaml"
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                new IndexNode(
+                    "oth",
+                    "/oth",
+                    null,
+                    List.of(
+                        new IndexNode(
+                            "orders",
+                            "/oth/orders",
+                            null,
+                            List.of(
+                                new IndexNode(
+                                    "T2Test",
+                                    "/oth/orders/t2test",
+                                    "no.oth.orders.T2/TABLETEST-T2Test.yaml",
+                                    List.of(
+                                        new TableNode(
+                                            "tabletest1",
+                                            "/oth/orders/t2test/tabletest1",
+                                            "no.oth.orders.T2/table1/TABLETEST-tabletest1.yaml"
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        );
 
         assertThat(tree)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
-            .isEqualTo(new ContextLoader().fromYaml("""
-                type: index
-                name: "no"
-                outPath: ""
-                contents:
-                  - type: index
-                    name: pkg
-                    outPath: /pkg
-                    contents:
-                      - type: index
-                        name: products
-                        outPath: /pkg/products
-                        contents:
-                          - type: index
-                            name: T1Test
-                            outPath: /pkg/products/t1test
-                            resource: no.pkg.products.T1/TABLETEST-T1Test.yaml
-                            contents:
-                              - type: table
-                                name: tabletest1
-                                outPath: /pkg/products/t1test/tabletest1
-                                resource: no.pkg.products.T1/table1/TABLETEST-tabletest1.yaml
-                      - type: index
-                        name: packages
-                        outPath: /pkg/packages
-                        contents:
-                          - type: index
-                            name: T1
-                            outPath: /pkg/packages/t1
-                            contents:
-                              - type: table
-                                name: tabletest2
-                                outPath: /pkg/packages/t1/tabletest2
-                                resource: no.pkg.packages.T1/table2/TABLETEST-tabletest2.yaml
-                  - type: index
-                    name: oth
-                    outPath: /oth
-                    contents:
-                      - type: index
-                        name: orders
-                        outPath: /oth/orders
-                        contents:
-                          - type: index
-                            name: T2Test
-                            outPath: /oth/orders/t2test
-                            resource: no.oth.orders.T2/TABLETEST-T2Test.yaml
-                            contents:
-                              - type: table
-                                name: tabletest1
-                                outPath: /oth/orders/t2test/tabletest1
-                                resource: no.oth.orders.T2/table1/TABLETEST-tabletest1.yaml
-                """)
-            );
+            .isEqualTo(expected);
     }
 
     @Test
@@ -257,38 +317,49 @@ public class ReportTreeTest {
         Files.createFile(tempDir.resolve("pkg.T1/table2/TABLETEST-tabletest2.yaml"));
         Files.createFile(tempDir.resolve("pkg.T2/table1/TABLETEST-tabletest1.yaml"));
 
-        Map<String, Object> tree = ReportTree.process(tempDir);
+        ReportNode tree = ReportTree.process(tempDir);
+
+        ReportNode expected = new IndexNode(
+            "pkg",
+            "",
+            null,
+            List.of(
+                new IndexNode(
+                    "T1",
+                    "/t1",
+                    null,
+                    List.of(
+                        new TableNode(
+                            "tabletest1",
+                            "/t1/tabletest1",
+                            "pkg.T1/table1/TABLETEST-tabletest1.yaml"
+                        ),
+                        new TableNode(
+                            "tabletest2",
+                            "/t1/tabletest2",
+                            "pkg.T1/table2/TABLETEST-tabletest2.yaml"
+                        )
+                    )
+                ),
+                new IndexNode(
+                    "T2",
+                    "/t2",
+                    null,
+                    List.of(
+                        new TableNode(
+                            "tabletest1",
+                            "/t2/tabletest1",
+                            "pkg.T2/table1/TABLETEST-tabletest1.yaml"
+                        )
+                    )
+                )
+            )
+        );
 
         assertThat(tree)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
-            .isEqualTo(new ContextLoader().fromYaml("""
-                type: index
-                name: pkg
-                outPath: ""
-                contents:
-                  - type: index
-                    name: T1
-                    outPath: /t1
-                    contents:
-                      - type: table
-                        name: tabletest1
-                        outPath: /t1/tabletest1
-                        resource: pkg.T1/table1/TABLETEST-tabletest1.yaml
-                      - type: table
-                        name: tabletest2
-                        outPath: /t1/tabletest2
-                        resource: pkg.T1/table2/TABLETEST-tabletest2.yaml
-                  - type: index
-                    name: T2
-                    outPath: /t2
-                    contents:
-                      - type: table
-                        name: tabletest1
-                        outPath: /t2/tabletest1
-                        resource: pkg.T2/table1/TABLETEST-tabletest1.yaml
-                """)
-            );
+            .isEqualTo(expected);
     }
 
     @Test
@@ -303,40 +374,49 @@ public class ReportTreeTest {
         Files.createFile(tempDir.resolve("org.example.SecondTest/TABLETEST-a-custom-test-title.yaml"));
         Files.createFile(tempDir.resolve("org.example.SecondTest/table test(java.lang.String, java.lang.Class)/TABLETEST-table-test.yaml"));
 
-        Map<String, Object> tree = ReportTree.process(tempDir);
+        ReportNode tree = ReportTree.process(tempDir);
+
+        ReportNode expected = new IndexNode(
+            "example",
+            "",
+            null,
+            List.of(
+                new IndexNode(
+                    "first-test",
+                    "/first-test",
+                    "org.example.FirstTest/TABLETEST-first-test.yaml",
+                    List.of(
+                        new TableNode(
+                            "leap-year-rules",
+                            "/first-test/leap-year-rules",
+                            "org.example.FirstTest/table_test(java.util.List, org.example.Domain)/TABLETEST-leap-year-rules.yaml"
+                        ),
+                        new TableNode(
+                            "another-test",
+                            "/first-test/another-test",
+                            "org.example.FirstTest/another_test(java.time.LocalDate, boolean)/TABLETEST-another-test.yaml"
+                        )
+                    )
+                ),
+                new IndexNode(
+                    "a-custom-test-title",
+                    "/a-custom-test-title",
+                    "org.example.SecondTest/TABLETEST-a-custom-test-title.yaml",
+                    List.of(
+                        new TableNode(
+                            "table-test",
+                            "/a-custom-test-title/table-test",
+                            "org.example.SecondTest/table test(java.lang.String, java.lang.Class)/TABLETEST-table-test.yaml"
+                        )
+                    )
+                )
+            )
+        );
 
         assertThat(tree)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
-            .isEqualTo(new ContextLoader().fromYaml("""
-                type: index
-                name: example
-                outPath: ""
-                contents:
-                  - type: index
-                    name: first-test
-                    outPath: /first-test
-                    resource: org.example.FirstTest/TABLETEST-first-test.yaml
-                    contents:
-                      - type: table
-                        name: leap-year-rules
-                        outPath: /first-test/leap-year-rules
-                        resource: org.example.FirstTest/table_test(java.util.List, org.example.Domain)/TABLETEST-leap-year-rules.yaml
-                      - type: table
-                        name: another-test
-                        outPath: /first-test/another-test
-                        resource: org.example.FirstTest/another_test(java.time.LocalDate, boolean)/TABLETEST-another-test.yaml
-                  - type: index
-                    name: a-custom-test-title
-                    outPath: /a-custom-test-title
-                    resource: org.example.SecondTest/TABLETEST-a-custom-test-title.yaml
-                    contents:
-                      - type: table
-                        name: table-test
-                        outPath: /a-custom-test-title/table-test
-                        resource: org.example.SecondTest/table test(java.lang.String, java.lang.Class)/TABLETEST-table-test.yaml
-                """)
-            );
+            .isEqualTo(expected);
     }
 
     @Test
@@ -352,45 +432,56 @@ public class ReportTreeTest {
         Files.createFile(tempDir.resolve("pkg.T1/Nested/table2/TABLETEST-tabletest2.yaml"));
         Files.createFile(tempDir.resolve("pkg.T1/Nested/DeeplyNested/table1/TABLETEST-tabletest1.yaml"));
 
-        Map<String, Object> tree = ReportTree.process(tempDir);
+        ReportNode tree = ReportTree.process(tempDir);
+
+        ReportNode expected = new IndexNode(
+            "pkg",
+            "",
+            null,
+            List.of(
+                new IndexNode(
+                    "T1",
+                    "/t1",
+                    "pkg.T1/TABLETEST-T1.yaml",
+                    List.of(
+                        new TableNode(
+                            "tabletest1",
+                            "/t1/tabletest1",
+                            "pkg.T1/table1/TABLETEST-tabletest1.yaml"
+                        ),
+                        new IndexNode(
+                            "nested",
+                            "/t1/nested",
+                            "pkg.T1/Nested/TABLETEST-nested.yaml",
+                            List.of(
+                                new TableNode(
+                                    "tabletest2",
+                                    "/t1/nested/tabletest2",
+                                    "pkg.T1/Nested/table2/TABLETEST-tabletest2.yaml"
+                                ),
+                                new IndexNode(
+                                    "deeply-nested",
+                                    "/t1/nested/deeply-nested",
+                                    "pkg.T1/Nested/DeeplyNested/TABLETEST-deeply-nested.yaml",
+                                    List.of(
+                                        new TableNode(
+                                            "tabletest1",
+                                            "/t1/nested/deeply-nested/tabletest1",
+                                            "pkg.T1/Nested/DeeplyNested/table1/TABLETEST-tabletest1.yaml"
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        );
 
         assertThat(tree)
             .usingRecursiveComparison()
             .ignoringCollectionOrder()
-            .isEqualTo(new ContextLoader().fromYaml("""
-                type: index
-                name: pkg
-                outPath: ""
-                contents:
-                  - type: index
-                    name: T1
-                    outPath: /t1
-                    resource: pkg.T1/TABLETEST-T1.yaml
-                    contents:
-                      - type: table
-                        name: tabletest1
-                        outPath: /t1/tabletest1
-                        resource: pkg.T1/table1/TABLETEST-tabletest1.yaml
-                      - type: index
-                        name: nested
-                        outPath: /t1/nested
-                        resource: pkg.T1/Nested/TABLETEST-nested.yaml
-                        contents:
-                          - type: table
-                            name: tabletest2
-                            outPath: /t1/nested/tabletest2
-                            resource: pkg.T1/Nested/table2/TABLETEST-tabletest2.yaml
-                          - type: index
-                            name: deeply-nested
-                            outPath: /t1/nested/deeply-nested
-                            resource: pkg.T1/Nested/DeeplyNested/TABLETEST-deeply-nested.yaml
-                            contents:
-                              - type: table
-                                name: tabletest1
-                                outPath: /t1/nested/deeply-nested/tabletest1
-                                resource: pkg.T1/Nested/DeeplyNested/table1/TABLETEST-tabletest1.yaml
-                """)
-            );
+            .isEqualTo(expected);
     }
 
 }

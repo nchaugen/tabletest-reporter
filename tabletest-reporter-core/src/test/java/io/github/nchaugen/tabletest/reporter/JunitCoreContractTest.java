@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -43,15 +42,13 @@ class JunitCoreContractTest {
             .outputDirectoryCreator(createOutputDirectoryCreator())
             .execute();
 
-        List<Path> yamlFiles = Files.walk(tempDir)
-            .filter(p -> p.toString().endsWith(".yaml"))
-            .toList();
+        List<Path> yamlFiles = findYamlFiles(tempDir);
 
         assertThat(yamlFiles)
             .describedAs("Junit extension should produce YAML files")
             .isNotEmpty();
 
-        Map<String, Object> tree = ReportTree.process(tempDir);
+        ReportNode tree = ReportTree.process(tempDir);
         assertThat(tree)
             .describedAs("Core should process junit-produced YAML into report tree")
             .isNotNull();
@@ -62,9 +59,7 @@ class JunitCoreContractTest {
 
         reporter.report(BuiltInFormat.ASCIIDOC, tempDir, outDir);
 
-        List<Path> renderedFiles = Files.walk(outDir)
-            .filter(Files::isRegularFile)
-            .toList();
+        List<Path> renderedFiles = findRegularFiles(outDir);
 
         assertThat(renderedFiles)
             .describedAs("Should render output files from junit-produced YAML")
@@ -75,15 +70,13 @@ class JunitCoreContractTest {
     void shouldHandleNestedTestClasses() throws IOException {
         EngineTestKit
             .engine("junit-jupiter")
-            .selectors(selectClass(OuterTestClass.class))
+            .selectors(selectClass(OuterTest.class))
             .configurationParameter("junit.platform.output.dir", tempDir.toString())
             .enableImplicitConfigurationParameters(true)
             .outputDirectoryCreator(createOutputDirectoryCreator())
             .execute();
 
-        List<Path> yamlFiles = Files.walk(tempDir)
-            .filter(p -> p.toString().endsWith(".yaml"))
-            .toList();
+        List<Path> yamlFiles = findYamlFiles(tempDir);
 
         assertThat(yamlFiles)
             .describedAs("Should create YAML files for nested classes and their tables")
@@ -117,7 +110,6 @@ class JunitCoreContractTest {
             .isNotNull()
             .exists();
 
-        List<Path> allFiles = Files.walk(tempDir).toList();
         boolean allFilesInRoot = yamlFiles.stream()
             .allMatch(f -> f.getParent().equals(tempDir));
 
@@ -125,16 +117,13 @@ class JunitCoreContractTest {
             .describedAs("Currently, junit extension creates all YAML files in root directory (no subdirectories). Files: " + yamlFiles)
             .isTrue();
 
-        Map<String, Object> tree = ReportTree.process(tempDir);
+        ReportNode tree = ReportTree.process(tempDir);
         assertThat(tree)
             .describedAs("Core should handle nested class structure")
-            .isNotNull();
+            .isNotNull()
+            .isInstanceOf(IndexNode.class);
 
-        assertThat(tree.get("type")).isEqualTo("index");
-
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> contents = (List<Map<String, Object>>) tree.get("contents");
-        assertThat(contents)
+        assertThat(((IndexNode) tree).contents())
             .describedAs("Should have nested structure in report tree")
             .isNotEmpty();
     }
@@ -161,20 +150,15 @@ class JunitCoreContractTest {
 
         EngineTestKit
             .engine("junit-jupiter")
-            .selectors(selectClass(OuterTestClass.class))
+            .selectors(selectClass(OuterTest.class))
             .configurationParameter("junit.platform.output.dir", customOutputDir.toString())
             .enableImplicitConfigurationParameters(true)
             .outputDirectoryCreator(creatorThatCreatesSubdirectories)
             .execute();
 
-        List<Path> yamlFiles = Files.walk(customOutputDir)
-            .filter(p -> p.toString().endsWith(".yaml"))
-            .toList();
+        List<Path> yamlFiles = findYamlFiles(customOutputDir);
 
-        List<Path> directories = Files.walk(customOutputDir)
-            .filter(Files::isDirectory)
-            .filter(p -> !p.equals(customOutputDir))
-            .toList();
+        List<Path> directories = findDirectories(customOutputDir);
 
         assertThat(yamlFiles)
             .describedAs("Should create YAML files")
@@ -202,10 +186,13 @@ class JunitCoreContractTest {
             .outputDirectoryCreator(createOutputDirectoryCreator())
             .execute();
 
-        Path testClassYaml = Files.walk(tempDir)
-            .filter(p -> p.getFileName().toString().equals("TABLETEST-leap-year-rules-test.yaml"))
-            .findFirst()
-            .orElse(null);
+        Path testClassYaml;
+        try (var paths = Files.walk(tempDir)) {
+            testClassYaml = paths
+                .filter(p -> p.getFileName().toString().equals("TABLETEST-leap-year-rules-test.yaml"))
+                .findFirst()
+                .orElse(null);
+        }
 
         assertThat(testClassYaml)
             .describedAs("Should create test class YAML file")
@@ -223,16 +210,19 @@ class JunitCoreContractTest {
     void shouldPreserveFilenameTransformations() throws IOException {
         EngineTestKit
             .engine("junit-jupiter")
-            .selectors(selectClass(CamelCaseTestClass.class))
+            .selectors(selectClass(CamelCaseTest.class))
             .configurationParameter("junit.platform.output.dir", tempDir.toString())
             .enableImplicitConfigurationParameters(true)
             .outputDirectoryCreator(createOutputDirectoryCreator())
             .execute();
 
-        List<Path> yamlFiles = Files.walk(tempDir)
-            .filter(p -> p.toString().endsWith(".yaml"))
-            .filter(p -> p.toString().contains("TABLETEST-"))
-            .toList();
+        List<Path> yamlFiles;
+        try (var paths = Files.walk(tempDir)) {
+            yamlFiles = paths
+                .filter(p -> p.toString().endsWith(".yaml"))
+                .filter(p -> p.toString().contains("TABLETEST-"))
+                .toList();
+        }
 
         assertThat(yamlFiles)
             .describedAs("Should produce transformed filenames")
@@ -245,10 +235,35 @@ class JunitCoreContractTest {
             .describedAs("Should transform camelCase to kebab-case")
             .isTrue();
 
-        Map<String, Object> tree = ReportTree.process(tempDir);
+        ReportNode tree = ReportTree.process(tempDir);
         assertThat(tree)
             .describedAs("Core should handle transformed filenames")
             .isNotNull();
+    }
+
+    private List<Path> findYamlFiles(Path directory) throws IOException {
+        try (var paths = Files.walk(directory)) {
+            return paths
+                .filter(p -> p.toString().endsWith(".yaml"))
+                .toList();
+        }
+    }
+
+    private List<Path> findRegularFiles(Path directory) throws IOException {
+        try (var paths = Files.walk(directory)) {
+            return paths
+                .filter(Files::isRegularFile)
+                .toList();
+        }
+    }
+
+    private List<Path> findDirectories(Path directory) throws IOException {
+        try (var paths = Files.walk(directory)) {
+            return paths
+                .filter(Files::isDirectory)
+                .filter(p -> !p.equals(directory))
+                .toList();
+        }
     }
 
     private @NonNull OutputDirectoryCreator createOutputDirectoryCreator() {
@@ -281,7 +296,7 @@ class JunitCoreContractTest {
 
     @DisplayName("Outer Test Class")
     @ExtendWith(TableTestPublisher.class)
-    static class OuterTestClass {
+    static class OuterTest {
         @TableTest("""
             Value | Result?
             1     | 1
@@ -292,7 +307,7 @@ class JunitCoreContractTest {
 
         @Nested
         @DisplayName("Nested Test Class")
-        class NestedTestClass {
+        class NestedTest {
             @TableTest("""
                 Value | Result?
                 2     | 2
@@ -305,7 +320,7 @@ class JunitCoreContractTest {
 
     @DisplayName("CamelCase Test Class")
     @ExtendWith(TableTestPublisher.class)
-    static class CamelCaseTestClass {
+    static class CamelCaseTest {
         @TableTest("""
             Input | Output?
             1     | 1

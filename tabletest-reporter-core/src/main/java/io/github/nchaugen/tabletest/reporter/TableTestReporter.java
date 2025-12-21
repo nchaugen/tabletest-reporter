@@ -22,8 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static java.util.Collections.emptyList;
+import java.util.Objects;
 
 public class TableTestReporter {
 
@@ -39,48 +38,67 @@ public class TableTestReporter {
     }
 
     public void report(Format format, Path inDir, Path outDir) {
-        report(ReportTree.process(inDir), format, inDir, outDir);
+        ReportNode tree = ReportTree.process(inDir);
+        if (tree != null) {
+            report(tree, format, inDir, outDir);
+        }
     }
 
-    private void report(Map<String, Object> tree, Format format, Path inDir, Path outDir) {
-        Path relativeOutPath = Path.of("./" + tree.get("outPath"));
-        List<Map<String, Object>> contents = ((List<Map<String, Object>>) tree.getOrDefault("contents", emptyList()));
+    private void report(ReportNode node, Format format, Path inDir, Path outDir) {
+        Path relativeOutPath = Path.of("./" + node.outPath());
 
-        Map<String, Object> context = loadContext(inDir, tree.get("resource"));
-        context.put("name", tree.get("name"));
-        context.put("contents", contents.stream()
-            .map(content -> {
-                    Map<String, Object> contentMap = new HashMap<>();
-                    contentMap.put("name", content.get("name"));
-                    contentMap.put("path", relativeOutPath.relativize(Path.of("./" + content.get("outPath"))));
-                    contentMap.put("type", content.get("type"));
+        switch (node) {
+            case IndexNode index -> {
+                Map<String, Object> context = createIndexContext(index, inDir, relativeOutPath);
 
-                    Object resource = content.get("resource");
-                    if (resource != null) {
-                        Map<String, Object> childContext = loadContext(inDir, resource);
-                        Object title = childContext.get("title");
-                        if (title != null) {
-                            contentMap.put("title", title);
-                        }
+                Path outPath = outDir.resolve(relativeOutPath).resolve("index" + format.extension());
+                String content = templateEngine.renderIndex(format, context);
+                writeContent(outPath, content);
+
+                index.contents().forEach(child -> report(child, format, inDir, outDir));
+            }
+            case TableNode table -> {
+                Map<String, Object> context = createTableContext(table, inDir);
+
+                Path outPath = outDir.resolve(relativeOutPath + format.extension());
+                String content = templateEngine.renderTable(format, context);
+                writeContent(outPath, content);
+            }
+        }
+    }
+
+    private Map<String, Object> createIndexContext(IndexNode index, Path inDir, Path relativeOutPath) {
+        Map<String, Object> context = loadContext(inDir, index.resource());
+        context.put("name", index.name());
+        context.put("contents", buildContentsForTemplate(index.contents(), inDir, relativeOutPath));
+        return context;
+    }
+
+    private Map<String, Object> createTableContext(TableNode table, Path inDir) {
+        Map<String, Object> context = loadContext(inDir, table.resource());
+        context.put("name", table.name());
+        return context;
+    }
+
+    private List<Map<String, Object>> buildContentsForTemplate(List<ReportNode> contents, Path inDir, Path relativeOutPath) {
+        return contents.stream()
+            .map(child -> {
+                Map<String, Object> contentMap = new HashMap<>();
+                contentMap.put("name", child.name());
+                contentMap.put("path", relativeOutPath.relativize(Path.of("./" + child.outPath())));
+                contentMap.put("type", child.type());
+
+                if (child.resource() != null) {
+                    Map<String, Object> childContext = loadContext(inDir, child.resource());
+                    Object title = childContext.get("title");
+                    if (title != null) {
+                        contentMap.put("title", title);
                     }
-
-                    return contentMap;
                 }
-            ).toList());
 
-        boolean isIndex = "index".equals(tree.get("type"));
-
-        Path outPath = isIndex
-            ? outDir.resolve(relativeOutPath).resolve("index" + format.extension())
-            : outDir.resolve(relativeOutPath + format.extension());
-
-        String content = isIndex
-            ? templateEngine.renderIndex(format, context)
-            : templateEngine.renderTable(format, context);
-
-        writeContent(outPath, content);
-
-        contents.forEach(child -> report(child, format, inDir, outDir));
+                return contentMap;
+            })
+            .toList();
     }
 
     private static void writeContent(Path outPath, String content) {

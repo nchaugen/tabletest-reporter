@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,12 +38,12 @@ public class ReportTree {
 
     /**
      * Processes the top-level directory where TableTest .yaml files have been created during test run
-     * and builds a nested map structure describing the desired report structure.
+     * and builds a typed node hierarchy describing the desired report structure.
      *
      * @param dir junit-jupiter output directory
-     * @return nested map structure describing the desired report structure
+     * @return typed node hierarchy describing the desired report structure
      */
-    public static Map<String, Object> process(Path dir) {
+    public static ReportNode process(Path dir) {
         return Optional.ofNullable(dir)
             .map(ReportTree::findTableTestOutputFiles)
             .map(ReportTree::findTargets)
@@ -105,30 +104,28 @@ public class ReportTree {
     }
 
     /**
-     * Builds a nested map structure describing the desired report structure with all available information to make
+     * Builds a typed node hierarchy describing the desired report structure with all available information to make
      * available to the renderer.
      * <p>
-     * Index nodes will contain the following information:
+     * Index nodes contain:
      * <ul>
-     * <li>type: "index"</li>
      * <li>name: name of the package or test class</li>
      * <li>outPath: sluggified path for the rendered index file</li>
      * <li>resource: path to the corresponding .yaml file (if available)</li>
      * <li>contents: list of child nodes</li>
      * </ul>
      * <p>
-     * Table leaf-nodes will contain the following information:
+     * Table leaf-nodes contain:
      * <ul>
-     * <li>type: "table"</li>
      * <li>name: name of the table (derived from the .yaml file name)</li>
      * <li>outPath: slugified path for the rendered table file</li>
      * <li>resource: path to the corresponding .yaml file</li>
      * </ul>
      * @param targets list of target output files
-     * @return desired report structure
+     * @return desired report structure as a typed node hierarchy, or null if no valid targets
      */
-    static Map<String, Object> buildTree(List<Target> targets) {
-        if (targets.isEmpty() || targets.size() == 1 && targets.getFirst().hasNoResource()) return Map.of();
+    static ReportNode buildTree(List<Target> targets) {
+        if (targets.isEmpty() || targets.size() == 1 && targets.getFirst().hasNoResource()) return null;
         Target root = findRoot(targets);
         return buildTree(root, List.of(root), targets);
     }
@@ -141,28 +138,27 @@ public class ReportTree {
     }
 
     /**
-     * Recursively builds the nested map structure
+     * Recursively builds the typed node hierarchy
      * @param node next node to process
      * @param path path to next node from root
      * @param targets list of all available targets
-     * @return nested map structure
+     * @return typed node (IndexNode or TableNode)
      */
-    private static Map<String, Object> buildTree(Target node, List<Target> path, List<Target> targets) {
+    private static ReportNode buildTree(Target node, List<Target> path, List<Target> targets) {
         List<Target> children = targets.stream().filter(node::isParentOf).toList();
 
-        Map<String, Object> context = new HashMap<>();
-        context.put("type", children.isEmpty() ? "table" : "index");
-        if (node.hasName()) context.put("name", node.name());
-        context.put("outPath", createOutPath(path));
-        if (node.hasResource()) context.put("resource", node.resource().toString());
-        if (!children.isEmpty()) {
-            context.put(
-                "contents", children.stream()
-                    .map(target -> buildTree(target, concat(path, target), targets))
-                    .toList()
-            );
+        String name = node.hasName() ? node.name() : null;
+        String outPath = createOutPath(path);
+        String resource = node.hasResource() ? node.resource().toString() : null;
+
+        if (children.isEmpty()) {
+            return new TableNode(name, outPath, resource);
+        } else {
+            List<ReportNode> childNodes = children.stream()
+                .map(target -> buildTree(target, concat(path, target), targets))
+                .toList();
+            return new IndexNode(name, outPath, resource, childNodes);
         }
-        return context;
     }
 
     /**
