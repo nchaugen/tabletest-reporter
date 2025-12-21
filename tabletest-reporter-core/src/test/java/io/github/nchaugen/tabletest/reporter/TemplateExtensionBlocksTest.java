@@ -33,7 +33,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("custom-table.adoc.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderTable(ReportFormat.ASCIIDOC, Map.of(
+        String rendered = engine.renderTable(BuiltInFormat.ASCIIDOC, Map.of(
             "title", "Test Table",
             "headers", List.of(Map.of("value", "Col1")),
             "rows", List.of()
@@ -58,7 +58,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("custom-table.adoc.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderTable(ReportFormat.ASCIIDOC, Map.of(
+        String rendered = engine.renderTable(BuiltInFormat.ASCIIDOC, Map.of(
             "title", "Test Table",
             "headers", List.of(Map.of("value", "Col1")),
             "rows", List.of()
@@ -84,7 +84,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("custom-table.adoc.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderTable(ReportFormat.ASCIIDOC, Map.of(
+        String rendered = engine.renderTable(BuiltInFormat.ASCIIDOC, Map.of(
             "title", "Test Table",
             "headers", List.of(Map.of("value", "Col1")),
             "rows", List.of()
@@ -115,7 +115,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("custom-table.adoc.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderTable(ReportFormat.ASCIIDOC, Map.of(
+        String rendered = engine.renderTable(BuiltInFormat.ASCIIDOC, Map.of(
             "title", "Test Table",
             "headers", List.of(Map.of("value", "Col1")),
             "rows", List.of()
@@ -144,7 +144,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("custom-table.md.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderTable(ReportFormat.MARKDOWN, Map.of(
+        String rendered = engine.renderTable(BuiltInFormat.MARKDOWN, Map.of(
             "title", "Test Table",
             "headers", List.of(Map.of("value", "Col1")),
             "rows", List.of()
@@ -178,7 +178,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("custom-table.md.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderTable(ReportFormat.MARKDOWN, Map.of(
+        String rendered = engine.renderTable(BuiltInFormat.MARKDOWN, Map.of(
             "title", "Test Table",
             "headers", List.of(Map.of("value", "Col1")),
             "rows", List.of()
@@ -206,7 +206,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("custom-index.adoc.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderIndex(ReportFormat.ASCIIDOC, Map.of(
+        String rendered = engine.renderIndex(BuiltInFormat.ASCIIDOC, Map.of(
             "name", "Test Index",
             "contents", List.of()
         ));
@@ -238,7 +238,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("custom-index.adoc.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderIndex(ReportFormat.ASCIIDOC, Map.of(
+        String rendered = engine.renderIndex(BuiltInFormat.ASCIIDOC, Map.of(
             "name", "Test Index",
             "contents", List.of()
         ));
@@ -265,7 +265,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("custom-index.md.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderIndex(ReportFormat.MARKDOWN, Map.of(
+        String rendered = engine.renderIndex(BuiltInFormat.MARKDOWN, Map.of(
             "name", "Test Index",
             "contents", List.of()
         ));
@@ -297,7 +297,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("custom-index.md.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderIndex(ReportFormat.MARKDOWN, Map.of(
+        String rendered = engine.renderIndex(BuiltInFormat.MARKDOWN, Map.of(
             "name", "Test Index",
             "contents", List.of()
         ));
@@ -322,7 +322,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("table.adoc.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderTable(ReportFormat.ASCIIDOC, Map.of(
+        String rendered = engine.renderTable(BuiltInFormat.ASCIIDOC, Map.of(
             "title", "Test Table",
             "headers", List.of(Map.of("value", "Col1")),
             "rows", List.of()
@@ -346,7 +346,7 @@ public class TemplateExtensionBlocksTest {
         Files.writeString(customTemplateDir.resolve("index.md.peb"), customTemplate);
 
         TemplateEngine engine = new TemplateEngine(customTemplateDir);
-        String rendered = engine.renderIndex(ReportFormat.MARKDOWN, Map.of(
+        String rendered = engine.renderIndex(BuiltInFormat.MARKDOWN, Map.of(
             "name", "Test Index",
             "contents", List.of()
         ));
@@ -359,7 +359,7 @@ public class TemplateExtensionBlocksTest {
     void builtin_templates_have_empty_frontMatter_and_footer_blocks() {
         TemplateEngine engine = new TemplateEngine();
 
-        String rendered = engine.renderTable(ReportFormat.ASCIIDOC, Map.of(
+        String rendered = engine.renderTable(BuiltInFormat.ASCIIDOC, Map.of(
             "title", "Test Table",
             "headers", List.of(Map.of("value", "Col1")),
             "rows", List.of()

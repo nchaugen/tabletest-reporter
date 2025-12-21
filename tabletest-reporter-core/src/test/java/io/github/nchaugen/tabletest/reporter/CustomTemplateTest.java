@@ -43,7 +43,7 @@ public class CustomTemplateTest {
             "rows", java.util.List.of()
         );
 
-        String rendered = engine.renderTable(ReportFormat.ASCIIDOC, context);
+        String rendered = engine.renderTable(BuiltInFormat.ASCIIDOC, context);
 
         // Verify custom template is used
         assertThat(rendered).contains("CUSTOM HEADER");
@@ -67,7 +67,7 @@ public class CustomTemplateTest {
             "rows", java.util.List.of()
         );
 
-        String rendered = engine.renderTable(ReportFormat.ASCIIDOC, context);
+        String rendered = engine.renderTable(BuiltInFormat.ASCIIDOC, context);
 
         // Verify built-in template is used
         assertThat(rendered).startsWith("== ++Test Table++");

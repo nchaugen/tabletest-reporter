@@ -2,10 +2,16 @@
 
 ## [Unreleased]
 ### Added
+- Custom output format support - define formats like HTML, XML, JSON via templates
+- Format discovery automatically finds custom formats from template directory
+- Helpful error messages listing all available formats (built-in and custom)
 - Custom template support with convention-based discovery
 - Template extension blocks (frontMatter, title, description, table/contents, footer) for customisation
 - Support for both template extension (child templates) and complete template replacement
 - CLI `--template-dir` option to specify custom template directory
+### Changed
+- Renamed `ReportFormat` to `BuiltInFormat` for clarity between built-in and custom formats
+- Extracted duplicate format resolution logic into `FormatResolver` utility class
 
 ## [0.2.1] - 2025-12-19
 ### Added

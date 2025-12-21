@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
-import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.BuiltInFormat.ASCIIDOC;
+import static io.github.nchaugen.tabletest.reporter.BuiltInFormat.MARKDOWN;
 import static io.github.nchaugen.tabletest.reporter.rendering.AsciiDocValidator.assertValidAsciiDoc;
 import static io.github.nchaugen.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
 import static org.assertj.core.api.Assertions.assertThat;

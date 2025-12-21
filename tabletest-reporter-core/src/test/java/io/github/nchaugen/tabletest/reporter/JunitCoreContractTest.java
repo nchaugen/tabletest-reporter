@@ -60,7 +60,7 @@ class JunitCoreContractTest {
         Path outDir = tempDir.resolve("output");
         Files.createDirectories(outDir);
 
-        reporter.report(ReportFormat.ASCIIDOC, tempDir, outDir);
+        reporter.report(BuiltInFormat.ASCIIDOC, tempDir, outDir);
 
         List<Path> renderedFiles = Files.walk(outDir)
             .filter(Files::isRegularFile)

@@ -15,7 +15,8 @@
  */
 package io.github.nchaugen.tabletest.maven;
 
-import io.github.nchaugen.tabletest.reporter.ReportFormat;
+import io.github.nchaugen.tabletest.reporter.Format;
+import io.github.nchaugen.tabletest.reporter.FormatResolver;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -46,7 +47,6 @@ public final class ReportMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            final ReportFormat reportFormat = toFormat(format);
             final Path in = inputDirectory.toPath();
             final Path out = outputDirectory.toPath();
 
@@ -54,6 +54,8 @@ public final class ReportMojo extends AbstractMojo {
                 throw new MojoFailureException("Input directory does not exist: " + in.toAbsolutePath());
             }
 
+            Path templateDir = templateDirectory != null ? templateDirectory.toPath() : null;
+            Format reportFormat = FormatResolver.resolve(format, templateDir);
             TableTestReporter reporter = createReporter();
             reporter.report(reportFormat, in, out);
         } catch (MojoFailureException e) {
@@ -80,14 +82,5 @@ public final class ReportMojo extends AbstractMojo {
         }
 
         return new TableTestReporter(templateDir);
-    }
-
-    private static ReportFormat toFormat(String str) {
-        if (str == null || str.isBlank()) return ReportFormat.ASCIIDOC;
-        return switch (str.trim().toLowerCase()) {
-            case "adoc", "asciidoc", "asciidoctor" -> ReportFormat.ASCIIDOC;
-            case "md", "markdown" -> ReportFormat.MARKDOWN;
-            default -> throw new IllegalArgumentException("Unknown format: " + str + ". Use 'asciidoc' or 'markdown'.");
-        };
     }
 }

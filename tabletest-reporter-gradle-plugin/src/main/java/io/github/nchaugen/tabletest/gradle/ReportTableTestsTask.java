@@ -15,7 +15,8 @@
  */
 package io.github.nchaugen.tabletest.gradle;
 
-import io.github.nchaugen.tabletest.reporter.ReportFormat;
+import io.github.nchaugen.tabletest.reporter.Format;
+import io.github.nchaugen.tabletest.reporter.FormatResolver;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
@@ -106,14 +107,15 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     @TaskAction
     public void run() {
         final String fmt = format.getOrElse("asciidoc");
-        final ReportFormat reportFormat = toFormat(fmt);
-
         final Path in = inputDir.get().getAsFile().toPath();
         final Path out = outputDir.get().getAsFile().toPath();
 
         if (!Files.exists(in)) {
             throw new GradleException("Input directory does not exist: " + in.toAbsolutePath());
         }
+
+        Path templateDirectory = templateDir.isPresent() ? templateDir.get().getAsFile().toPath() : null;
+        Format reportFormat = FormatResolver.resolve(fmt, templateDirectory);
 
         try {
             TableTestReporter reporter = createReporter();
@@ -137,14 +139,5 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         }
 
         return new TableTestReporter(templateDirectory);
-    }
-
-    private static ReportFormat toFormat(String str) {
-        if (str == null || str.isBlank()) return ReportFormat.ASCIIDOC;
-        return switch (str.trim().toLowerCase()) {
-            case "adoc", "asciidoc", "asciidoctor" -> ReportFormat.ASCIIDOC;
-            case "md", "markdown" -> ReportFormat.MARKDOWN;
-            default -> throw new GradleException("Unknown format: " + str + ". Use 'asciidoc' or 'markdown'.");
-        };
     }
 }

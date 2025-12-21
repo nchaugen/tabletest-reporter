@@ -38,11 +38,11 @@ public class TableTestReporter {
         this.templateEngine = new TemplateEngine(customTemplateDirectory);
     }
 
-    public void report(ReportFormat format, Path inDir, Path outDir) {
+    public void report(Format format, Path inDir, Path outDir) {
         report(ReportTree.process(inDir), format, inDir, outDir);
     }
 
-    private void report(Map<String, Object> tree, ReportFormat format, Path inDir, Path outDir) {
+    private void report(Map<String, Object> tree, Format format, Path inDir, Path outDir) {
         Path relativeOutPath = Path.of("./" + tree.get("outPath"));
         List<Map<String, Object>> contents = ((List<Map<String, Object>>) tree.getOrDefault("contents", emptyList()));
 

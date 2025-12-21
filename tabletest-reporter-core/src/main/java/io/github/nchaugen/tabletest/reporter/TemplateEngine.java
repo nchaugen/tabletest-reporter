@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -45,10 +46,14 @@ import static java.util.Objects.requireNonNull;
  */
 public final class TemplateEngine {
 
+    private final PebbleEngine engine;
+    private final Path customTemplateDirectory;
     private final PebbleTemplate asciidocTableTemplate;
     private final PebbleTemplate markdownTableTemplate;
     private final PebbleTemplate asciidocIndexTemplate;
     private final PebbleTemplate markdownIndexTemplate;
+    private final Map<String, PebbleTemplate> customTableTemplates;
+    private final Map<String, PebbleTemplate> customIndexTemplates;
 
     public TemplateEngine() {
         this(new ClasspathLoader(), null);
@@ -60,7 +65,10 @@ public final class TemplateEngine {
     }
 
     private TemplateEngine(Loader<?> loader, Path customTemplateDirectory) {
-        PebbleEngine engine = createEngine(loader);
+        this.engine = createEngine(loader);
+        this.customTemplateDirectory = customTemplateDirectory;
+        this.customTableTemplates = new HashMap<>();
+        this.customIndexTemplates = new HashMap<>();
 
         String asciidocTableName = discoverTemplate(customTemplateDirectory, "table.adoc.peb", "*-table.adoc.peb");
         String markdownTableName = discoverTemplate(customTemplateDirectory, "table.md.peb", "*-table.md.peb");
@@ -73,11 +81,11 @@ public final class TemplateEngine {
         this.markdownIndexTemplate = engine.getTemplate(markdownIndexName);
     }
 
-    public String renderTable(ReportFormat format, Map<String, Object> context) {
+    public String renderTable(Format format, Map<String, Object> context) {
         return render(tableTemplate(format), context);
     }
 
-    public String renderIndex(ReportFormat format, Map<String, Object> context) {
+    public String renderIndex(Format format, Map<String, Object> context) {
         return render(indexTemplate(format), context);
     }
 
@@ -91,18 +99,40 @@ public final class TemplateEngine {
         }
     }
 
-    private PebbleTemplate tableTemplate(ReportFormat format) {
-        return switch (format) {
-            case ASCIIDOC -> asciidocTableTemplate;
-            case MARKDOWN -> markdownTableTemplate;
-        };
+    private PebbleTemplate tableTemplate(Format format) {
+        if (format instanceof BuiltInFormat reportFormat) {
+            return switch (reportFormat) {
+                case ASCIIDOC -> asciidocTableTemplate;
+                case MARKDOWN -> markdownTableTemplate;
+            };
+        }
+        return customTableTemplates.computeIfAbsent(format.formatName(),
+            name -> loadCustomTemplate("table." + name + ".peb"));
     }
 
-    private PebbleTemplate indexTemplate(ReportFormat format) {
-        return switch (format) {
-            case ASCIIDOC -> asciidocIndexTemplate;
-            case MARKDOWN -> markdownIndexTemplate;
-        };
+    private PebbleTemplate indexTemplate(Format format) {
+        if (format instanceof BuiltInFormat reportFormat) {
+            return switch (reportFormat) {
+                case ASCIIDOC -> asciidocIndexTemplate;
+                case MARKDOWN -> markdownIndexTemplate;
+            };
+        }
+        return customIndexTemplates.computeIfAbsent(format.formatName(),
+            name -> loadCustomTemplate("index." + name + ".peb"));
+    }
+
+    private PebbleTemplate loadCustomTemplate(String templateName) {
+        if (customTemplateDirectory == null) {
+            throw new IllegalStateException("Cannot load custom template '" + templateName +
+                "' without a custom template directory");
+        }
+
+        Path templatePath = customTemplateDirectory.resolve(templateName);
+        if (!Files.isRegularFile(templatePath)) {
+            throw new IllegalArgumentException("Custom template not found: " + templatePath);
+        }
+
+        return engine.getTemplate(templateName);
     }
 
     private String discoverTemplate(Path customTemplateDirectory, String defaultName, String pattern) {

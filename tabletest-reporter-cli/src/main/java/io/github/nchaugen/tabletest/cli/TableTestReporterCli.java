@@ -15,7 +15,8 @@
  */
 package io.github.nchaugen.tabletest.cli;
 
-import io.github.nchaugen.tabletest.reporter.ReportFormat;
+import io.github.nchaugen.tabletest.reporter.Format;
+import io.github.nchaugen.tabletest.reporter.FormatResolver;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -73,7 +74,8 @@ public final class TableTestReporterCli implements Callable<Integer> {
                 return 2;
             }
 
-            ReportFormat reportFormat = toFormat(format);
+            Path templateDir = resolveTemplateDir();
+            Format reportFormat = FormatResolver.resolve(format, templateDir);
             TableTestReporter reporter = createReporter();
             reporter.report(reportFormat, in, out);
             return 0;
@@ -87,8 +89,15 @@ public final class TableTestReporterCli implements Callable<Integer> {
     }
 
     private TableTestReporter createReporter() {
+        Path templateDir = resolveTemplateDir();
+        return templateDir != null
+            ? new TableTestReporter(templateDir)
+            : new TableTestReporter();
+    }
+
+    private Path resolveTemplateDir() {
         if (templateDirArg == null || templateDirArg.isBlank()) {
-            return new TableTestReporter();
+            return null;
         }
 
         Path templateDir = Path.of(templateDirArg);
@@ -99,16 +108,7 @@ public final class TableTestReporterCli implements Callable<Integer> {
             throw new IllegalArgumentException("Template path is not a directory: " + templateDir.toAbsolutePath());
         }
 
-        return new TableTestReporter(templateDir);
-    }
-
-    private static ReportFormat toFormat(String str) {
-        if (str == null || str.isBlank()) return ReportFormat.ASCIIDOC;
-        return switch (str.trim().toLowerCase()) {
-            case "adoc", "asciidoc", "asciidoctor" -> ReportFormat.ASCIIDOC;
-            case "md", "markdown" -> ReportFormat.MARKDOWN;
-            default -> throw new IllegalArgumentException("Unknown format: " + str + ". Use 'asciidoc' or 'markdown'.");
-        };
+        return templateDir;
     }
 
     private static Path resolveBuildDir() {

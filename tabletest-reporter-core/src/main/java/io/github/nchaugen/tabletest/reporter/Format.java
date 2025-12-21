@@ -17,18 +17,18 @@ package io.github.nchaugen.tabletest.reporter;
 
 /**
  * Output format for generated documentation.
+ *
+ * <p>Implementations include built-in formats ({@link BuiltInFormat})
+ * and custom user-defined formats ({@link CustomFormat}).
  */
-public enum ReportFormat {
-    ASCIIDOC(".adoc"),
-    MARKDOWN(".md");
+public interface Format {
+    /**
+     * The format name (e.g., "adoc", "md", "html").
+     */
+    String formatName();
 
-    private final String extension;
-
-    ReportFormat(String extension) {
-        this.extension = extension;
-    }
-
-    public String extension() {
-        return extension;
-    }
+    /**
+     * The file extension including the leading dot (e.g., ".adoc", ".html").
+     */
+    String extension();
 }

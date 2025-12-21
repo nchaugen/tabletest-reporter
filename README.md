@@ -480,6 +480,98 @@ Template context includes:
 - `rows` - List of rows, each containing cells with `value` and `roles`
 - `rowResults` - Test results with `displayName`, `passed`, and `errorMessage`
 
+### Custom Output Formats
+
+Beyond the built-in AsciiDoc and Markdown formats, you can define custom output formats (HTML, XML, JSON, etc.) by providing templates in your template directory.
+
+**Requirements:**
+- Both `table.{format}.peb` and `index.{format}.peb` must be present
+- Format name becomes the file extension (e.g., "html" → ".html")
+
+**Example: HTML Format**
+
+Create `table.html.peb`:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+</head>
+<body>
+    <h2>{{ title }}</h2>
+    {% if description %}<p>{{ description }}</p>{% endif %}
+    <table>
+        <thead>
+            <tr>
+            {% for header in headers %}
+                <th>{{ header.value }}</th>
+            {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in rows %}
+            <tr>
+            {% for cell in row %}
+                <td>{{ cell.value }}</td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+```
+
+Create `index.html.peb`:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title ? title : name }}</title>
+</head>
+<body>
+    <h1>{{ title ? title : name }}</h1>
+    {% if description %}<p>{{ description }}</p>{% endif %}
+    <ul>
+    {% for item in contents %}
+        <li><a href="{{ item.path }}">{{ item.title }}</a></li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
+```
+
+**Usage:**
+
+Specify the custom format when running the reporter:
+
+**Maven:**
+```xml
+<configuration>
+  <format>html</format>
+  <templateDirectory>${project.basedir}/templates</templateDirectory>
+</configuration>
+```
+
+**Gradle:**
+```kotlin
+tableTestReporter {
+  format.set("html")
+  templateDir.set(file("templates"))
+}
+```
+
+**CLI:**
+```bash
+java -jar tabletest-reporter-cli.jar \
+  --template-dir templates \
+  -f html \
+  -i target/junit-jupiter \
+  -o target/generated-docs/tabletest
+```
+
+If an unknown format is specified, you'll get a helpful error message listing all available formats (both built-in and discovered custom formats).
+
 ### For Plugin Developers
 
 **CLI Usage:**

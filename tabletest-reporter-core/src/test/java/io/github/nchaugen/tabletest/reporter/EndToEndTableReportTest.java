@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static io.github.nchaugen.tabletest.reporter.ReportFormat.ASCIIDOC;
-import static io.github.nchaugen.tabletest.reporter.ReportFormat.MARKDOWN;
+import static io.github.nchaugen.tabletest.reporter.BuiltInFormat.ASCIIDOC;
+import static io.github.nchaugen.tabletest.reporter.BuiltInFormat.MARKDOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class EndToEndTableReportTest {
@@ -469,6 +469,100 @@ public class EndToEndTableReportTest {
             """);
 
         return inDirMulti;
+    }
+
+    @Test
+    void uses_custom_format() throws IOException {
+        Path testDir = createTestDir("custom-html");
+        Path inDir = setupCalendarTestInput(testDir);
+        Path templateDir = setupCustomHtmlTemplates(testDir);
+        Path outDir = Files.createDirectory(testDir.resolve("out"));
+
+        new TableTestReporter(templateDir).report(new CustomFormat("html"), inDir, outDir);
+
+        assertThat(Files.readString(outDir.resolve("index.html")))
+            .contains("<!DOCTYPE html>")
+            .contains("<h1>example</h1>")
+            .contains("<a href=\"calendar-calculations\">Calendar</a>");
+
+        assertThat(Files.readString(outDir.resolve("calendar-calculations/index.html")))
+            .contains("<!DOCTYPE html>")
+            .contains("<h1>Calendar</h1>")
+            .contains("Various rules for calendar calculations.")
+            .contains("<a href=\"leap-year-rules\">Leap Year Rules with Single Example</a>");
+
+        assertThat(Files.readString(outDir.resolve("calendar-calculations/leap-year-rules.html")))
+            .contains("<!DOCTYPE html>")
+            .contains("<h2>Leap Year Rules with Single Example</h2>")
+            .contains("The leap year rules should be well-known.")
+            .contains("<table>")
+            .contains("<th>Scenario</th>")
+            .contains("<th>Year</th>")
+            .contains("<th>Is Leap Year?</th>")
+            .contains("<td>Not divisible by 4</td>")
+            .contains("<td>2001</td>")
+            .contains("<td>No</td>")
+            .contains("</table>");
+    }
+
+    private Path setupCustomHtmlTemplates(Path parent) throws IOException {
+        Path templateDir = parent.resolve("templates");
+        Files.createDirectories(templateDir);
+
+        Files.writeString(templateDir.resolve("table.html.peb"), """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>{{ title }}</title>
+            </head>
+            <body>
+                <h2>{{ title }}</h2>
+                {% if description %}
+                <p>{{ description }}</p>
+                {% endif %}
+                <table>
+                    <thead>
+                        <tr>
+                        {% for header in headers %}
+                            <th>{{ header.value }}</th>
+                        {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in rows %}
+                        <tr>
+                        {% for cell in row %}
+                            <td>{{ cell.value }}</td>
+                        {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+            """);
+
+        Files.writeString(templateDir.resolve("index.html.peb"), """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>{{ title ? title : name }}</title>
+            </head>
+            <body>
+                <h1>{{ title ? title : name }}</h1>
+                {% if description %}
+                <p>{{ description }}</p>
+                {% endif %}
+                <ul>
+                {% for item in contents %}
+                    <li><a href="{{ item.path }}">{{ item.title }}</a></li>
+                {% endfor %}
+                </ul>
+            </body>
+            </html>
+            """);
+
+        return templateDir;
     }
 
     private Path setupCalendarTestInput(Path parent) throws IOException {
