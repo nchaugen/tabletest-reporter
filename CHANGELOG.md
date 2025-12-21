@@ -1,20 +1,12 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+## [0.3.0] - 2025-12-21
 ### Added
-- Custom output format support - define formats like HTML, XML, JSON via templates
-- Format discovery automatically finds custom formats from template directory
-- Helpful error messages listing all available formats (built-in and custom)
-- Custom template support with convention-based discovery
+- Custom output format support – define formats like HTML, XML, JSON via templates
+- Support for both extension (child templates) and complete template replacement of built-in templates
 - Template extension blocks (frontMatter, title, description, table/contents, footer) for customisation
-- Support for both template extension (child templates) and complete template replacement
-- CLI `--template-dir` option to specify custom template directory
-- CLI `--list-formats` option to list all available output formats
-- Maven `list-formats` goal to list all available output formats
-- Gradle `listTableTestReportFormats` task to list all available output formats
-### Changed
-- Renamed `ReportFormat` to `BuiltInFormat` for clarity between built-in and custom formats
-- Extracted duplicate format resolution logic into `FormatResolver` utility class
+- New runner options to specify custom template directory and to list all available output formats
 
 ## [0.2.1] - 2025-12-19
 ### Added
