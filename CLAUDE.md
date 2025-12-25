@@ -3,7 +3,6 @@ for issue tracking. Use `bd` commands instead of markdown TODOs.
 
 See [AGENTS.md](AGENTS.md) for:
 - How to use bd properly
-- TableTest patterns
 
 See [README.md](README.md) for project context
 
@@ -37,6 +36,9 @@ int exitCode = runCli(args);
 // Bad - combined operations
 Path dirs = setupDirectoriesAndRunCli(tempDir, args);
 ```
+
+## Table-based Tests
+Prefer using TableTest-style JUnit tests where possible. You should have a skill `tabletest` you can leverage.
 
 ## Test Structure
 - Keep assertions visible in test methods (don't hide them in helpers)
