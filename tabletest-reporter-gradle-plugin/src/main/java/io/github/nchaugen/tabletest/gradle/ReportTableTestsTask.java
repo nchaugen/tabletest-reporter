@@ -25,6 +25,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
 
 import javax.inject.Inject;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -114,7 +115,8 @@ public abstract class ReportTableTestsTask extends DefaultTask {
             throw new GradleException("Input directory does not exist: " + in.toAbsolutePath());
         }
 
-        Path templateDirectory = templateDir.isPresent() ? templateDir.get().getAsFile().toPath() : null;
+        Path templateDirectory =
+                templateDir.isPresent() ? templateDir.get().getAsFile().toPath() : null;
         Format reportFormat = FormatResolver.resolve(fmt, templateDirectory);
 
         try {

@@ -29,31 +29,25 @@ public class TableTestReporterPlugin implements Plugin<Project> {
     /**
      * Creates a new plugin instance.
      */
-    public TableTestReporterPlugin() {
-    }
+    public TableTestReporterPlugin() {}
 
     @Override
     public void apply(Project project) {
         // Register extension with defaults
-        TableTestReporterExtension ext = project.getExtensions()
-            .create("tableTestReporter", TableTestReporterExtension.class);
+        TableTestReporterExtension ext =
+                project.getExtensions().create("tableTestReporter", TableTestReporterExtension.class);
 
         // Register task and wire conventions from extension
-        project.getTasks().register(
-            "reportTableTests", ReportTableTestsTask.class, t -> {
-                t.getFormat().convention(ext.getFormat());
-                t.getInputDir().convention(ext.getInputDir());
-                t.getOutputDir().convention(ext.getOutputDir());
-                t.getTemplateDir().convention(ext.getTemplateDir());
-            }
-        );
+        project.getTasks().register("reportTableTests", ReportTableTestsTask.class, t -> {
+            t.getFormat().convention(ext.getFormat());
+            t.getInputDir().convention(ext.getInputDir());
+            t.getOutputDir().convention(ext.getOutputDir());
+            t.getTemplateDir().convention(ext.getTemplateDir());
+        });
 
         // Register list formats task
-        project.getTasks().register(
-            "listTableTestReportFormats",
-            ListFormatsTask.class,
-            t -> t.getTemplateDir().convention(ext.getTemplateDir())
-        );
+        project.getTasks().register("listTableTestReportFormats", ListFormatsTask.class, t -> t.getTemplateDir()
+                .convention(ext.getTemplateDir()));
 
         // Make `build` depend on generation by default? Keep opt-in to avoid surprises.
         // Users will run `./gradlew reportTableTests` explicitly.

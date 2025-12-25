@@ -16,10 +16,10 @@
 package io.github.nchaugen.tabletest.gradle;
 
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.ProviderFactory;
-import org.gradle.api.file.ProjectLayout;
 
 import javax.inject.Inject;
 
@@ -44,9 +44,9 @@ public abstract class TableTestReporterExtension {
     public TableTestReporterExtension(ObjectFactory objects, ProjectLayout layout, ProviderFactory providers) {
         this.format = objects.property(String.class).convention("asciidoc");
         this.inputDir = objects.directoryProperty()
-            .convention(layout.getBuildDirectory().dir("junit-jupiter"));
+                .convention(layout.getBuildDirectory().dir("junit-jupiter"));
         this.outputDir = objects.directoryProperty()
-            .convention(layout.getBuildDirectory().dir("generated-docs/tabletest"));
+                .convention(layout.getBuildDirectory().dir("generated-docs/tabletest"));
         this.templateDir = objects.directoryProperty();
     }
 
