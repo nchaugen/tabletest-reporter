@@ -6,6 +6,35 @@ See [AGENTS.md](AGENTS.md) for:
 
 See [README.md](README.md) for project context
 
+# Developer Setup
+
+## Git Hooks Installation
+
+This project uses git hooks for automated formatting and quality checks. Install them with:
+
+```bash
+cp git-hooks/* .git/hooks/
+chmod +x .git/hooks/*
+```
+
+The pre-commit hook automatically:
+1. Runs `bd sync` (if beads is configured)
+2. **Formats Java code with Spotless** (Maven and Gradle modules)
+3. Builds project and runs unit tests
+
+**Code formatting is automatic** - the hook runs `mvn spotless:apply` before each commit, so you don't need to manually format code.
+
+## Code Formatting
+
+This project uses **Spotless** with **Palantir Java Format** for consistent code style:
+
+- **Maven modules**: Formatted automatically by pre-commit hook via `mvn spotless:apply`
+- **Gradle plugin**: Formatted automatically by pre-commit hook via `./gradlew spotlessApply`
+- **Manual formatting**: Run `mvn spotless:apply` or `./gradlew spotlessApply` in respective directories
+- **Check formatting**: Run `mvn spotless:check` (used in CI)
+
+The pre-commit hook ensures all committed code is properly formatted.
+
 # Code Quality Expectations
 
 This section highlights code quality patterns specific to this project. See ~/.claude/CLAUDE.md for general coding principles (Single Responsibility, TDD, immutability, etc.).

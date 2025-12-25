@@ -15,7 +15,38 @@ if [ -f .git/hooks/pre-commit.beads ]; then
     bash .git/hooks/pre-commit.beads
 fi
 
-# 2. Build and run unit tests
+# 2. Format Java code with Spotless
+echo ""
+echo "Formatting Java code with Spotless..."
+
+# Check if any Java files are staged
+if git diff --cached --name-only --diff-filter=ACM | grep -q '\.java$'; then
+    # Format Maven modules
+    if ! mvn spotless:apply -q; then
+        echo -e "${RED}✗ Maven Spotless formatting failed${NC}"
+        exit 1
+    fi
+
+    # Format Gradle plugin module (if Gradle is working)
+    if [ -f "tabletest-reporter-gradle-plugin/gradlew" ]; then
+        cd tabletest-reporter-gradle-plugin
+        if ./gradlew spotlessApply -q 2>/dev/null; then
+            cd ..
+        else
+            cd ..
+            echo "Note: Gradle formatting skipped (build issue)"
+        fi
+    fi
+
+    # Re-stage formatted files
+    git diff --cached --name-only --diff-filter=ACM | grep '\.java$' | xargs git add
+
+    echo -e "${GREEN}✓ Code formatted${NC}"
+else
+    echo "No Java files staged, skipping formatting"
+fi
+
+# 3. Build and run unit tests
 echo ""
 echo "Building and running tests..."
 if ! mvn clean install -q; then
