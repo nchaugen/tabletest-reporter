@@ -39,12 +39,8 @@ class JunitMetadataExtractor {
         return new TableMetadata(title, description, columnRoles, rowRoles, results);
     }
 
-
     private static ColumnRoles extractColumnRoles(ExtensionContext context, Table table) {
-        return new ColumnRoles(
-            findScenarioIndex(context, table),
-            findExpectationIndices(context, table)
-        );
+        return new ColumnRoles(findScenarioIndex(context, table), findExpectationIndices(context, table));
     }
 
     private static OptionalInt findScenarioIndex(ExtensionContext context, Table table) {
@@ -54,32 +50,31 @@ class JunitMetadataExtractor {
 
     private static OptionalInt getExplicitScenarioColumn(ExtensionContext context) {
         return IntStream.range(0, context.getRequiredTestMethod().getParameterCount())
-            .filter(i -> context.getRequiredTestMethod().getParameters()[i].isAnnotationPresent(Scenario.class))
-            .findFirst();
+                .filter(i -> context.getRequiredTestMethod().getParameters()[i].isAnnotationPresent(Scenario.class))
+                .findFirst();
     }
 
     private static OptionalInt getImplicitScenarioColumn(ExtensionContext context, Table table) {
         return table.headers().size() > context.getRequiredTestMethod().getParameterCount()
-            ? OptionalInt.of(0)
-            : OptionalInt.empty();
+                ? OptionalInt.of(0)
+                : OptionalInt.empty();
     }
 
     private static Set<Integer> findExpectationIndices(ExtensionContext context, Table table) {
         String patternString = context.getConfigurationParameter("tabletest.reporter.expectation.pattern")
-            .orElse(".*\\?$");
+                .orElse(".*\\?$");
         Pattern pattern = Pattern.compile(patternString);
 
         return IntStream.range(0, table.headers().size())
-            .filter(i -> pattern.matcher(table.header(i)).matches())
-            .boxed()
-            .collect(Collectors.toSet());
+                .filter(i -> pattern.matcher(table.header(i)).matches())
+                .boxed()
+                .collect(Collectors.toSet());
     }
 
     private static String findTableDescription(ExtensionContext context) {
         return context.getTestMethod()
-            .map(method -> method.getAnnotation(Description.class))
-            .map(Description::value)
-            .orElse(null);
+                .map(method -> method.getAnnotation(Description.class))
+                .map(Description::value)
+                .orElse(null);
     }
-
 }

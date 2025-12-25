@@ -25,12 +25,7 @@ import java.util.stream.IntStream;
 import static java.util.Collections.unmodifiableSet;
 
 public record TableMetadata(
-    String title,
-    String description,
-    ColumnRoles columnRoles,
-    RowRoles rowRoles,
-    List<RowResult> rowResults
-) {
+        String title, String description, ColumnRoles columnRoles, RowRoles rowRoles, List<RowResult> rowResults) {
     public TableMetadata {
         columnRoles = columnRoles != null ? columnRoles : ColumnRoles.NO_ROLES;
         rowRoles = rowRoles != null ? rowRoles : RowRoles.NO_ROLES;
@@ -62,24 +57,19 @@ public record TableMetadata(
      */
     public TableTestData toTableTestData(Table table) {
         List<CellData> headers = IntStream.range(0, table.columnCount())
-            .mapToObj(i -> new CellData(table.header(i), columnRolesFor(i)))
-            .toList();
+                .mapToObj(i -> new CellData(table.header(i), columnRolesFor(i)))
+                .toList();
 
         List<Row> rows = table.rows();
         List<RowData> rowData = IntStream.range(0, rows.size())
-            .mapToObj(rowIndex -> new RowData(
-                IntStream.range(0, table.columnCount())
-                    .mapToObj(colIndex -> new CellData(
-                        rows.get(rowIndex).value(colIndex),
-                        combineRoles(colIndex, rowIndex)
-                    ))
-                    .toList()
-            ))
-            .toList();
+                .mapToObj(rowIndex -> new RowData(IntStream.range(0, table.columnCount())
+                        .mapToObj(colIndex ->
+                                new CellData(rows.get(rowIndex).value(colIndex), combineRoles(colIndex, rowIndex)))
+                        .toList()))
+                .toList();
 
-        List<RowResultData> rowResultData = rowResults.stream()
-            .map(RowResultData::from)
-            .toList();
+        List<RowResultData> rowResultData =
+                rowResults.stream().map(RowResultData::from).toList();
 
         return new TableTestData(title, description, headers, rowData, rowResultData);
     }
@@ -98,5 +88,4 @@ public record TableMetadata(
         combined.addAll(rowRoles.roleFor(rowIndex));
         return unmodifiableSet(combined);
     }
-
 }

@@ -25,7 +25,7 @@ import java.util.Map;
  * @param description The description of the test class (may be null)
  */
 public record TestClassData(String title, String description) {
-    
+
     /**
      * Converts this test class data to a map suitable for YAML serialisation.
      */

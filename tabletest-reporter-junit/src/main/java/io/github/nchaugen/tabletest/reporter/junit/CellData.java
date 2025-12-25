@@ -26,7 +26,7 @@ import java.util.Set;
  * @param roles The roles associated with this cell
  */
 public record CellData(Object value, Set<CellRole> roles) {
-    
+
     /**
      * Converts this cell to a map suitable for YAML serialisation.
      */
@@ -35,10 +35,8 @@ public record CellData(Object value, Set<CellRole> roles) {
         map.put("value", value);
         if (!roles.isEmpty()) {
             map.put(
-                "roles", roles.stream()
-                    .map(role -> role.name().toLowerCase())
-                    .toList()
-            );
+                    "roles",
+                    roles.stream().map(role -> role.name().toLowerCase()).toList());
         }
         return map;
     }

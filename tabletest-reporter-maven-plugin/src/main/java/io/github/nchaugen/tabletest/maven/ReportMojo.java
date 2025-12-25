@@ -38,7 +38,9 @@ public final class ReportMojo extends AbstractMojo {
     @Parameter(property = "tabletest.report.inputDirectory", defaultValue = "${project.build.directory}/junit-jupiter")
     private File inputDirectory;
 
-    @Parameter(property = "tabletest.report.outputDirectory", defaultValue = "${project.build.directory}/generated-docs/tabletest")
+    @Parameter(
+            property = "tabletest.report.outputDirectory",
+            defaultValue = "${project.build.directory}/generated-docs/tabletest")
     private File outputDirectory;
 
     @Parameter(property = "tabletest.report.templateDirectory")

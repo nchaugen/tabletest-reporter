@@ -59,8 +59,9 @@ public final class TemplateEngine {
     }
 
     public TemplateEngine(Path customTemplateDirectory) {
-        this(createDelegatingLoader(requireNonNull(customTemplateDirectory, "customTemplateDirectory")),
-            customTemplateDirectory);
+        this(
+                createDelegatingLoader(requireNonNull(customTemplateDirectory, "customTemplateDirectory")),
+                customTemplateDirectory);
     }
 
     private TemplateEngine(Loader<?> loader, Path customTemplateDirectory) {
@@ -105,8 +106,8 @@ public final class TemplateEngine {
                 case MARKDOWN -> markdownTableTemplate;
             };
         }
-        return customTableTemplates.computeIfAbsent(format.formatName(),
-            name -> loadCustomTemplate("table." + name + ".peb"));
+        return customTableTemplates.computeIfAbsent(
+                format.formatName(), name -> loadCustomTemplate("table." + name + ".peb"));
     }
 
     private PebbleTemplate indexTemplate(Format format) {
@@ -116,14 +117,14 @@ public final class TemplateEngine {
                 case MARKDOWN -> markdownIndexTemplate;
             };
         }
-        return customIndexTemplates.computeIfAbsent(format.formatName(),
-            name -> loadCustomTemplate("index." + name + ".peb"));
+        return customIndexTemplates.computeIfAbsent(
+                format.formatName(), name -> loadCustomTemplate("index." + name + ".peb"));
     }
 
     private PebbleTemplate loadCustomTemplate(String templateName) {
         if (customTemplateDirectory == null) {
-            throw new IllegalStateException("Cannot load custom template '" + templateName +
-                "' without a custom template directory");
+            throw new IllegalStateException(
+                    "Cannot load custom template '" + templateName + "' without a custom template directory");
         }
 
         Path templatePath = customTemplateDirectory.resolve(templateName);
@@ -148,13 +149,12 @@ public final class TemplateEngine {
         // Look for pattern match (extension)
         try (Stream<Path> files = Files.list(customTemplateDirectory)) {
             PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
-            return files
-                .filter(Files::isRegularFile)
-                .filter(p -> matcher.matches(p.getFileName()))
-                .sorted()
-                .findFirst()
-                .map(p -> p.getFileName().toString())
-                .orElse(defaultName);
+            return files.filter(Files::isRegularFile)
+                    .filter(p -> matcher.matches(p.getFileName()))
+                    .sorted()
+                    .findFirst()
+                    .map(p -> p.getFileName().toString())
+                    .orElse(defaultName);
         } catch (IOException e) {
             return defaultName;
         }
@@ -162,10 +162,10 @@ public final class TemplateEngine {
 
     private static PebbleEngine createEngine(Loader<?> loader) {
         return new PebbleEngine.Builder()
-            .loader(loader)
-            .autoEscaping(false)
-            .extension(new PebbleExtension())
-            .build();
+                .loader(loader)
+                .autoEscaping(false)
+                .extension(new PebbleExtension())
+                .build();
     }
 
     private static Loader<?> createDelegatingLoader(Path customTemplateDirectory) {

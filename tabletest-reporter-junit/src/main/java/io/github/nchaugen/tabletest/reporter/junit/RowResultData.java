@@ -27,19 +27,18 @@ import java.util.Map;
  * @param errorMessage The error message if the test failed, null if passed
  */
 public record RowResultData(int rowIndex, boolean passed, String displayName, String errorMessage) {
-    
+
     /**
      * Creates a RowResultData from a RowResult.
      */
     public static RowResultData from(RowResult result) {
         return new RowResultData(
-            result.rowIndex(),
-            result.passed(),
-            result.displayName(),
-            result.cause() != null ? result.cause().getMessage() : null
-        );
+                result.rowIndex(),
+                result.passed(),
+                result.displayName(),
+                result.cause() != null ? result.cause().getMessage() : null);
     }
-    
+
     /**
      * Converts this row result to a map suitable for YAML serialisation.
      */

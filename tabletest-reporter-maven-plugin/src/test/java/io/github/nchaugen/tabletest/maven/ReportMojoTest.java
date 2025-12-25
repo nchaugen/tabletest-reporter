@@ -44,8 +44,7 @@ class ReportMojoTest {
         Files.writeString(testClassDir.resolve("TABLETEST-calendar-calculations.yaml"), """
             "title": "Calendar"
             "description": "Various rules for calendar calculations."
-            """
-        );
+            """);
 
         Files.writeString(tableDir.resolve("TABLETEST-leap-year-rules.yaml"), """
             "title": "Leap Year Rules with Single Example"
@@ -61,8 +60,7 @@ class ReportMojoTest {
                 - - "value": "Divisible by 4"
                   - "value": "2004"
                   - "value": "Yes"
-            """
-        );
+            """);
 
         Path outDir = tempDir.resolve("out");
 
@@ -77,7 +75,8 @@ class ReportMojoTest {
         // Assert
         assertThat(outDir.resolve("index.adoc")).exists();
         assertThat(outDir.resolve("calendar-calculations")).isDirectory();
-        assertThat(outDir.resolve("calendar-calculations").resolve("leap-year-rules.adoc")).exists();
+        assertThat(outDir.resolve("calendar-calculations").resolve("leap-year-rules.adoc"))
+                .exists();
     }
 
     @Test
@@ -88,8 +87,8 @@ class ReportMojoTest {
         setField(mojo, "outputDirectory", tempDir.resolve("out").toFile());
 
         assertThatThrownBy(mojo::execute)
-            .isInstanceOf(MojoFailureException.class)
-            .hasMessageContaining("Input directory");
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("Input directory");
     }
 
     @Test
@@ -128,8 +127,8 @@ class ReportMojoTest {
         setField(mojo, "templateDirectory", nonexistentDir.toFile());
 
         assertThatThrownBy(mojo::execute)
-            .isInstanceOf(MojoFailureException.class)
-            .hasMessageContaining("Template directory does not exist");
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("Template directory does not exist");
     }
 
     @Test
@@ -146,8 +145,8 @@ class ReportMojoTest {
         setField(mojo, "templateDirectory", notADirectory.toFile());
 
         assertThatThrownBy(mojo::execute)
-            .isInstanceOf(MojoFailureException.class)
-            .hasMessageContaining("Template path is not a directory");
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("Template path is not a directory");
     }
 
     @Test
@@ -211,8 +210,8 @@ class ReportMojoTest {
         setField(mojo, "outputDirectory", outputDir.toFile());
 
         assertThatThrownBy(mojo::execute)
-            .isInstanceOf(MojoFailureException.class)
-            .hasMessageContaining("Unknown format");
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("Unknown format");
     }
 
     @Test
@@ -261,10 +260,9 @@ class ReportMojoTest {
 
     private Path findGeneratedFile(Path outputDir, String extension) throws IOException {
         try (var files = Files.list(outputDir)) {
-            return files
-                .filter(p -> p.toString().endsWith(extension))
-                .findFirst()
-                .orElseThrow();
+            return files.filter(p -> p.toString().endsWith(extension))
+                    .findFirst()
+                    .orElseThrow();
         }
     }
 

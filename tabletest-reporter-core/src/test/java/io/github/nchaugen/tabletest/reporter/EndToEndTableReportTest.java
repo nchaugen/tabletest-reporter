@@ -46,44 +46,37 @@ public class EndToEndTableReportTest {
         new TableTestReporter().report(ASCIIDOC, inDir, outDir);
 
         assertThat(Files.readAllLines(outDir.resolve("index.adoc")))
-            .containsExactly(
-                "= ++example++",
-                "",
-                "* xref:./calendar-calculations[++Calendar++]"
-            );
+                .containsExactly("= ++example++", "", "* xref:./calendar-calculations[++Calendar++]");
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.adoc")))
-            .containsExactly(
-                "= ++Calendar++",
-                "",
-                "Various rules for calendar calculations.",
-                "",
-                "* xref:./leap-year-rules.adoc[++Leap Year Rules with Single Example++]"
-            );
+                .containsExactly(
+                        "= ++Calendar++",
+                        "",
+                        "Various rules for calendar calculations.",
+                        "",
+                        "* xref:./leap-year-rules.adoc[++Leap Year Rules with Single Example++]");
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("leap-year-rules.adoc")))
-            .containsExactly(
-                "== ++Leap Year Rules with Single Example++",
-                "",
-                "The leap year rules should be well-known.",
-                "",
-                "[%header,cols=\"1,1,1\"]",
-                "|===",
-                "|++Scenario++",
-                "|++Year++",
-                "|++Is Leap Year?++",
-                "",
-                "a|++Not divisible by 4++",
-                "a|++2001++",
-                "a|++No++",
-                "",
-                "a|++Divisible by 4++",
-                "a|++2004++",
-                "a|++Yes++",
-                "",
-                "|==="
-            );
-
+                .containsExactly(
+                        "== ++Leap Year Rules with Single Example++",
+                        "",
+                        "The leap year rules should be well-known.",
+                        "",
+                        "[%header,cols=\"1,1,1\"]",
+                        "|===",
+                        "|++Scenario++",
+                        "|++Year++",
+                        "|++Is Leap Year?++",
+                        "",
+                        "a|++Not divisible by 4++",
+                        "a|++2001++",
+                        "a|++No++",
+                        "",
+                        "a|++Divisible by 4++",
+                        "a|++2004++",
+                        "a|++Yes++",
+                        "",
+                        "|===");
     }
 
     @Test
@@ -95,32 +88,26 @@ public class EndToEndTableReportTest {
         new TableTestReporter().report(MARKDOWN, inDir, outDir);
 
         assertThat(Files.readAllLines(outDir.resolve("index.md")))
-            .containsExactly(
-                "# example",
-                "",
-                "* [Calendar](./calendar-calculations)"
-            );
+                .containsExactly("# example", "", "* [Calendar](./calendar-calculations)");
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.md")))
-            .containsExactly(
-                "# Calendar",
-                "",
-                "Various rules for calendar calculations.",
-                "",
-                "* [Leap Year Rules with Single Example](./leap-year-rules.md)"
-            );
+                .containsExactly(
+                        "# Calendar",
+                        "",
+                        "Various rules for calendar calculations.",
+                        "",
+                        "* [Leap Year Rules with Single Example](./leap-year-rules.md)");
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("leap-year-rules.md")))
-            .containsExactly(
-                "## Leap Year Rules with Single Example",
-                "",
-                "The leap year rules should be well-known.",
-                "",
-                "| Scenario | Year | Is Leap Year? |",
-                "| --- | --- | --- |",
-                "| Not divisible by 4 | 2001 | No |",
-                "| Divisible by 4 | 2004 | Yes |"
-            );
+                .containsExactly(
+                        "## Leap Year Rules with Single Example",
+                        "",
+                        "The leap year rules should be well-known.",
+                        "",
+                        "| Scenario | Year | Is Leap Year? |",
+                        "| --- | --- | --- |",
+                        "| Not divisible by 4 | 2001 | No |",
+                        "| Divisible by 4 | 2004 | Yes |");
     }
 
     @Test
@@ -132,9 +119,9 @@ public class EndToEndTableReportTest {
         new TableTestReporter().report(ASCIIDOC, inDirWithFailures, outDirWithFailures);
 
         assertThat(Files.readString(outDirWithFailures.resolve("math-test/addition.adoc")))
-            .contains("=== Failed Rows")
-            .contains("*[2] 2 + 2 = 5*")
-            .contains("expected: <5> but was: <4>");
+                .contains("=== Failed Rows")
+                .contains("*[2] 2 + 2 = 5*")
+                .contains("expected: <5> but was: <4>");
     }
 
     @Test
@@ -146,9 +133,9 @@ public class EndToEndTableReportTest {
         new TableTestReporter().report(MARKDOWN, inDirWithFailures, outDirWithFailures);
 
         assertThat(Files.readString(outDirWithFailures.resolve("math-test/addition.md")))
-            .contains("### Failed Rows")
-            .contains("**[2] 2 + 2 = 5**")
-            .contains("expected: <5> but was: <4>");
+                .contains("### Failed Rows")
+                .contains("**[2] 2 + 2 = 5**")
+                .contains("expected: <5> but was: <4>");
     }
 
     @Test
@@ -161,9 +148,9 @@ public class EndToEndTableReportTest {
 
         String content = readContent(testDir, "calendar-calculations/leap-year-rules.md");
         assertThat(content)
-            .startsWith("---\nlayout: default\ntitle: Leap Year Rules with Single Example---")
-            .contains("## Leap Year Rules with Single Example")
-            .contains("| Scenario | Year | Is Leap Year? |");
+                .startsWith("---\nlayout: default\ntitle: Leap Year Rules with Single Example---")
+                .contains("## Leap Year Rules with Single Example")
+                .contains("| Scenario | Year | Is Leap Year? |");
     }
 
     @Test
@@ -176,9 +163,9 @@ public class EndToEndTableReportTest {
 
         String content = readContent(testDir, "calendar-calculations/leap-year-rules.adoc");
         assertThat(content)
-            .startsWith(":toc: left\n:icons: font")
-            .contains("== ++Leap Year Rules with Single Example++")
-            .contains("[%header,cols=\"1,1,1\"]");
+                .startsWith(":toc: left\n:icons: font")
+                .contains("== ++Leap Year Rules with Single Example++")
+                .contains("[%header,cols=\"1,1,1\"]");
     }
 
     @Test
@@ -191,9 +178,9 @@ public class EndToEndTableReportTest {
 
         String content = readContent(testDir, "calendar-calculations/leap-year-rules.adoc");
         assertThat(content)
-            .endsWith("---\nGenerated by TableTest Reporter\n")
-            .contains("== ++Leap Year Rules with Single Example++")
-            .contains("|===");
+                .endsWith("---\nGenerated by TableTest Reporter\n")
+                .contains("== ++Leap Year Rules with Single Example++")
+                .contains("|===");
     }
 
     @Test
@@ -206,10 +193,10 @@ public class EndToEndTableReportTest {
 
         String content = readContent(testDir, "calendar-calculations/leap-year-rules.md");
         assertThat(content)
-            .startsWith("---\nauthor: Test Team\n---")
-            .contains("# Leap Year Rules with Single Example - Custom")
-            .contains("| Scenario | Year |")
-            .endsWith("---\n_End of report_\n");
+                .startsWith("---\nauthor: Test Team\n---")
+                .contains("# Leap Year Rules with Single Example - Custom")
+                .contains("| Scenario | Year |")
+                .endsWith("---\n_End of report_\n");
     }
 
     @Test
@@ -222,10 +209,10 @@ public class EndToEndTableReportTest {
 
         String indexContent = readContent(testDir, "calendar-calculations/index.md");
         assertThat(indexContent)
-            .startsWith("---\nnav_order: 1\n---")
-            .contains("# Calendar")
-            .contains("Various rules for calendar calculations.")
-            .contains("[Leap Year Rules with Single Example](./leap-year-rules.md)");
+                .startsWith("---\nnav_order: 1\n---")
+                .contains("# Calendar")
+                .contains("Various rules for calendar calculations.")
+                .contains("[Leap Year Rules with Single Example](./leap-year-rules.md)");
     }
 
     @Test
@@ -238,11 +225,11 @@ public class EndToEndTableReportTest {
 
         String content = readContent(testDir, "calendar-calculations/leap-year-rules.adoc");
         assertThat(content)
-            .startsWith("= CUSTOM TABLE TEMPLATE")
-            .contains("Title: Leap Year Rules with Single Example")
-            .contains("Description: The leap year rules should be well-known.")
-            .doesNotContain("[%header,cols=")
-            .doesNotContain("|===");
+                .startsWith("= CUSTOM TABLE TEMPLATE")
+                .contains("Title: Leap Year Rules with Single Example")
+                .contains("Description: The leap year rules should be well-known.")
+                .doesNotContain("[%header,cols=")
+                .doesNotContain("|===");
     }
 
     @Test
@@ -256,22 +243,22 @@ public class EndToEndTableReportTest {
 
         String authContent = Files.readString(outDirMulti.resolve("auth-test/login-validation.md"));
         assertThat(authContent)
-            .startsWith("---\nlayout: default\ntitle: Login Validation---")
-            .contains("## Login Validation")
-            .contains("| Username | Password | Expected? |");
+                .startsWith("---\nlayout: default\ntitle: Login Validation---")
+                .contains("## Login Validation")
+                .contains("| Username | Password | Expected? |");
 
         String orderContent = Files.readString(outDirMulti.resolve("order-test/place-order.md"));
         assertThat(orderContent)
-            .startsWith("---\nlayout: default\ntitle: Place Order---")
-            .contains("## Place Order")
-            .contains("| Item | Quantity | Valid? |");
+                .startsWith("---\nlayout: default\ntitle: Place Order---")
+                .contains("## Place Order")
+                .contains("| Item | Quantity | Valid? |");
 
         String indexContent = Files.readString(outDirMulti.resolve("index.md"));
         assertThat(indexContent)
-            .startsWith("---\nlayout: default\ntitle: example---")
-            .contains("# example")
-            .contains("[Auth Test](./auth-test)")
-            .contains("[Order Test](./order-test)");
+                .startsWith("---\nlayout: default\ntitle: example---")
+                .contains("# example")
+                .contains("[Auth Test](./auth-test)")
+                .contains("[Order Test](./order-test)");
     }
 
     private Path setupJekyllTemplateMarkdown(Path parent) throws IOException {
@@ -481,28 +468,28 @@ public class EndToEndTableReportTest {
         new TableTestReporter(templateDir).report(new CustomFormat("html"), inDir, outDir);
 
         assertThat(Files.readString(outDir.resolve("index.html")))
-            .contains("<!DOCTYPE html>")
-            .contains("<h1>example</h1>")
-            .contains("<a href=\"calendar-calculations\">Calendar</a>");
+                .contains("<!DOCTYPE html>")
+                .contains("<h1>example</h1>")
+                .contains("<a href=\"calendar-calculations\">Calendar</a>");
 
         assertThat(Files.readString(outDir.resolve("calendar-calculations/index.html")))
-            .contains("<!DOCTYPE html>")
-            .contains("<h1>Calendar</h1>")
-            .contains("Various rules for calendar calculations.")
-            .contains("<a href=\"leap-year-rules\">Leap Year Rules with Single Example</a>");
+                .contains("<!DOCTYPE html>")
+                .contains("<h1>Calendar</h1>")
+                .contains("Various rules for calendar calculations.")
+                .contains("<a href=\"leap-year-rules\">Leap Year Rules with Single Example</a>");
 
         assertThat(Files.readString(outDir.resolve("calendar-calculations/leap-year-rules.html")))
-            .contains("<!DOCTYPE html>")
-            .contains("<h2>Leap Year Rules with Single Example</h2>")
-            .contains("The leap year rules should be well-known.")
-            .contains("<table>")
-            .contains("<th>Scenario</th>")
-            .contains("<th>Year</th>")
-            .contains("<th>Is Leap Year?</th>")
-            .contains("<td>Not divisible by 4</td>")
-            .contains("<td>2001</td>")
-            .contains("<td>No</td>")
-            .contains("</table>");
+                .contains("<!DOCTYPE html>")
+                .contains("<h2>Leap Year Rules with Single Example</h2>")
+                .contains("The leap year rules should be well-known.")
+                .contains("<table>")
+                .contains("<th>Scenario</th>")
+                .contains("<th>Year</th>")
+                .contains("<th>Is Leap Year?</th>")
+                .contains("<td>Not divisible by 4</td>")
+                .contains("<td>2001</td>")
+                .contains("<td>No</td>")
+                .contains("</table>");
     }
 
     private Path setupCustomHtmlTemplates(Path parent) throws IOException {
@@ -573,5 +560,4 @@ public class EndToEndTableReportTest {
         Files.writeString(tableDir.resolve("TABLETEST-leap-year-rules.yaml"), TABLE_CONTEXT_YAML);
         return inDir;
     }
-
 }

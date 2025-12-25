@@ -31,19 +31,24 @@ public class FilterReplicate implements Filter {
     private static final String TIMES = "times";
 
     @Override
-    public Object apply(Object input, Map<String, Object> args, PebbleTemplate self, EvaluationContext context, int lineNumber) throws PebbleException {
+    public Object apply(
+            Object input, Map<String, Object> args, PebbleTemplate self, EvaluationContext context, int lineNumber)
+            throws PebbleException {
         Object value = args.get(TIMES);
-        int times = switch (value) {
-            case null -> 2;
-            case Integer i -> i;
-            case Long l -> l.intValue();
-            default -> throw new PebbleException(
-                null,
-                MessageFormat.format("Unexpected value ''{0}'' for argument ''{1}'' in filter ''{2}''", value, TIMES, NAME),
-                lineNumber,
-                self.getName()
-            );
-        };
+        int times =
+                switch (value) {
+                    case null -> 2;
+                    case Integer i -> i;
+                    case Long l -> l.intValue();
+                    default ->
+                        throw new PebbleException(
+                                null,
+                                MessageFormat.format(
+                                        "Unexpected value ''{0}'' for argument ''{1}'' in filter ''{2}''",
+                                        value, TIMES, NAME),
+                                lineNumber,
+                                self.getName());
+                };
         return Collections.nCopies(times, input);
     }
 

@@ -65,10 +65,8 @@ class RowResultMatcherTest {
     @Test
     void shouldFindMatchingResultsWithScenarioColumn() {
         Table table = TableParser.parse("scenario|value\nTest 1|foo\nTest 2|bar");
-        List<RowResult> results = List.of(
-            new RowResult(1, true, null, "[1] Test 1"),
-            new RowResult(2, false, null, "[2] Test 2")
-        );
+        List<RowResult> results =
+                List.of(new RowResult(1, true, null, "[1] Test 1"), new RowResult(2, false, null, "[2] Test 2"));
 
         List<RowResult> matches = RowResultMatcher.findMatchingResults(0, table, OptionalInt.of(0), results);
 
@@ -80,10 +78,8 @@ class RowResultMatcherTest {
     @Test
     void shouldFindMatchingResultsWithoutScenarioColumn() {
         Table table = TableParser.parse("a|b\n1|2\n3|4");
-        List<RowResult> results = List.of(
-            new RowResult(1, true, null, "[1] 1, 2"),
-            new RowResult(2, false, null, "[2] 3, 4")
-        );
+        List<RowResult> results =
+                List.of(new RowResult(1, true, null, "[1] 1, 2"), new RowResult(2, false, null, "[2] 3, 4"));
 
         List<RowResult> matches = RowResultMatcher.findMatchingResults(0, table, OptionalInt.empty(), results);
 
@@ -95,10 +91,9 @@ class RowResultMatcherTest {
     void shouldFindMultipleMatchingResultsForSetExpansion() {
         Table table = TableParser.parse("scenario|value\nTest Set|x");
         List<RowResult> results = List.of(
-            new RowResult(1, true, null, "[1] Test Set (value = a)"),
-            new RowResult(1, false, null, "[1] Test Set (value = b)"),
-            new RowResult(1, true, null, "[1] Test Set (value = c)")
-        );
+                new RowResult(1, true, null, "[1] Test Set (value = a)"),
+                new RowResult(1, false, null, "[1] Test Set (value = b)"),
+                new RowResult(1, true, null, "[1] Test Set (value = c)"));
 
         List<RowResult> matches = RowResultMatcher.findMatchingResults(0, table, OptionalInt.of(0), results);
 
@@ -108,9 +103,7 @@ class RowResultMatcherTest {
     @Test
     void shouldReturnEmptyListWhenNoResultsMatch() {
         Table table = TableParser.parse("scenario|value\nTest 1|foo");
-        List<RowResult> results = List.of(
-            new RowResult(1, true, null, "[1] Test 2")
-        );
+        List<RowResult> results = List.of(new RowResult(1, true, null, "[1] Test 2"));
 
         List<RowResult> matches = RowResultMatcher.findMatchingResults(0, table, OptionalInt.of(0), results);
 

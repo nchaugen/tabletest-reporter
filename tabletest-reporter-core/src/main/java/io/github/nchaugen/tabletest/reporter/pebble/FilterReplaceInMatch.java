@@ -36,12 +36,8 @@ public class FilterReplaceInMatch implements Filter {
 
     @Override
     public Object apply(
-        Object input,
-        Map<String, Object> args,
-        PebbleTemplate self,
-        EvaluationContext context,
-        int lineNumber
-    ) throws PebbleException {
+            Object input, Map<String, Object> args, PebbleTemplate self, EvaluationContext context, int lineNumber)
+            throws PebbleException {
         if (input == null) return null;
         requireNotNull(args, PATTERN, lineNumber, self);
         requireNotNull(args, REPLACE_PAIRS, lineNumber, self);
@@ -51,11 +47,11 @@ public class FilterReplaceInMatch implements Filter {
         String passthroughMarker = (String) args.getOrDefault(PASSTHROUGH_MARKER, "");
 
         return Arrays.stream(input.toString().splitWithDelimiters(pattern, -1))
-            .filter(it -> !it.isEmpty())
-            .map(it -> it.matches(pattern)
-                ? encodeCharacters(it, replacePairs)
-                : passthroughMarker + it + passthroughMarker)
-            .collect(Collectors.joining());
+                .filter(it -> !it.isEmpty())
+                .map(it -> it.matches(pattern)
+                        ? encodeCharacters(it, replacePairs)
+                        : passthroughMarker + it + passthroughMarker)
+                .collect(Collectors.joining());
     }
 
     private static String encodeCharacters(String data, Map<?, ?> replacePairs) {

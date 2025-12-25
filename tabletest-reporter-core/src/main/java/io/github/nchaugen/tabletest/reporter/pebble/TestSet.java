@@ -29,12 +29,8 @@ public class TestSet implements Test {
 
     @Override
     public boolean apply(
-        Object input,
-        Map<String, Object> args,
-        PebbleTemplate self,
-        EvaluationContext context,
-        int lineNumber
-    ) throws PebbleException {
+            Object input, Map<String, Object> args, PebbleTemplate self, EvaluationContext context, int lineNumber)
+            throws PebbleException {
         return input instanceof Set;
     }
 

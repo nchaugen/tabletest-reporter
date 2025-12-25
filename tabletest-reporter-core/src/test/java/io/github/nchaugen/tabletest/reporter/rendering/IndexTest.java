@@ -36,8 +36,7 @@ public class IndexTest {
     void supported_in_asciidoc() {
         String rendered = templateEngine.renderIndex(ASCIIDOC, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 = ++Title of the Test Class++
 
                 A free-text description explaining what these tables are about.
@@ -45,8 +44,7 @@ public class IndexTest {
                 * xref:./path/to/a_table.adoc[++A Table++]
                 * xref:./path/to/b_table.adoc[++B Table++]
                 * xref:./path/to/c_table.adoc[++C Table++]
-                """
-            );
+                """);
         assertValidAsciiDoc(rendered);
     }
 
@@ -54,8 +52,7 @@ public class IndexTest {
     void supported_in_markdown() {
         String rendered = templateEngine.renderIndex(MARKDOWN, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 # Title of the Test Class
 
                 A free-text description explaining what these tables are about.
@@ -63,9 +60,7 @@ public class IndexTest {
                 * [A Table](./path/to/a_table.md)
                 * [B Table](./path/to/b_table.md)
                 * [C Table](./path/to/c_table.md)
-                """
-            );
+                """);
         assertValidMarkdown(rendered);
     }
-
 }

@@ -55,19 +55,23 @@ class ListFormatsMojoTest {
         List<String> messages = new ArrayList<>();
         Log mockLog = new Log() {
             @Override
-            public boolean isDebugEnabled() { return false; }
+            public boolean isDebugEnabled() {
+                return false;
+            }
 
             @Override
-            public void debug(CharSequence content) { }
+            public void debug(CharSequence content) {}
 
             @Override
-            public void debug(CharSequence content, Throwable error) { }
+            public void debug(CharSequence content, Throwable error) {}
 
             @Override
-            public void debug(Throwable error) { }
+            public void debug(Throwable error) {}
 
             @Override
-            public boolean isInfoEnabled() { return true; }
+            public boolean isInfoEnabled() {
+                return true;
+            }
 
             @Override
             public void info(CharSequence content) {
@@ -80,31 +84,35 @@ class ListFormatsMojoTest {
             }
 
             @Override
-            public void info(Throwable error) { }
+            public void info(Throwable error) {}
 
             @Override
-            public boolean isWarnEnabled() { return false; }
+            public boolean isWarnEnabled() {
+                return false;
+            }
 
             @Override
-            public void warn(CharSequence content) { }
+            public void warn(CharSequence content) {}
 
             @Override
-            public void warn(CharSequence content, Throwable error) { }
+            public void warn(CharSequence content, Throwable error) {}
 
             @Override
-            public void warn(Throwable error) { }
+            public void warn(Throwable error) {}
 
             @Override
-            public boolean isErrorEnabled() { return false; }
+            public boolean isErrorEnabled() {
+                return false;
+            }
 
             @Override
-            public void error(CharSequence content) { }
+            public void error(CharSequence content) {}
 
             @Override
-            public void error(CharSequence content, Throwable error) { }
+            public void error(CharSequence content, Throwable error) {}
 
             @Override
-            public void error(Throwable error) { }
+            public void error(Throwable error) {}
         };
         mojo.setLog(mockLog);
         return messages;

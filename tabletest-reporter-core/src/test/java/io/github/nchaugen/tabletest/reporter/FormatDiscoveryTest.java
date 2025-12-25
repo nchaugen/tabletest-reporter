@@ -28,8 +28,12 @@ class FormatDiscoveryTest {
         Non-template files present | [table.html.peb, index.html.peb, README.md, config.yml]                                        | [html]
         Subdirectories ignored     | [table.html.peb, index.html.peb, subdir/table.xml.peb, subdir/index.xml.peb]                   | [html]
         """)
-    void discovers_formats(@Scenario String _scenario, List<String> templateFiles, List<String> discoveredFormats,
-                          @TempDir Path tempDir) throws IOException {
+    void discovers_formats(
+            @Scenario String _scenario,
+            List<String> templateFiles,
+            List<String> discoveredFormats,
+            @TempDir Path tempDir)
+            throws IOException {
         for (String file : templateFiles) {
             Path filePath = tempDir.resolve(file);
             Files.createDirectories(filePath.getParent());

@@ -28,8 +28,7 @@ import java.util.stream.Stream;
  */
 public final class FormatResolver {
 
-    private FormatResolver() {
-    }
+    private FormatResolver() {}
 
     /**
      * Resolves a format name to a Format instance.
@@ -50,11 +49,12 @@ public final class FormatResolver {
         String normalizedName = formatName.trim().toLowerCase();
 
         // Check built-in formats first
-        Format builtInFormat = switch (normalizedName) {
-            case "adoc", "asciidoc", "asciidoctor" -> BuiltInFormat.ASCIIDOC;
-            case "md", "markdown" -> BuiltInFormat.MARKDOWN;
-            default -> null;
-        };
+        Format builtInFormat =
+                switch (normalizedName) {
+                    case "adoc", "asciidoc", "asciidoctor" -> BuiltInFormat.ASCIIDOC;
+                    case "md", "markdown" -> BuiltInFormat.MARKDOWN;
+                    default -> null;
+                };
 
         if (builtInFormat != null) {
             return builtInFormat;
@@ -68,12 +68,9 @@ public final class FormatResolver {
         }
 
         // Format not found - provide helpful error message
-        String formatsStr = availableFormats.stream()
-            .sorted()
-            .collect(Collectors.joining(", "));
+        String formatsStr = availableFormats.stream().sorted().collect(Collectors.joining(", "));
 
-        throw new IllegalArgumentException(
-            "Unknown format: " + formatName + ". Available formats: " + formatsStr);
+        throw new IllegalArgumentException("Unknown format: " + formatName + ". Available formats: " + formatsStr);
     }
 
     /**
@@ -83,14 +80,13 @@ public final class FormatResolver {
      * @return set of available format names
      */
     public static Set<String> getAvailableFormats(Path templateDirectory) {
-        Set<String> builtInFormats = Stream.of(BuiltInFormat.values())
-            .map(Format::formatName)
-            .collect(Collectors.toSet());
+        Set<String> builtInFormats =
+                Stream.of(BuiltInFormat.values()).map(Format::formatName).collect(Collectors.toSet());
 
         if (templateDirectory != null) {
             Set<String> customFormats = FormatDiscovery.discoverFormats(templateDirectory);
             return Stream.concat(builtInFormats.stream(), customFormats.stream())
-                .collect(Collectors.toSet());
+                    .collect(Collectors.toSet());
         }
 
         return builtInFormats;

@@ -45,10 +45,10 @@ public class ReportTree {
      */
     public static ReportNode process(Path dir) {
         return Optional.ofNullable(dir)
-            .map(ReportTree::findTableTestOutputFiles)
-            .map(ReportTree::findTargets)
-            .map(ReportTree::buildTree)
-            .orElseThrow(() -> new NullPointerException("argument `dir` cannot be null"));
+                .map(ReportTree::findTableTestOutputFiles)
+                .map(ReportTree::findTargets)
+                .map(ReportTree::buildTree)
+                .orElseThrow(() -> new NullPointerException("argument `dir` cannot be null"));
     }
 
     /**
@@ -59,8 +59,9 @@ public class ReportTree {
     static List<Path> findTableTestOutputFiles(Path dir) {
         try (var paths = Files.walk(dir)) {
             return paths.filter(ReportTree::isTableTestOutputFile)
-                .map(dir::relativize)
-                .sorted().toList();
+                    .map(dir::relativize)
+                    .sorted()
+                    .toList();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -71,8 +72,8 @@ public class ReportTree {
      */
     private static boolean isTableTestOutputFile(Path path) {
         return path.toFile().isFile()
-            && path.getFileName().toString().startsWith(FILENAME_PREFIX)
-            && path.getFileName().toString().endsWith(YAML_EXTENSION);
+                && path.getFileName().toString().startsWith(FILENAME_PREFIX)
+                && path.getFileName().toString().endsWith(YAML_EXTENSION);
     }
 
     /**
@@ -96,11 +97,11 @@ public class ReportTree {
      */
     static List<Target> findTargets(List<Path> files) {
         return Optional.ofNullable(files)
-            .map(ReportTree::generateAllTargets)
-            .map(ReportTree::pickNearestRoot)
-            .map(ReportTree::removeDuplicates)
-            .map(ReportTree::sortByTarget)
-            .orElseThrow(() -> new NullPointerException("argument `files` cannot be null"));
+                .map(ReportTree::generateAllTargets)
+                .map(ReportTree::pickNearestRoot)
+                .map(ReportTree::removeDuplicates)
+                .map(ReportTree::sortByTarget)
+                .orElseThrow(() -> new NullPointerException("argument `files` cannot be null"));
     }
 
     /**
@@ -155,8 +156,8 @@ public class ReportTree {
             return new TableNode(name, outPath, resource);
         } else {
             List<ReportNode> childNodes = children.stream()
-                .map(target -> buildTree(target, concat(path, target), targets))
-                .toList();
+                    .map(target -> buildTree(target, concat(path, target), targets))
+                    .toList();
             return new IndexNode(name, outPath, resource, childNodes);
         }
     }
@@ -187,12 +188,10 @@ public class ReportTree {
      * Removes duplicate targets from the given list, keeping the ones with most information
      */
     private static List<Target> removeDuplicates(List<Target> targets) {
-        return targets.stream()
-            .collect(Collectors.groupingBy(Target::path))
-            .entrySet().stream()
-            .map(ReportTree::pickTargetInstance)
-            .map(it -> it.mapPath(ROOT_PATH::resolve))
-            .toList();
+        return targets.stream().collect(Collectors.groupingBy(Target::path)).entrySet().stream()
+                .map(ReportTree::pickTargetInstance)
+                .map(it -> it.mapPath(ROOT_PATH::resolve))
+                .toList();
     }
 
     /**
@@ -204,8 +203,8 @@ public class ReportTree {
         Target root = findNearestRoot(rootCandidates.get(true));
 
         return Stream.concat(Stream.of(root), rootCandidates.get(false).stream())
-            .map(target -> target.mapPath(root.path::relativize))
-            .toList();
+                .map(target -> target.mapPath(root.path::relativize))
+                .toList();
     }
 
     /**
@@ -226,12 +225,12 @@ public class ReportTree {
      */
     private static Map<Boolean, List<Target>> partitionByRootCandidacy(List<Target> targets, long resourceCount) {
         return targets.stream()
-            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-            .entrySet().stream()
-            .collect(Collectors.partitioningBy(
-                e -> e.getValue() == resourceCount,
-                Collectors.mapping(Map.Entry::getKey, Collectors.toList())
-            ));
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet()
+                .stream()
+                .collect(Collectors.partitioningBy(
+                        e -> e.getValue() == resourceCount,
+                        Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
     }
 
     /**
@@ -239,8 +238,8 @@ public class ReportTree {
      */
     private static Target findNearestRoot(List<Target> commonRoots) {
         return commonRoots.stream()
-            .max(comparing(target -> target.path().getNameCount()))
-            .orElseGet(() -> Target.withPath("").withName(null));
+                .max(comparing(target -> target.path().getNameCount()))
+                .orElseGet(() -> Target.withPath("").withName(null));
     }
 
     /**
@@ -249,9 +248,9 @@ public class ReportTree {
      */
     private static List<Target> generateAllTargets(List<Path> files) {
         return files.stream()
-            .map(ReportTree::directoryPerTestClassPackageComponents)
-            .flatMap(ReportTree::getAllAncestors)
-            .toList();
+                .map(ReportTree::directoryPerTestClassPackageComponents)
+                .flatMap(ReportTree::getAllAncestors)
+                .toList();
     }
 
     /**
@@ -261,10 +260,7 @@ public class ReportTree {
     private static Target pickTargetInstance(Map.Entry<Path, List<Target>> entry) {
         List<Target> candidates = entry.getValue();
         if (candidates.size() == 1) return candidates.getFirst();
-        return candidates.stream()
-            .filter(Target::hasResource)
-            .findFirst()
-            .orElse(candidates.getFirst());
+        return candidates.stream().filter(Target::hasResource).findFirst().orElse(candidates.getFirst());
     }
 
     /**
@@ -279,9 +275,9 @@ public class ReportTree {
         Path classNamePath = prefix(file).resolve(className.replace('.', File.separatorChar));
 
         // Replace fully qualified class name directory with directory per package
-        Path remainingPath = (file.getRoot() == null
-            ? ROOT_PATH
-            : file.getRoot()).resolve(className).relativize(file);
+        Path remainingPath = (file.getRoot() == null ? ROOT_PATH : file.getRoot())
+                .resolve(className)
+                .relativize(file);
 
         return Target.withPath(classNamePath.resolve(remainingPath)).withResource(file);
     }
@@ -295,10 +291,9 @@ public class ReportTree {
      */
     private static Stream<Target> getAllAncestors(Target target) {
         return Stream.iterate(
-            target.mapPath(Path::getParent),
-            it -> Objects.nonNull(it.path()),
-            it -> Target.withPath(it.path().getParent())
-        );
+                target.mapPath(Path::getParent),
+                it -> Objects.nonNull(it.path()),
+                it -> Target.withPath(it.path().getParent()));
     }
 
     /**
@@ -309,7 +304,6 @@ public class ReportTree {
      */
     public record Target(String name, Path path, Path resource) {
 
-
         public static Target withPath(String target) {
             return withPath(Path.of(target));
         }
@@ -319,8 +313,8 @@ public class ReportTree {
          */
         public static Target withPath(Path path) {
             String name = path != null && path.getFileName() != null
-                ? path.getFileName().toString()
-                : null;
+                    ? path.getFileName().toString()
+                    : null;
             return new Target(name, path, null);
         }
 
@@ -328,9 +322,10 @@ public class ReportTree {
          * Adds a resource to this Target. Name is replaced with resource filename (without .yaml extension).
          */
         public Target withResource(Path resource) {
-            String name = resource.getFileName().toString()
-                .replaceAll("^TABLETEST-", "")
-                .replaceAll(YAML_EXTENSION + "$", "");
+            String name = resource.getFileName()
+                    .toString()
+                    .replaceAll("^TABLETEST-", "")
+                    .replaceAll(YAML_EXTENSION + "$", "");
             return new Target(name, path, resource);
         }
 
@@ -377,5 +372,4 @@ public class ReportTree {
             return "Target[name=" + name + ", path=" + path + ", resource=" + resource + "]";
         }
     }
-
 }

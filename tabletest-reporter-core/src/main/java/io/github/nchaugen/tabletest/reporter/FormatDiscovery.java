@@ -36,8 +36,7 @@ public final class FormatDiscovery {
     private static final Pattern TABLE_TEMPLATE_PATTERN = Pattern.compile("table\\.([^.]+)\\.peb");
     private static final Pattern INDEX_TEMPLATE_PATTERN = Pattern.compile("index\\.([^.]+)\\.peb");
 
-    private FormatDiscovery() {
-    }
+    private FormatDiscovery() {}
 
     /**
      * Discovers all valid custom formats in the given template directory.
@@ -62,14 +61,14 @@ public final class FormatDiscovery {
 
         try (Stream<Path> files = Files.list(directory)) {
             files.filter(Files::isRegularFile)
-                .map(Path::getFileName)
-                .map(Path::toString)
-                .forEach(filename -> {
-                    Matcher matcher = pattern.matcher(filename);
-                    if (matcher.matches()) {
-                        formats.add(matcher.group(1));
-                    }
-                });
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .forEach(filename -> {
+                        Matcher matcher = pattern.matcher(filename);
+                        if (matcher.matches()) {
+                            formats.add(matcher.group(1));
+                        }
+                    });
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to scan template directory: " + directory, e);
         }

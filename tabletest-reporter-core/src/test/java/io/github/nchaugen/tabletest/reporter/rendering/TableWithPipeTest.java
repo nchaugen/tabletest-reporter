@@ -32,8 +32,7 @@ public class TableWithPipeTest {
     void supported_in_asciidoc() {
         String rendered = templateEngine.renderTable(ASCIIDOC, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 == ++Escaped pipes++
 
                 [%header,cols="1,1,1"]
@@ -47,8 +46,7 @@ public class TableWithPipeTest {
                 a|++Text with ++\\|++ character++
 
                 |===
-                """
-            );
+                """);
         assertValidAsciiDoc(rendered);
     }
 
@@ -56,16 +54,13 @@ public class TableWithPipeTest {
     void supported_in_markdown() {
         String rendered = templateEngine.renderTable(MARKDOWN, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 ## Escaped pipes
 
                 | a | b | a\\|b |
                 | --- | --- | --- |
                 | \\| | \\| | Text with \\| character |
-                """
-            );
+                """);
         assertValidMarkdown(rendered);
     }
-
 }

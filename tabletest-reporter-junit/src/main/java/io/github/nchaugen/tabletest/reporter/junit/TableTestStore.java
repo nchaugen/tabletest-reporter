@@ -31,7 +31,7 @@ import java.util.List;
 class TableTestStore {
 
     private static final ExtensionContext.Namespace NAMESPACE =
-        ExtensionContext.Namespace.create(TableTestPublisher.class);
+            ExtensionContext.Namespace.create(TableTestPublisher.class);
 
     /**
      * Stores a row result for a test invocation.
@@ -39,10 +39,8 @@ class TableTestStore {
     void storeRowResult(ExtensionContext context, RowResult result) {
         ExtensionContext.Store store = getTestMethodStore(context);
         @SuppressWarnings("unchecked")
-        List<RowResult> results = (List<RowResult>) store.getOrComputeIfAbsent(
-            "rowResults",
-            key -> new ArrayList<RowResult>()
-        );
+        List<RowResult> results =
+                (List<RowResult>) store.getOrComputeIfAbsent("rowResults", key -> new ArrayList<RowResult>());
         results.add(result);
     }
 
@@ -73,10 +71,8 @@ class TableTestStore {
     @SuppressWarnings("unchecked")
     void addMethodForPublishing(ExtensionContext methodContext) {
         ExtensionContext.Store classStore = getClassStore(methodContext);
-        List<ExtensionContext> contexts = (List<ExtensionContext>) classStore.getOrComputeIfAbsent(
-            "methodContexts",
-            key -> new ArrayList<ExtensionContext>()
-        );
+        List<ExtensionContext> contexts = (List<ExtensionContext>)
+                classStore.getOrComputeIfAbsent("methodContexts", key -> new ArrayList<ExtensionContext>());
         contexts.add(methodContext);
     }
 
@@ -110,8 +106,6 @@ class TableTestStore {
     }
 
     private ExtensionContext.Store getClassStore(ExtensionContext context) {
-        return context.getRoot().getStore(ExtensionContext.Namespace.create(
-            context.getRequiredTestClass()
-        ));
+        return context.getRoot().getStore(ExtensionContext.Namespace.create(context.getRequiredTestClass()));
     }
 }

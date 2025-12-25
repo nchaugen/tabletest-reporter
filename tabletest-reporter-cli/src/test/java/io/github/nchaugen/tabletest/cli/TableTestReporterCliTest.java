@@ -24,11 +24,10 @@ class TableTestReporterCliTest {
         Path outputDir = tempDir.resolve("output");
 
         int exitCode = runCli(
-            "--input", inputDir.toString(),
-            "--output", outputDir.toString(),
-            "--template-dir", templateDir.toString(),
-            "--format", "asciidoc"
-        );
+                "--input", inputDir.toString(),
+                "--output", outputDir.toString(),
+                "--template-dir", templateDir.toString(),
+                "--format", "asciidoc");
 
         assertThat(exitCode).isZero();
 
@@ -47,10 +46,9 @@ class TableTestReporterCliTest {
         Path outputDir = tempDir.resolve("output");
 
         int exitCode = runCli(
-            "--input", inputDir.toString(),
-            "--output", outputDir.toString(),
-            "--format", "asciidoc"
-        );
+                "--input", inputDir.toString(),
+                "--output", outputDir.toString(),
+                "--format", "asciidoc");
 
         assertThat(exitCode).isZero();
 
@@ -69,11 +67,10 @@ class TableTestReporterCliTest {
         Path nonexistentDir = tempDir.resolve("nonexistent");
 
         int exitCode = runCli(
-            "--input", inputDir.toString(),
-            "--output", outputDir.toString(),
-            "--template-dir", nonexistentDir.toString(),
-            "--format", "asciidoc"
-        );
+                "--input", inputDir.toString(),
+                "--output", outputDir.toString(),
+                "--template-dir", nonexistentDir.toString(),
+                "--format", "asciidoc");
 
         assertThat(exitCode).isEqualTo(2);
     }
@@ -86,11 +83,10 @@ class TableTestReporterCliTest {
         Files.writeString(notADirectory, "not a directory");
 
         int exitCode = runCli(
-            "--input", inputDir.toString(),
-            "--output", outputDir.toString(),
-            "--template-dir", notADirectory.toString(),
-            "--format", "asciidoc"
-        );
+                "--input", inputDir.toString(),
+                "--output", outputDir.toString(),
+                "--template-dir", notADirectory.toString(),
+                "--format", "asciidoc");
 
         assertThat(exitCode).isEqualTo(2);
     }
@@ -101,10 +97,9 @@ class TableTestReporterCliTest {
         Path outputDir = tempDir.resolve("output");
 
         int exitCode = runCli(
-            "--input", inputDir.toString(),
-            "--output", outputDir.toString(),
-            "--format", "markdown"
-        );
+                "--input", inputDir.toString(),
+                "--output", outputDir.toString(),
+                "--format", "markdown");
 
         assertThat(exitCode).isZero();
 
@@ -122,10 +117,9 @@ class TableTestReporterCliTest {
         Path outputDir = tempDir.resolve("output");
 
         int exitCode = runCli(
-            "--input", inputDir.toString(),
-            "--output", outputDir.toString(),
-            "--format", "md"
-        );
+                "--input", inputDir.toString(),
+                "--output", outputDir.toString(),
+                "--format", "md");
 
         assertThat(exitCode).isZero();
         assertThat(findGeneratedFile(outputDir, ".md")).exists();
@@ -137,10 +131,9 @@ class TableTestReporterCliTest {
         Path outputDir = tempDir.resolve("output");
 
         int exitCode = runCli(
-            "--input", inputDir.toString(),
-            "--output", outputDir.toString(),
-            "--format", "adoc"
-        );
+                "--input", inputDir.toString(),
+                "--output", outputDir.toString(),
+                "--format", "adoc");
 
         assertThat(exitCode).isZero();
         assertThat(findGeneratedFile(outputDir, ".adoc")).exists();
@@ -152,10 +145,9 @@ class TableTestReporterCliTest {
         Path outputDir = tempDir.resolve("output");
 
         int exitCode = runCli(
-            "--input", inputDir.toString(),
-            "--output", outputDir.toString(),
-            "--format", "invalid-format"
-        );
+                "--input", inputDir.toString(),
+                "--output", outputDir.toString(),
+                "--format", "invalid-format");
 
         assertThat(exitCode).isEqualTo(2);
     }
@@ -166,9 +158,8 @@ class TableTestReporterCliTest {
         Path outputDir = tempDir.resolve("output");
 
         int exitCode = runCli(
-            "--input", nonexistentInput.toString(),
-            "--output", outputDir.toString()
-        );
+                "--input", nonexistentInput.toString(),
+                "--output", outputDir.toString());
 
         assertThat(exitCode).isEqualTo(2);
     }
@@ -245,10 +236,9 @@ class TableTestReporterCliTest {
 
     private Path findGeneratedFile(Path outputDir, String extension) throws IOException {
         try (var files = Files.list(outputDir)) {
-            return files
-                .filter(p -> p.toString().endsWith(extension))
-                .findFirst()
-                .orElseThrow();
+            return files.filter(p -> p.toString().endsWith(extension))
+                    .findFirst()
+                    .orElseThrow();
         }
     }
 }

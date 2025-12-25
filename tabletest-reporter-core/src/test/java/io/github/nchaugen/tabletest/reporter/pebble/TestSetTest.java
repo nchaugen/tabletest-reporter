@@ -16,16 +16,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TestSetTest {
 
     private static final PebbleEngine ENGINE = new PebbleEngine.Builder()
-        .extension(
-            new AbstractExtension() {
+            .extension(new AbstractExtension() {
                 @Override
                 public Map<String, Test> getTests() {
                     return Map.of(TestSet.NAME, new TestSet());
                 }
             })
-        .loader(new StringLoader())
-        .build();
-
+            .loader(new StringLoader())
+            .build();
 
     @TableTest("""
         Scenario                | Input        | Result?
@@ -45,9 +43,8 @@ class TestSetTest {
         Map<String, Object> context = new HashMap<>();
         context.put("input", input);
         StringWriter writer = new StringWriter();
-        ENGINE.getTemplate("{% if input is set %}set{% else %}not set{% endif %}").evaluate(writer, context);
+        ENGINE.getTemplate("{% if input is set %}set{% else %}not set{% endif %}")
+                .evaluate(writer, context);
         assertThat(writer.toString()).isEqualTo(expected);
     }
-
-
 }

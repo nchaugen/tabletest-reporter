@@ -43,8 +43,7 @@ public class TableWithNestedSetTest {
     void supported_in_asciidoc() {
         String rendered = templateEngine.renderTable(ASCIIDOC, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 == ++Nested set values++
 
                 [%header,cols="1"]
@@ -66,8 +65,7 @@ public class TableWithNestedSetTest {
                 ** ++%++
 
                 |===
-                """
-            );
+                """);
         assertValidAsciiDoc(rendered);
     }
 
@@ -75,16 +73,13 @@ public class TableWithNestedSetTest {
     void supported_in_markdown() {
         String rendered = templateEngine.renderTable(MARKDOWN, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 ## Nested set values
 
                 | a |
                 | --- |
                 | {{1, 2, 3}, {a, b, c}, {#, $, %}} |
-                """
-            );
+                """);
         assertValidMarkdown(rendered);
     }
-
 }

@@ -79,25 +79,26 @@ public class TableTestReporter {
         return context;
     }
 
-    private List<Map<String, Object>> buildContentsForTemplate(List<ReportNode> contents, Path inDir, Path relativeOutPath) {
+    private List<Map<String, Object>> buildContentsForTemplate(
+            List<ReportNode> contents, Path inDir, Path relativeOutPath) {
         return contents.stream()
-            .map(child -> {
-                Map<String, Object> contentMap = new HashMap<>();
-                contentMap.put("name", child.name());
-                contentMap.put("path", relativeOutPath.relativize(Path.of("./" + child.outPath())));
-                contentMap.put("type", child.type());
+                .map(child -> {
+                    Map<String, Object> contentMap = new HashMap<>();
+                    contentMap.put("name", child.name());
+                    contentMap.put("path", relativeOutPath.relativize(Path.of("./" + child.outPath())));
+                    contentMap.put("type", child.type());
 
-                if (child.resource() != null) {
-                    Map<String, Object> childContext = loadContext(inDir, child.resource());
-                    Object title = childContext.get("title");
-                    if (title != null) {
-                        contentMap.put("title", title);
+                    if (child.resource() != null) {
+                        Map<String, Object> childContext = loadContext(inDir, child.resource());
+                        Object title = childContext.get("title");
+                        if (title != null) {
+                            contentMap.put("title", title);
+                        }
                     }
-                }
 
-                return contentMap;
-            })
-            .toList();
+                    return contentMap;
+                })
+                .toList();
     }
 
     private static void writeContent(Path outPath, String content) {
@@ -111,10 +112,8 @@ public class TableTestReporter {
 
     private Map<String, Object> loadContext(Path inDir, Object resourcePath) {
         return new HashMap<>(
-            resourcePath != null
-                ? contextLoader.fromYaml(inDir.resolve((String) resourcePath))
-                : Collections.emptyMap()
-        );
+                resourcePath != null
+                        ? contextLoader.fromYaml(inDir.resolve((String) resourcePath))
+                        : Collections.emptyMap());
     }
-
 }

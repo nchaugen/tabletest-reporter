@@ -29,13 +29,8 @@ import java.util.Map;
  * @param rowResults  The test results for each row
  */
 public record TableTestData(
-    String title,
-    String description,
-    List<CellData> headers,
-    List<RowData> rows,
-    List<RowResultData> rowResults
-) {
-    
+        String title, String description, List<CellData> headers, List<RowData> rows, List<RowResultData> rowResults) {
+
     /**
      * Converts this table test data to a map suitable for YAML serialization.
      */
@@ -43,23 +38,19 @@ public record TableTestData(
         Map<String, Object> map = new LinkedHashMap<>();
         if (title != null) map.put("title", title);
         if (description != null) map.put("description", description);
-        
-        map.put("headers", headers.stream()
-            .map(CellData::toMap)
-            .toList());
-        
-        map.put("rows", rows.stream()
-            .map(row -> row.cells().stream()
-                .map(CellData::toMap)
-                .toList())
-            .toList());
-        
+
+        map.put("headers", headers.stream().map(CellData::toMap).toList());
+
+        map.put(
+                "rows",
+                rows.stream()
+                        .map(row -> row.cells().stream().map(CellData::toMap).toList())
+                        .toList());
+
         if (!rowResults.isEmpty()) {
-            map.put("rowResults", rowResults.stream()
-                .map(RowResultData::toMap)
-                .toList());
+            map.put("rowResults", rowResults.stream().map(RowResultData::toMap).toList());
         }
-        
+
         return map;
     }
 }

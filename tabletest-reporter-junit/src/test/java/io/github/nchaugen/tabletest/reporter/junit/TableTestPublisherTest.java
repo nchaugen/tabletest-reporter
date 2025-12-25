@@ -42,25 +42,20 @@ class TableTestPublisherTest {
 
     @Test
     void shouldPublishYamlForPassingTableTest() throws IOException {
-        var results = EngineTestKit
-            .engine("junit-jupiter")
-            .selectors(selectClass(AllRowsPassTest.class))
-            .configurationParameter("junit.platform.output.dir", tempDir.toString())
-            .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(createOutputDirectoryCreator())
-            .execute();
+        var results = EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(AllRowsPassTest.class))
+                .configurationParameter("junit.platform.output.dir", tempDir.toString())
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
 
         results.testEvents()
-            .assertStatistics(stats -> stats
-                .started(3)
-                .succeeded(3)
-                .failed(0));
+                .assertStatistics(stats -> stats.started(3).succeeded(3).failed(0));
 
         Path yamlFile = findYamlFile(tempDir, "All rows pass");
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
-        assertEquals(
-            """
+        assertEquals("""
                 "title": "All rows pass"
                 "description": "Verifying published result when all rows pass."
                 "headers":
@@ -114,32 +109,25 @@ class TableTestPublisherTest {
                 - "rowIndex": !!int "3"
                   "passed": !!bool "true"
                   "displayName": "[3] 6"
-                """,
-            Files.readString(yamlFile)
-        );
+                """, Files.readString(yamlFile));
     }
 
     @Test
     void shouldPublishYamlForFailingTableTest() throws IOException {
-        var results = EngineTestKit
-            .engine("junit-jupiter")
-            .selectors(selectClass(OneRowFailsTest.class))
-            .configurationParameter("junit.platform.output.dir", tempDir.toString())
-            .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(createOutputDirectoryCreator())
-            .execute();
+        var results = EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(OneRowFailsTest.class))
+                .configurationParameter("junit.platform.output.dir", tempDir.toString())
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
 
         results.testEvents()
-            .assertStatistics(stats -> stats
-                .started(3)
-                .succeeded(2)
-                .failed(1));
+                .assertStatistics(stats -> stats.started(3).succeeded(2).failed(1));
 
         Path yamlFile = findYamlFile(tempDir, "One row fails");
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
-        assertEquals(
-            """
+        assertEquals("""
                 "title": "One row fails"
                 "description": "Verifying published result when there is a row failure."
                 "headers":
@@ -205,9 +193,7 @@ class TableTestPublisherTest {
                 - "rowIndex": !!int "3"
                   "passed": !!bool "true"
                   "displayName": "[3] Should also pass"
-                """,
-            Files.readString(yamlFile)
-        );
+                """, Files.readString(yamlFile));
     }
 
     private @NonNull OutputDirectoryCreator createOutputDirectoryCreator() {
@@ -226,53 +212,41 @@ class TableTestPublisherTest {
 
     @Test
     void shouldPublishTestClassYaml() throws IOException {
-        var results = EngineTestKit
-            .engine("junit-jupiter")
-            .selectors(selectClass(AllRowsPassTest.class))
-            .configurationParameter("junit.platform.output.dir", tempDir.toString())
-            .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(createOutputDirectoryCreator())
-            .execute();
+        var results = EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(AllRowsPassTest.class))
+                .configurationParameter("junit.platform.output.dir", tempDir.toString())
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
 
         results.testEvents()
-            .assertStatistics(stats -> stats
-                .started(3)
-                .succeeded(3)
-                .failed(0));
+                .assertStatistics(stats -> stats.started(3).succeeded(3).failed(0));
 
         Path classYamlFile = findYamlFile(tempDir, "Verifying YAML Output");
         assertTrue(Files.exists(classYamlFile), "Class YAML file should exist");
 
-        assertEquals(
-            """
+        assertEquals("""
                 "title": "Verifying YAML Output"
                 "description": "This test class verified that the published YAML files contain the expected output."
-                """,
-            Files.readString(classYamlFile)
-        );
+                """, Files.readString(classYamlFile));
     }
 
     @Test
     void shouldPublishYamlForSetExpansionWithScenario() throws IOException {
-        var results = EngineTestKit
-            .engine("junit-jupiter")
-            .selectors(selectClass(SetExpansionTest.class))
-            .configurationParameter("junit.platform.output.dir", tempDir.toString())
-            .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(createOutputDirectoryCreator())
-            .execute();
+        var results = EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(SetExpansionTest.class))
+                .configurationParameter("junit.platform.output.dir", tempDir.toString())
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
 
         results.testEvents()
-            .assertStatistics(stats -> stats
-                .started(8)
-                .succeeded(6)
-                .failed(2));
+                .assertStatistics(stats -> stats.started(8).succeeded(6).failed(2));
 
         Path yamlFile = findYamlFile(tempDir, "One expanded row with scenario name fails");
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
-        assertEquals(
-            """
+        assertEquals("""
                 "title": "One expanded row with scenario name fails"
                 "headers":
                 - "value": "Scenario"
@@ -342,32 +316,25 @@ class TableTestPublisherTest {
                 - "rowIndex": !!int "4"
                   "passed": !!bool "true"
                   "displayName": "[4] Should also pass"
-                """,
-            Files.readString(yamlFile)
-        );
+                """, Files.readString(yamlFile));
     }
 
     @Test
     void shouldPublishYamlForSetExpansionWithoutScenario() throws IOException {
-        var results = EngineTestKit
-            .engine("junit-jupiter")
-            .selectors(selectClass(SetExpansionTest.class))
-            .configurationParameter("junit.platform.output.dir", tempDir.toString())
-            .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(createOutputDirectoryCreator())
-            .execute();
+        var results = EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(SetExpansionTest.class))
+                .configurationParameter("junit.platform.output.dir", tempDir.toString())
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
 
         results.testEvents()
-            .assertStatistics(stats -> stats
-                .started(8)
-                .succeeded(6)
-                .failed(2));
+                .assertStatistics(stats -> stats.started(8).succeeded(6).failed(2));
 
         Path yamlFile = findYamlFile(tempDir, "One expanded row without scenario name fails");
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
-        assertEquals(
-            """
+        assertEquals("""
                 "title": "One expanded row without scenario name fails"
                 "headers":
                 - "value": "a"
@@ -422,21 +389,19 @@ class TableTestPublisherTest {
                 - "rowIndex": !!int "4"
                   "passed": !!bool "true"
                   "displayName": "[4] 3, 3, 6"
-                """,
-            Files.readString(yamlFile)
-        );
+                """, Files.readString(yamlFile));
     }
 
     private Path findYamlFile(Path baseDir, String name) throws IOException {
         // Transform the name to match the filename transformation applied by TableTestPublisher
         String transformedName = FilenameTransformer.transform(name);
         try (var paths = Files.walk(baseDir)) {
-            return paths
-                .filter(p -> p.toString().contains(transformedName))
-                .filter(p -> p.getFileName().toString().startsWith("TABLETEST-"))
-                .filter(p -> p.getFileName().toString().endsWith(".yaml"))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("TABLETEST-*.yaml file not found for " + name + " (transformed to: " + transformedName + ")"));
+            return paths.filter(p -> p.toString().contains(transformedName))
+                    .filter(p -> p.getFileName().toString().startsWith("TABLETEST-"))
+                    .filter(p -> p.getFileName().toString().endsWith(".yaml"))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError("TABLETEST-*.yaml file not found for " + name
+                            + " (transformed to: " + transformedName + ")"));
         }
     }
 

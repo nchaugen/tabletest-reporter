@@ -32,15 +32,14 @@ public class ContextLoader {
     private final Load yaml;
 
     public ContextLoader() {
-        LoadSettings settings = LoadSettings.builder()
-            .setAllowNonScalarKeys(true)
-            .build();
+        LoadSettings settings =
+                LoadSettings.builder().setAllowNonScalarKeys(true).build();
 
         yaml = new Load(settings);
     }
 
     public Map<String, Object> fromYaml(Path path) {
-        try (var lines = Files.lines(path, StandardCharsets.UTF_8)){
+        try (var lines = Files.lines(path, StandardCharsets.UTF_8)) {
             return fromYaml(lines.collect(joining("\n")));
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to read YAML from " + path, e);

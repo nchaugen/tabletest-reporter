@@ -28,34 +28,38 @@ import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 @Command(
-    name = "tabletest-reporter",
-    description = "Generate AsciiDoc or Markdown documentation from TableTest YAML outputs.",
-    mixinStandardHelpOptions = true,
-    version = {"tabletest-reporter CLI"}
-)
+        name = "tabletest-reporter",
+        description = "Generate AsciiDoc or Markdown documentation from TableTest YAML outputs.",
+        mixinStandardHelpOptions = true,
+        version = {"tabletest-reporter CLI"})
 public final class TableTestReporterCli implements Callable<Integer> {
 
-    @Option(names = {"-l", "--list-formats"},
-        description = "List all available output formats and exit")
+    @Option(
+            names = {"-l", "--list-formats"},
+            description = "List all available output formats and exit")
     private boolean listFormats;
 
-    @Option(names = {"-f", "--format"},
-        description = "Report format: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})",
-        defaultValue = "asciidoc")
+    @Option(
+            names = {"-f", "--format"},
+            description = "Report format: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})",
+            defaultValue = "asciidoc")
     private String format;
 
-    @Option(names = {"-i", "--input"},
-        description = "Input directory containing TableTest YAML files (default: <buildDir>/junit-jupiter)",
-        defaultValue = "")
+    @Option(
+            names = {"-i", "--input"},
+            description = "Input directory containing TableTest YAML files (default: <buildDir>/junit-jupiter)",
+            defaultValue = "")
     private String inputDirArg;
 
-    @Option(names = {"-o", "--output"},
-        description = "Output directory for generated documentation (default: <buildDir>/generated-docs/tabletest)",
-        defaultValue = "")
+    @Option(
+            names = {"-o", "--output"},
+            description = "Output directory for generated documentation (default: <buildDir>/generated-docs/tabletest)",
+            defaultValue = "")
     private String outputDirArg;
 
-    @Option(names = {"-t", "--template-dir"},
-        description = "Custom template directory for overriding built-in templates")
+    @Option(
+            names = {"-t", "--template-dir"},
+            description = "Custom template directory for overriding built-in templates")
     private String templateDirArg;
 
     public static void main(String[] args) {
@@ -75,11 +79,11 @@ public final class TableTestReporterCli implements Callable<Integer> {
         try {
             Path buildDir = resolveBuildDir();
             Path in = inputDirArg == null || inputDirArg.isBlank()
-                ? buildDir.resolve("junit-jupiter")
-                : Path.of(inputDirArg);
+                    ? buildDir.resolve("junit-jupiter")
+                    : Path.of(inputDirArg);
             Path out = outputDirArg == null || outputDirArg.isBlank()
-                ? buildDir.resolve("generated-docs").resolve("tabletest")
-                : Path.of(outputDirArg);
+                    ? buildDir.resolve("generated-docs").resolve("tabletest")
+                    : Path.of(outputDirArg);
 
             if (!Files.exists(in)) {
                 System.err.printf("Input directory does not exist: %s%n", in.toAbsolutePath());
@@ -101,9 +105,7 @@ public final class TableTestReporterCli implements Callable<Integer> {
     }
 
     private TableTestReporter createReporter(Path templateDir) {
-        return templateDir != null
-            ? new TableTestReporter(templateDir)
-            : new TableTestReporter();
+        return templateDir != null ? new TableTestReporter(templateDir) : new TableTestReporter();
     }
 
     private Path resolveTemplateDir() {

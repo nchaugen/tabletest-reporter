@@ -41,7 +41,6 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
 
     private final TableTestStore store = new TableTestStore();
 
-
     @Override
     public void testSuccessful(ExtensionContext context) {
         recordInvocationResult(context, true, null);
@@ -64,9 +63,7 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
                     // Store this invocation's result
                     int rowIndex = getInvocationIndex(context);
                     store.storeRowResult(
-                        parentContext,
-                        new RowResult(rowIndex, passed, cause, context.getDisplayName())
-                    );
+                            parentContext, new RowResult(rowIndex, passed, cause, context.getDisplayName()));
                 }
             });
         });
@@ -134,10 +131,9 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
         TableTestData data = metadata.toTableTestData(table);
 
         publishFile(
-            context,
-            getName(context, () -> context.getRequiredTestMethod().getName()),
-            (Path path) -> YAML_RENDERER.render(data)
-        );
+                context,
+                getName(context, () -> context.getRequiredTestMethod().getName()),
+                (Path path) -> YAML_RENDERER.render(data));
     }
 
     public static void publishTestClass(ExtensionContext context) {
@@ -145,33 +141,30 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
         TestClassData data = new TestClassData(title, findDescription(context));
 
         publishFile(
-            context,
-            getName(context, () -> context.getRequiredTestClass().getSimpleName()),
-            (Path path) -> YAML_RENDERER.render(data)
-        );
+                context,
+                getName(context, () -> context.getRequiredTestClass().getSimpleName()),
+                (Path path) -> YAML_RENDERER.render(data));
     }
 
     private static void publishFile(ExtensionContext context, String fileName, Function<Path, String> renderer) {
         String transformedFileName = FilenameTransformer.transform(fileName);
         context.publishFile(
-            FILENAME_PREFIX + transformedFileName + YAML_EXTENSION,
-            MediaType.TEXT_PLAIN_UTF_8,
-            path -> Files.writeString(path, renderer.apply(path))
-        );
+                FILENAME_PREFIX + transformedFileName + YAML_EXTENSION,
+                MediaType.TEXT_PLAIN_UTF_8,
+                path -> Files.writeString(path, renderer.apply(path)));
     }
 
     private static @NonNull String getName(ExtensionContext context, Supplier<String> defaultName) {
         return context.getElement()
-            .filter(it -> it.isAnnotationPresent(DisplayName.class))
-            .map(__ -> context.getDisplayName())
-            .orElseGet(defaultName);
+                .filter(it -> it.isAnnotationPresent(DisplayName.class))
+                .map(__ -> context.getDisplayName())
+                .orElseGet(defaultName);
     }
 
     private static String findDescription(ExtensionContext context) {
         return context.getTestClass()
-            .map(it -> it.getAnnotation(Description.class))
-            .map(Description::value)
-            .orElse(null);
+                .map(it -> it.getAnnotation(Description.class))
+                .map(Description::value)
+                .orElse(null);
     }
-
 }

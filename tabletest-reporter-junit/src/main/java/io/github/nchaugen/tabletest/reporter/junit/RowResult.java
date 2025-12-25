@@ -23,5 +23,4 @@ package io.github.nchaugen.tabletest.reporter.junit;
  * @param cause        The exception if the test failed, null if passed
  * @param displayName  The display name of the test invocation
  */
-public record RowResult(int rowIndex, boolean passed, Throwable cause, String displayName) {
-}
+public record RowResult(int rowIndex, boolean passed, Throwable cause, String displayName) {}

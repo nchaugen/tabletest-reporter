@@ -38,10 +38,9 @@ public class CustomTemplateTest {
 
         // Render with custom template
         Map<String, Object> context = Map.of(
-            "title", "Test Table",
-            "headers", java.util.List.of(Map.of("value", "a")),
-            "rows", java.util.List.of()
-        );
+                "title", "Test Table",
+                "headers", java.util.List.of(Map.of("value", "a")),
+                "rows", java.util.List.of());
 
         String rendered = engine.renderTable(BuiltInFormat.ASCIIDOC, context);
 
@@ -62,10 +61,9 @@ public class CustomTemplateTest {
 
         // Render with built-in template
         Map<String, Object> context = Map.of(
-            "title", "Test Table",
-            "headers", java.util.List.of(Map.of("value", "a")),
-            "rows", java.util.List.of()
-        );
+                "title", "Test Table",
+                "headers", java.util.List.of(Map.of("value", "a")),
+                "rows", java.util.List.of());
 
         String rendered = engine.renderTable(BuiltInFormat.ASCIIDOC, context);
 

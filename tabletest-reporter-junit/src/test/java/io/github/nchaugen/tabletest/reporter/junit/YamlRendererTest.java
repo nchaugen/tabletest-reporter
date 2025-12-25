@@ -15,23 +15,18 @@ public class YamlRendererTest {
     @Test
     void shouldRenderClass() {
         assertEquals(
-            """
+                """
                 "title": "Title of the Test Class"
                 "description": "A free-text description explaining what these tables are about."
                 """,
-            renderer.render(
-                new TestClassData(
-                    "Title of the Test Class",
-                    "A free-text description explaining what these tables are about."
-                )
-            )
-        );
+                renderer.render(new TestClassData(
+                        "Title of the Test Class", "A free-text description explaining what these tables are about.")));
     }
 
     @Test
     void shouldRenderTitleAndDescriptionIfPresent() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "title": "Table Title"
                 "description": "This is a description of the __table__.\\n\\nIt can span multiple lines, and include lists and formatting:\\n\\n- List item 1\\n- List item 2\\n"
                 "headers":
@@ -41,31 +36,26 @@ public class YamlRendererTest {
                 - - "value": "1"
                   - "value": "2"
                 """,
-            renderer.render(
-                new TableMetadata()
-                    .withTitle("Table Title")
-                    .withDescription("""
+                renderer.render(new TableMetadata()
+                        .withTitle("Table Title")
+                        .withDescription("""
                         This is a description of the __table__.
-                        
+
                         It can span multiple lines, and include lists and formatting:
-                        
+
                         - List item 1
                         - List item 2
                         """)
-                    .toTableTestData(
-                    TableParser.parse("""
+                        .toTableTestData(TableParser.parse("""
                         a | b
                         1 | 2
-                        """)
-                )
-            )
-        );
+                        """))));
     }
 
     @Test
     void shouldAddRoleForScenarioCells() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "headers":
                 - "value": "scenario"
                   "roles":
@@ -90,24 +80,19 @@ public class YamlRendererTest {
                     "roles":
                     - "expectation"
                 """,
-            renderer.render(
-                new TableMetadata()
-                    .withColumnRoles(new ColumnRoles(0, Set.of(2)))
-                    .toTableTestData(
-                        TableParser.parse("""
+                renderer.render(new TableMetadata()
+                        .withColumnRoles(new ColumnRoles(0, Set.of(2)))
+                        .toTableTestData(TableParser.parse("""
                             scenario | input | output?
                             add      | 5     | 5
                             multiply | 3     | 15
-                            """)
-                    )
-            )
-        );
+                            """))));
     }
 
     @Test
     void shouldAddRoleForExpectationCells() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "headers":
                 - "value": "a?"
                   "roles":
@@ -149,23 +134,18 @@ public class YamlRendererTest {
                     "roles":
                     - "expectation"
                 """,
-            renderer.render(
-                new TableMetadata()
-                    .withColumnRoles(new ColumnRoles(0, Set.of(0, 1, 2, 3, 4)))
-                    .toTableTestData(
-                        TableParser.parse("""
+                renderer.render(new TableMetadata()
+                        .withColumnRoles(new ColumnRoles(0, Set.of(0, 1, 2, 3, 4)))
+                        .toTableTestData(TableParser.parse("""
                             a? | b?      | c? | d? | e?
                             {} | [1,2,3] | 3  |    | [a:1,b:2,c:3]
-                            """)
-                    )
-            )
-        );
+                            """))));
     }
 
     @Test
     void shouldRenderNullEmptyStringAndExplicitWhitespace() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "headers":
                 - "value": "a"
                 - "value": "b"
@@ -180,22 +160,16 @@ public class YamlRendererTest {
                   - "value": "a bc  def"
                   - "value": "\\t"
                   - "value": "\\t "
-                """,
-            renderer.render(
-                new TableMetadata().toTableTestData(
-                    TableParser.parse("""
+                """, renderer.render(new TableMetadata().toTableTestData(TableParser.parse("""
                         a | b  | c d   | " e "     | f    | g
                           | "" | "   " | a bc  def | '\t' | '\t '
-                        """)
-                )
-            )
-        );
+                        """))));
     }
 
     @Test
     void shouldRenderEscapedPipe() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "headers":
                 - "value": "++"
                 - "value": "+"
@@ -204,22 +178,16 @@ public class YamlRendererTest {
                 - - "value": "|"
                   - "value": "|"
                   - "value": "Text with | character"
-                """,
-            renderer.render(
-                new TableMetadata().toTableTestData(
-                    TableParser.parse("""
+                """, renderer.render(new TableMetadata().toTableTestData(TableParser.parse("""
                         ++  | +   | 'a|b'
                         "|" | '|' | "Text with | character"
-                        """)
-                )
-            )
-        );
+                        """))));
     }
 
     @Test
     void shouldRenderList() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "headers":
                 - "value": "a"
                 - "value": "b"
@@ -233,22 +201,16 @@ public class YamlRendererTest {
                   - "value":
                     - "|"
                     - "|"
-                """,
-            renderer.render(
-                new TableMetadata().toTableTestData(
-                    TableParser.parse("""
+                """, renderer.render(new TableMetadata().toTableTestData(TableParser.parse("""
                         a  | b         | c
                         [] | [1,2,3] | ['|', "|"]
-                        """)
-                )
-            )
-        );
+                        """))));
     }
 
     @Test
     void shouldRenderEmptyListWhenNested() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "headers":
                 - "value": "a"
                 - "value": "b"
@@ -259,22 +221,16 @@ public class YamlRendererTest {
                     - []
                   - "value":
                     - - []
-                """,
-            renderer.render(
-                new TableMetadata().toTableTestData(
-                    TableParser.parse("""
+                """, renderer.render(new TableMetadata().toTableTestData(TableParser.parse("""
                         a  | b    | c
                         [] | [[]] | [[[]]]
-                        """)
-                )
-            )
-        );
+                        """))));
     }
 
     @Test
     void shouldRenderNestedLists() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "headers":
                 - "value": "a"
                 "rows":
@@ -288,22 +244,16 @@ public class YamlRendererTest {
                     - - "#"
                       - "$"
                       - "%"
-                """,
-            renderer.render(
-                new TableMetadata().toTableTestData(
-                    TableParser.parse("""
+                """, renderer.render(new TableMetadata().toTableTestData(TableParser.parse("""
                         a
                         [[1,2,3],[a,b,c],[#,$,%]]
-                        """)
-                )
-            )
-        );
+                        """))));
     }
 
     @Test
     void shouldRenderSet() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "headers":
                 - "value": "a"
                 - "value": "b"
@@ -316,22 +266,16 @@ public class YamlRendererTest {
                       "3": !!null "null"
                   - "value": !!set
                       "||": !!null "null"
-                """,
-            renderer.render(
-                new TableMetadata().toTableTestData(
-                    TableParser.parse("""
+                """, renderer.render(new TableMetadata().toTableTestData(TableParser.parse("""
                         a  | b   | c
                         {} | {1,2,3} | {"||"}
-                        """)
-                )
-            )
-        );
+                        """))));
     }
 
     @Test
     void shouldRenderNestedSets() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "headers":
                 - "value": "a"
                 "rows":
@@ -351,22 +295,16 @@ public class YamlRendererTest {
                         "$": !!null "null"
                         "%": !!null "null"
                       : !!null "null"
-                """,
-            renderer.render(
-                new TableMetadata().toTableTestData(
-                    TableParser.parse("""
+                """, renderer.render(new TableMetadata().toTableTestData(TableParser.parse("""
                         a
                         {{1,2,3}, {a,b,c}, {#,$,%}}
-                        """)
-                )
-            )
-        );
+                        """))));
     }
 
     @Test
     void shouldRenderMapAsDescriptionList() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "headers":
                 - "value": "a"
                 - "value": "b"
@@ -379,22 +317,16 @@ public class YamlRendererTest {
                       "c": "3"
                   - "value":
                       "b": "||"
-                """,
-            renderer.render(
-                new TableMetadata().toTableTestData(
-                    TableParser.parse("""
+                """, renderer.render(new TableMetadata().toTableTestData(TableParser.parse("""
                         a   | b             | c
                         [:] | [a:1,b:2,c:3] | [b: "||"]
-                        """)
-                )
-            )
-        );
+                        """))));
     }
 
     @Test
     void shouldRenderNestedMaps() {
-        assertEquals(//language=yaml
-            """
+        assertEquals( // language=yaml
+                """
                 "headers":
                 - "value": "a"
                 - "value": "b"
@@ -407,22 +339,15 @@ public class YamlRendererTest {
                         "A": "1"
                       "b":
                         "B": "2"
-                """,
-            renderer.render(
-                new TableMetadata().toTableTestData(
-                    TableParser.parse("""
+                """, renderer.render(new TableMetadata().toTableTestData(TableParser.parse("""
                         a                | b
                         [a: [:], b: [:]] | [a: [A: 1],b: [B: 2]]
-                        """)
-                )
-            )
-        );
+                        """))));
     }
 
     @Test
     void shouldRenderNestedMixedCollections() {
-        assertEquals(
-            """
+        assertEquals("""
                 "headers":
                 - "value": "a"
                 - "value": "b"
@@ -440,38 +365,26 @@ public class YamlRendererTest {
                       : !!null "null"
                       ? "B": "2"
                       : !!null "null"
-                """,
-            renderer.render(
-                new TableMetadata().toTableTestData(
-                    TableParser.parse("""
+                """, renderer.render(new TableMetadata().toTableTestData(TableParser.parse("""
                         a                            | b
                         [a: [1, 2], b: {3, 4}, c: 5] | {[A: 1], [B: 2]}
-                        """)
-                )
-            )
-        );
+                        """))));
     }
 
     @Test
     void shouldIncludeRowResultsInYaml() {
 
-        String yaml = renderer.render(
-            new TableMetadata()
+        String yaml = renderer.render(new TableMetadata()
                 .withRowResults(List.of(
-                    new RowResult(0, true, null, "test[1]"),
-                    new RowResult(1, false, new AssertionError("Expected 4"), "test[2]")
-                ))
-                .toTableTestData(
-                TableParser.parse("""
+                        new RowResult(0, true, null, "test[1]"),
+                        new RowResult(1, false, new AssertionError("Expected 4"), "test[2]")))
+                .toTableTestData(TableParser.parse("""
                     a | b
                     1 | 2
                     3 | 4
-                    """)
-            )
-        );
+                    """)));
 
-        assertEquals(
-            """
+        assertEquals("""
                 "headers":
                 - "value": "a"
                 - "value": "b"
@@ -488,10 +401,6 @@ public class YamlRendererTest {
                   "passed": !!bool "false"
                   "displayName": "test[2]"
                   "errorMessage": "Expected 4"
-                """, yaml
-        );
+                """, yaml);
     }
-
-
-
 }

@@ -43,8 +43,7 @@ public class TableWithNestedMixedCollectionTest {
     void supported_in_asciidoc() {
         String rendered = templateEngine.renderTable(ASCIIDOC, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 == ++Nested mixed collection++
 
                 [%header,cols="1"]
@@ -73,8 +72,7 @@ public class TableWithNestedMixedCollectionTest {
                 ++B++::: ++2++
 
                 |===
-                """
-            );
+                """);
         assertValidAsciiDoc(rendered);
     }
 
@@ -82,8 +80,7 @@ public class TableWithNestedMixedCollectionTest {
     void supported_in_markdown() {
         String rendered = templateEngine.renderTable(MARKDOWN, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 ## Nested mixed collection
 
                 | a |
@@ -91,9 +88,7 @@ public class TableWithNestedMixedCollectionTest {
                 | [a: [1, 2], b: {3, 4}, c: 5] |
                 | {[A: 1], [B: 2]} |
                 | [[A: 1], [B: 2]] |
-                """
-            );
+                """);
         assertValidMarkdown(rendered);
     }
-
 }

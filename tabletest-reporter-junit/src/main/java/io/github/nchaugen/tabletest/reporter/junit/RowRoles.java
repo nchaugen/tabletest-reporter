@@ -62,12 +62,8 @@ public class RowRoles {
 
         // Find all test results that match this row
         OptionalInt scenarioIndex = columnRoles.scenarioIndex();
-        List<RowResult> matchingResults = RowResultMatcher.findMatchingResults(
-            rowIndex,
-            table.get(),
-            scenarioIndex,
-            rowResults
-        );
+        List<RowResult> matchingResults =
+                RowResultMatcher.findMatchingResults(rowIndex, table.get(), scenarioIndex, rowResults);
 
         if (matchingResults.isEmpty()) {
             return Collections.emptySet();

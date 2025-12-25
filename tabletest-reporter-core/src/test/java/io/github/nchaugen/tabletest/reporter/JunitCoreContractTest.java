@@ -34,24 +34,23 @@ class JunitCoreContractTest {
 
     @Test
     void shouldConsumeYamlFilesProducedByJunitExtension() throws IOException {
-        EngineTestKit
-            .engine("junit-jupiter")
-            .selectors(selectClass(SampleTableTest.class))
-            .configurationParameter("junit.platform.output.dir", tempDir.toString())
-            .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(createOutputDirectoryCreator())
-            .execute();
+        EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(SampleTableTest.class))
+                .configurationParameter("junit.platform.output.dir", tempDir.toString())
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
 
         List<Path> yamlFiles = findYamlFiles(tempDir);
 
         assertThat(yamlFiles)
-            .describedAs("Junit extension should produce YAML files")
-            .isNotEmpty();
+                .describedAs("Junit extension should produce YAML files")
+                .isNotEmpty();
 
         ReportNode tree = ReportTree.process(tempDir);
         assertThat(tree)
-            .describedAs("Core should process junit-produced YAML into report tree")
-            .isNotNull();
+                .describedAs("Core should process junit-produced YAML into report tree")
+                .isNotNull();
 
         TableTestReporter reporter = new TableTestReporter();
         Path outDir = tempDir.resolve("output");
@@ -62,70 +61,70 @@ class JunitCoreContractTest {
         List<Path> renderedFiles = findRegularFiles(outDir);
 
         assertThat(renderedFiles)
-            .describedAs("Should render output files from junit-produced YAML")
-            .isNotEmpty();
+                .describedAs("Should render output files from junit-produced YAML")
+                .isNotEmpty();
     }
 
     @Test
     void shouldHandleNestedTestClasses() throws IOException {
-        EngineTestKit
-            .engine("junit-jupiter")
-            .selectors(selectClass(OuterTest.class))
-            .configurationParameter("junit.platform.output.dir", tempDir.toString())
-            .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(createOutputDirectoryCreator())
-            .execute();
+        EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(OuterTest.class))
+                .configurationParameter("junit.platform.output.dir", tempDir.toString())
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
 
         List<Path> yamlFiles = findYamlFiles(tempDir);
 
         assertThat(yamlFiles)
-            .describedAs("Should create YAML files for nested classes and their tables")
-            .hasSize(4);
+                .describedAs("Should create YAML files for nested classes and their tables")
+                .hasSize(4);
 
         long testClassFiles = yamlFiles.stream()
-            .filter(p -> p.getFileName().toString().contains("-class"))
-            .count();
+                .filter(p -> p.getFileName().toString().contains("-class"))
+                .count();
 
         assertThat(testClassFiles)
-            .describedAs("Should create test class YAML files (with '-class' suffix)")
-            .isEqualTo(2);
+                .describedAs("Should create test class YAML files (with '-class' suffix)")
+                .isEqualTo(2);
 
         Path outerClassYaml = yamlFiles.stream()
-            .filter(p -> p.getFileName().toString().equals("TABLETEST-outer-test-class.yaml"))
-            .findFirst()
-            .orElse(null);
+                .filter(p -> p.getFileName().toString().equals("TABLETEST-outer-test-class.yaml"))
+                .findFirst()
+                .orElse(null);
 
         assertThat(outerClassYaml)
-            .describedAs("Should create test class YAML for outer class")
-            .isNotNull()
-            .exists();
+                .describedAs("Should create test class YAML for outer class")
+                .isNotNull()
+                .exists();
 
         Path nestedClassYaml = yamlFiles.stream()
-            .filter(p -> p.getFileName().toString().equals("TABLETEST-nested-test-class.yaml"))
-            .findFirst()
-            .orElse(null);
+                .filter(p -> p.getFileName().toString().equals("TABLETEST-nested-test-class.yaml"))
+                .findFirst()
+                .orElse(null);
 
         assertThat(nestedClassYaml)
-            .describedAs("Should create test class YAML for nested class")
-            .isNotNull()
-            .exists();
+                .describedAs("Should create test class YAML for nested class")
+                .isNotNull()
+                .exists();
 
-        boolean allFilesInRoot = yamlFiles.stream()
-            .allMatch(f -> f.getParent().equals(tempDir));
+        boolean allFilesInRoot = yamlFiles.stream().allMatch(f -> f.getParent().equals(tempDir));
 
         assertThat(allFilesInRoot)
-            .describedAs("Currently, junit extension creates all YAML files in root directory (no subdirectories). Files: " + yamlFiles)
-            .isTrue();
+                .describedAs(
+                        "Currently, junit extension creates all YAML files in root directory (no subdirectories). Files: "
+                                + yamlFiles)
+                .isTrue();
 
         ReportNode tree = ReportTree.process(tempDir);
         assertThat(tree)
-            .describedAs("Core should handle nested class structure")
-            .isNotNull()
-            .isInstanceOf(IndexNode.class);
+                .describedAs("Core should handle nested class structure")
+                .isNotNull()
+                .isInstanceOf(IndexNode.class);
 
         assertThat(((IndexNode) tree).contents())
-            .describedAs("Should have nested structure in report tree")
-            .isNotEmpty();
+                .describedAs("Should have nested structure in report tree")
+                .isNotEmpty();
     }
 
     @Test
@@ -148,121 +147,107 @@ class JunitCoreContractTest {
             }
         };
 
-        EngineTestKit
-            .engine("junit-jupiter")
-            .selectors(selectClass(OuterTest.class))
-            .configurationParameter("junit.platform.output.dir", customOutputDir.toString())
-            .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(creatorThatCreatesSubdirectories)
-            .execute();
+        EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(OuterTest.class))
+                .configurationParameter("junit.platform.output.dir", customOutputDir.toString())
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(creatorThatCreatesSubdirectories)
+                .execute();
 
         List<Path> yamlFiles = findYamlFiles(customOutputDir);
 
         List<Path> directories = findDirectories(customOutputDir);
 
-        assertThat(yamlFiles)
-            .describedAs("Should create YAML files")
-            .isNotEmpty();
+        assertThat(yamlFiles).describedAs("Should create YAML files").isNotEmpty();
 
         assertThat(directories)
-            .describedAs("OutputDirectoryCreator that creates subdirectories will have files in subdirectories")
-            .isNotEmpty();
+                .describedAs("OutputDirectoryCreator that creates subdirectories will have files in subdirectories")
+                .isNotEmpty();
 
-        boolean allFilesInSubdirectories = yamlFiles.stream()
-            .noneMatch(f -> f.getParent().equals(customOutputDir));
+        boolean allFilesInSubdirectories =
+                yamlFiles.stream().noneMatch(f -> f.getParent().equals(customOutputDir));
 
         assertThat(allFilesInSubdirectories)
-            .describedAs("When OutputDirectoryCreator creates subdirectories, files go into those subdirectories")
-            .isTrue();
+                .describedAs("When OutputDirectoryCreator creates subdirectories, files go into those subdirectories")
+                .isTrue();
     }
 
     @Test
     void shouldGenerateTitleForClassesWithoutDisplayName() throws IOException {
-        EngineTestKit
-            .engine("junit-jupiter")
-            .selectors(selectClass(LeapYearRulesTest.class))
-            .configurationParameter("junit.platform.output.dir", tempDir.toString())
-            .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(createOutputDirectoryCreator())
-            .execute();
+        EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(LeapYearRulesTest.class))
+                .configurationParameter("junit.platform.output.dir", tempDir.toString())
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
 
         Path testClassYaml;
         try (var paths = Files.walk(tempDir)) {
-            testClassYaml = paths
-                .filter(p -> p.getFileName().toString().equals("TABLETEST-leap-year-rules-test.yaml"))
-                .findFirst()
-                .orElse(null);
+            testClassYaml = paths.filter(p -> p.getFileName().toString().equals("TABLETEST-leap-year-rules-test.yaml"))
+                    .findFirst()
+                    .orElse(null);
         }
 
         assertThat(testClassYaml)
-            .describedAs("Should create test class YAML file")
-            .isNotNull()
-            .exists();
+                .describedAs("Should create test class YAML file")
+                .isNotNull()
+                .exists();
 
         String yamlContent = Files.readString(testClassYaml);
 
         assertThat(yamlContent)
-            .describedAs("Should contain human-readable title transformed from class name")
-            .contains("\"title\": \"Leap Year Rules Test\"");
+                .describedAs("Should contain human-readable title transformed from class name")
+                .contains("\"title\": \"Leap Year Rules Test\"");
     }
 
     @Test
     void shouldPreserveFilenameTransformations() throws IOException {
-        EngineTestKit
-            .engine("junit-jupiter")
-            .selectors(selectClass(CamelCaseTest.class))
-            .configurationParameter("junit.platform.output.dir", tempDir.toString())
-            .enableImplicitConfigurationParameters(true)
-            .outputDirectoryCreator(createOutputDirectoryCreator())
-            .execute();
+        EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(CamelCaseTest.class))
+                .configurationParameter("junit.platform.output.dir", tempDir.toString())
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
 
         List<Path> yamlFiles;
         try (var paths = Files.walk(tempDir)) {
-            yamlFiles = paths
-                .filter(p -> p.toString().endsWith(".yaml"))
-                .filter(p -> p.toString().contains("TABLETEST-"))
-                .toList();
+            yamlFiles = paths.filter(p -> p.toString().endsWith(".yaml"))
+                    .filter(p -> p.toString().contains("TABLETEST-"))
+                    .toList();
         }
 
         assertThat(yamlFiles)
-            .describedAs("Should produce transformed filenames")
-            .isNotEmpty();
+                .describedAs("Should produce transformed filenames")
+                .isNotEmpty();
 
-        boolean hasKebabCaseFilename = yamlFiles.stream()
-            .anyMatch(p -> p.getFileName().toString().contains("-"));
+        boolean hasKebabCaseFilename =
+                yamlFiles.stream().anyMatch(p -> p.getFileName().toString().contains("-"));
 
         assertThat(hasKebabCaseFilename)
-            .describedAs("Should transform camelCase to kebab-case")
-            .isTrue();
+                .describedAs("Should transform camelCase to kebab-case")
+                .isTrue();
 
         ReportNode tree = ReportTree.process(tempDir);
-        assertThat(tree)
-            .describedAs("Core should handle transformed filenames")
-            .isNotNull();
+        assertThat(tree).describedAs("Core should handle transformed filenames").isNotNull();
     }
 
     private List<Path> findYamlFiles(Path directory) throws IOException {
         try (var paths = Files.walk(directory)) {
-            return paths
-                .filter(p -> p.toString().endsWith(".yaml"))
-                .toList();
+            return paths.filter(p -> p.toString().endsWith(".yaml")).toList();
         }
     }
 
     private List<Path> findRegularFiles(Path directory) throws IOException {
         try (var paths = Files.walk(directory)) {
-            return paths
-                .filter(Files::isRegularFile)
-                .toList();
+            return paths.filter(Files::isRegularFile).toList();
         }
     }
 
     private List<Path> findDirectories(Path directory) throws IOException {
         try (var paths = Files.walk(directory)) {
-            return paths
-                .filter(Files::isDirectory)
-                .filter(p -> !p.equals(directory))
-                .toList();
+            return paths.filter(Files::isDirectory)
+                    .filter(p -> !p.equals(directory))
+                    .toList();
         }
     }
 

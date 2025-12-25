@@ -31,7 +31,9 @@ public class FilterReplaceAll implements Filter {
     private static final String REPLACE_PAIRS = "replace_pairs";
 
     @Override
-    public Object apply(Object input, Map<String, Object> args, PebbleTemplate self, EvaluationContext context, int lineNumber) throws PebbleException {
+    public Object apply(
+            Object input, Map<String, Object> args, PebbleTemplate self, EvaluationContext context, int lineNumber)
+            throws PebbleException {
         if (input == null) return null;
         requireNotNull(args, REPLACE_PAIRS, lineNumber, self);
 

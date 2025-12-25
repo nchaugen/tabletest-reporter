@@ -26,14 +26,14 @@ import org.snakeyaml.engine.v2.common.ScalarStyle;
 class YamlRenderer {
 
     private static final DumpSettings SETTINGS = DumpSettings.builder()
-        .setDefaultFlowStyle(FlowStyle.BLOCK)
-        .setIndent(2)
-        .setDefaultScalarStyle(ScalarStyle.DOUBLE_QUOTED)
-        .setSplitLines(false)
-        .setDereferenceAliases(true)
-        .setMultiLineFlow(false)
-        .setUseUnicodeEncoding(true)
-        .build();
+            .setDefaultFlowStyle(FlowStyle.BLOCK)
+            .setIndent(2)
+            .setDefaultScalarStyle(ScalarStyle.DOUBLE_QUOTED)
+            .setSplitLines(false)
+            .setDereferenceAliases(true)
+            .setMultiLineFlow(false)
+            .setUseUnicodeEncoding(true)
+            .build();
 
     private final Dump yaml = new Dump(SETTINGS);
 
@@ -50,5 +50,4 @@ class YamlRenderer {
     String render(TestClassData data) {
         return yaml.dumpToString(data.toMap());
     }
-
 }

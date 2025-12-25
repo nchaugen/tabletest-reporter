@@ -47,16 +47,13 @@ class RowResultMatcher {
      * @return list of matching results (may be empty, may contain multiple for set expansion)
      */
     static List<RowResult> findMatchingResults(
-            int rowIndex,
-            Table table,
-            OptionalInt scenarioIndex,
-            List<RowResult> rowResults) {
+            int rowIndex, Table table, OptionalInt scenarioIndex, List<RowResult> rowResults) {
 
         Optional<String> expectedDisplayNamePattern = buildExpectedDisplayName(rowIndex, table, scenarioIndex);
 
         return rowResults.stream()
-            .filter(result -> matchesRow(result.displayName(), expectedDisplayNamePattern, table, rowIndex))
-            .toList();
+                .filter(result -> matchesRow(result.displayName(), expectedDisplayNamePattern, table, rowIndex))
+                .toList();
     }
 
     /**

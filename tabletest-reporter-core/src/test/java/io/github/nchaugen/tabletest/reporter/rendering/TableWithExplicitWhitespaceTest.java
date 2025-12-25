@@ -38,8 +38,7 @@ public class TableWithExplicitWhitespaceTest {
     void supported_in_asciidoc() {
         String rendered = templateEngine.renderTable(ASCIIDOC, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 == ++Explicit whitespace++
 
                 [%header,cols="1,1,1,1,1,1"]
@@ -59,8 +58,7 @@ public class TableWithExplicitWhitespaceTest {
                 a|&#x21E5;&#x2423;
 
                 |===
-                """
-            );
+                """);
         assertValidAsciiDoc(rendered);
     }
 
@@ -68,16 +66,13 @@ public class TableWithExplicitWhitespaceTest {
     void supported_in_markdown() {
         String rendered = templateEngine.renderTable(MARKDOWN, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 ## Explicit whitespace
 
                 | a | b | c d | &#x2423;e&#x2423; | f | g |
                 | --- | --- | --- | --- | --- | --- |
                 |  | "" | &#x2423;&#x2423;&#x2423; | a bc&#x2423;&#x2423;def | &#x21E5; | &#x21E5;&#x2423; |
-                """
-            );
+                """);
         assertValidMarkdown(rendered);
     }
-
 }

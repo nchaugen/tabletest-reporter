@@ -37,8 +37,7 @@ public class TableWithSetTest {
     void supported_in_asciidoc() {
         String rendered = templateEngine.renderTable(ASCIIDOC, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 == ++Set values++
 
                 [%header,cols="1,1,1"]
@@ -56,8 +55,7 @@ public class TableWithSetTest {
                 * \\|\\|
 
                 |===
-                """
-            );
+                """);
         assertValidAsciiDoc(rendered);
     }
 
@@ -65,16 +63,13 @@ public class TableWithSetTest {
     void supported_in_markdown() {
         String rendered = templateEngine.renderTable(MARKDOWN, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 ## Set values
 
                 | a | b | c |
                 | --- | --- | --- |
                 | {} | {1, 2, 3} | {\\|\\|} |
-                """
-            );
+                """);
         assertValidMarkdown(rendered);
     }
-
 }

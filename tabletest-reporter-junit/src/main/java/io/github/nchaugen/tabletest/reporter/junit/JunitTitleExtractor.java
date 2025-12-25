@@ -34,19 +34,19 @@ class JunitTitleExtractor {
      */
     static String extractMethodTitle(ExtensionContext context) {
         return context.getTestMethod()
-            .map(testMethod -> {
-                if (testMethod.isAnnotationPresent(DisplayName.class)) {
-                    return context.getDisplayName();
-                } else {
-                    String methodName = testMethod.getName();
-                    int paramStart = methodName.indexOf('(');
-                    if (paramStart > 0) {
-                        methodName = methodName.substring(0, paramStart);
+                .map(testMethod -> {
+                    if (testMethod.isAnnotationPresent(DisplayName.class)) {
+                        return context.getDisplayName();
+                    } else {
+                        String methodName = testMethod.getName();
+                        int paramStart = methodName.indexOf('(');
+                        if (paramStart > 0) {
+                            methodName = methodName.substring(0, paramStart);
+                        }
+                        return TitleTransformer.toTitle(methodName);
                     }
-                    return TitleTransformer.toTitle(methodName);
-                }
-            })
-            .orElse(context.getDisplayName());
+                })
+                .orElse(context.getDisplayName());
     }
 
     /**
@@ -55,13 +55,13 @@ class JunitTitleExtractor {
      */
     static String extractClassTitle(ExtensionContext context) {
         return context.getTestClass()
-            .map(testClass -> {
-                if (testClass.isAnnotationPresent(DisplayName.class)) {
-                    return context.getDisplayName();
-                } else {
-                    return TitleTransformer.toTitle(testClass.getSimpleName());
-                }
-            })
-            .orElse(context.getDisplayName());
+                .map(testClass -> {
+                    if (testClass.isAnnotationPresent(DisplayName.class)) {
+                        return context.getDisplayName();
+                    } else {
+                        return TitleTransformer.toTitle(testClass.getSimpleName());
+                    }
+                })
+                .orElse(context.getDisplayName());
     }
 }

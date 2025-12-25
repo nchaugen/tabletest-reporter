@@ -28,8 +28,7 @@ import java.util.stream.Collectors;
  */
 public final class FormatLister {
 
-    private FormatLister() {
-    }
+    private FormatLister() {}
 
     /**
      * Lists all available output formats.
@@ -43,8 +42,6 @@ public final class FormatLister {
      */
     public static String listFormats(Path templateDirectory) {
         Set<String> formats = FormatResolver.getAvailableFormats(templateDirectory);
-        return formats.stream()
-            .sorted()
-            .collect(Collectors.joining(System.lineSeparator()));
+        return formats.stream().sorted().collect(Collectors.joining(System.lineSeparator()));
     }
 }

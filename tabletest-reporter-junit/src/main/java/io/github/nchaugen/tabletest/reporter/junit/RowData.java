@@ -22,5 +22,4 @@ import java.util.List;
  *
  * @param cells The cells in this row
  */
-public record RowData(List<CellData> cells) {
-}
+public record RowData(List<CellData> cells) {}

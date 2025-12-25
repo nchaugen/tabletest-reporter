@@ -38,8 +38,7 @@ public class TableWithNestedListTest {
     void supported_in_asciidoc() {
         String rendered = templateEngine.renderTable(ASCIIDOC, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 == ++Nested list++
 
                 [%header,cols="1"]
@@ -61,8 +60,7 @@ public class TableWithNestedListTest {
                 ** ++%++
 
                 |===
-                """
-            );
+                """);
         assertValidAsciiDoc(rendered);
     }
 
@@ -70,16 +68,13 @@ public class TableWithNestedListTest {
     void supported_in_markdown() {
         String rendered = templateEngine.renderTable(MARKDOWN, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 ## Nested list
 
                 | a |
                 | --- |
                 | [[1, 2, 3], [a, b, c], [#, $, %]] |
-                """
-            );
+                """);
         assertValidMarkdown(rendered);
     }
-
 }

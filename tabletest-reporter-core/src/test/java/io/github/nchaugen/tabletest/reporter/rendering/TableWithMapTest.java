@@ -36,8 +36,7 @@ public class TableWithMapTest {
     void supported_in_asciidoc() {
         String rendered = templateEngine.renderTable(ASCIIDOC, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 == ++Map values++
 
                 [%header,cols="1,1,1"]
@@ -55,8 +54,7 @@ public class TableWithMapTest {
                 ++b++:: \\|\\|
 
                 |===
-                """
-            );
+                """);
         assertValidAsciiDoc(rendered);
     }
 
@@ -64,16 +62,13 @@ public class TableWithMapTest {
     void supported_in_markdown() {
         String rendered = templateEngine.renderTable(MARKDOWN, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 ## Map values
 
                 | a | b | c |
                 | --- | --- | --- |
                 | [:] | [a: 1, b: 2, c: 3] | [b: \\|\\|] |
-                """
-            );
+                """);
         assertValidMarkdown(rendered);
     }
-
 }

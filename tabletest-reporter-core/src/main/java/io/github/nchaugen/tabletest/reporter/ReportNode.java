@@ -23,8 +23,11 @@ import java.util.List;
  */
 public sealed interface ReportNode permits IndexNode, TableNode {
     String name();
+
     String outPath();
+
     String resource();
+
     String type();
 }
 
@@ -32,12 +35,7 @@ public sealed interface ReportNode permits IndexNode, TableNode {
  * An index node representing a package or test class directory.
  * Contains links to child nodes (other indexes or tables).
  */
-record IndexNode(
-    String name,
-    String outPath,
-    String resource,
-    List<ReportNode> contents
-) implements ReportNode {
+record IndexNode(String name, String outPath, String resource, List<ReportNode> contents) implements ReportNode {
 
     public IndexNode {
         contents = List.copyOf(contents);
@@ -55,11 +53,7 @@ record IndexNode(
  * A table leaf node representing a single TableTest method's report.
  * Always has an associated YAML resource file.
  */
-record TableNode(
-    String name,
-    String outPath,
-    String resource
-) implements ReportNode {
+record TableNode(String name, String outPath, String resource) implements ReportNode {
 
     public TableNode {
         if (resource == null || resource.isBlank()) {

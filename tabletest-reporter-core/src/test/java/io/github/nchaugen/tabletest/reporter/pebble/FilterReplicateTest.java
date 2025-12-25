@@ -16,15 +16,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FilterReplicateTest {
 
     private static final PebbleEngine ENGINE = new PebbleEngine.Builder()
-        .extension(
-            new AbstractExtension() {
+            .extension(new AbstractExtension() {
                 @Override
                 public Map<String, Filter> getFilters() {
                     return Map.of(FilterReplicate.NAME, new FilterReplicate());
                 }
             })
-        .loader(new StringLoader())
-        .build();
+            .loader(new StringLoader())
+            .build();
 
     @TableTest("""
         Scenario             | Input            | Times | Result?
@@ -58,6 +57,4 @@ class FilterReplicateTest {
         ENGINE.getTemplate("{{ %s | replicate(%s) }}".formatted(input, times)).evaluate(writer);
         assertThat(writer.toString()).isEqualTo(expected.toString());
     }
-
-
 }

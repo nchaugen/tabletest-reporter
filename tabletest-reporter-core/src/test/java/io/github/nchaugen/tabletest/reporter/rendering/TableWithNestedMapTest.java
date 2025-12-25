@@ -36,8 +36,7 @@ public class TableWithNestedMapTest {
     void supported_in_asciidoc() {
         String rendered = templateEngine.renderTable(ASCIIDOC, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 == ++Nested map values++
 
                 [%header,cols="1,1"]
@@ -55,8 +54,7 @@ public class TableWithNestedMapTest {
                 ++B++::: ++2++
 
                 |===
-                """
-            );
+                """);
         assertValidAsciiDoc(rendered);
     }
 
@@ -64,16 +62,13 @@ public class TableWithNestedMapTest {
     void supported_in_markdown() {
         String rendered = templateEngine.renderTable(MARKDOWN, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 ## Nested map values
 
                 | a | b |
                 | --- | --- |
                 | [a: [:], b: [:]] | [a: [A: 1], b: [B: 2]] |
-                """
-            );
+                """);
         assertValidMarkdown(rendered);
     }
-
 }

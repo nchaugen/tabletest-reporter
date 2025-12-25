@@ -40,8 +40,7 @@ public class TableWithListTest {
     void supported_in_asciidoc() {
         String rendered = templateEngine.renderTable(ASCIIDOC, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 == ++List values++
 
                 [%header,cols="1,1,1"]
@@ -60,8 +59,7 @@ public class TableWithListTest {
                 * \\|
 
                 |===
-                """
-            );
+                """);
         assertValidAsciiDoc(rendered);
     }
 
@@ -69,16 +67,13 @@ public class TableWithListTest {
     void supported_in_markdown() {
         String rendered = templateEngine.renderTable(MARKDOWN, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 ## List values
 
                 | a | b | c |
                 | --- | --- | --- |
                 | [] | [1, 2, 3] | [\\|, \\|] |
-                """
-            );
+                """);
         assertValidMarkdown(rendered);
     }
-
 }

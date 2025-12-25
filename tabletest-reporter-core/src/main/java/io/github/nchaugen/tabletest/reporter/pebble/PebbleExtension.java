@@ -29,10 +29,9 @@ public class PebbleExtension extends AbstractExtension {
     @Override
     public Map<String, Filter> getFilters() {
         return Map.of(
-            FilterReplicate.NAME, new FilterReplicate(),
-            FilterReplaceAll.NAME, new FilterReplaceAll(),
-            FilterReplaceInMatch.NAME, new FilterReplaceInMatch()
-        );
+                FilterReplicate.NAME, new FilterReplicate(),
+                FilterReplaceAll.NAME, new FilterReplaceAll(),
+                FilterReplaceInMatch.NAME, new FilterReplaceInMatch());
     }
 
     @Override
@@ -43,11 +42,10 @@ public class PebbleExtension extends AbstractExtension {
     public static void requireNotNull(Map<String, Object> args, String argument, int lineNumber, PebbleTemplate self) {
         if (args.get(argument) == null) {
             throw new PebbleException(
-                null,
-                MessageFormat.format("The argument ''{0}'' is required.", argument), lineNumber,
-                self.getName()
-            );
+                    null,
+                    MessageFormat.format("The argument ''{0}'' is required.", argument),
+                    lineNumber,
+                    self.getName());
         }
     }
-
 }

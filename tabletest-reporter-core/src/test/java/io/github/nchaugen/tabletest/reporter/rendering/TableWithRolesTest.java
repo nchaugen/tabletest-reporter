@@ -72,8 +72,7 @@ public class TableWithRolesTest {
     void should_add_roles_for_asciidoc() {
         String rendered = templateEngine.renderTable(ASCIIDOC, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 == ++Year selection++
 
                 [%header,cols="1,1,1"]
@@ -101,8 +100,7 @@ public class TableWithRolesTest {
                 a|[.expectation.passed]
 
                 |===
-                """
-            );
+                """);
         assertValidAsciiDoc(rendered);
     }
 
@@ -110,8 +108,7 @@ public class TableWithRolesTest {
     void should_ignore_roles_for_markdown() {
         String rendered = templateEngine.renderTable(MARKDOWN, context);
 
-        assertThat(rendered)
-            .isEqualTo("""
+        assertThat(rendered).isEqualTo("""
                 ## Year selection
 
                 | Scenario | Candidates | Selected? |
@@ -119,9 +116,7 @@ public class TableWithRolesTest {
                 | Select leap years | [2000, 2001, 2002, 2003, 2004] | [2004] |
                 | Empty years | {} | [] |
                 | Empty map and null | [:] |  |
-                """
-            );
+                """);
         assertValidMarkdown(rendered);
     }
-
 }
