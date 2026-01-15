@@ -12,11 +12,11 @@ NC='\033[0m' # No Colour
 COMMIT_MSG_FILE=$1
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
 
-# Check for Claude Code attribution footer (should be omitted per CLAUDE.md)
-if echo "$COMMIT_MSG" | grep -q "Generated with.*Claude Code"; then
+# Check for Claude Code attribution (should be omitted per CLAUDE.md)
+if echo "$COMMIT_MSG" | grep -qi "Generated with.*Claude Code\|Co-Authored-By:.*Claude"; then
     echo -e "${RED}✗ Commit message validation failed${NC}"
     echo ""
-    echo "Your commit message contains Claude Code attribution footer."
+    echo "Your commit message contains Claude attribution."
     echo "According to CLAUDE.md, this should be omitted:"
     echo ""
     echo "  ## Git Commit Messages"
@@ -24,7 +24,7 @@ if echo "$COMMIT_MSG" | grep -q "Generated with.*Claude Code"; then
     echo -e "  - ${YELLOW}Omit Claude Code attribution footer${NC}"
     echo "  - Keep first line under 50 chars"
     echo ""
-    echo "Please remove the footer and try again."
+    echo "Please remove the attribution and try again."
     exit 1
 fi
 
