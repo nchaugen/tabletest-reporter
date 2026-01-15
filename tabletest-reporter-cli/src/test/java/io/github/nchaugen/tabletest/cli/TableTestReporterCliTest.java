@@ -23,17 +23,14 @@ class TableTestReporterCliTest {
         Path templateDir = setupCustomTemplateDirectory(tempDir);
         Path outputDir = tempDir.resolve("output");
 
-        int exitCode = runCli(
+        CliResult result = runCli(
                 "--input", inputDir.toString(),
                 "--output", outputDir.toString(),
                 "--template-dir", templateDir.toString(),
                 "--format", "asciidoc");
 
-        assertThat(exitCode).isZero();
-
-        Path generatedFile = findGeneratedFile(outputDir, ".adoc");
-        String content = Files.readString(generatedFile);
-
+        assertThat(result.exitCode()).isZero();
+        String content = Files.readString(findGeneratedFile(outputDir, ".adoc"));
         assertThat(content).contains("CUSTOM HEADER");
         assertThat(content).contains("Custom template content");
         assertThat(content).contains("CUSTOM FOOTER");
@@ -45,50 +42,46 @@ class TableTestReporterCliTest {
         Path inputDir = setupInputDirectory(tempDir);
         Path outputDir = tempDir.resolve("output");
 
-        int exitCode = runCli(
+        CliResult result = runCli(
                 "--input", inputDir.toString(),
                 "--output", outputDir.toString(),
                 "--format", "asciidoc");
 
-        assertThat(exitCode).isZero();
-
-        Path generatedFile = findGeneratedFile(outputDir, ".adoc");
-        String content = Files.readString(generatedFile);
-
+        assertThat(result.exitCode()).isZero();
+        String content = Files.readString(findGeneratedFile(outputDir, ".adoc"));
         assertThat(content).startsWith("==");
         assertThat(content).contains("[%header,cols=");
         assertThat(content).contains("|===");
     }
 
     @Test
-    void returns_error_when_template_dir_does_not_exist() {
-        Path inputDir = tempDir.resolve("input");
+    void returns_error_when_template_dir_does_not_exist() throws IOException {
+        Path inputDir = setupInputDirectory(tempDir);
         Path outputDir = tempDir.resolve("output");
-        Path nonexistentDir = tempDir.resolve("nonexistent");
 
-        int exitCode = runCli(
+        CliResult result = runCli(
                 "--input", inputDir.toString(),
                 "--output", outputDir.toString(),
-                "--template-dir", nonexistentDir.toString(),
+                "--template-dir", tempDir.resolve("nonexistent").toString(),
                 "--format", "asciidoc");
 
-        assertThat(exitCode).isEqualTo(2);
+        assertThat(result.exitCode()).isEqualTo(2);
     }
 
     @Test
     void returns_error_when_template_dir_is_not_a_directory() throws IOException {
-        Path inputDir = tempDir.resolve("input");
+        Path inputDir = setupInputDirectory(tempDir);
         Path outputDir = tempDir.resolve("output");
         Path notADirectory = tempDir.resolve("file.txt");
         Files.writeString(notADirectory, "not a directory");
 
-        int exitCode = runCli(
+        CliResult result = runCli(
                 "--input", inputDir.toString(),
                 "--output", outputDir.toString(),
                 "--template-dir", notADirectory.toString(),
                 "--format", "asciidoc");
 
-        assertThat(exitCode).isEqualTo(2);
+        assertThat(result.exitCode()).isEqualTo(2);
     }
 
     @Test
@@ -96,16 +89,13 @@ class TableTestReporterCliTest {
         Path inputDir = setupInputDirectory(tempDir);
         Path outputDir = tempDir.resolve("output");
 
-        int exitCode = runCli(
+        CliResult result = runCli(
                 "--input", inputDir.toString(),
                 "--output", outputDir.toString(),
                 "--format", "markdown");
 
-        assertThat(exitCode).isZero();
-
-        Path generatedFile = findGeneratedFile(outputDir, ".md");
-        String content = Files.readString(generatedFile);
-
+        assertThat(result.exitCode()).isZero();
+        String content = Files.readString(findGeneratedFile(outputDir, ".md"));
         assertThat(content).contains("## Test Table");
         assertThat(content).contains("| Column A |");
         assertThat(content).contains("---");
@@ -116,12 +106,12 @@ class TableTestReporterCliTest {
         Path inputDir = setupInputDirectory(tempDir);
         Path outputDir = tempDir.resolve("output");
 
-        int exitCode = runCli(
+        CliResult result = runCli(
                 "--input", inputDir.toString(),
                 "--output", outputDir.toString(),
                 "--format", "md");
 
-        assertThat(exitCode).isZero();
+        assertThat(result.exitCode()).isZero();
         assertThat(findGeneratedFile(outputDir, ".md")).exists();
     }
 
@@ -130,12 +120,12 @@ class TableTestReporterCliTest {
         Path inputDir = setupInputDirectory(tempDir);
         Path outputDir = tempDir.resolve("output");
 
-        int exitCode = runCli(
+        CliResult result = runCli(
                 "--input", inputDir.toString(),
                 "--output", outputDir.toString(),
                 "--format", "adoc");
 
-        assertThat(exitCode).isZero();
+        assertThat(result.exitCode()).isZero();
         assertThat(findGeneratedFile(outputDir, ".adoc")).exists();
     }
 
@@ -144,33 +134,31 @@ class TableTestReporterCliTest {
         Path inputDir = setupInputDirectory(tempDir);
         Path outputDir = tempDir.resolve("output");
 
-        int exitCode = runCli(
+        CliResult result = runCli(
                 "--input", inputDir.toString(),
                 "--output", outputDir.toString(),
                 "--format", "invalid-format");
 
-        assertThat(exitCode).isEqualTo(2);
+        assertThat(result.exitCode()).isEqualTo(2);
     }
 
     @Test
     void returns_error_when_input_directory_does_not_exist() {
-        Path nonexistentInput = tempDir.resolve("nonexistent");
         Path outputDir = tempDir.resolve("output");
 
-        int exitCode = runCli(
-                "--input", nonexistentInput.toString(),
+        CliResult result = runCli(
+                "--input", tempDir.resolve("nonexistent").toString(),
                 "--output", outputDir.toString());
 
-        assertThat(exitCode).isEqualTo(2);
+        assertThat(result.exitCode()).isEqualTo(2);
     }
 
     @Test
     void list_formats_exits_successfully_and_prints_formats() {
-        String output = captureOutput("--list-formats");
-        int exitCode = runCli("--list-formats");
+        CliResult result = runCli("--list-formats");
 
-        assertThat(exitCode).isZero();
-        assertThat(output).contains("asciidoc").contains("markdown");
+        assertThat(result.exitCode()).isZero();
+        assertThat(result.stdout()).contains("asciidoc").contains("markdown");
     }
 
     @Test
@@ -180,18 +168,19 @@ class TableTestReporterCliTest {
         Files.writeString(templateDir.resolve("table.html.peb"), "template");
         Files.writeString(templateDir.resolve("index.html.peb"), "template");
 
-        String output = captureOutput("--list-formats", "--template-dir", templateDir.toString());
+        CliResult result = runCli("--list-formats", "--template-dir", templateDir.toString());
 
-        assertThat(output).contains("html");
+        assertThat(result.stdout()).contains("html");
     }
 
     @Test
     void list_formats_handles_invalid_template_dir_gracefully() {
-        Path nonexistentDir = tempDir.resolve("nonexistent");
+        CliResult result = runCli(
+                "--list-formats",
+                "--template-dir",
+                tempDir.resolve("nonexistent").toString());
 
-        String output = captureOutput("--list-formats", "--template-dir", nonexistentDir.toString());
-
-        assertThat(output).contains("asciidoc");
+        assertThat(result.stdout()).contains("asciidoc");
     }
 
     private Path setupInputDirectory(Path parent) throws IOException {
@@ -218,19 +207,21 @@ class TableTestReporterCliTest {
         return templateDir;
     }
 
-    private int runCli(String... args) {
-        return new CommandLine(new TableTestReporterCli()).execute(args);
-    }
+    record CliResult(int exitCode, String stdout, String stderr) {}
 
-    private String captureOutput(String... args) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    private CliResult runCli(String... args) {
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+        ByteArrayOutputStream stderr = new ByteArrayOutputStream();
         PrintStream originalOut = System.out;
+        PrintStream originalErr = System.err;
         try {
-            System.setOut(new PrintStream(outputStream));
-            new CommandLine(new TableTestReporterCli()).execute(args);
-            return outputStream.toString();
+            System.setOut(new PrintStream(stdout));
+            System.setErr(new PrintStream(stderr));
+            int exitCode = new CommandLine(new TableTestReporterCli()).execute(args);
+            return new CliResult(exitCode, stdout.toString(), stderr.toString());
         } finally {
             System.setOut(originalOut);
+            System.setErr(originalErr);
         }
     }
 

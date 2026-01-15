@@ -34,19 +34,33 @@ class TableTestReporterPluginTest {
     Path projectDir;
 
     private Project project;
+    private Path buildDir;
 
     @BeforeEach
     void setUp() {
         project = ProjectBuilder.builder().withProjectDir(projectDir.toFile()).build();
-
         project.getPluginManager().apply(TableTestReporterPlugin.class);
+        buildDir = project.getLayout().getBuildDirectory().get().getAsFile().toPath();
+    }
+
+    private TableTestReporterExtension extension() {
+        return project.getExtensions().getByType(TableTestReporterExtension.class);
+    }
+
+    private ReportTableTestsTask reportTask() {
+        return (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
+    }
+
+    private ListFormatsTask listFormatsTask() {
+        return (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
+    }
+
+    private Path outputDir() {
+        return buildDir.resolve("generated-docs").resolve("tabletest");
     }
 
     @Test
     void reportTask_generates_output_from_minimal_yaml() throws IOException {
-        // Arrange: create minimal input structure under build/junit-jupiter
-        Path buildDir =
-                project.getLayout().getBuildDirectory().get().getAsFile().toPath();
         Path inputRoot = buildDir.resolve("junit-jupiter");
         Path testClassDir = inputRoot.resolve("org.example.CalendarTest");
         Path tableDir = testClassDir.resolve("leapYearRules(java.time.Year, boolean)");
@@ -73,35 +87,23 @@ class TableTestReporterPluginTest {
                   - "value": "Yes"
             """);
 
-        // Act: run the task directly
-        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
-        task.run();
+        reportTask().run();
 
-        // Assert: default AsciiDoc outputs exist under build/generated-docs/tabletest
-        Path outRoot = buildDir.resolve("generated-docs").resolve("tabletest");
-        assertThat(outRoot.resolve("index.adoc")).exists();
-        assertThat(outRoot.resolve("calendar-test")).isDirectory();
-        assertThat(outRoot.resolve("calendar-test").resolve("leap-year-rules.adoc"))
+        assertThat(outputDir().resolve("index.adoc")).exists();
+        assertThat(outputDir().resolve("calendar-test")).isDirectory();
+        assertThat(outputDir().resolve("calendar-test").resolve("leap-year-rules.adoc"))
                 .exists();
     }
 
     @Test
     void reportTask_uses_custom_template_when_template_dir_provided() throws IOException {
-        Path buildDir =
-                project.getLayout().getBuildDirectory().get().getAsFile().toPath();
-        Path inputRoot = setupInputDirectory(buildDir);
+        setupInputDirectory(buildDir);
         Path templateDir = setupCustomTemplateDirectory(projectDir);
+        extension().getTemplateDir().set(templateDir.toFile());
 
-        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
-        ext.getTemplateDir().set(templateDir.toFile());
+        reportTask().run();
 
-        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
-        task.run();
-
-        Path generatedFile =
-                findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"), ".adoc");
-        String content = Files.readString(generatedFile);
-
+        String content = Files.readString(findGeneratedFile(outputDir(), ".adoc"));
         assertThat(content).contains("CUSTOM HEADER");
         assertThat(content).contains("Custom template content");
         assertThat(content).contains("CUSTOM FOOTER");
@@ -110,51 +112,30 @@ class TableTestReporterPluginTest {
 
     @Test
     void reportTask_fails_when_template_directory_does_not_exist() throws IOException {
-        Path buildDir =
-                project.getLayout().getBuildDirectory().get().getAsFile().toPath();
         setupInputDirectory(buildDir);
-        Path nonexistentDir = projectDir.resolve("nonexistent");
+        extension().getTemplateDir().set(projectDir.resolve("nonexistent").toFile());
 
-        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
-        ext.getTemplateDir().set(nonexistentDir.toFile());
-
-        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
-
-        assertThatThrownBy(task::run).hasMessageContaining("Template directory does not exist");
+        assertThatThrownBy(() -> reportTask().run()).hasMessageContaining("Template directory does not exist");
     }
 
     @Test
     void reportTask_fails_when_template_directory_is_not_a_directory() throws IOException {
-        Path buildDir =
-                project.getLayout().getBuildDirectory().get().getAsFile().toPath();
         setupInputDirectory(buildDir);
         Path notADirectory = projectDir.resolve("file.txt");
         Files.writeString(notADirectory, "not a directory");
+        extension().getTemplateDir().set(notADirectory.toFile());
 
-        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
-        ext.getTemplateDir().set(notADirectory.toFile());
-
-        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
-
-        assertThatThrownBy(task::run).hasMessageContaining("Template path is not a directory");
+        assertThatThrownBy(() -> reportTask().run()).hasMessageContaining("Template path is not a directory");
     }
 
     @Test
     void reportTask_generates_markdown_when_format_is_markdown() throws IOException {
-        Path buildDir =
-                project.getLayout().getBuildDirectory().get().getAsFile().toPath();
         setupInputDirectory(buildDir);
+        extension().getFormat().set("markdown");
 
-        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
-        ext.getFormat().set("markdown");
+        reportTask().run();
 
-        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
-        task.run();
-
-        Path generatedFile =
-                findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"), ".md");
-        String content = Files.readString(generatedFile);
-
+        String content = Files.readString(findGeneratedFile(outputDir(), ".md"));
         assertThat(content).contains("## Test Table");
         assertThat(content).contains("| Column A |");
         assertThat(content).contains("---");
@@ -162,63 +143,39 @@ class TableTestReporterPluginTest {
 
     @Test
     void reportTask_accepts_md_as_format_alias() throws IOException {
-        Path buildDir =
-                project.getLayout().getBuildDirectory().get().getAsFile().toPath();
         setupInputDirectory(buildDir);
+        extension().getFormat().set("md");
 
-        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
-        ext.getFormat().set("md");
+        reportTask().run();
 
-        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
-        task.run();
-
-        assertThat(findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"), ".md"))
-                .exists();
+        assertThat(findGeneratedFile(outputDir(), ".md")).exists();
     }
 
     @Test
     void reportTask_accepts_adoc_as_format_alias() throws IOException {
-        Path buildDir =
-                project.getLayout().getBuildDirectory().get().getAsFile().toPath();
         setupInputDirectory(buildDir);
+        extension().getFormat().set("adoc");
 
-        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
-        ext.getFormat().set("adoc");
+        reportTask().run();
 
-        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
-        task.run();
-
-        assertThat(findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"), ".adoc"))
-                .exists();
+        assertThat(findGeneratedFile(outputDir(), ".adoc")).exists();
     }
 
     @Test
     void reportTask_fails_when_format_is_invalid() throws IOException {
-        Path buildDir =
-                project.getLayout().getBuildDirectory().get().getAsFile().toPath();
         setupInputDirectory(buildDir);
+        extension().getFormat().set("invalid-format");
 
-        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
-        ext.getFormat().set("invalid-format");
-
-        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
-
-        assertThatThrownBy(task::run).hasMessageContaining("Unknown format");
+        assertThatThrownBy(() -> reportTask().run()).hasMessageContaining("Unknown format");
     }
 
     @Test
     void reportTask_uses_builtin_template_when_no_template_dir_provided() throws IOException {
-        Path buildDir =
-                project.getLayout().getBuildDirectory().get().getAsFile().toPath();
         setupInputDirectory(buildDir);
 
-        ReportTableTestsTask task = (ReportTableTestsTask) project.getTasks().getByName("reportTableTests");
-        task.run();
+        reportTask().run();
 
-        Path generatedFile =
-                findGeneratedFile(buildDir.resolve("generated-docs").resolve("tabletest"), ".adoc");
-        String content = Files.readString(generatedFile);
-
+        String content = Files.readString(findGeneratedFile(outputDir(), ".adoc"));
         assertThat(content).startsWith("==");
         assertThat(content).contains("[%header,cols=");
         assertThat(content).contains("|===");
@@ -226,48 +183,36 @@ class TableTestReporterPluginTest {
 
     @Test
     void listFormatsTask_is_registered() {
-        ListFormatsTask task = (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
-        assertThat(task).isNotNull();
+        assertThat(listFormatsTask()).isNotNull();
     }
 
     @Test
     void listFormatsTask_executes_successfully() {
-        ListFormatsTask task = (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
-        task.run();
+        listFormatsTask().run();
     }
 
     @Test
     void listFormatsTask_executes_with_custom_template_dir() throws IOException {
         Path templateDir = setupCustomTemplateDirectory(projectDir);
+        extension().getTemplateDir().set(templateDir.toFile());
 
-        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
-        ext.getTemplateDir().set(templateDir.toFile());
-
-        ListFormatsTask task = (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
-        task.run();
+        listFormatsTask().run();
     }
 
     @Test
     void listFormatsTask_handles_invalid_template_dir_gracefully() {
-        Path nonexistentDir = projectDir.resolve("nonexistent");
+        extension().getTemplateDir().set(projectDir.resolve("nonexistent").toFile());
 
-        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
-        ext.getTemplateDir().set(nonexistentDir.toFile());
-
-        ListFormatsTask task = (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
-        task.run();
+        listFormatsTask().run();
     }
 
     @Test
     void listFormatsTask_handles_template_dir_that_is_file() throws IOException {
         Path notADirectory = projectDir.resolve("file.txt");
         Files.writeString(notADirectory, "not a directory");
+        extension().getTemplateDir().set(notADirectory.toFile());
 
-        TableTestReporterExtension ext = project.getExtensions().getByType(TableTestReporterExtension.class);
-        ext.getTemplateDir().set(notADirectory.toFile());
-
-        ListFormatsTask task = (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
-        task.run();
+        listFormatsTask().run();
     }
 
     private Path setupInputDirectory(Path buildDir) throws IOException {
