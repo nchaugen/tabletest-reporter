@@ -1,6 +1,9 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+### Fixed
+- AsciiDoc index-to-index links now generate as proper file paths instead of anchor references in HTML output
+
 ## [0.3.0] - 2025-12-21
 ### Added
 - Custom output format support – define formats like HTML, XML, JSON via templates
