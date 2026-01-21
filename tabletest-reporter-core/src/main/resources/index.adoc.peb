@@ -13,7 +13,7 @@
 {% endblock %}
 {% block contents %}
 {% for child in contents %}
-* xref:./{{ child.path }}{{ child.type == "index" ? "" : ".adoc"  }}[++{{ child.title ? child.title : child.name }}++]
+* xref:./{{ child.path }}{{ child.type == "index" ? "/index.adoc" : ".adoc"  }}[++{{ child.title ? child.title : child.name }}++]
 {% endfor %}
 {% endblock %}
 {% block footer %}{% endblock %}

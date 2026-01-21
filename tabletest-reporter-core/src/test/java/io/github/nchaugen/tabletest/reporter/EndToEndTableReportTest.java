@@ -46,7 +46,7 @@ public class EndToEndTableReportTest {
         new TableTestReporter().report(ASCIIDOC, inDir, outDir);
 
         assertThat(Files.readAllLines(outDir.resolve("index.adoc")))
-                .containsExactly("= ++example++", "", "* xref:./calendar-calculations[++Calendar++]");
+                .containsExactly("= ++example++", "", "* xref:./calendar-calculations/index.adoc[++Calendar++]");
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.adoc")))
                 .containsExactly(
@@ -88,7 +88,7 @@ public class EndToEndTableReportTest {
         new TableTestReporter().report(MARKDOWN, inDir, outDir);
 
         assertThat(Files.readAllLines(outDir.resolve("index.md")))
-                .containsExactly("# example", "", "* [Calendar](./calendar-calculations)");
+                .containsExactly("# example", "", "* [Calendar](./calendar-calculations/index.md)");
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.md")))
                 .containsExactly(
@@ -257,8 +257,8 @@ public class EndToEndTableReportTest {
         assertThat(indexContent)
                 .startsWith("---\nlayout: default\ntitle: example---")
                 .contains("# example")
-                .contains("[Auth Test](./auth-test)")
-                .contains("[Order Test](./order-test)");
+                .contains("[Auth Test](./auth-test/index.md)")
+                .contains("[Order Test](./order-test/index.md)");
     }
 
     private Path setupJekyllTemplateMarkdown(Path parent) throws IOException {

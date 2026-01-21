@@ -91,6 +91,7 @@
                     <sourceDirectory>${project.build.directory}/generated-docs/tabletest</sourceDirectory>
                     <outputDirectory>${project.build.directory}/generated-html/tabletest</outputDirectory>
                     <backend>html5</backend>
+                    <preserveDirectories>true</preserveDirectories>
                     <attributes>
                         <stylesheet>tabletest.css</stylesheet>
                         <stylesdir>${project.basedir}/src/main/resources</stylesdir>

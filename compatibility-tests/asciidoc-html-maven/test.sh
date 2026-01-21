@@ -74,7 +74,7 @@ echo -e "${GREEN}✓ Found $HTML_COUNT HTML files${NC}"
 # Step 7: Verify CSS is embedded in HTML files
 echo -e "\n${YELLOW}[7/8] Verifying CSS is embedded in HTML files...${NC}"
 # Check if CSS classes are defined in the HTML files
-if grep -q ".scenario" "$HTML_DIR/addition.html" && grep -q ".expectation" "$HTML_DIR/addition.html"; then
+if grep -q ".scenario" "$HTML_DIR/calculator-tests/addition.html" && grep -q ".expectation" "$HTML_DIR/calculator-tests/addition.html"; then
     echo -e "${GREEN}✓ CSS styles found embedded in HTML files${NC}"
 else
     echo -e "${RED}✗ CSS styles not found in HTML files${NC}"
@@ -90,17 +90,17 @@ CLASSPATH="target/test-classes:$(mvn dependency:build-classpath -q -Dmdep.output
 # Verify addition.html (3 passed, 0 failed)
 echo -e "\n  Verifying addition.html..."
 java -cp "$CLASSPATH" com.example.HtmlCssVerifier \
-    "$HTML_DIR/addition.html" 3 0
+    "$HTML_DIR/calculator-tests/addition.html" 3 0
 
 # Verify subtraction.html (2 passed, 2 failed)
 echo -e "\n  Verifying subtraction.html..."
 java -cp "$CLASSPATH" com.example.HtmlCssVerifier \
-    "$HTML_DIR/subtraction.html" 2 2
+    "$HTML_DIR/calculator-tests/subtraction.html" 2 2
 
 # Verify multiplication.html (0 passed, 2 failed)
 echo -e "\n  Verifying multiplication.html..."
 java -cp "$CLASSPATH" com.example.HtmlCssVerifier \
-    "$HTML_DIR/multiplication.html" 0 2
+    "$HTML_DIR/calculator-tests/multiplication.html" 0 2
 
 echo -e "\n${GREEN}✓ All CSS class verifications passed${NC}"
 
