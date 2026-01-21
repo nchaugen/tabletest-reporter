@@ -8,6 +8,7 @@
 - AsciiDoc index-to-index links now generate as proper file paths instead of anchor references in HTML output
 - Empty index files no longer generated for test classes without TableTest methods
 - Scenario names containing parentheses now match correctly (previously truncated at first opening parenthesis)
+- Error messages in failed rows now properly separated from closing delimiter with newline (affects both AsciiDoc and Markdown)
 
 ## [0.3.0] - 2025-12-21
 ### Added

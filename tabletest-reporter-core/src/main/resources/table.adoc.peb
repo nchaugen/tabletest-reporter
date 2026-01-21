@@ -50,6 +50,7 @@ a|{{ renderCell(cell) }}
 
 ----
 {{ result.errorMessage }}
+
 ----
 
 {% endif %}
