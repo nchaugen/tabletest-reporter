@@ -334,6 +334,8 @@ class TableTestPublisherTest {
         Path yamlFile = findExpectedYamlFile(tempDir, "One expanded row without scenario name fails");
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
+        // Without a scenario column, matching is unreliable due to parameter type conversion.
+        // Therefore, .passed/.failed roles are NOT applied to rows (only .expectation for expectation columns).
         assertEquals("""
                 "title": "One expanded row without scenario name fails"
                 "headers":
@@ -344,37 +346,22 @@ class TableTestPublisherTest {
                   - "expectation"
                 "rows":
                 - - "value": "1"
-                    "roles":
-                    - "passed"
                   - "value": "1"
-                    "roles":
-                    - "passed"
                   - "value": "2"
                     "roles":
                     - "expectation"
-                    - "passed"
                 - - "value": "2"
-                    "roles":
-                    - "failed"
                   - "value": !!set
                       "2": !!null "null"
                       "3": !!null "null"
-                    "roles":
-                    - "failed"
                   - "value": "5"
                     "roles":
                     - "expectation"
-                    - "failed"
                 - - "value": "3"
-                    "roles":
-                    - "passed"
                   - "value": "3"
-                    "roles":
-                    - "passed"
                   - "value": "6"
                     "roles":
                     - "expectation"
-                    - "passed"
                 "rowResults":
                 - "rowIndex": !!int "1"
                   "passed": !!bool "true"

@@ -1,9 +1,13 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+### Changed
+- `.passed`/`.failed` roles now only applied to tables with a scenario column as row and test results correlation is otherwise not possible
+
 ### Fixed
 - AsciiDoc index-to-index links now generate as proper file paths instead of anchor references in HTML output
 - Empty index files no longer generated for test classes without TableTest methods
+- Scenario names containing parentheses now match correctly (previously truncated at first opening parenthesis)
 
 ## [0.3.0] - 2025-12-21
 ### Added

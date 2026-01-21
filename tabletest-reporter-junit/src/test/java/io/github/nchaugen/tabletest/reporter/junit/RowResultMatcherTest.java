@@ -17,11 +17,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RowResultMatcherTest {
 
     @TableTest("""
-        Actual Display Name     | Expected Pattern    | Matches?
-        '[1] Simple scenario'   | 'Simple scenario'   | true
-        '[1] Different name'    | 'Simple scenario'   | false
-        '[2] Another scenario'  | 'Simple scenario'   | false
-        '[1] Match with spaces' | 'Match with spaces' | true
+        Actual Display Name            | Expected Pattern           | Matches?
+        '[1] Simple scenario'          | 'Simple scenario'          | true
+        '[1] Different name'           | 'Simple scenario'          | false
+        '[2] Another scenario'         | 'Simple scenario'          | false
+        '[1] Match with spaces'        | 'Match with spaces'        | true
+        '[1] Match with (parenthesis)' | 'Match with (parenthesis)' | true
+        '[1] "Test scenario"'          | 'Test scenario'            | true
+        '[1] Test scenario'            | 'Test scenario'            | true
         """)
     void shouldMatchWithScenarioColumn(@Scenario String actualDisplayName, String expectedPattern, boolean matches) {
         Table table = TableParser.parse("a|b");
@@ -42,24 +45,13 @@ class RowResultMatcherTest {
     }
 
     @Test
-    void shouldMatchWithoutScenarioColumn() {
+    void shouldNotMatchWithoutScenarioColumn() {
+        // Without a scenario column, matching is unreliable due to parameter type conversion
+        // so we always return false (no .passed/.failed roles applied)
         Table table = TableParser.parse("a|b|c\n1|2|3");
 
-        assertTrue(RowResultMatcher.matchesRow("[1] 1, 2, 3", Optional.empty(), table, 0));
+        assertFalse(RowResultMatcher.matchesRow("[1] 1, 2, 3", Optional.empty(), table, 0));
         assertFalse(RowResultMatcher.matchesRow("[1] 1, 2, 4", Optional.empty(), table, 0));
-        assertFalse(RowResultMatcher.matchesRow("[1] 1, 2", Optional.empty(), table, 0));
-    }
-
-    @Test
-    void shouldFailToMatchWhenCellValuesContainCommas() {
-        // This demonstrates the known limitation: comma-separated parsing breaks
-        // when cell values themselves contain commas
-        Table table = TableParser.parse("name|value\nJohn, Doe|123");
-
-        // This SHOULD match but WON'T due to comma-splitting limitation
-        // The display name "John, Doe, 123" gets split into ["John", "Doe", "123"]
-        // but the table has only 2 columns: ["John, Doe", "123"]
-        assertFalse(RowResultMatcher.matchesRow("[1] John, Doe, 123", Optional.empty(), table, 0));
     }
 
     @Test
@@ -76,15 +68,15 @@ class RowResultMatcherTest {
     }
 
     @Test
-    void shouldFindMatchingResultsWithoutScenarioColumn() {
+    void shouldReturnEmptyListWithoutScenarioColumn() {
+        // Without a scenario column, matching always fails (returns empty list)
         Table table = TableParser.parse("a|b\n1|2\n3|4");
         List<RowResult> results =
                 List.of(new RowResult(1, true, null, "[1] 1, 2"), new RowResult(2, false, null, "[2] 3, 4"));
 
         List<RowResult> matches = RowResultMatcher.findMatchingResults(0, table, OptionalInt.empty(), results);
 
-        assertEquals(1, matches.size());
-        assertEquals("[1] 1, 2", matches.getFirst().displayName());
+        assertTrue(matches.isEmpty());
     }
 
     @Test
@@ -117,20 +109,19 @@ class RowResultMatcherTest {
         '1 Wrong format'    | false
         """)
     void shouldRejectInvalidDisplayNameFormat(@Scenario String actualDisplayName, boolean matches) {
-        Table table = TableParser.parse("a|b");
-        boolean result = RowResultMatcher.matchesRow(actualDisplayName, Optional.empty(), table, 0);
+        Table table = TableParser.parse("scenario|value\nTest|foo");
+        boolean result = RowResultMatcher.matchesRow(actualDisplayName, Optional.of("Test"), table, 0);
         assertEquals(matches, result);
     }
 
     @Test
     void shouldMatchEmptyStringScenario() {
-        // Based on JavaScenarioNameTest: "" in table should match JUnit display of ""
-        // Table: "" in scenario column
+        // Table has empty string in scenario column (represented as "" in input)
         Table table = TableParser.parse("Scenario|value\n\"\"|foo");
 
-        // JUnit displays empty string ("") as: [2] ""
-        // The display name contains literal quotes around empty string
-        boolean result = RowResultMatcher.matchesRow("[2] \"\"", Optional.of("\"\""), table, 0);
+        // JUnit 6.0+ displays empty string as: [2] ""
+        // After stripping quotes, we get empty string, which matches table value
+        boolean result = RowResultMatcher.matchesRow("[2] \"\"", Optional.of(""), table, 0);
         assertTrue(result, "Should match empty string scenario - JUnit displays \\\"\\\" for empty string parameter");
     }
 

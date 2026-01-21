@@ -24,9 +24,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Parses and matches JUnit display names against table rows.
- * Handles both scenario-based and fuzzy matching for set expansion.
- *
+ * Matches JUnit test results against table rows using scenario column values.
+ * <p>
+ * <strong>IMPORTANT:</strong> Reliable matching requires a scenario column.
+ * Tables without a scenario column will not have {@code .passed}/{@code .failed}
+ * roles applied because parameter type conversion makes matching unreliable.
+ * <p>
+ * When matching fails (e.g., duplicate scenario names, no scenario column),
+ * no roles are applied to the row. Users can fix duplicate scenario names
+ * by ensuring each row has a unique scenario value.
+ * <p>
  * This is a utility class with static methods only.
  */
 class RowResultMatcher {
@@ -59,7 +66,7 @@ class RowResultMatcher {
     /**
      * Builds the expected display name for a table row.
      * - If scenario column exists: returns Optional with the scenario value
-     * - Otherwise: returns empty Optional (will use fuzzy matching for non-scenario rows)
+     * - Otherwise: returns empty Optional (no matching will occur)
      * <p>
      * Handles JUnit's display name formatting:
      * - null values are displayed as "null"
@@ -82,32 +89,44 @@ class RowResultMatcher {
             }
         }
 
-        // For rows without scenario column, return empty to indicate fuzzy matching
+        // For rows without scenario column, return empty to indicate no matching
         return Optional.empty();
     }
 
     /**
-     * Formats a value as JUnit would display it in test names.
-     * - null → "null"
-     * - empty string → "\"\"" (with quotes)
+     * Formats a value for comparison with display names.
+     * <p>
+     * Note: Quote-stripping is handled separately by {@link #stripSurroundingQuotes},
+     * so this method returns raw string values without adding quotes.
+     * <p>
+     * - null → "null" (JUnit displays null as the string "null")
      * - other values → String.valueOf(value)
      */
     private static String formatForJUnitDisplay(Object value) {
         if (value == null) {
             return "null";
         }
-        if (value instanceof String str && str.isEmpty()) {
-            return "\"\"";
-        }
         return String.valueOf(value);
     }
 
     /**
      * Checks if a test result display name matches the expected row pattern.
-     * Display name format: "[index] displayName" or "[index] displayName (params)"
-     * We match on the displayName part (before any parentheses for expansion params).
+     * Display name format: "[index] displayName" or "[index] displayName (expansion params)"
+     * <p>
+     * Set expansion adds parameters like "(value = a)" after the scenario name.
+     * We use {@code startsWith()} to match the scenario name, which handles both:
+     * - Scenario names containing parentheses (e.g., "Match (example)")
+     * - Set expansion parameters appended after the scenario name
+     * <p>
+     * Returns {@code false} if no scenario column exists, as matching without a scenario
+     * column is unreliable due to parameter type conversion.
      */
     static boolean matchesRow(String actualDisplayName, Optional<String> expectedPattern, Table table, int rowIndex) {
+        // No scenario column means no reliable matching possible
+        if (expectedPattern.isEmpty()) {
+            return false;
+        }
+
         Matcher matcher = DISPLAY_NAME_PATTERN.matcher(actualDisplayName);
         if (!matcher.matches()) {
             return false;
@@ -115,63 +134,28 @@ class RowResultMatcher {
 
         String displayNamePart = matcher.group(2);
 
-        // Remove expansion parameters (everything from first '(' onwards)
-        int parenIndex = displayNamePart.indexOf('(');
-        if (parenIndex >= 0) {
-            displayNamePart = displayNamePart.substring(0, parenIndex).trim();
-        }
+        // Strip surrounding quotes (JUnit 6.0+ quotes String parameters)
+        displayNamePart = stripSurroundingQuotes(displayNamePart);
 
-        // If there's a scenario column, do exact matching
-        if (expectedPattern.isPresent()) {
-            return displayNamePart.equals(expectedPattern.get());
-        }
-
-        // For rows without scenario column, use fuzzy matching
-        // This handles set expansion where display names vary
-        return matchesRowWithoutScenario(displayNamePart, table, rowIndex);
+        // Check if display name starts with expected pattern
+        // This handles both scenario names with parentheses and set expansion parameters
+        return displayNamePart.startsWith(expectedPattern.get());
     }
 
     /**
-     * Matches a display name against a row when there's no scenario column.
-     * Handles set expansion by checking if non-Set values match their positions.
+     * Strips surrounding double quotes from a string if present.
+     * <p>
+     * JUnit 6.0+ quotes String parameters in display names: {@code "value"}
+     * This method strips those quotes for comparison against table scenario values.
+     * For JUnit 5.x (no quotes), this is a no-op.
      *
-     * Note: This implementation assumes display names use comma-separated values.
-     * It will fail if table cell values themselves contain commas, as JUnit's
-     * display name generation doesn't escape commas in parameter values.
+     * @param value the display name value (potentially quoted)
+     * @return the value without surrounding quotes if they were present
      */
-    private static boolean matchesRowWithoutScenario(String displayNamePart, Table table, int rowIndex) {
-        var rows = table.rows();
-        if (rowIndex >= rows.size()) {
-            return false;
+    private static String stripSurroundingQuotes(String value) {
+        if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
+            return value.substring(1, value.length() - 1);
         }
-
-        var row = rows.get(rowIndex);
-
-        // Split by comma - NOTE: This breaks if cell values contain commas
-        // This is a limitation of JUnit's display name format
-        String[] displayValues = displayNamePart.split(",\\s*");
-
-        // If the number of display values doesn't match column count, no match
-        if (displayValues.length != table.columnCount()) {
-            return false;
-        }
-
-        // Check if non-Set values in the row match the corresponding display values
-        for (int i = 0; i < table.columnCount(); i++) {
-            Object rowValue = row.value(i);
-
-            // Skip Set values (these will vary in display names due to expansion)
-            if (rowValue instanceof java.util.Set) {
-                continue;
-            }
-
-            // Check if the non-Set value matches the display name at this position
-            String expectedValue = String.valueOf(rowValue);
-            if (!expectedValue.equals(displayValues[i])) {
-                return false;
-            }
-        }
-
-        return true;
+        return value;
     }
 }

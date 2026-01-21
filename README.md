@@ -205,6 +205,30 @@ class AuthenticationTest {
 - **Table structure:** Headers, rows, and column roles (scenario vs expectation columns)
 - **Test results:** Pass/fail status for each row
 
+**Important: Scenario Column Requirement**
+
+To enable pass/fail indicators (`.passed`/`.failed` CSS roles) in your generated documentation, **your table must include a scenario column**, either implicitly as a leading, undeclared column, or explicitly with the `@Scenario` annotation marker.
+
+```java
+@TableTest("""
+    Scenario | Username | Password | Expected?
+    Success  | admin    | secret   | true      ← .passed role applied
+    Failure  | guest    | wrong    | false     ← .passed/.failed role applied
+    """)
+```
+
+Without a scenario column, pass/fail roles cannot be reliably applied due to parameter type conversion. Tables without scenario columns will still generate documentation, but rows won't be marked with pass/fail indicators:
+
+```java
+@TableTest("""
+    Username | Password | Expected?
+    admin    | secret   | true      ← No .passed/.failed roles
+    guest    | wrong    | false     ← No .passed/.failed roles
+    """)
+```
+
+The scenario column can have any name (`Scenario`, `Test Case`, `Description`, etc.) and contain any unique string value to identify each test case.
+
 ## Step 3: Run Your Tests
 
 Run your tests normally. The extension automatically generates YAML files in `<buildDir>/junit-jupiter/`:
