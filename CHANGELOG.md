@@ -1,6 +1,8 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+
+## [0.3.1]
 ### Changed
 - `.passed`/`.failed` roles now only applied to tables with a scenario column as row and test results correlation is otherwise not possible
 
@@ -46,3 +48,12 @@
 - Support for AsciiDoc and Markdown output formats
 - Template-based rendering using Pebble template engine
 - Slugified output directories and filenames
+
+
+[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.1...HEAD
+[0.3.1]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.0...tabletest-reporter-0.3.1
+[0.3.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.2.1...tabletest-reporter-0.3.0
+[0.2.1]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.2.0...tabletest-reporter-0.2.1
+[0.2.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.1.1...tabletest-reporter-0.2.0
+[0.1.1]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.1.0...tabletest-reporter-0.1.1
+[0.1.0]: https://github.com/nchaugen/tabletest-reporter/commits/tabletest-reporter-0.1.0

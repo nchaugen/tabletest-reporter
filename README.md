@@ -27,14 +27,14 @@ Add the TableTest Reporter JUnit extension to your test dependencies and enable 
 <dependency>
     <groupId>io.github.nchaugen</groupId>
     <artifactId>tabletest-reporter-junit</artifactId>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
     <scope>test</scope>
 </dependency>
 ```
 
 **Gradle:**
 ```kotlin
-testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.3.0")
+testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.3.1")
 ```
 
 ### Enable Automatic Extension Detection
@@ -260,7 +260,7 @@ Add the plugin to your `pom.xml`:
     <plugin>
       <groupId>io.github.nchaugen</groupId>
       <artifactId>tabletest-reporter-maven-plugin</artifactId>
-      <version>0.3.0</version>
+      <version>0.3.1</version>
     </plugin>
   </plugins>
 </build>
@@ -295,7 +295,7 @@ Add the plugin to your `build.gradle.kts`:
 
 ```kotlin
 plugins {
-  id("io.github.nchaugen.tabletest-reporter") version "0.3.0"
+  id("io.github.nchaugen.tabletest-reporter") version "0.3.1"
 }
 ```
 
