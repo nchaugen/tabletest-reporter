@@ -1,0 +1,51 @@
+/* TableTest CSS Stylesheet - Distinctive colors for CSS class verification */
+
+/* Scenario column (first column) */
+.scenario {
+    background-color: #fffacd; /* light yellow */
+    font-style: italic;
+}
+
+/* Expectation column headers (columns ending with ?) */
+.expectation {
+    background-color: #add8e6; /* light blue */
+}
+
+/* Passed rows */
+.passed {
+    background-color: #90ee90; /* light green */
+}
+
+/* Failed rows */
+.failed {
+    background-color: #ffcccb; /* light red */
+}
+
+/* Expectation cells in passed rows */
+.expectation.passed {
+    background-color: #32cd32; /* medium green */
+    font-weight: bold;
+}
+
+/* Expectation cells in failed rows */
+.expectation.failed {
+    background-color: #ff6347; /* medium red */
+    font-weight: bold;
+}
+
+/* General table styling */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    font-weight: bold;
+}
