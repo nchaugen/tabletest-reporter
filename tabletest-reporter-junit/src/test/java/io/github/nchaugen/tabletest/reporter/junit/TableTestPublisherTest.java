@@ -52,7 +52,7 @@ class TableTestPublisherTest {
         results.testEvents()
                 .assertStatistics(stats -> stats.started(3).succeeded(3).failed(0));
 
-        Path yamlFile = findYamlFile(tempDir, "All rows pass");
+        Path yamlFile = findExpectedYamlFile(tempDir, "All rows pass");
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
         assertEquals("""
@@ -124,7 +124,7 @@ class TableTestPublisherTest {
         results.testEvents()
                 .assertStatistics(stats -> stats.started(3).succeeded(2).failed(1));
 
-        Path yamlFile = findYamlFile(tempDir, "One row fails");
+        Path yamlFile = findExpectedYamlFile(tempDir, "One row fails");
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
         assertEquals("""
@@ -222,7 +222,7 @@ class TableTestPublisherTest {
         results.testEvents()
                 .assertStatistics(stats -> stats.started(3).succeeded(3).failed(0));
 
-        Path classYamlFile = findYamlFile(tempDir, "Verifying YAML Output");
+        Path classYamlFile = findExpectedYamlFile(tempDir, "Verifying YAML Output");
         assertTrue(Files.exists(classYamlFile), "Class YAML file should exist");
 
         assertEquals("""
@@ -243,7 +243,7 @@ class TableTestPublisherTest {
         results.testEvents()
                 .assertStatistics(stats -> stats.started(8).succeeded(6).failed(2));
 
-        Path yamlFile = findYamlFile(tempDir, "One expanded row with scenario name fails");
+        Path yamlFile = findExpectedYamlFile(tempDir, "One expanded row with scenario name fails");
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
         assertEquals("""
@@ -331,7 +331,7 @@ class TableTestPublisherTest {
         results.testEvents()
                 .assertStatistics(stats -> stats.started(8).succeeded(6).failed(2));
 
-        Path yamlFile = findYamlFile(tempDir, "One expanded row without scenario name fails");
+        Path yamlFile = findExpectedYamlFile(tempDir, "One expanded row without scenario name fails");
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
         assertEquals("""
@@ -392,7 +392,28 @@ class TableTestPublisherTest {
                 """, Files.readString(yamlFile));
     }
 
-    private Path findYamlFile(Path baseDir, String name) throws IOException {
+    @Test
+    void shouldNotPublishTestClassYamlWhenNoTableTestMethods() throws IOException {
+        var results = EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(NoTableTestMethodsTest.class))
+                .configurationParameter("junit.platform.output.dir", tempDir.toString())
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
+
+        results.testEvents()
+                .assertStatistics(stats -> stats.started(1).succeeded(1).failed(0));
+
+        // Verify no YAML files were generated for this class
+        try (var paths = Files.walk(tempDir)) {
+            long yamlFileCount = paths.filter(p -> p.getFileName().toString().startsWith("TABLETEST-"))
+                    .filter(p -> p.getFileName().toString().endsWith(".yaml"))
+                    .count();
+            assertEquals(0, yamlFileCount, "No YAML files should be generated for class without @TableTest methods");
+        }
+    }
+
+    private Path findExpectedYamlFile(Path baseDir, String name) throws IOException {
         // Transform the name to match the filename transformation applied by TableTestPublisher
         String transformedName = FilenameTransformer.transform(name);
         try (var paths = Files.walk(baseDir)) {
@@ -462,6 +483,14 @@ class TableTestPublisherTest {
             """)
         public void oneRowWithoutScenarioFails(int a, int b, int sum) {
             assertEquals(sum, a + b);
+        }
+    }
+
+    @ExtendWith(TableTestPublisher.class)
+    public static class NoTableTestMethodsTest {
+        @Test
+        public void regularTestMethod() {
+            assertEquals(2, 1 + 1);
         }
     }
 }

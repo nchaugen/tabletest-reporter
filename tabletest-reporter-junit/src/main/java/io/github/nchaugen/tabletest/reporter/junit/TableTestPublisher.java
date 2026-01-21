@@ -109,13 +109,14 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
 
     @Override
     public void afterAll(ExtensionContext context) {
-        publishTables(context);
-        publishTestClass(context);
+        List<ExtensionContext> methodContexts = store.getMethodsToPublish(context);
+        if (!methodContexts.isEmpty()) {
+            publishTables(methodContexts);
+            publishTestClass(context);
+        }
     }
 
-    private void publishTables(ExtensionContext context) {
-        List<ExtensionContext> methodContexts = store.getMethodsToPublish(context);
-
+    private void publishTables(List<ExtensionContext> methodContexts) {
         for (ExtensionContext methodContext : methodContexts) {
             Table table = store.getTable(methodContext);
             List<RowResult> rowResults = store.getRowResults(methodContext);
