@@ -243,11 +243,9 @@ jobs:
           TEST_RESULT="${{ steps.test.outputs.result }}"
 
           if [ "$TEST_RESULT" = "passed" ]; then
-            TEST_STATUS="Compatibility tests **passed**"
-            LABELS="dependencies"
+            TEST_STATUS="Compatibility tests **passed** ✅"
           else
-            TEST_STATUS="Compatibility tests **failed** - investigation needed"
-            LABELS="dependencies,test-failure"
+            TEST_STATUS="Compatibility tests **failed** ⚠️ - investigation needed"
           fi
 
           gh pr create \
@@ -269,6 +267,5 @@ jobs:
           *This PR was automatically created by the version update workflow.*
           EOF
           )" \
-            --label "$LABELS" \
             --head "$BRANCH" \
             --base main
