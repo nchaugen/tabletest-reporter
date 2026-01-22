@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>6.0.1</junit.version>
         <tabletest.version>0.5.8</tabletest.version>
-        <tabletest-reporter.version>0.3.1-SNAPSHOT</tabletest-reporter.version>
+        <tabletest-reporter.version>0.3.2-SNAPSHOT</tabletest-reporter.version>
         <jsoup.version>1.22.1</jsoup.version>
         <asciidoctor.version>3.2.0</asciidoctor.version>
     </properties>
