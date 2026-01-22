@@ -87,20 +87,20 @@ echo -e "\n${YELLOW}[8/8] Verifying CSS classes in HTML files...${NC}"
 # Get classpath for running HtmlCssVerifier
 CLASSPATH="target/test-classes:$(mvn dependency:build-classpath -q -Dmdep.outputFile=/dev/stdout)"
 
-# Verify addition.html (3 passed, 0 failed)
+# Verify addition.html (3 passed, 0 failed, 4 scenarios: 3 rows + 1 header)
 echo -e "\n  Verifying addition.html..."
 java -cp "$CLASSPATH" com.example.HtmlCssVerifier \
-    "$HTML_DIR/calculator-tests/addition.html" 3 0
+    "$HTML_DIR/calculator-tests/addition.html" 3 0 4
 
-# Verify subtraction.html (2 passed, 2 failed)
+# Verify subtraction.html (2 passed, 2 failed, 5 scenarios: 4 rows + 1 header)
 echo -e "\n  Verifying subtraction.html..."
 java -cp "$CLASSPATH" com.example.HtmlCssVerifier \
-    "$HTML_DIR/calculator-tests/subtraction.html" 2 2
+    "$HTML_DIR/calculator-tests/subtraction.html" 2 2 5
 
-# Verify multiplication.html (0 passed, 2 failed)
+# Verify multiplication.html (0 passed, 2 failed, 3 scenarios: 2 rows + 1 header)
 echo -e "\n  Verifying multiplication.html..."
 java -cp "$CLASSPATH" com.example.HtmlCssVerifier \
-    "$HTML_DIR/calculator-tests/multiplication.html" 0 2
+    "$HTML_DIR/calculator-tests/multiplication.html" 0 2 3
 
 echo -e "\n${GREEN}✓ All CSS class verifications passed${NC}"
 

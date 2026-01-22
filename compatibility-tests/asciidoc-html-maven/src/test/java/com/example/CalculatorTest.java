@@ -1,5 +1,6 @@
 package com.example;
 
+import io.github.nchaugen.tabletest.junit.Scenario;
 import io.github.nchaugen.tabletest.junit.TableTest;
 import org.junit.jupiter.api.DisplayName;
 
@@ -15,8 +16,8 @@ class CalculatorTest {
             Large       | 10| 15| 25
             """)
     @DisplayName("Addition")
-    void testAddition(String scenario, int a, int b, int sum) {
-        assertEquals(sum, a + b, "Addition failed for scenario: " + scenario);
+    void testAddition(int a, int b, int sum) {
+        assertEquals(sum, a + b);
     }
 
     @TableTest("""
@@ -27,7 +28,7 @@ class CalculatorTest {
             Large       | 20| 12| 7
             """)
     @DisplayName("Subtraction")
-    void testSubtraction(String scenario, int a, int b, int difference) {
+    void testSubtraction(@Scenario String scenario, int a, int b, int difference) {
         // Intentionally wrong calculation for last two rows
         int result = (scenario.equals("Negative") || scenario.equals("Large")) ? 0 : a - b;
         assertEquals(difference, result, "Subtraction failed for scenario: " + scenario);
@@ -39,8 +40,8 @@ class CalculatorTest {
             Double      | 4 | 5 | 20
             """)
     @DisplayName("Multiplication")
-    void testMultiplication(String scenario, int a, int b, int product) {
+    void testMultiplication(int a, int b, int product) {
         // Intentionally return zero to fail all tests
-        assertEquals(product, 0, "Multiplication failed for scenario: " + scenario);
+        assertEquals(product, 0);
     }
 }
