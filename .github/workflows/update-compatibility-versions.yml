@@ -1,0 +1,271 @@
+name: Update Compatibility Test Versions
+
+on:
+  schedule:
+    # Run weekly on Monday at 6:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      framework:
+        description: 'Framework to update (leave empty for all)'
+        required: false
+        type: choice
+        options:
+          - ''
+          - spring-boot
+          - quarkus
+          - junit
+          - gradle
+          - asciidoctor
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - framework: spring-boot
+            test-dir: spring-boot-latest
+            artifact-group: org.springframework.boot
+            artifact-id: spring-boot-starter-parent
+            version-file: compatibility-tests/spring-boot-latest/pom.xml
+          - framework: quarkus
+            test-dir: quarkus-latest
+            artifact-group: io.quarkus.platform
+            artifact-id: quarkus-bom
+            version-file: compatibility-tests/quarkus-latest/pom.xml
+          - framework: junit
+            test-dir: junit-latest
+            artifact-group: org.junit.jupiter
+            artifact-id: junit-jupiter
+            version-file: compatibility-tests/junit-latest/pom.xml
+          - framework: gradle
+            test-dir: gradle-latest
+            artifact-group: gradle
+            artifact-id: gradle
+            version-file: compatibility-tests/gradle-latest/gradle/wrapper/gradle-wrapper.properties
+          - framework: asciidoctor
+            test-dir: asciidoc-html-maven
+            artifact-group: org.asciidoctor
+            artifact-id: asciidoctor-maven-plugin
+            version-file: compatibility-tests/asciidoc-html-maven/pom.xml
+
+    steps:
+      - name: Check if framework should run
+        id: should-run
+        run: |
+          INPUT_FRAMEWORK="${{ github.event.inputs.framework }}"
+          MATRIX_FRAMEWORK="${{ matrix.framework }}"
+          if [ -z "$INPUT_FRAMEWORK" ] || [ "$INPUT_FRAMEWORK" = "$MATRIX_FRAMEWORK" ]; then
+            echo "run=true" >> $GITHUB_OUTPUT
+          else
+            echo "run=false" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.should-run.outputs.run == 'true'
+
+      - name: Get current version
+        if: steps.should-run.outputs.run == 'true'
+        id: current
+        run: |
+          FILE="${{ matrix.version-file }}"
+
+          case "${{ matrix.framework }}" in
+            spring-boot)
+              # Extract version from parent section
+              CURRENT=$(sed -n '/<parent>/,/<\/parent>/p' "$FILE" | grep -oP '(?<=<version>)[\d.]+(?=</version>)')
+              ;;
+            quarkus)
+              CURRENT=$(grep -oP '(?<=<version.quarkus>)[\d.]+(?=</version.quarkus>)' "$FILE")
+              ;;
+            junit)
+              CURRENT=$(grep -oP '(?<=<version.junit>)[\d.]+(?=</version.junit>)' "$FILE")
+              ;;
+            gradle)
+              CURRENT=$(grep -oP 'gradle-\K[\d.]+(?=-bin\.zip)' "$FILE")
+              ;;
+            asciidoctor)
+              CURRENT=$(grep -oP '(?<=<asciidoctor.version>)[\d.]+(?=</asciidoctor.version>)' "$FILE")
+              ;;
+          esac
+
+          echo "version=$CURRENT" >> $GITHUB_OUTPUT
+          echo "Current ${{ matrix.framework }} version: $CURRENT"
+
+      - name: Get latest stable version
+        if: steps.should-run.outputs.run == 'true'
+        id: latest
+        run: |
+          if [ "${{ matrix.framework }}" = "gradle" ]; then
+            # Fetch from Gradle services API
+            LATEST=$(curl -s "https://services.gradle.org/versions/current" | jq -r '.version')
+          else
+            # Fetch from Maven Central
+            GROUP=$(echo "${{ matrix.artifact-group }}" | tr '.' '/')
+            ARTIFACT="${{ matrix.artifact-id }}"
+
+            # Get all versions and filter to stable releases only
+            VERSIONS=$(curl -s "https://repo1.maven.org/maven2/${GROUP}/${ARTIFACT}/maven-metadata.xml" | \
+              grep -oP '(?<=<version>)[^<]+(?=</version>)' | \
+              grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | \
+              sort -V)
+
+            LATEST=$(echo "$VERSIONS" | tail -1)
+          fi
+
+          echo "version=$LATEST" >> $GITHUB_OUTPUT
+          echo "Latest ${{ matrix.framework }} version: $LATEST"
+
+      - name: Check if update needed
+        if: steps.should-run.outputs.run == 'true'
+        id: check
+        run: |
+          CURRENT="${{ steps.current.outputs.version }}"
+          LATEST="${{ steps.latest.outputs.version }}"
+
+          if [ "$CURRENT" = "$LATEST" ]; then
+            echo "update=false" >> $GITHUB_OUTPUT
+            echo "${{ matrix.framework }} is already at latest version $LATEST"
+          else
+            echo "update=true" >> $GITHUB_OUTPUT
+            echo "${{ matrix.framework }} can be updated: $CURRENT -> $LATEST"
+          fi
+
+      - name: Check if PR already exists
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true'
+        id: pr-exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="update-${{ matrix.framework }}-${{ steps.latest.outputs.version }}"
+          EXISTING=$(gh pr list --head "$BRANCH" --json number --jq 'length')
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "PR already exists for $BRANCH"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up JDK 21
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Create update branch
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        run: |
+          BRANCH="update-${{ matrix.framework }}-${{ steps.latest.outputs.version }}"
+          git checkout -b "$BRANCH"
+
+      - name: Update version in file
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        run: |
+          FILE="${{ matrix.version-file }}"
+          CURRENT="${{ steps.current.outputs.version }}"
+          LATEST="${{ steps.latest.outputs.version }}"
+
+          case "${{ matrix.framework }}" in
+            spring-boot)
+              # Update version in parent section only
+              sed -i "/<parent>/,/<\/parent>/s/<version>${CURRENT}<\/version>/<version>${LATEST}<\/version>/" "$FILE"
+              ;;
+            quarkus)
+              sed -i "s/<version.quarkus>${CURRENT}<\/version.quarkus>/<version.quarkus>${LATEST}<\/version.quarkus>/" "$FILE"
+              ;;
+            junit)
+              sed -i "s/<version.junit>${CURRENT}<\/version.junit>/<version.junit>${LATEST}<\/version.junit>/" "$FILE"
+              ;;
+            gradle)
+              sed -i "s/gradle-${CURRENT}-bin\.zip/gradle-${LATEST}-bin.zip/" "$FILE"
+              ;;
+            asciidoctor)
+              sed -i "s/<asciidoctor.version>${CURRENT}<\/asciidoctor.version>/<asciidoctor.version>${LATEST}<\/asciidoctor.version>/" "$FILE"
+              ;;
+          esac
+
+          echo "Updated $FILE:"
+          git diff "$FILE"
+
+      - name: Build main project
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        run: mvn clean install -DskipTests
+
+      - name: Build Gradle plugin
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false' && matrix.framework == 'gradle'
+        run: |
+          cd tabletest-reporter-gradle-plugin
+          ./gradlew clean build publishToMavenLocal
+
+      - name: Run compatibility test
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        id: test
+        continue-on-error: true
+        run: |
+          cd "compatibility-tests/${{ matrix.test-dir }}"
+          if bash test.sh; then
+            echo "result=passed" >> $GITHUB_OUTPUT
+            echo "Tests passed!"
+          else
+            echo "result=failed" >> $GITHUB_OUTPUT
+            echo "Tests failed!"
+          fi
+
+      - name: Commit changes
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "${{ matrix.version-file }}"
+          git commit -m "chore: Update ${{ matrix.framework }} to ${{ steps.latest.outputs.version }}"
+
+      - name: Push branch
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        run: |
+          BRANCH="update-${{ matrix.framework }}-${{ steps.latest.outputs.version }}"
+          git push origin "$BRANCH"
+
+      - name: Create Pull Request
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="update-${{ matrix.framework }}-${{ steps.latest.outputs.version }}"
+          CURRENT="${{ steps.current.outputs.version }}"
+          LATEST="${{ steps.latest.outputs.version }}"
+          TEST_RESULT="${{ steps.test.outputs.result }}"
+
+          if [ "$TEST_RESULT" = "passed" ]; then
+            TEST_STATUS="Compatibility tests **passed**"
+            LABELS="dependencies"
+          else
+            TEST_STATUS="Compatibility tests **failed** - investigation needed"
+            LABELS="dependencies,test-failure"
+          fi
+
+          gh pr create \
+            --title "chore: Update ${{ matrix.framework }} to ${LATEST}" \
+            --body "$(cat <<EOF
+          ## Summary
+
+          Updates ${{ matrix.framework }} compatibility test from \`${CURRENT}\` to \`${LATEST}\`.
+
+          ## Test Results
+
+          ${TEST_STATUS}
+
+          ## Changes
+
+          - Updated \`${{ matrix.version-file }}\`
+
+          ---
+          *This PR was automatically created by the version update workflow.*
+          EOF
+          )" \
+            --label "$LABELS" \
+            --head "$BRANCH" \
+            --base main
