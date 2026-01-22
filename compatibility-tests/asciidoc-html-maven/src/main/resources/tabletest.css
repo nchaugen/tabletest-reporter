@@ -1,34 +1,34 @@
 /* TableTest CSS Stylesheet - Distinctive colors for CSS class verification */
 
 /* Scenario column (first column) */
-.scenario {
+:is(th, td):has(.scenario) {
     background-color: #fffacd; /* light yellow */
     font-style: italic;
 }
 
 /* Expectation column headers (columns ending with ?) */
-.expectation {
+:is(th, td):has(.expectation) {
     background-color: #add8e6; /* light blue */
 }
 
 /* Passed rows */
-.passed {
+:is(th, td):has(.passed) {
     background-color: #90ee90; /* light green */
 }
 
 /* Failed rows */
-.failed {
+:is(th, td):has(.failed) {
     background-color: #ffcccb; /* light red */
 }
 
 /* Expectation cells in passed rows */
-.expectation.passed {
+:is(th, td):has(.expectation.passed) {
     background-color: #32cd32; /* medium green */
     font-weight: bold;
 }
 
 /* Expectation cells in failed rows */
-.expectation.failed {
+:is(th, td):has(.expectation.failed) {
     background-color: #ff6347; /* medium red */
     font-weight: bold;
 }
