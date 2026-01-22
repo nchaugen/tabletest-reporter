@@ -151,6 +151,15 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Delete stale remote branch
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        run: |
+          BRANCH="update-${{ matrix.framework }}-${{ steps.latest.outputs.version }}"
+          if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null 2>&1; then
+            echo "Deleting stale remote branch: $BRANCH"
+            git push origin --delete "$BRANCH"
+          fi
+
       - name: Set up JDK 21
         if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
         uses: actions/setup-java@v4
