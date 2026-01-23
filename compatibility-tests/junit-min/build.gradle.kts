@@ -29,9 +29,9 @@ repositories {
 }
 
 dependencies {
-    // JUnit 6 (latest)
-    testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.1")
+    // JUnit 5.12 (minimum claimed version)
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.0")
 
     // TableTest
     testImplementation("io.github.nchaugen:tabletest-junit:0.5.8")
@@ -45,6 +45,12 @@ tasks.test {
 
     // Enable JUnit extension autodetection
     systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
+
+    // Custom expectation pattern for testing
+    systemProperty("tabletest.reporter.expectation.pattern", "^Expected.*")
+
+    // Allow intentional test failures
+    ignoreFailures = true
 }
 
 // Configure tabletest-reporter plugin for Markdown output
