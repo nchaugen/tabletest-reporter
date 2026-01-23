@@ -43,14 +43,15 @@ The extension uses JUnit's ServiceLoader mechanism to activate automatically. Yo
 
 **Which approach should I use?**
 
-| Build Tool | Scenario | Recommended Approach |
-|------------|----------|---------------------|
-| **Any** | Standard projects | Option 1: `junit-platform.properties` |
-| **Maven** | Simple setup (no Surefire config) | Option 2: Maven property |
-| **Maven** | Already using Surefire plugin | Option 3: Surefire config |
-| **Maven** | Quarkus projects | Option 2: Maven property (avoids conflict) |
-| **Gradle** | Any Gradle project | Option 4: Gradle config |
-| **CLI** | Running tests directly | Option 5: Command-line argument |
+| Build Tool | Scenario                          | Recommended Approach                       |
+|------------|-----------------------------------|--------------------------------------------|
+| **Any**    | Standard projects                 | Option 1: `junit-platform.properties`      |
+| **Maven**  | Simple setup (no Surefire config) | Option 2: Maven property                   |
+| **Maven**  | Already using Surefire plugin     | Option 3: Surefire config                  |
+| **Maven**  | Quarkus projects                  | Option 2: Maven property (avoids conflict) |
+| **Gradle** | JUnit 5.12                        | Option 4: Gradle config                    |
+| **Gradle** | JUnit 6+ (Spring Boot 4+)         | Option 4: Gradle config (see JUnit 6 note) |
+| **CLI**    | Running tests directly            | Option 5: Command-line argument            |
 
 <details>
 <summary><b>Option 1: JUnit Platform Properties</b> (Recommended for most projects)</summary>
@@ -138,12 +139,30 @@ tasks.test {
 }
 ```
 
+**JUnit 6+ with Gradle:** If you're using JUnit 6.0+ (e.g., via Spring Boot 4.0+), you also need to configure the JUnit Platform output directory for the `publishFile()` API:
+
+```kotlin
+tasks.test {
+    useJUnitPlatform()
+    systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
+
+    // Required for JUnit 6+ with Gradle
+    val outputDir = layout.buildDirectory
+    jvmArgumentProviders += CommandLineArgumentProvider {
+        listOf("-Djunit.platform.reporting.output.dir=${outputDir.get().asFile.absolutePath}")
+    }
+}
+```
+
+This is not needed for JUnit 5.12 with Gradle, or for any JUnit version with Maven (Surefire handles it automatically).
+
 **Pros:**
 - Standard Gradle approach for JUnit configuration
 - All test configuration in build file
 
 **Cons:**
 - Gradle-specific
+- JUnit 6+ requires additional output directory configuration
 
 </details>
 
@@ -702,7 +721,7 @@ See the [Asciidoctor stylesheet documentation](https://docs.asciidoctor.org/asci
 
 **Working Example**
 
-A complete working example is available in the project's compatibility tests: [`compatibility-tests/asciidoc-html-maven/`](compatibility-tests/asciidoc-html-maven/)
+A complete working example is available in the project's compatibility tests: [`compatibility-tests/junit-latest/`](compatibility-tests/junit-latest/)
 
 ### For Plugin Developers
 
