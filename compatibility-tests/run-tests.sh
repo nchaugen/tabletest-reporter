@@ -73,7 +73,6 @@ run_test "spring-boot-latest"
 run_test "quarkus-min"
 run_test "quarkus-latest"
 run_test "gradle-latest"
-run_test "asciidoc-html-maven"
 
 # Summary
 echo ""

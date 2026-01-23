@@ -2,7 +2,6 @@ package com.example;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
@@ -59,8 +58,6 @@ public class HtmlCssVerifier {
 
     /**
      * Verifies the count of expectation and scenario elements in the HTML file.
-     * Note: Currently tabletest-reporter does not generate .passed/.failed classes,
-     * so we only verify the total count of .expectation elements.
      */
     public static void verifyCssClassCounts(Path htmlFile, int expectedPassed, int expectedFailed, int expectedScenarios) throws IOException {
         Document doc = Jsoup.parse(htmlFile.toFile(), "UTF-8");
