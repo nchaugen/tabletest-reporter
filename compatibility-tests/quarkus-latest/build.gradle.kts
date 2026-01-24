@@ -29,6 +29,16 @@ repositories {
     mavenCentral()
 }
 
+// Workaround for Guice classifier resolution issue with Quarkus
+// See: https://github.com/google/guice/issues/1505
+configurations.all {
+    resolutionStrategy.dependencySubstitution {
+        substitute(module("com.google.inject:guice"))
+            .using(module("com.google.inject:guice:5.1.0"))
+            .withoutClassifier()
+    }
+}
+
 dependencies {
     // Quarkus BOM for dependency management
     testImplementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.30.3"))
