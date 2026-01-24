@@ -87,6 +87,27 @@ class TableTestStore {
     }
 
     /**
+     * Stores published table test metadata for the current class.
+     */
+    @SuppressWarnings("unchecked")
+    void storePublishedTableTest(ExtensionContext methodContext, PublishedTableTestInfo info) {
+        ExtensionContext.Store classStore = getClassStore(methodContext);
+        List<PublishedTableTestInfo> tests = (List<PublishedTableTestInfo>)
+                classStore.getOrComputeIfAbsent("publishedTableTests", key -> new ArrayList<PublishedTableTestInfo>());
+        tests.add(info);
+    }
+
+    /**
+     * Retrieves published table test metadata for the class.
+     */
+    @SuppressWarnings("unchecked")
+    List<PublishedTableTestInfo> getPublishedTableTests(ExtensionContext classContext) {
+        ExtensionContext.Store classStore = getClassStore(classContext);
+        List<PublishedTableTestInfo> tests = (List<PublishedTableTestInfo>) classStore.get("publishedTableTests");
+        return tests != null ? tests : List.of();
+    }
+
+    /**
      * Retrieves stored parsed table for a method context.
      */
     Table getTable(ExtensionContext methodContext) {

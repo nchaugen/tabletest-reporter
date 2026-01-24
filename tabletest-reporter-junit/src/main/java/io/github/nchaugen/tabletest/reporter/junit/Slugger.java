@@ -27,11 +27,11 @@ import com.github.slugify.Slugify;
  * <li>Names without spaces or underscores: convert camelCase to kebab-case</li>
  * </ul>
  */
-public class FilenameTransformer {
+public class Slugger {
 
     private static final Slugify SLUGIFIER = Slugify.builder().build();
 
-    public static String transform(String name) {
+    public static String slugify(String name) {
         if (name == null || name.isEmpty()) {
             return name;
         }

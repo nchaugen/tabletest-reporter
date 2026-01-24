@@ -20,8 +20,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents the complete data for a table test, ready for serialisation.
+ * Represents the complete data for a table test, ready for serialization.
  *
+ * @param methodName  The underlying test method name (may be null)
+ * @param slug        Slugified method name used in output paths (may be null)
  * @param title       The title of the table test (may be null)
  * @param description The description of the table test (may be null)
  * @param headers     The header cells
@@ -29,13 +31,21 @@ import java.util.Map;
  * @param rowResults  The test results for each row
  */
 public record TableTestData(
-        String title, String description, List<CellData> headers, List<RowData> rows, List<RowResultData> rowResults) {
+        String methodName,
+        String slug,
+        String title,
+        String description,
+        List<CellData> headers,
+        List<RowData> rows,
+        List<RowResultData> rowResults) {
 
     /**
      * Converts this table test data to a map suitable for YAML serialization.
      */
     public Map<String, Object> toMap() {
         Map<String, Object> map = new LinkedHashMap<>();
+        if (methodName != null) map.put("methodName", methodName);
+        if (slug != null) map.put("slug", slug);
         if (title != null) map.put("title", title);
         if (description != null) map.put("description", description);
 

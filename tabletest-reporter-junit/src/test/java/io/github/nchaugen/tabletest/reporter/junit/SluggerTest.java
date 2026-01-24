@@ -5,10 +5,10 @@ import io.github.nchaugen.tabletest.junit.TableTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests for the FilenameTransformer which converts test class and method names
+ * Tests for the Slugger which converts test class and method names
  * to web-friendly kebab-case filenames.
  */
-class FilenameTransformerTest {
+class SluggerTest {
 
     @TableTest("""
         Scenario                     | Input                       | Result?
@@ -44,7 +44,7 @@ class FilenameTransformerTest {
         Mixed snake and camel        | Test_Method_Name            | test-method-name
         Mixed snake and acronym      | XML_Parser                  | xml-parser
         """)
-    void shouldTransformNames(String input, String expected) {
-        assertThat(FilenameTransformer.transform(input)).isEqualTo(expected);
+    void shouldSlugifyNames(String input, String expected) {
+        assertThat(Slugger.slugify(input)).isEqualTo(expected);
     }
 }

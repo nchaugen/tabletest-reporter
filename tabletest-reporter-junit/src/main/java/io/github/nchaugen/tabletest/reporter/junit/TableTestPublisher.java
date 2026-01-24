@@ -15,13 +15,10 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.junit.Description;
 import io.github.nchaugen.tabletest.junit.InputResolver;
 import io.github.nchaugen.tabletest.junit.TableTest;
 import io.github.nchaugen.tabletest.parser.Table;
 import io.github.nchaugen.tabletest.parser.TableParser;
-import org.jspecify.annotations.NonNull;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.MediaType;
@@ -31,7 +28,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class TableTestPublisher implements TestWatcher, AfterAllCallback {
 
@@ -53,20 +49,19 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
 
     private void recordInvocationResult(ExtensionContext context, boolean passed, Throwable cause) {
         // Get the parent context (test template context for parameterized tests)
-        context.getParent().ifPresent(parentContext -> {
-            parentContext.getTestMethod().ifPresent(method -> {
-                TableTest tableTest = method.getAnnotation(TableTest.class);
-                if (tableTest != null) {
-                    // Ensure table metadata is stored (only happens once per test method)
-                    ensureTableMetadataStored(parentContext, tableTest);
+        context.getParent()
+                .ifPresent(parentContext -> parentContext.getTestMethod().ifPresent(method -> {
+                    TableTest tableTest = method.getAnnotation(TableTest.class);
+                    if (tableTest != null) {
+                        // Ensure table metadata is stored (only happens once per test method)
+                        ensureTableMetadataStored(parentContext, tableTest);
 
-                    // Store this invocation's result
-                    int rowIndex = getInvocationIndex(context);
-                    store.storeRowResult(
-                            parentContext, new RowResult(rowIndex, passed, cause, context.getDisplayName()));
-                }
-            });
-        });
+                        // Store this invocation's result
+                        int rowIndex = getInvocationIndex(context);
+                        store.storeRowResult(
+                                parentContext, new RowResult(rowIndex, passed, cause, context.getDisplayName()));
+                    }
+                }));
     }
 
     /**
@@ -127,45 +122,58 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
         }
     }
 
-    private static void publishTable(ExtensionContext context, Table table, List<RowResult> rowResults) {
-        TableMetadata metadata = JunitMetadataExtractor.extract(context, table, rowResults);
-        TableTestData data = metadata.toTableTestData(table);
+    private void publishTable(ExtensionContext context, Table table, List<RowResult> rowResults) {
+        TableTestIdentity identity = JunitTestIdentityExtractor.extract(context);
+        ColumnRoles columnRoles = JunitColumnRoleExtractor.extract(context, table);
+        TableTestData data = TableTestDataFactory.create(table, identity, columnRoles, rowResults);
 
-        publishFile(
-                context,
-                getName(context, () -> context.getRequiredTestMethod().getName()),
-                (Path path) -> YAML_RENDERER.render(data));
+        publishFile(context, identity.slug(), (Path path) -> {
+            store.storePublishedTableTest(
+                    context,
+                    new PublishedTableTestInfo(path, identity.title(), identity.methodName(), identity.slug()));
+            return YAML_RENDERER.render(data);
+        });
     }
 
-    public static void publishTestClass(ExtensionContext context) {
-        String title = JunitTitleExtractor.extractClassTitle(context);
-        TestClassData data = new TestClassData(title, findDescription(context));
+    public void publishTestClass(ExtensionContext context) {
+        TestClassIdentity identity = JunitClassIdentityExtractor.extract(context);
+        List<PublishedTableTestInfo> publishedTests = store.getPublishedTableTests(context);
 
-        publishFile(
-                context,
-                getName(context, () -> context.getRequiredTestClass().getSimpleName()),
-                (Path path) -> YAML_RENDERER.render(data));
+        publishFile(context, identity.slug(), (Path path) -> {
+            List<PublishedTableTest> tableTests = buildPublishedTableTests(path.getParent(), publishedTests);
+            TestClassData data = new TestClassData(
+                    identity.className(), identity.slug(), identity.title(), identity.description(), tableTests);
+            return YAML_RENDERER.render(data);
+        });
     }
 
+    @SuppressWarnings("removal")
     private static void publishFile(ExtensionContext context, String fileName, Function<Path, String> renderer) {
-        String transformedFileName = FilenameTransformer.transform(fileName);
         context.publishFile(
-                FILENAME_PREFIX + transformedFileName + YAML_EXTENSION,
+                FILENAME_PREFIX + fileName + YAML_EXTENSION,
                 MediaType.TEXT_PLAIN_UTF_8,
                 path -> Files.writeString(path, renderer.apply(path)));
     }
 
-    private static @NonNull String getName(ExtensionContext context, Supplier<String> defaultName) {
-        return context.getElement()
-                .filter(it -> it.isAnnotationPresent(DisplayName.class))
-                .map(__ -> context.getDisplayName())
-                .orElseGet(defaultName);
+    private static List<PublishedTableTest> buildPublishedTableTests(
+            Path classDir, List<PublishedTableTestInfo> tests) {
+        if (tests == null || tests.isEmpty()) {
+            return List.of();
+        }
+        return tests.stream()
+                .map(info -> new PublishedTableTest(
+                        relativizePath(classDir, info.path()), info.title(), info.methodName(), info.slug()))
+                .toList();
     }
 
-    private static String findDescription(ExtensionContext context) {
-        return context.getTestClass()
-                .map(it -> it.getAnnotation(Description.class))
-                .map(Description::value)
-                .orElse(null);
+    private static String relativizePath(Path baseDir, Path target) {
+        if (baseDir == null || target == null) {
+            return target != null ? target.toString() : null;
+        }
+        try {
+            return baseDir.relativize(target).toString();
+        } catch (IllegalArgumentException e) {
+            return target.toString();
+        }
     }
 }

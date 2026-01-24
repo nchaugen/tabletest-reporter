@@ -15,31 +15,22 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.junit.Description;
 import io.github.nchaugen.tabletest.junit.Scenario;
 import io.github.nchaugen.tabletest.parser.Table;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import java.util.List;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-class JunitMetadataExtractor {
+/**
+ * Derives column roles from JUnit context and the parsed table.
+ */
+final class JunitColumnRoleExtractor {
 
-    static TableMetadata extract(ExtensionContext context, Table table, List<RowResult> rowResults) {
-        String title = JunitTitleExtractor.extractMethodTitle(context);
-        String description = findTableDescription(context);
-        ColumnRoles columnRoles = extractColumnRoles(context, table);
-        List<RowResult> results = rowResults != null ? rowResults : List.of();
-        RowRoles rowRoles = new RowRoles(table, results, columnRoles);
-
-        return new TableMetadata(title, description, columnRoles, rowRoles, results);
-    }
-
-    private static ColumnRoles extractColumnRoles(ExtensionContext context, Table table) {
+    static ColumnRoles extract(ExtensionContext context, Table table) {
         return new ColumnRoles(findScenarioIndex(context, table), findExpectationIndices(context, table));
     }
 
@@ -69,12 +60,5 @@ class JunitMetadataExtractor {
                 .filter(i -> pattern.matcher(table.header(i)).matches())
                 .boxed()
                 .collect(Collectors.toSet());
-    }
-
-    private static String findTableDescription(ExtensionContext context) {
-        return context.getTestMethod()
-                .map(method -> method.getAnnotation(Description.class))
-                .map(Description::value)
-                .orElse(null);
     }
 }

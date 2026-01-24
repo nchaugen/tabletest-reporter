@@ -56,6 +56,8 @@ class TableTestPublisherTest {
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
         assertEquals("""
+                "methodName": "allRowsPass"
+                "slug": "all-rows-pass"
                 "title": "All rows pass"
                 "description": "Verifying published result when all rows pass."
                 "headers":
@@ -128,6 +130,8 @@ class TableTestPublisherTest {
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
         assertEquals("""
+                "methodName": "oneRowFails"
+                "slug": "one-row-fails"
                 "title": "One row fails"
                 "description": "Verifying published result when there is a row failure."
                 "headers":
@@ -204,7 +208,7 @@ class TableTestPublisherTest {
             }
 
             @Override
-            public Path createOutputDirectory(TestDescriptor testDescriptor) throws IOException {
+            public Path createOutputDirectory(TestDescriptor testDescriptor) {
                 return tempDir;
             }
         };
@@ -226,8 +230,15 @@ class TableTestPublisherTest {
         assertTrue(Files.exists(classYamlFile), "Class YAML file should exist");
 
         assertEquals("""
+                "className": "io.github.nchaugen.tabletest.reporter.junit.TableTestPublisherTest$AllRowsPassTest"
+                "slug": "verifying-yaml-output"
                 "title": "Verifying YAML Output"
                 "description": "This test class verified that the published YAML files contain the expected output."
+                "tableTests":
+                - "path": "TABLETEST-all-rows-pass.yaml"
+                  "title": "All rows pass"
+                  "methodName": "allRowsPass"
+                  "slug": "all-rows-pass"
                 """, Files.readString(classYamlFile));
     }
 
@@ -247,6 +258,8 @@ class TableTestPublisherTest {
         assertTrue(Files.exists(yamlFile), "YAML file should exist");
 
         assertEquals("""
+                "methodName": "oneRowWithScenarioFails"
+                "slug": "one-expanded-row-with-scenario-name-fails"
                 "title": "One expanded row with scenario name fails"
                 "headers":
                 - "value": "Scenario"
@@ -337,6 +350,8 @@ class TableTestPublisherTest {
         // Without a scenario column, matching is unreliable due to parameter type conversion.
         // Therefore, .passed/.failed roles are NOT applied to rows (only .expectation for expectation columns).
         assertEquals("""
+                "methodName": "oneRowWithoutScenarioFails"
+                "slug": "one-expanded-row-without-scenario-name-fails"
                 "title": "One expanded row without scenario name fails"
                 "headers":
                 - "value": "a"
@@ -402,7 +417,7 @@ class TableTestPublisherTest {
 
     private Path findExpectedYamlFile(Path baseDir, String name) throws IOException {
         // Transform the name to match the filename transformation applied by TableTestPublisher
-        String transformedName = FilenameTransformer.transform(name);
+        String transformedName = Slugger.slugify(name);
         try (var paths = Files.walk(baseDir)) {
             return paths.filter(p -> p.toString().contains(transformedName))
                     .filter(p -> p.getFileName().toString().startsWith("TABLETEST-"))
