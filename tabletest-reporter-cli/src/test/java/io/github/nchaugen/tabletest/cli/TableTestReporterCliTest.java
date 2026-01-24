@@ -183,6 +183,34 @@ class TableTestReporterCliTest {
         assertThat(result.stdout()).contains("asciidoc");
     }
 
+    @Test
+    void help_option_shows_usage_and_exits_successfully() {
+        CliResult result = runCli("--help");
+
+        assertThat(result.exitCode()).isZero();
+        assertThat(result.stdout()).contains("Usage:");
+        assertThat(result.stdout()).contains("--input");
+        assertThat(result.stdout()).contains("--output");
+        assertThat(result.stdout()).contains("--format");
+        assertThat(result.stdout()).contains("--template-dir");
+        assertThat(result.stdout()).contains("--list-formats");
+    }
+
+    @Test
+    void error_message_includes_available_formats_for_invalid_format() throws IOException {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("output");
+
+        CliResult result = runCli(
+                "--input", inputDir.toString(),
+                "--output", outputDir.toString(),
+                "--format", "invalid-format");
+
+        assertThat(result.exitCode()).isEqualTo(2);
+        assertThat(result.stderr()).contains("Unknown format: invalid-format");
+        assertThat(result.stderr()).contains("Available formats:");
+    }
+
     private Path setupInputDirectory(Path parent) throws IOException {
         Path inputDir = parent.resolve("input");
         Files.createDirectories(inputDir);

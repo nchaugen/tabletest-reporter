@@ -44,11 +44,12 @@ public class ReportTree {
      * @return typed node hierarchy describing the desired report structure
      */
     public static ReportNode process(Path dir) {
-        return Optional.ofNullable(dir)
-                .map(ReportTree::findTableTestOutputFiles)
-                .map(ReportTree::findTargets)
-                .map(ReportTree::buildTree)
-                .orElseThrow(() -> new NullPointerException("argument `dir` cannot be null"));
+        if (dir == null) {
+            throw new NullPointerException("argument `dir` cannot be null");
+        }
+        List<Path> files = findTableTestOutputFiles(dir);
+        List<Target> targets = findTargets(files);
+        return buildTree(targets);
     }
 
     /**
