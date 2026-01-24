@@ -6,12 +6,21 @@ This directory contains compatibility tests that verify TableTest Reporter works
 
 | Test Project | Framework | Version | Build Tool | Autodetection Method | Output Format | Reporter |
 |--------------|-----------|---------|------------|---------------------|---------------|----------|
-| junit-latest | JUnit | 6.0.1 | Maven | Surefire plugin | AsciiDoc | Maven plugin |
+| junit-min | JUnit | 5.12 | Gradle | systemProperty | Markdown | Gradle plugin |
+| junit-latest | JUnit | latest | Maven | Surefire configurationParameters | AsciiDoc+HTML | Maven + Asciidoctor |
 | spring-boot-min | Spring Boot | 3.5.0 | Maven | Surefire plugin | AsciiDoc | CLI |
-| spring-boot-latest | Spring Boot | 4.0.0 | Maven | junit-platform.properties | Markdown | Maven plugin |
+| spring-boot-latest | Spring Boot | latest | Gradle | junit-platform.properties | Markdown | Gradle plugin |
 | quarkus-min | Quarkus | 3.21.2 | Maven | Surefire plugin (workaround) | Markdown | Maven plugin |
-| quarkus-latest | Quarkus | 3.30.3 | Maven | junit-platform.properties | AsciiDoc | Maven plugin |
-| gradle-latest | JUnit | 6.0.1 | Gradle | systemProperty | Markdown | Gradle plugin |
+| quarkus-latest | Quarkus | latest | Gradle | junit-platform.properties | AsciiDoc | Gradle plugin |
+
+Actual "latest" versions are maintained in the build files and updated weekly.
+
+### Coverage Summary
+
+- **JUnit versions**: 5.12 (minimum supported) and latest
+- **Build tools**: 3 Maven, 3 Gradle (balanced coverage)
+- **Output formats**: 3 AsciiDoc, 3 Markdown, 1 HTML
+- **Reporters**: CLI, Maven plugin, Gradle plugin, Asciidoctor
 
 ## Running Tests
 
@@ -37,7 +46,7 @@ cd <test-directory>
 
 Each test project contains:
 - **pom.xml** or **build.gradle.kts**: Build configuration with framework dependencies
-- **src/test/java**: Simple test class using TableTest
+- **src/test/java**: Test classes using TableTest (including edge cases)
 - **test.sh**: Test script that:
   - Runs tests to generate YAML files
   - Verifies YAML files were created
@@ -52,6 +61,16 @@ Each test project contains:
 - **Build Tool Support**: Maven and Gradle
 - **Documentation Generation**: CLI, Maven plugin, and Gradle plugin can process YAML files
 - **Output Formats**: Both AsciiDoc and Markdown generation work
+- **HTML Generation**: Asciidoctor converts AsciiDoc to HTML with CSS styling
+
+## Edge Cases Tested
+
+The junit-min and junit-latest projects include comprehensive edge case coverage:
+- Multiple @TableTest methods per class
+- @Disabled tests (should be excluded from reports)
+- @Nested test classes
+- Classes with no @TableTest methods (should not generate empty files)
+- Intentionally failing tests (for CSS class verification)
 
 ## Adding New Tests
 
@@ -68,4 +87,4 @@ To add a new compatibility test:
 
 - **Quarkus LogManager Warning**: Expected warning about LogManager in Quarkus tests
 - **Quarkus Workaround**: Quarkus minimum uses Surefire plugin instead of junit-platform.properties to avoid conflicts
-- **Gradle Java Version**: Gradle compatibility test requires Java 21 (detected via JAVA_HOME) because Gradle 8.14 Kotlin DSL doesn't support Java 25
+- **Gradle Java Version**: Gradle compatibility tests require Java 21 (detected via JAVA_HOME) because Gradle 8.14 Kotlin DSL doesn't support Java 25
