@@ -58,7 +58,7 @@ run_test() {
 # Build the main project first to get SNAPSHOT artifacts
 echo "Building tabletest-reporter (SNAPSHOT)..."
 cd "$PROJECT_ROOT"
-if mvn clean install -DskipTests; then
+if mvn -B clean install -DskipTests; then
     echo -e "${GREEN}✓ Main project built successfully${NC}"
     echo ""
 else

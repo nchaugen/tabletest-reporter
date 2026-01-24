@@ -21,12 +21,12 @@ jobs:
         cache: maven
 
     - name: Build and install Maven modules
-      run: mvn clean install
+      run: mvn -B clean install
 
     - name: Build and verify Gradle plugin
       run: |
         cd tabletest-reporter-gradle-plugin
-        ./gradlew clean build publishToMavenLocal
+        ./gradlew --console=plain clean build publishToMavenLocal
 
     - name: Run compatibility tests
       run: |

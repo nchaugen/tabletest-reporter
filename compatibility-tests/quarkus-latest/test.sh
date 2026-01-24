@@ -32,7 +32,7 @@ fi
 
 # Step 1: Run tests
 echo -e "\n${YELLOW}[1/4] Running tests...${NC}"
-./gradlew clean test
+./gradlew --console=plain clean test
 echo -e "${GREEN}✓ Tests completed${NC}"
 
 # Step 2: Validate YAML generation
@@ -42,7 +42,7 @@ echo -e "${GREEN}✓ YAML files generated${NC}"
 
 # Step 3: Generate AsciiDoc with Gradle plugin
 echo -e "\n${YELLOW}[3/4] Generating AsciiDoc documentation...${NC}"
-./gradlew reportTableTests
+./gradlew --console=plain reportTableTests
 echo -e "${GREEN}✓ AsciiDoc generation completed${NC}"
 
 # Step 4: Validate AsciiDoc generation

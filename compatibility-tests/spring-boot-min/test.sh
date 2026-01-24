@@ -10,7 +10,7 @@ echo "Testing: Spring Boot minimum with Surefire plugin configuration"
 
 # Run tests to generate YAML files
 echo "Running tests..."
-mvn clean test
+mvn -B clean test
 
 # Check YAML files were generated
 validate_yaml_files "target/junit-jupiter"

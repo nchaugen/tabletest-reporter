@@ -18,7 +18,7 @@ echo "=========================================="
 
 # Step 1: Run tests (with intentional failures)
 echo -e "\n${YELLOW}[1/7] Running tests (with intentional failures)...${NC}"
-mvn clean test || true
+mvn -B clean test || true
 echo -e "${GREEN}✓ Tests completed${NC}"
 
 # Step 2: Validate YAML generation
@@ -28,7 +28,7 @@ echo -e "${GREEN}✓ YAML files generated${NC}"
 
 # Step 3: Generate AsciiDoc
 echo -e "\n${YELLOW}[3/7] Generating AsciiDoc reports...${NC}"
-mvn tabletest-reporter:report
+mvn -B tabletest-reporter:report
 echo -e "${GREEN}✓ AsciiDoc generation completed${NC}"
 
 # Step 4: Validate AsciiDoc generation
@@ -38,7 +38,7 @@ echo -e "${GREEN}✓ AsciiDoc files generated${NC}"
 
 # Step 5: Convert to HTML
 echo -e "\n${YELLOW}[5/7] Converting AsciiDoc to HTML...${NC}"
-mvn asciidoctor:process-asciidoc
+mvn -B asciidoctor:process-asciidoc
 echo -e "${GREEN}✓ HTML conversion completed${NC}"
 
 # Step 6: Validate HTML generation
@@ -69,7 +69,7 @@ fi
 echo -e "\n${YELLOW}[7/7] Verifying CSS classes in HTML files...${NC}"
 
 # Get classpath for running HtmlCssVerifier
-CLASSPATH="target/test-classes:$(mvn dependency:build-classpath -q -Dmdep.outputFile=/dev/stdout)"
+CLASSPATH="target/test-classes:$(mvn -B dependency:build-classpath -q -Dmdep.outputFile=/dev/stdout)"
 
 # Verify failing-with-scenario (2 passed, 1 failed, 4 scenarios: 3 rows + 1 header)
 echo -e "\n  Verifying mixed-results-with-scenario-column.html..."

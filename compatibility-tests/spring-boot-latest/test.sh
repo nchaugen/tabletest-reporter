@@ -32,7 +32,7 @@ fi
 
 # Step 1: Run tests
 echo -e "\n${YELLOW}[1/5] Running tests...${NC}"
-./gradlew clean test
+./gradlew --console=plain clean test
 echo -e "${GREEN}✓ Tests completed${NC}"
 
 # Step 2: Validate YAML generation
@@ -42,7 +42,7 @@ echo -e "${GREEN}✓ YAML files generated${NC}"
 
 # Step 3: Generate Markdown with Gradle plugin
 echo -e "\n${YELLOW}[3/5] Generating Markdown documentation...${NC}"
-./gradlew reportTableTests
+./gradlew --console=plain reportTableTests
 echo -e "${GREEN}✓ Markdown generation completed${NC}"
 
 # Step 4: Validate Markdown generation
@@ -61,7 +61,7 @@ cp -r build/junit-jupiter/* custom-input/
 validate_yaml_files "custom-input"
 
 # Generate documentation from custom location using Gradle task properties
-./gradlew reportTableTests \
+./gradlew --console=plain reportTableTests \
     -Ptabletest.inputDir=custom-input \
     -Ptabletest.outputDir=custom-output
 

@@ -32,7 +32,7 @@ fi
 
 # Step 1: Run tests (with intentional failures)
 echo -e "\n${YELLOW}[1/5] Running tests (with intentional failures)...${NC}"
-./gradlew clean test
+./gradlew --console=plain clean test
 echo -e "${GREEN}✓ Tests completed${NC}"
 
 # Step 2: Validate YAML generation
@@ -42,7 +42,7 @@ echo -e "${GREEN}✓ YAML files generated${NC}"
 
 # Step 3: Generate Markdown
 echo -e "\n${YELLOW}[3/5] Generating Markdown reports...${NC}"
-./gradlew reportTableTests
+./gradlew --console=plain reportTableTests
 echo -e "${GREEN}✓ Markdown generation completed${NC}"
 
 # Step 4: Validate Markdown generation
