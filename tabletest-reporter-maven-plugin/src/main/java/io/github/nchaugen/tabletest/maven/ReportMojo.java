@@ -17,6 +17,7 @@ package io.github.nchaugen.tabletest.maven;
 
 import io.github.nchaugen.tabletest.reporter.Format;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
+import io.github.nchaugen.tabletest.reporter.ReportResult;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -59,7 +60,12 @@ public final class ReportMojo extends AbstractMojo {
             Path templateDir = templateDirectory != null ? templateDirectory.toPath() : null;
             Format reportFormat = FormatResolver.resolve(format, templateDir);
             TableTestReporter reporter = createReporter();
-            reporter.report(reportFormat, in, out);
+            ReportResult result = reporter.report(reportFormat, in, out);
+            if (result.filesGenerated() == 0) {
+                getLog().warn(result.message());
+            } else {
+                getLog().info("Generated " + result.filesGenerated() + " documentation file(s)");
+            }
         } catch (MojoFailureException e) {
             // Propagate user/config failures as-is without wrapping
             throw e;

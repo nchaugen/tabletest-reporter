@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Changed
+- CLI, Maven plugin, and Gradle plugin now display file count on successful generation
+- Empty input directories now show informational message instead of silent success
+
+### Fixed
+- YAML parsing errors now include file path for easier debugging
+
 ## [0.3.1]
 ### Changed
 - `.passed`/`.failed` roles now only applied to tables with a scenario column as row and test results correlation is otherwise not possible

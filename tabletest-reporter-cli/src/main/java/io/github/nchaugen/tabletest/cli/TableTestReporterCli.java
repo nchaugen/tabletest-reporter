@@ -18,6 +18,7 @@ package io.github.nchaugen.tabletest.cli;
 import io.github.nchaugen.tabletest.reporter.Format;
 import io.github.nchaugen.tabletest.reporter.FormatLister;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
+import io.github.nchaugen.tabletest.reporter.ReportResult;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -93,7 +94,12 @@ public final class TableTestReporterCli implements Callable<Integer> {
             Path templateDir = resolveTemplateDir();
             Format reportFormat = FormatResolver.resolve(format, templateDir);
             TableTestReporter reporter = createReporter(templateDir);
-            reporter.report(reportFormat, in, out);
+            ReportResult result = reporter.report(reportFormat, in, out);
+            if (result.filesGenerated() == 0) {
+                System.err.println(result.message());
+            } else {
+                System.out.printf("Generated %d documentation file(s)%n", result.filesGenerated());
+            }
             return 0;
         } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());

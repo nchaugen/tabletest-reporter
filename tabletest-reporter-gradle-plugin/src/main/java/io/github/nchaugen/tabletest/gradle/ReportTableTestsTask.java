@@ -17,6 +17,7 @@ package io.github.nchaugen.tabletest.gradle;
 
 import io.github.nchaugen.tabletest.reporter.Format;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
+import io.github.nchaugen.tabletest.reporter.ReportResult;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
@@ -121,7 +122,12 @@ public abstract class ReportTableTestsTask extends DefaultTask {
 
         try {
             TableTestReporter reporter = createReporter();
-            reporter.report(reportFormat, in, out);
+            ReportResult result = reporter.report(reportFormat, in, out);
+            if (result.filesGenerated() == 0) {
+                getLogger().warn(result.message());
+            } else {
+                getLogger().lifecycle("Generated {} documentation file(s)", result.filesGenerated());
+            }
         } catch (Exception e) {
             throw new GradleException("Failed to generate TableTest report: " + e.getMessage(), e);
         }

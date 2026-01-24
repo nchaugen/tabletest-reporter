@@ -36,17 +36,19 @@ public class TableTestReporter {
         this.templateEngine = new TemplateEngine(customTemplateDirectory);
     }
 
-    public void report(Format format, Path inDir, Path outDir) {
+    public ReportResult report(Format format, Path inDir, Path outDir) {
         ReportNode tree = ReportTree.process(inDir);
-        if (tree != null) {
-            report(tree, format, inDir, outDir);
+        if (tree == null) {
+            return ReportResult.empty(inDir);
         }
+        int count = report(tree, format, inDir, outDir);
+        return ReportResult.success(count);
     }
 
-    private void report(ReportNode node, Format format, Path inDir, Path outDir) {
+    private int report(ReportNode node, Format format, Path inDir, Path outDir) {
         Path relativeOutPath = Path.of("./" + node.outPath());
 
-        switch (node) {
+        return switch (node) {
             case IndexNode index -> {
                 Map<String, Object> context = createIndexContext(index, inDir, relativeOutPath);
 
@@ -54,7 +56,10 @@ public class TableTestReporter {
                 String content = templateEngine.renderIndex(format, context);
                 writeContent(outPath, content);
 
-                index.contents().forEach(child -> report(child, format, inDir, outDir));
+                int childCount = index.contents().stream()
+                        .mapToInt(child -> report(child, format, inDir, outDir))
+                        .sum();
+                yield 1 + childCount;
             }
             case TableNode table -> {
                 Map<String, Object> context = createTableContext(table, inDir);
@@ -62,8 +67,9 @@ public class TableTestReporter {
                 Path outPath = outDir.resolve(relativeOutPath + format.extension());
                 String content = templateEngine.renderTable(format, context);
                 writeContent(outPath, content);
+                yield 1;
             }
-        }
+        };
     }
 
     private Map<String, Object> createIndexContext(IndexNode index, Path inDir, Path relativeOutPath) {

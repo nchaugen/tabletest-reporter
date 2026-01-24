@@ -29,7 +29,8 @@ class ContextLoaderErrorTest {
     }
 
     @Test
-    void fromYaml_throws_ScannerException_for_malformed_yaml(@TempDir Path tempDir) throws IOException {
+    void fromYaml_throws_IllegalArgumentException_with_file_path_for_malformed_yaml(@TempDir Path tempDir)
+            throws IOException {
         Path malformedYaml = tempDir.resolve("malformed.yaml");
         Files.writeString(malformedYaml, """
                 title: "Unclosed quote
@@ -37,11 +38,16 @@ class ContextLoaderErrorTest {
                   - invalid: yaml: syntax
                 """);
 
-        assertThatThrownBy(() -> contextLoader.fromYaml(malformedYaml)).isInstanceOf(ScannerException.class);
+        assertThatThrownBy(() -> contextLoader.fromYaml(malformedYaml))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Failed to parse YAML file:")
+                .hasMessageContaining(malformedYaml.toString())
+                .hasCauseInstanceOf(ScannerException.class);
     }
 
     @Test
-    void fromYaml_throws_ScannerException_for_invalid_indentation(@TempDir Path tempDir) throws IOException {
+    void fromYaml_throws_IllegalArgumentException_with_file_path_for_invalid_indentation(@TempDir Path tempDir)
+            throws IOException {
         Path badIndentation = tempDir.resolve("bad-indent.yaml");
         Files.writeString(badIndentation, """
                 title: Test
@@ -49,7 +55,11 @@ class ContextLoaderErrorTest {
                 - value: Wrong
                 """);
 
-        assertThatThrownBy(() -> contextLoader.fromYaml(badIndentation)).isInstanceOf(ScannerException.class);
+        assertThatThrownBy(() -> contextLoader.fromYaml(badIndentation))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Failed to parse YAML file:")
+                .hasMessageContaining(badIndentation.toString())
+                .hasCauseInstanceOf(ScannerException.class);
     }
 
     @Test

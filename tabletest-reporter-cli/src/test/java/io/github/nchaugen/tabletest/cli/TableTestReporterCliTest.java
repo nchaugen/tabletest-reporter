@@ -154,6 +154,36 @@ class TableTestReporterCliTest {
     }
 
     @Test
+    void shows_informational_message_when_no_yaml_files_found() throws IOException {
+        Path inputDir = tempDir.resolve("empty-input");
+        Files.createDirectories(inputDir);
+        Path outputDir = tempDir.resolve("output");
+
+        CliResult result = runCli(
+                "--input", inputDir.toString(),
+                "--output", outputDir.toString());
+
+        assertThat(result.exitCode()).isZero();
+        assertThat(result.stderr()).contains("No TableTest YAML files found in:");
+        assertThat(result.stderr()).contains(inputDir.toString());
+    }
+
+    @Test
+    void shows_success_message_with_file_count_when_files_generated() throws IOException {
+        Path inputDir = setupInputDirectory(tempDir);
+        Path outputDir = tempDir.resolve("output");
+
+        CliResult result = runCli(
+                "--input", inputDir.toString(),
+                "--output", outputDir.toString(),
+                "--format", "asciidoc");
+
+        assertThat(result.exitCode()).isZero();
+        assertThat(result.stdout()).contains("Generated");
+        assertThat(result.stdout()).contains("documentation file(s)");
+    }
+
+    @Test
     void list_formats_exits_successfully_and_prints_formats() {
         CliResult result = runCli("--list-formats");
 

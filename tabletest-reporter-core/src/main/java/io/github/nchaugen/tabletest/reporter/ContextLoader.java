@@ -43,6 +43,8 @@ public class ContextLoader {
             return fromYaml(lines.collect(joining("\n")));
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to read YAML from " + path, e);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to parse YAML file: " + path + " - " + e.getMessage(), e);
         }
     }
 
