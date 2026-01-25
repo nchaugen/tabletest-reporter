@@ -250,6 +250,63 @@ public class ReportTreeTest {
     }
 
     @Test
+    void shouldBuildTreeFromYamlMetadata(@TempDir Path tempDir) throws IOException {
+        Files.writeString(tempDir.resolve("TABLETEST-order-test.yaml"), """
+                "className": "pkg.orders.OrderTest"
+                "slug": "order-test"
+                "tableTests":
+                - "path": "TABLETEST-order-items.yaml"
+                  "methodName": "orderItems"
+                  "slug": "order-items"
+                """);
+        Files.writeString(tempDir.resolve("TABLETEST-order-items.yaml"), "");
+
+        Files.writeString(tempDir.resolve("TABLETEST-product-test.yaml"), """
+                "className": "pkg.products.ProductTest"
+                "slug": "product-test"
+                "tableTests":
+                - "path": "TABLETEST-product-price.yaml"
+                  "methodName": "productPrice"
+                  "slug": "product-price"
+                """);
+        Files.writeString(tempDir.resolve("TABLETEST-product-price.yaml"), "");
+
+        ReportNode tree = ReportTree.process(tempDir);
+
+        ReportNode expected = new IndexNode(
+                "pkg",
+                "",
+                null,
+                List.of(
+                        new IndexNode(
+                                "orders",
+                                "/orders",
+                                null,
+                                List.of(new IndexNode(
+                                        "order-test",
+                                        "/orders/order-test",
+                                        "TABLETEST-order-test.yaml",
+                                        List.of(new TableNode(
+                                                "order-items",
+                                                "/orders/order-test/order-items",
+                                                "TABLETEST-order-items.yaml"))))),
+                        new IndexNode(
+                                "products",
+                                "/products",
+                                null,
+                                List.of(new IndexNode(
+                                        "product-test",
+                                        "/products/product-test",
+                                        "TABLETEST-product-test.yaml",
+                                        List.of(new TableNode(
+                                                "product-price",
+                                                "/products/product-test/product-price",
+                                                "TABLETEST-product-price.yaml")))))));
+
+        assertThat(tree).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(expected);
+    }
+
+    @Test
     void shouldSupportMissingTestClassYaml(@TempDir Path tempDir) throws IOException {
         Files.createDirectories(tempDir.resolve("pkg.T1/table1"));
         Files.createDirectories(tempDir.resolve("pkg.T1/table2"));

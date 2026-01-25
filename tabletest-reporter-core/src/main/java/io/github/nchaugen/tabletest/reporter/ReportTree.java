@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,10 +36,11 @@ public class ReportTree {
     private static final String FILENAME_PREFIX = "TABLETEST-";
     private static final String YAML_EXTENSION = ".yaml";
     private static final Path ROOT_PATH = Path.of("." + File.separator);
+    private static final ContextLoader CONTEXT_LOADER = new ContextLoader();
 
     /**
-     * Processes the top-level directory where TableTest .yaml files have been created during test run
-     * and builds a typed node hierarchy describing the desired report structure.
+     * Processes the top-level directory where TableTest .yaml files have been created during test run and builds a
+     * typed node hierarchy describing the desired report structure.
      *
      * @param dir junit-jupiter output directory
      * @return typed node hierarchy describing the desired report structure
@@ -48,12 +50,13 @@ public class ReportTree {
             throw new NullPointerException("argument `dir` cannot be null");
         }
         List<Path> files = findTableTestOutputFiles(dir);
-        List<Target> targets = findTargets(files);
+        List<Target> targets = findTargets(dir, files);
         return buildTree(targets);
     }
 
     /**
      * Walks the given directory and returns all files ending with .yaml as paths relative to the given directory.
+     *
      * @param dir junit-jupiter output directory
      * @return List of relative paths to .yaml files
      */
@@ -93,12 +96,31 @@ public class ReportTree {
      * <li>product<ul><li>ProductTest</li></ul></li>
      * <li>order<ul><li>OrderTest</li></ul></li>
      * </ul>
+     *
      * @param files list of input TableTest yaml files
      * @return list of target output files
      */
     static List<Target> findTargets(List<Path> files) {
         return Optional.ofNullable(files)
                 .map(ReportTree::generateAllTargets)
+                .map(ReportTree::pickNearestRoot)
+                .map(ReportTree::removeDuplicates)
+                .map(ReportTree::sortByTarget)
+                .orElseThrow(() -> new NullPointerException("argument `files` cannot be null"));
+    }
+
+    static List<Target> findTargets(Path dir, List<Path> files) {
+        if (files == null) {
+            throw new NullPointerException("argument `files` cannot be null");
+        }
+        MetadataTargets metadataTargets = generateMetadataTargets(dir, files);
+        List<Path> legacyFiles = files.stream()
+                .filter(file -> !metadataTargets.resources().contains(file))
+                .toList();
+        List<Target> legacyTargets = legacyFiles.isEmpty() ? List.of() : generateAllTargets(legacyFiles);
+        List<Target> combinedTargets = Stream.concat(metadataTargets.targets().stream(), legacyTargets.stream())
+                .toList();
+        return Optional.of(combinedTargets)
                 .map(ReportTree::pickNearestRoot)
                 .map(ReportTree::removeDuplicates)
                 .map(ReportTree::sortByTarget)
@@ -123,11 +145,14 @@ public class ReportTree {
      * <li>outPath: slugified path for the rendered table file</li>
      * <li>resource: path to the corresponding .yaml file</li>
      * </ul>
+     *
      * @param targets list of target output files
      * @return desired report structure as a typed node hierarchy, or null if no valid targets
      */
     static ReportNode buildTree(List<Target> targets) {
-        if (targets.isEmpty() || targets.size() == 1 && targets.getFirst().hasNoResource()) return null;
+        if (targets.isEmpty() || targets.size() == 1 && targets.getFirst().hasNoResource()) {
+            return null;
+        }
         Target root = findRoot(targets);
         return buildTree(root, List.of(root), targets);
     }
@@ -141,8 +166,9 @@ public class ReportTree {
 
     /**
      * Recursively builds the typed node hierarchy
-     * @param node next node to process
-     * @param path path to next node from root
+     *
+     * @param node    next node to process
+     * @param path    path to next node from root
      * @param targets list of all available targets
      * @return typed node (IndexNode or TableNode)
      */
@@ -164,8 +190,8 @@ public class ReportTree {
     }
 
     /**
-     * Converts a list of targets to a path string.
-     * Filenames are already transformed by the junit module before YAML files are created.
+     * Converts a list of targets to a path string. Filenames are already transformed by the junit module before YAML
+     * files are created.
      */
     private static String createOutPath(List<Target> path) {
         return path.stream().map(Target::pathName).collect(joining(File.separator));
@@ -254,19 +280,177 @@ public class ReportTree {
                 .toList();
     }
 
+    private static MetadataTargets generateMetadataTargets(Path dir, List<Path> files) {
+        if (dir == null || files.isEmpty()) {
+            return MetadataTargets.empty();
+        }
+        Set<Path> fileSet = Set.copyOf(files);
+        List<ClassMetadata> classMetadata = files.stream()
+                .map(file -> readClassMetadata(dir, file))
+                .flatMap(Optional::stream)
+                .toList();
+        List<Target> targets = classMetadata.stream()
+                .flatMap(meta -> streamTargetsForMetadata(meta, fileSet))
+                .toList();
+        Set<Path> resources = classMetadata.stream()
+                .flatMap(meta -> streamResourcesForMetadata(meta, fileSet))
+                .collect(Collectors.toSet());
+
+        return new MetadataTargets(List.copyOf(targets), Set.copyOf(resources));
+    }
+
+    private static Optional<ClassMetadata> readClassMetadata(Path dir, Path resource) {
+        Map<String, Object> yaml;
+        try {
+            yaml = CONTEXT_LOADER.fromYaml(dir.resolve(resource));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+        if (yaml == null || yaml.isEmpty()) {
+            return Optional.empty();
+        }
+        String className = stringValue(yaml, "className");
+        String classSlug = stringValue(yaml, "slug");
+        Object tableTestsValue = yaml.get("tableTests");
+        if (className == null || classSlug == null || !(tableTestsValue instanceof List<?>)) {
+            return Optional.empty();
+        }
+        List<TableTestEntry> tableTests = parseTableTests(tableTestsValue);
+        return Optional.of(new ClassMetadata(resource, className, classSlug, tableTests));
+    }
+
+    private static List<TableTestEntry> parseTableTests(Object tableTestsValue) {
+        if (!(tableTestsValue instanceof List<?> entries)) {
+            return List.of();
+        }
+        return entries.stream()
+                .filter(Map.class::isInstance)
+                .map(entry -> toTableTestEntry((Map<?, ?>) entry))
+                .flatMap(Optional::stream)
+                .toList();
+    }
+
+    private static Optional<TableTestEntry> toTableTestEntry(Map<?, ?> map) {
+        String path = stringValue(map, "path");
+        if (path == null) {
+            return Optional.empty();
+        }
+        String methodName = stringValue(map, "methodName");
+        String slug = stringValue(map, "slug");
+        return Optional.of(new TableTestEntry(path, methodName, slug));
+    }
+
+    private static Stream<Target> streamTargetsForMetadata(ClassMetadata meta, Set<Path> fileSet) {
+        Path classPath = classPathFromClassName(meta.className());
+        Target classTarget =
+                Target.withPath(classPath).withResource(meta.resource()).withName(meta.slug());
+        Stream<Target> classTargets = withAncestors(classTarget);
+        Stream<Target> tableTargets = meta.tableTests().stream()
+                .map(entry -> toTableTarget(classPath, meta.resource(), entry, fileSet))
+                .flatMap(Optional::stream)
+                .flatMap(ReportTree::withAncestors);
+        return Stream.concat(classTargets, tableTargets);
+    }
+
+    private static Stream<Path> streamResourcesForMetadata(ClassMetadata meta, Set<Path> fileSet) {
+        Stream<Path> classResource = Stream.of(meta.resource());
+        Stream<Path> tableResources = meta.tableTests().stream()
+                .map(entry -> resolveTableResource(meta.resource(), entry.path()))
+                .filter(path -> path != null && fileSet.contains(path));
+        return Stream.concat(classResource, tableResources);
+    }
+
+    private static Optional<Target> toTableTarget(
+            Path classPath, Path classResource, TableTestEntry entry, Set<Path> fileSet) {
+        Path tableResource = resolveTableResource(classResource, entry.path());
+        if (tableResource == null || !fileSet.contains(tableResource)) {
+            return Optional.empty();
+        }
+        String tableSlug = firstNonBlank(entry.slug(), deriveSlugFromResource(tableResource));
+        String tableName = firstNonBlank(tableSlug, entry.methodName());
+        String tableSegment = tableName != null ? tableName : derivePathSegment(tableResource);
+        if (tableSegment == null) {
+            return Optional.empty();
+        }
+        return Optional.of(Target.withPath(classPath.resolve(tableSegment))
+                .withResource(tableResource)
+                .withName(tableName != null ? tableName : tableSegment));
+    }
+
+    private static String stringValue(Map<?, ?> map, String key) {
+        return map.get(key) instanceof String string && !string.isBlank() ? string : null;
+    }
+
+    private static Path classPathFromClassName(String className) {
+        int lastDot = className.lastIndexOf('.');
+        String packagePart = lastDot >= 0 ? className.substring(0, lastDot) : "";
+        String classPart = lastDot >= 0 ? className.substring(lastDot + 1) : className;
+        List<String> segments = new java.util.ArrayList<>();
+        if (!packagePart.isBlank()) {
+            segments.addAll(java.util.Arrays.asList(packagePart.split("\\.")));
+        }
+        if (!classPart.isBlank()) {
+            segments.addAll(java.util.Arrays.asList(classPart.split("\\$")));
+        }
+        if (segments.isEmpty()) {
+            return ROOT_PATH;
+        }
+        return Path.of(segments.getFirst(), segments.subList(1, segments.size()).toArray(String[]::new));
+    }
+
+    private static Path resolveTableResource(Path classResource, String tablePath) {
+        if (tablePath == null || tablePath.isBlank()) {
+            return null;
+        }
+        Path baseDir = classResource != null ? classResource.getParent() : null;
+        Path relative = Path.of(tablePath);
+        Path resolved = baseDir != null ? baseDir.resolve(relative) : relative;
+        return resolved.normalize();
+    }
+
+    private static String deriveSlugFromResource(Path resource) {
+        if (resource == null || resource.getFileName() == null) {
+            return null;
+        }
+        String filename = resource.getFileName().toString();
+        if (!filename.startsWith(FILENAME_PREFIX) || !filename.endsWith(YAML_EXTENSION)) {
+            return null;
+        }
+        return filename.substring(FILENAME_PREFIX.length(), filename.length() - YAML_EXTENSION.length());
+    }
+
+    private static String derivePathSegment(Path resource) {
+        if (resource == null || resource.getFileName() == null) {
+            return null;
+        }
+        String slug = deriveSlugFromResource(resource);
+        return slug != null ? slug : resource.getFileName().toString();
+    }
+
+    private static String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
     /**
      * Finds the target instance to keep for a given file path, picking the one with a resource file if available,
      * otherwise picking the first target in the list.
      */
     private static Target pickTargetInstance(Map.Entry<Path, List<Target>> entry) {
         List<Target> candidates = entry.getValue();
-        if (candidates.size() == 1) return candidates.getFirst();
+        if (candidates.size() == 1) {
+            return candidates.getFirst();
+        }
         return candidates.stream().filter(Target::hasResource).findFirst().orElse(candidates.getFirst());
     }
 
     /**
-     * Uses the naming standard of junit-jupiter output directories to get the fully qualified name of each
-     * test class and creating a target path with directory per package component.
+     * Uses the naming standard of junit-jupiter output directories to get the fully qualified name of each test class
+     * and creating a target path with directory per package component.
      */
     private static Target directoryPerTestClassPackageComponents(Path file) {
         // JUnit puts published files in a directory per test class
@@ -297,11 +481,29 @@ public class ReportTree {
                 it -> Target.withPath(it.path().getParent()));
     }
 
+    private static Stream<Target> getAllPathAncestors(Target target) {
+        return Stream.iterate(target.path().getParent(), Objects::nonNull, Path::getParent)
+                .map(Target::withPath);
+    }
+
+    private static Stream<Target> withAncestors(Target target) {
+        return Stream.concat(Stream.of(target), getAllPathAncestors(target));
+    }
+
+    private record ClassMetadata(Path resource, String className, String slug, List<TableTestEntry> tableTests) {}
+
+    private record TableTestEntry(String path, String methodName, String slug) {}
+
+    private record MetadataTargets(List<Target> targets, Set<Path> resources) {
+        private static MetadataTargets empty() {
+            return new MetadataTargets(List.of(), Set.of());
+        }
+    }
+
     /**
-     * Represents a target in the report structure. A Target can be in one of several states:
-     * 1. Path-only: Has path, but no resource (intermediate directory node)
-     * 2. With resource: Has path and resource - name derived from resource file
-     * 3. Named: Has explicit name set via withName() - overrides derived name
+     * Represents a target in the report structure. A Target can be in one of several states: 1. Path-only: Has path,
+     * but no resource (intermediate directory node) 2. With resource: Has path and resource - name derived from
+     * resource file 3. Named: Has explicit name set via withName() - overrides derived name
      */
     public record Target(String name, Path path, Path resource) {
 

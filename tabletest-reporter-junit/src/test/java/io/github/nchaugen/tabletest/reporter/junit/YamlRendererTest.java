@@ -25,7 +25,6 @@ public class YamlRendererTest {
 
     @Test
     void shouldRenderClassNameAndSlug() {
-
         assertEquals( // language=yaml
                 """
                         "className": "com.example.SampleTest"
