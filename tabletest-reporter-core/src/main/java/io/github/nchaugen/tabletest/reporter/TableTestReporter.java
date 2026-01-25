@@ -25,7 +25,6 @@ import java.util.Map;
 
 public class TableTestReporter {
 
-    private final ContextLoader contextLoader = new ContextLoader();
     private final TemplateEngine templateEngine;
 
     public TableTestReporter() {
@@ -41,28 +40,28 @@ public class TableTestReporter {
         if (tree == null) {
             return ReportResult.empty(inDir);
         }
-        int count = report(tree, format, inDir, outDir);
+        int count = report(tree, format, outDir);
         return ReportResult.success(count);
     }
 
-    private int report(ReportNode node, Format format, Path inDir, Path outDir) {
+    private int report(ReportNode node, Format format, Path outDir) {
         Path relativeOutPath = Path.of("./" + node.outPath());
 
         return switch (node) {
             case IndexNode index -> {
-                Map<String, Object> context = createIndexContext(index, inDir, relativeOutPath);
+                Map<String, Object> context = createIndexContext(index, relativeOutPath);
 
                 Path outPath = outDir.resolve(relativeOutPath).resolve("index" + format.extension());
                 String content = templateEngine.renderIndex(format, context);
                 writeContent(outPath, content);
 
                 int childCount = index.contents().stream()
-                        .mapToInt(child -> report(child, format, inDir, outDir))
+                        .mapToInt(child -> report(child, format, outDir))
                         .sum();
                 yield 1 + childCount;
             }
             case TableNode table -> {
-                Map<String, Object> context = createTableContext(table, inDir);
+                Map<String, Object> context = createTableContext(table);
 
                 Path outPath = outDir.resolve(relativeOutPath + format.extension());
                 String content = templateEngine.renderTable(format, context);
@@ -72,21 +71,20 @@ public class TableTestReporter {
         };
     }
 
-    private Map<String, Object> createIndexContext(IndexNode index, Path inDir, Path relativeOutPath) {
-        Map<String, Object> context = loadContext(inDir, index.resource());
+    private Map<String, Object> createIndexContext(IndexNode index, Path relativeOutPath) {
+        Map<String, Object> context = copyContext(index.resource());
         context.put("name", index.name());
-        context.put("contents", buildContentsForTemplate(index.contents(), inDir, relativeOutPath));
+        context.put("contents", buildContentsForTemplate(index.contents(), relativeOutPath));
         return context;
     }
 
-    private Map<String, Object> createTableContext(TableNode table, Path inDir) {
-        Map<String, Object> context = loadContext(inDir, table.resource());
+    private Map<String, Object> createTableContext(TableNode table) {
+        Map<String, Object> context = copyContext(table.resource());
         context.put("name", table.name());
         return context;
     }
 
-    private List<Map<String, Object>> buildContentsForTemplate(
-            List<ReportNode> contents, Path inDir, Path relativeOutPath) {
+    private List<Map<String, Object>> buildContentsForTemplate(List<ReportNode> contents, Path relativeOutPath) {
         return contents.stream()
                 .map(child -> {
                     Map<String, Object> contentMap = new HashMap<>();
@@ -95,8 +93,7 @@ public class TableTestReporter {
                     contentMap.put("type", child.type());
 
                     if (child.resource() != null) {
-                        Map<String, Object> childContext = loadContext(inDir, child.resource());
-                        Object title = childContext.get("title");
+                        Object title = child.resource().get("title");
                         if (title != null) {
                             contentMap.put("title", title);
                         }
@@ -116,10 +113,7 @@ public class TableTestReporter {
         }
     }
 
-    private Map<String, Object> loadContext(Path inDir, Object resourcePath) {
-        return new HashMap<>(
-                resourcePath != null
-                        ? contextLoader.fromYaml(inDir.resolve((String) resourcePath))
-                        : Collections.emptyMap());
+    private Map<String, Object> copyContext(Map<String, Object> resource) {
+        return new HashMap<>(resource != null ? resource : Collections.emptyMap());
     }
 }

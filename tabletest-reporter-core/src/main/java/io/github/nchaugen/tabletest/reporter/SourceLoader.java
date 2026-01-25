@@ -17,22 +17,26 @@ package io.github.nchaugen.tabletest.reporter;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
-public class ReportTree {
+final class SourceLoader {
 
-    /**
-     * Processes the top-level directory where TableTest .yaml files have been created during
-     * test run and builds a typed node hierarchy describing the desired report structure.
-     *
-     * @param dir directory to traverse for .yaml files
-     * @return typed node hierarchy describing the desired report structure
-     */
-    public static ReportNode process(Path dir) {
-        if (dir == null) {
-            throw new IllegalArgumentException("argument `dir` cannot be null");
+    private static final ContextLoader CONTEXT_LOADER = new ContextLoader();
+
+    private SourceLoader() {}
+
+    static List<Source> loadSources(Path dir, List<Path> files) {
+        return files.stream()
+                .map(file -> new Source(file, readYaml(dir.resolve(file))))
+                .toList();
+    }
+
+    private static Map<String, Object> readYaml(Path resource) {
+        try {
+            Map<String, Object> yaml = CONTEXT_LOADER.fromYaml(resource);
+            return yaml != null ? yaml : Map.of();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read file " + resource, e);
         }
-        List<Path> files = TestOutputFileFinder.findTestOutputFiles(dir);
-        List<Source> sources = SourceLoader.loadSources(dir, files);
-        return TreeBuilder.buildTree(sources);
     }
 }

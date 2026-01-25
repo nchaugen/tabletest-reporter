@@ -16,6 +16,7 @@
 package io.github.nchaugen.tabletest.reporter;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a node in the report structure tree.
@@ -26,7 +27,7 @@ public sealed interface ReportNode permits IndexNode, TableNode {
 
     String outPath();
 
-    String resource();
+    Map<String, Object> resource();
 
     String type();
 }
@@ -35,7 +36,8 @@ public sealed interface ReportNode permits IndexNode, TableNode {
  * An index node representing a package or test class directory.
  * Contains links to child nodes (other indexes or tables).
  */
-record IndexNode(String name, String outPath, String resource, List<ReportNode> contents) implements ReportNode {
+record IndexNode(String name, String outPath, Map<String, Object> resource, List<ReportNode> contents)
+        implements ReportNode {
 
     public IndexNode {
         contents = List.copyOf(contents);
@@ -51,12 +53,12 @@ record IndexNode(String name, String outPath, String resource, List<ReportNode> 
 
 /**
  * A table leaf node representing a single TableTest method's report.
- * Always has an associated YAML resource file.
+ * Always has an associated YAML resource map.
  */
-record TableNode(String name, String outPath, String resource) implements ReportNode {
+record TableNode(String name, String outPath, Map<String, Object> resource) implements ReportNode {
 
     public TableNode {
-        if (resource == null || resource.isBlank()) {
+        if (resource == null) {
             throw new IllegalArgumentException("TableNode must have a resource");
         }
     }

@@ -32,10 +32,7 @@ public class ContextLoader {
     private final Load yaml;
 
     public ContextLoader() {
-        LoadSettings settings =
-                LoadSettings.builder().setAllowNonScalarKeys(true).build();
-
-        yaml = new Load(settings);
+        yaml = new Load(LoadSettings.builder().setAllowNonScalarKeys(true).build());
     }
 
     public Map<String, Object> fromYaml(Path path) {
