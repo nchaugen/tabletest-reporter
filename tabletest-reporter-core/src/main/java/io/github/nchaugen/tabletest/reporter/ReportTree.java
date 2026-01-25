@@ -42,12 +42,12 @@ public class ReportTree {
      * Processes the top-level directory where TableTest .yaml files have been created during test run and builds a
      * typed node hierarchy describing the desired report structure.
      *
-     * @param dir junit-jupiter output directory
+     * @param dir directory to traverse for .yaml files
      * @return typed node hierarchy describing the desired report structure
      */
     public static ReportNode process(Path dir) {
         if (dir == null) {
-            throw new NullPointerException("argument `dir` cannot be null");
+            throw new IllegalArgumentException("argument `dir` cannot be null");
         }
         List<Path> files = findTableTestOutputFiles(dir);
         List<Target> targets = findTargets(dir, files);
@@ -57,7 +57,7 @@ public class ReportTree {
     /**
      * Walks the given directory and returns all files ending with .yaml as paths relative to the given directory.
      *
-     * @param dir junit-jupiter output directory
+     * @param dir directory to traverse for .yaml files
      * @return List of relative paths to .yaml files
      */
     static List<Path> findTableTestOutputFiles(Path dir) {
@@ -97,34 +97,20 @@ public class ReportTree {
      * <li>order<ul><li>OrderTest</li></ul></li>
      * </ul>
      *
+     * @param dir directory to traverse for .yaml files
      * @param files list of input TableTest yaml files
      * @return list of target output files
      */
-    static List<Target> findTargets(List<Path> files) {
-        return Optional.ofNullable(files)
-                .map(ReportTree::generateAllTargets)
-                .map(ReportTree::pickNearestRoot)
-                .map(ReportTree::removeDuplicates)
-                .map(ReportTree::sortByTarget)
-                .orElseThrow(() -> new NullPointerException("argument `files` cannot be null"));
-    }
-
     static List<Target> findTargets(Path dir, List<Path> files) {
         if (files == null) {
-            throw new NullPointerException("argument `files` cannot be null");
+            throw new IllegalArgumentException("argument `files` cannot be null");
         }
         MetadataTargets metadataTargets = generateMetadataTargets(dir, files);
-        List<Path> legacyFiles = files.stream()
-                .filter(file -> !metadataTargets.resources().contains(file))
-                .toList();
-        List<Target> legacyTargets = legacyFiles.isEmpty() ? List.of() : generateAllTargets(legacyFiles);
-        List<Target> combinedTargets = Stream.concat(metadataTargets.targets().stream(), legacyTargets.stream())
-                .toList();
-        return Optional.of(combinedTargets)
+        return Optional.of(metadataTargets.targets())
                 .map(ReportTree::pickNearestRoot)
                 .map(ReportTree::removeDuplicates)
                 .map(ReportTree::sortByTarget)
-                .orElseThrow(() -> new NullPointerException("argument `files` cannot be null"));
+                .orElseThrow(() -> new IllegalArgumentException("argument `files` cannot be null"));
     }
 
     /**
@@ -267,17 +253,6 @@ public class ReportTree {
         return commonRoots.stream()
                 .max(comparing(target -> target.path().getNameCount()))
                 .orElseGet(() -> Target.withPath("").withName(null));
-    }
-
-    /**
-     * Expands the list of input files into a list of all possible target output files, i.e. adding an index file for
-     * each relevant test class and package
-     */
-    private static List<Target> generateAllTargets(List<Path> files) {
-        return files.stream()
-                .map(ReportTree::directoryPerTestClassPackageComponents)
-                .flatMap(ReportTree::getAllAncestors)
-                .toList();
     }
 
     private static MetadataTargets generateMetadataTargets(Path dir, List<Path> files) {
@@ -446,39 +421,6 @@ public class ReportTree {
             return candidates.getFirst();
         }
         return candidates.stream().filter(Target::hasResource).findFirst().orElse(candidates.getFirst());
-    }
-
-    /**
-     * Uses the naming standard of junit-jupiter output directories to get the fully qualified name of each test class
-     * and creating a target path with directory per package component.
-     */
-    private static Target directoryPerTestClassPackageComponents(Path file) {
-        // JUnit puts published files in a directory per test class
-        String className = file.getName(0).toString();
-
-        // Split the fully qualified class name into directory per package component
-        Path classNamePath = prefix(file).resolve(className.replace('.', File.separatorChar));
-
-        // Replace fully qualified class name directory with directory per package
-        Path remainingPath = (file.getRoot() == null ? ROOT_PATH : file.getRoot())
-                .resolve(className)
-                .relativize(file);
-
-        return Target.withPath(classNamePath.resolve(remainingPath)).withResource(file);
-    }
-
-    private static Path prefix(Path file) {
-        return file.getRoot() == null ? ROOT_PATH : file.getRoot();
-    }
-
-    /**
-     * Generates a stream of ancestors for the given target, starting with the parent and ending with the root
-     */
-    private static Stream<Target> getAllAncestors(Target target) {
-        return Stream.iterate(
-                target.mapPath(Path::getParent),
-                it -> Objects.nonNull(it.path()),
-                it -> Target.withPath(it.path().getParent()));
     }
 
     private static Stream<Target> getAllPathAncestors(Target target) {

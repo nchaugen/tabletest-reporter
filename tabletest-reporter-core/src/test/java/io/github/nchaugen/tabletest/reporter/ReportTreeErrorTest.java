@@ -16,9 +16,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ReportTreeErrorTest {
 
     @Test
-    void process_throws_NullPointerException_when_directory_is_null() {
+    void process_throws_exception_when_directory_is_null() {
         assertThatThrownBy(() -> ReportTree.process(null))
-                .isInstanceOf(NullPointerException.class)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("dir")
                 .hasMessageContaining("cannot be null");
     }
@@ -58,13 +58,5 @@ class ReportTreeErrorTest {
         ReportNode result = ReportTree.process(tempDir);
 
         assertThat(result).isNull();
-    }
-
-    @Test
-    void findTargets_throws_NullPointerException_when_files_list_is_null() {
-        assertThatThrownBy(() -> ReportTree.findTargets(null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("files")
-                .hasMessageContaining("cannot be null");
     }
 }

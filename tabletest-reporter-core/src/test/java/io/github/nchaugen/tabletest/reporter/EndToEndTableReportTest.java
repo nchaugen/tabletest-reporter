@@ -17,8 +17,14 @@ public class EndToEndTableReportTest {
     Path tempDir;
 
     private static final String TEST_CLASS_CONTEXT_YAML = """
+        "className": "org.example.CalendarCalculations"
+        "slug": "calendar-calculations"
         "title": "Calendar"
         "description": "Various rules for calendar calculations."
+        "tableTests":
+          - "path": "leapYear(int)/TABLETEST-leap-year-rules.yaml"
+            "methodName": "leapYear"
+            "slug": "leap-year-rules"
         """;
 
     private static final String TABLE_CONTEXT_YAML = """
@@ -377,7 +383,13 @@ public class EndToEndTableReportTest {
         Path inDirWithFailures = Files.createDirectory(parent.resolve("in"));
         Path testClassDir = Files.createDirectory(inDirWithFailures.resolve("org.example.MathTest"));
         Files.writeString(testClassDir.resolve("TABLETEST-math-test.yaml"), """
+            "className": "org.example.MathTest"
+            "slug": "math-test"
             "title": "Math Test"
+            "tableTests":
+              - "path": "addition(int, int, int)/TABLETEST-addition.yaml"
+                "methodName": "addition"
+                "slug": "addition"
             """);
         Path tableDir = Files.createDirectory(testClassDir.resolve("addition(int, int, int)"));
         Files.writeString(tableDir.resolve("TABLETEST-addition.yaml"), """
@@ -417,7 +429,13 @@ public class EndToEndTableReportTest {
 
         Path authTestDir = Files.createDirectory(inDirMulti.resolve("org.example.AuthTest"));
         Files.writeString(authTestDir.resolve("TABLETEST-auth-test.yaml"), """
+            "className": "org.example.AuthTest"
+            "slug": "auth-test"
             "title": "Auth Test"
+            "tableTests":
+              - "path": "login(String, String, boolean)/TABLETEST-login-validation.yaml"
+                "methodName": "login"
+                "slug": "login-validation"
             """);
         Path loginDir = Files.createDirectory(authTestDir.resolve("login(String, String, boolean)"));
         Files.writeString(loginDir.resolve("TABLETEST-login-validation.yaml"), """
@@ -437,7 +455,13 @@ public class EndToEndTableReportTest {
 
         Path orderTestDir = Files.createDirectory(inDirMulti.resolve("org.example.OrderTest"));
         Files.writeString(orderTestDir.resolve("TABLETEST-order-test.yaml"), """
+            "className": "org.example.OrderTest"
+            "slug": "order-test"
             "title": "Order Test"
+            "tableTests":
+              - "path": "placeOrder(String, int, boolean)/TABLETEST-place-order.yaml"
+                "methodName": "placeOrder"
+                "slug": "place-order"
             """);
         Path orderDir = Files.createDirectory(orderTestDir.resolve("placeOrder(String, int, boolean)"));
         Files.writeString(orderDir.resolve("TABLETEST-place-order.yaml"), """

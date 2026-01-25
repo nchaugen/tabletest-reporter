@@ -41,7 +41,7 @@ class TemplateEngineErrorTest {
     }
 
     @Test
-    void constructor_throws_NullPointerException_for_null_template_directory() {
+    void constructor_throws_exception_for_null_template_directory() {
         assertThatThrownBy(() -> new TemplateEngine(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("customTemplateDirectory");

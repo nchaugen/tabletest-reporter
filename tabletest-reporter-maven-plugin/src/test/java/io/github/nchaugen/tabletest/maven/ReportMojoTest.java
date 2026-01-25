@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -42,8 +43,14 @@ class ReportMojoTest {
         Files.createDirectories(tableDir);
 
         Files.writeString(testClassDir.resolve("TABLETEST-calendar-calculations.yaml"), """
+            "className": "org.example.CalendarTest"
+            "slug": "calendar-calculations"
             "title": "Calendar"
             "description": "Various rules for calendar calculations."
+            "tableTests":
+              - "path": "leapYearRules(java.time.Year, boolean)/TABLETEST-leap-year-rules.yaml"
+                "methodName": "leapYearRules"
+                "slug": "leap-year-rules"
             """);
 
         Files.writeString(tableDir.resolve("TABLETEST-leap-year-rules.yaml"), """
@@ -73,8 +80,8 @@ class ReportMojoTest {
         mojo.execute();
 
         // Assert
-        assertThat(outDir.resolve("index.adoc")).exists();
-        assertThat(outDir.resolve("calendar-calculations")).isDirectory();
+        assertThat(outDir.resolve("calendar-calculations").resolve("index.adoc"))
+                .exists();
         assertThat(outDir.resolve("calendar-calculations").resolve("leap-year-rules.adoc"))
                 .exists();
     }
@@ -238,6 +245,15 @@ class ReportMojoTest {
         Path inputDir = parent.resolve("input");
         Files.createDirectories(inputDir);
         Files.writeString(inputDir.resolve("TABLETEST-test.yaml"), """
+            "className": "TestClass"
+            "slug": "test-class"
+            "title": "Test Class"
+            "tableTests":
+              - "path": "TABLETEST-test-table.yaml"
+                "methodName": "testTable"
+                "slug": "test-table"
+            """);
+        Files.writeString(inputDir.resolve("TABLETEST-test-table.yaml"), """
             "title": "Test Table"
             "headers":
             - "value": "Column A"
@@ -259,10 +275,13 @@ class ReportMojoTest {
     }
 
     private Path findGeneratedFile(Path outputDir, String extension) throws IOException {
-        try (var files = Files.list(outputDir)) {
-            return files.filter(p -> p.toString().endsWith(extension))
+        try (var files = Files.walk(outputDir)) {
+            List<Path> matches =
+                    files.filter(p -> p.toString().endsWith(extension)).toList();
+            return matches.stream()
+                    .filter(path -> !path.getFileName().toString().startsWith("index."))
                     .findFirst()
-                    .orElseThrow();
+                    .orElseGet(() -> matches.stream().findFirst().orElseThrow());
         }
     }
 

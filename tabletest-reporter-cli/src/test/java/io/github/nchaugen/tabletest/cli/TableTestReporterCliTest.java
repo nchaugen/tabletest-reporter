@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -245,6 +246,15 @@ class TableTestReporterCliTest {
         Path inputDir = parent.resolve("input");
         Files.createDirectories(inputDir);
         Files.writeString(inputDir.resolve("TABLETEST-test.yaml"), """
+            "className": "TestClass"
+            "slug": "test-class"
+            "title": "Test Class"
+            "tableTests":
+              - "path": "TABLETEST-test-table.yaml"
+                "methodName": "testTable"
+                "slug": "test-table"
+            """);
+        Files.writeString(inputDir.resolve("TABLETEST-test-table.yaml"), """
             "title": "Test Table"
             "headers":
             - "value": "Column A"
@@ -284,10 +294,13 @@ class TableTestReporterCliTest {
     }
 
     private Path findGeneratedFile(Path outputDir, String extension) throws IOException {
-        try (var files = Files.list(outputDir)) {
-            return files.filter(p -> p.toString().endsWith(extension))
+        try (var files = Files.walk(outputDir)) {
+            List<Path> matches =
+                    files.filter(p -> p.toString().endsWith(extension)).toList();
+            return matches.stream()
+                    .filter(path -> !path.getFileName().toString().startsWith("index."))
                     .findFirst()
-                    .orElseThrow();
+                    .orElseGet(() -> matches.stream().findFirst().orElseThrow());
         }
     }
 }
