@@ -28,14 +28,4 @@ if echo "$COMMIT_MSG" | grep -qi "Generated with.*Claude Code\|Co-Authored-By:.*
     exit 1
 fi
 
-# Check first line length (should be under 50 chars)
-FIRST_LINE=$(echo "$COMMIT_MSG" | head -n 1)
-FIRST_LINE_LENGTH=${#FIRST_LINE}
-
-if [ $FIRST_LINE_LENGTH -gt 50 ]; then
-    echo -e "${YELLOW}⚠ Warning: First line is $FIRST_LINE_LENGTH characters (recommended: ≤50)${NC}"
-    echo "Consider shortening: $FIRST_LINE"
-    # This is just a warning, not blocking
-fi
-
 exit 0

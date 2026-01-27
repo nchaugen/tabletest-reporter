@@ -10,6 +10,11 @@ NC='\033[0m' # No Colour
 
 echo "Running pre-commit checks..."
 
+# Configure Java
+if command -v jenv >/dev/null 2>&1; then
+    eval "$(jenv init -)"
+fi
+
 # 1. Run beads sync first
 if [ -f .git/hooks/pre-commit.beads ]; then
     bash .git/hooks/pre-commit.beads
@@ -21,21 +26,9 @@ echo "Formatting Java code with Spotless..."
 
 # Check if any Java files are staged
 if git diff --cached --name-only --diff-filter=ACM | grep -q '\.java$'; then
-    # Format Maven modules
-    if ! mvn spotless:apply -q; then
+    if ! make format; then
         echo -e "${RED}✗ Maven Spotless formatting failed${NC}"
         exit 1
-    fi
-
-    # Format Gradle plugin module (if Gradle is working)
-    if [ -f "tabletest-reporter-gradle-plugin/gradlew" ]; then
-        cd tabletest-reporter-gradle-plugin
-        if ./gradlew spotlessApply -q 2>/dev/null; then
-            cd ..
-        else
-            cd ..
-            echo "Note: Gradle formatting skipped (build issue)"
-        fi
     fi
 
     # Re-stage formatted files
@@ -49,7 +42,7 @@ fi
 # 3. Build and run unit tests
 echo ""
 echo "Building and running tests..."
-if ! mvn clean install -q; then
+if ! make build; then
     echo -e "${RED}✗ Build or tests failed${NC}"
     echo "Fix the errors before committing"
     exit 1
