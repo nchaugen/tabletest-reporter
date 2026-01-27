@@ -67,8 +67,14 @@ class TableTestReporterPluginTest {
         Files.createDirectories(tableDir);
 
         Files.writeString(testClassDir.resolve("TABLETEST-calendar-test.yaml"), """
+            "className": "org.example.CalendarTest"
+            "slug": "calendar-test"
             "title": "Calendar"
             "description": "Various rules for calendar calculations."
+            "tableTests":
+              - "path": "leapYearRules(java.time.Year, boolean)/TABLETEST-leap-year-rules.yaml"
+                "methodName": "leapYearRules"
+                "slug": "leap-year-rules"
             """);
 
         Files.writeString(tableDir.resolve("TABLETEST-leap-year-rules.yaml"), """
@@ -103,7 +109,7 @@ class TableTestReporterPluginTest {
 
         reportTask().run();
 
-        String content = Files.readString(findGeneratedFile(outputDir(), ".adoc"));
+        String content = Files.readString(findGeneratedTableFile(outputDir(), ".adoc"));
         assertThat(content).contains("CUSTOM HEADER");
         assertThat(content).contains("Custom template content");
         assertThat(content).contains("CUSTOM FOOTER");
@@ -135,7 +141,7 @@ class TableTestReporterPluginTest {
 
         reportTask().run();
 
-        String content = Files.readString(findGeneratedFile(outputDir(), ".md"));
+        String content = Files.readString(findGeneratedTableFile(outputDir(), ".md"));
         assertThat(content).contains("## Test Table");
         assertThat(content).contains("| Column A |");
         assertThat(content).contains("---");
@@ -148,7 +154,7 @@ class TableTestReporterPluginTest {
 
         reportTask().run();
 
-        assertThat(findGeneratedFile(outputDir(), ".md")).exists();
+        assertThat(findGeneratedIndexFile(outputDir(), ".md")).exists();
     }
 
     @Test
@@ -158,7 +164,7 @@ class TableTestReporterPluginTest {
 
         reportTask().run();
 
-        assertThat(findGeneratedFile(outputDir(), ".adoc")).exists();
+        assertThat(findGeneratedIndexFile(outputDir(), ".adoc")).exists();
     }
 
     @Test
@@ -175,7 +181,7 @@ class TableTestReporterPluginTest {
 
         reportTask().run();
 
-        String content = Files.readString(findGeneratedFile(outputDir(), ".adoc"));
+        String content = Files.readString(findGeneratedTableFile(outputDir(), ".adoc"));
         assertThat(content).startsWith("==");
         assertThat(content).contains("[%header,cols=");
         assertThat(content).contains("|===");
@@ -220,6 +226,16 @@ class TableTestReporterPluginTest {
         Path testClassDir = inputRoot.resolve("org.example.CalendarTest");
         Files.createDirectories(testClassDir);
 
+        Files.writeString(testClassDir.resolve("TABLETEST-calendar-test.yaml"), """
+            "className": "org.example.CalendarTest"
+            "slug": "calendar-test"
+            "title": "Test Table Class"
+            "tableTests":
+              - "path": "TABLETEST-test.yaml"
+                "methodName": "test"
+                "slug": "test"
+            """);
+
         Files.writeString(testClassDir.resolve("TABLETEST-test.yaml"), """
             "title": "Test Table"
             "headers":
@@ -241,9 +257,18 @@ class TableTestReporterPluginTest {
         return templateDir;
     }
 
-    private Path findGeneratedFile(Path outputDir, String extension) throws IOException {
-        try (var files = Files.list(outputDir)) {
+    private Path findGeneratedTableFile(Path outputDir, String extension) throws IOException {
+        try (var files = Files.walk(outputDir)) {
             return files.filter(p -> p.toString().endsWith(extension))
+                    .filter(p -> !p.getFileName().toString().startsWith("index."))
+                    .findFirst()
+                    .orElseThrow();
+        }
+    }
+
+    private Path findGeneratedIndexFile(Path outputDir, String extension) throws IOException {
+        try (var files = Files.walk(outputDir)) {
+            return files.filter(p -> p.getFileName().toString().equals("index" + extension))
                     .findFirst()
                     .orElseThrow();
         }
