@@ -1,6 +1,6 @@
 .PHONY: build test format maven-build gradle-plugin-build compatibility-tests
 
-build: maven-build gradle-plugin-build
+build: format maven-build gradle-plugin-build
 
 test: build compatibility-tests
 

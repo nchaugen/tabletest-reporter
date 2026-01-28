@@ -44,7 +44,6 @@ class TableTestPublisherTest {
     void shouldPublishYamlForPassingTableTest() throws IOException {
         var results = EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(AllRowsPassTest.class))
-                .configurationParameter("junit.platform.output.dir", tempDir.toString())
                 .enableImplicitConfigurationParameters(true)
                 .outputDirectoryCreator(createOutputDirectoryCreator())
                 .execute();
@@ -118,7 +117,6 @@ class TableTestPublisherTest {
     void shouldPublishYamlForFailingTableTest() throws IOException {
         var results = EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(OneRowFailsTest.class))
-                .configurationParameter("junit.platform.output.dir", tempDir.toString())
                 .enableImplicitConfigurationParameters(true)
                 .outputDirectoryCreator(createOutputDirectoryCreator())
                 .execute();
@@ -218,7 +216,6 @@ class TableTestPublisherTest {
     void shouldPublishTestClassYaml() throws IOException {
         var results = EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(AllRowsPassTest.class))
-                .configurationParameter("junit.platform.output.dir", tempDir.toString())
                 .enableImplicitConfigurationParameters(true)
                 .outputDirectoryCreator(createOutputDirectoryCreator())
                 .execute();
@@ -246,7 +243,6 @@ class TableTestPublisherTest {
     void shouldPublishYamlForSetExpansionWithScenario() throws IOException {
         var results = EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(SetExpansionTest.class))
-                .configurationParameter("junit.platform.output.dir", tempDir.toString())
                 .enableImplicitConfigurationParameters(true)
                 .outputDirectoryCreator(createOutputDirectoryCreator())
                 .execute();
@@ -336,7 +332,6 @@ class TableTestPublisherTest {
     void shouldPublishYamlForSetExpansionWithoutScenario() throws IOException {
         var results = EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(SetExpansionTest.class))
-                .configurationParameter("junit.platform.output.dir", tempDir.toString())
                 .enableImplicitConfigurationParameters(true)
                 .outputDirectoryCreator(createOutputDirectoryCreator())
                 .execute();
@@ -398,7 +393,6 @@ class TableTestPublisherTest {
     void shouldNotPublishTestClassYamlWhenNoTableTestMethods() throws IOException {
         var results = EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(NoTableTestMethodsTest.class))
-                .configurationParameter("junit.platform.output.dir", tempDir.toString())
                 .enableImplicitConfigurationParameters(true)
                 .outputDirectoryCreator(createOutputDirectoryCreator())
                 .execute();

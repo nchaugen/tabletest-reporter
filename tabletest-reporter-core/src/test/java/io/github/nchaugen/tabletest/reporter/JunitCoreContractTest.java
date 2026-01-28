@@ -36,7 +36,6 @@ class JunitCoreContractTest {
     void shouldConsumeYamlFilesProducedByJunitExtension() throws IOException {
         EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(SampleTableTest.class))
-                .configurationParameter("junit.platform.output.dir", tempDir.toString())
                 .enableImplicitConfigurationParameters(true)
                 .outputDirectoryCreator(createOutputDirectoryCreator())
                 .execute();
@@ -69,7 +68,6 @@ class JunitCoreContractTest {
     void shouldHandleNestedTestClasses() throws IOException {
         EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(OuterTest.class))
-                .configurationParameter("junit.platform.output.dir", tempDir.toString())
                 .enableImplicitConfigurationParameters(true)
                 .outputDirectoryCreator(createOutputDirectoryCreator())
                 .execute();
@@ -149,7 +147,6 @@ class JunitCoreContractTest {
 
         EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(OuterTest.class))
-                .configurationParameter("junit.platform.output.dir", customOutputDir.toString())
                 .enableImplicitConfigurationParameters(true)
                 .outputDirectoryCreator(creatorThatCreatesSubdirectories)
                 .execute();
@@ -176,7 +173,6 @@ class JunitCoreContractTest {
     void shouldGenerateTitleForClassesWithoutDisplayName() throws IOException {
         EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(LeapYearRulesTest.class))
-                .configurationParameter("junit.platform.output.dir", tempDir.toString())
                 .enableImplicitConfigurationParameters(true)
                 .outputDirectoryCreator(createOutputDirectoryCreator())
                 .execute();
@@ -204,7 +200,6 @@ class JunitCoreContractTest {
     void shouldPreserveFilenameTransformations() throws IOException {
         EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(CamelCaseTest.class))
-                .configurationParameter("junit.platform.output.dir", tempDir.toString())
                 .enableImplicitConfigurationParameters(true)
                 .outputDirectoryCreator(createOutputDirectoryCreator())
                 .execute();
