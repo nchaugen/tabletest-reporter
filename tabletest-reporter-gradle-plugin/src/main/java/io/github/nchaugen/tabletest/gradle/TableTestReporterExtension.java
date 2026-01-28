@@ -43,8 +43,7 @@ public abstract class TableTestReporterExtension {
     @Inject
     public TableTestReporterExtension(ObjectFactory objects, ProjectLayout layout, ProviderFactory providers) {
         this.format = objects.property(String.class).convention("asciidoc");
-        this.inputDir = objects.directoryProperty()
-                .convention(layout.getBuildDirectory().dir("junit-jupiter"));
+        this.inputDir = objects.directoryProperty();
         this.outputDir = objects.directoryProperty()
                 .convention(layout.getBuildDirectory().dir("generated-docs/tabletest"));
         this.templateDir = objects.directoryProperty();

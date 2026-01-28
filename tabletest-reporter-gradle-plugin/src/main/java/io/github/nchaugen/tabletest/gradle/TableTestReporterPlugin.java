@@ -17,6 +17,10 @@ package io.github.nchaugen.tabletest.gradle;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
+import org.gradle.api.tasks.testing.Test;
+
+import java.util.Optional;
 
 /**
  * Gradle plugin for generating TableTest documentation.
@@ -43,6 +47,7 @@ public class TableTestReporterPlugin implements Plugin<Project> {
             t.getInputDir().convention(ext.getInputDir());
             t.getOutputDir().convention(ext.getOutputDir());
             t.getTemplateDir().convention(ext.getTemplateDir());
+            t.getJunitOutputDir().convention(project.provider(() -> resolveJunitOutputDir(project)));
         });
 
         // Register list formats task
@@ -51,5 +56,15 @@ public class TableTestReporterPlugin implements Plugin<Project> {
 
         // Make `build` depend on generation by default? Keep opt-in to avoid surprises.
         // Users will run `./gradlew reportTableTests` explicitly.
+    }
+
+    private static String resolveJunitOutputDir(Project project) {
+        Task testTask = project.getTasks().findByName("test");
+        if (!(testTask instanceof Test test)) {
+            return null;
+        }
+        return Optional.ofNullable(test.getSystemProperties().get("junit.platform.reporting.output.dir"))
+                .map(Object::toString)
+                .orElse(null);
     }
 }

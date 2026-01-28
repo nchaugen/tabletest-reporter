@@ -75,6 +75,7 @@ class ReportMojoTest {
         setField(mojo, "format", "asciidoc");
         setField(mojo, "inputDirectory", inDir.toFile());
         setField(mojo, "outputDirectory", outDir.toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
 
         // Act
         mojo.execute();
@@ -92,6 +93,7 @@ class ReportMojoTest {
         setField(mojo, "format", "markdown");
         setField(mojo, "inputDirectory", new File(tempDir.resolve("missing").toString()));
         setField(mojo, "outputDirectory", tempDir.resolve("out").toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
 
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoFailureException.class)
@@ -109,6 +111,7 @@ class ReportMojoTest {
         setField(mojo, "inputDirectory", inputDir.toFile());
         setField(mojo, "outputDirectory", outputDir.toFile());
         setField(mojo, "templateDirectory", templateDir.toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
 
         mojo.execute();
 
@@ -132,6 +135,7 @@ class ReportMojoTest {
         setField(mojo, "inputDirectory", inputDir.toFile());
         setField(mojo, "outputDirectory", outputDir.toFile());
         setField(mojo, "templateDirectory", nonexistentDir.toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
 
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoFailureException.class)
@@ -150,6 +154,7 @@ class ReportMojoTest {
         setField(mojo, "inputDirectory", inputDir.toFile());
         setField(mojo, "outputDirectory", outputDir.toFile());
         setField(mojo, "templateDirectory", notADirectory.toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
 
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoFailureException.class)
@@ -165,6 +170,7 @@ class ReportMojoTest {
         setField(mojo, "format", "markdown");
         setField(mojo, "inputDirectory", inputDir.toFile());
         setField(mojo, "outputDirectory", outputDir.toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
 
         mojo.execute();
 
@@ -185,6 +191,7 @@ class ReportMojoTest {
         setField(mojo, "format", "md");
         setField(mojo, "inputDirectory", inputDir.toFile());
         setField(mojo, "outputDirectory", outputDir.toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
 
         mojo.execute();
 
@@ -200,6 +207,7 @@ class ReportMojoTest {
         setField(mojo, "format", "adoc");
         setField(mojo, "inputDirectory", inputDir.toFile());
         setField(mojo, "outputDirectory", outputDir.toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
 
         mojo.execute();
 
@@ -215,6 +223,7 @@ class ReportMojoTest {
         setField(mojo, "format", "invalid-format");
         setField(mojo, "inputDirectory", inputDir.toFile());
         setField(mojo, "outputDirectory", outputDir.toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
 
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoFailureException.class)
@@ -230,6 +239,7 @@ class ReportMojoTest {
         setField(mojo, "format", "asciidoc");
         setField(mojo, "inputDirectory", inputDir.toFile());
         setField(mojo, "outputDirectory", outputDir.toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
 
         mojo.execute();
 

@@ -18,6 +18,7 @@ package io.github.nchaugen.tabletest.cli;
 import io.github.nchaugen.tabletest.reporter.Format;
 import io.github.nchaugen.tabletest.reporter.FormatLister;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
+import io.github.nchaugen.tabletest.reporter.InputDirectoryResolver;
 import io.github.nchaugen.tabletest.reporter.ReportResult;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import picocli.CommandLine;
@@ -48,7 +49,8 @@ public final class TableTestReporterCli implements Callable<Integer> {
 
     @Option(
             names = {"-i", "--input"},
-            description = "Input directory containing TableTest YAML files (default: <buildDir>/junit-jupiter)",
+            description =
+                    "Input directory containing TableTest YAML files (default: auto-detect or <buildDir>/junit-jupiter)",
             defaultValue = "")
     private String inputDirArg;
 
@@ -78,23 +80,23 @@ public final class TableTestReporterCli implements Callable<Integer> {
         }
 
         try {
-            Path buildDir = resolveBuildDir();
-            Path in = inputDirArg == null || inputDirArg.isBlank()
-                    ? buildDir.resolve("junit-jupiter")
-                    : Path.of(inputDirArg);
-            Path out = outputDirArg == null || outputDirArg.isBlank()
+            final Path buildDir = resolveBuildDir();
+            final Path configuredInput = inputDirArg == null || inputDirArg.isBlank() ? null : Path.of(inputDirArg);
+            final Path out = outputDirArg == null || outputDirArg.isBlank()
                     ? buildDir.resolve("generated-docs").resolve("tabletest")
                     : Path.of(outputDirArg);
 
-            if (!Files.exists(in)) {
-                System.err.printf("Input directory does not exist: %s%n", in.toAbsolutePath());
+            InputDirectoryResolver.Result inputResult =
+                    InputDirectoryResolver.resolve(configuredInput, null, Path.of("."), null);
+            Path in = inputResult.path();
+            if (in == null || !Files.exists(in)) {
+                System.err.println(inputResult.formatMissingInputMessage());
                 return 2;
             }
 
             Path templateDir = resolveTemplateDir();
             Format reportFormat = FormatResolver.resolve(format, templateDir);
-            TableTestReporter reporter = createReporter(templateDir);
-            ReportResult result = reporter.report(reportFormat, in, out);
+            ReportResult result = createReporter(templateDir).report(reportFormat, in, out);
             if (result.filesGenerated() == 0) {
                 System.err.println(result.message());
             } else {

@@ -17,6 +17,7 @@ package io.github.nchaugen.tabletest.gradle;
 
 import io.github.nchaugen.tabletest.reporter.Format;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
+import io.github.nchaugen.tabletest.reporter.InputDirectoryResolver;
 import io.github.nchaugen.tabletest.reporter.ReportResult;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import org.gradle.api.DefaultTask;
@@ -24,11 +25,14 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
+import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Inject;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Gradle task for generating documentation from TableTest YAML outputs.
@@ -43,6 +47,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     private final DirectoryProperty inputDir;
     private final DirectoryProperty outputDir;
     private final DirectoryProperty templateDir;
+    private final Property<String> junitOutputDir;
 
     /**
      * Creates a new task instance with default configuration.
@@ -53,6 +58,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         this.inputDir = getProject().getObjects().directoryProperty();
         this.outputDir = getProject().getObjects().directoryProperty();
         this.templateDir = getProject().getObjects().directoryProperty();
+        this.junitOutputDir = getProject().getObjects().property(String.class);
         setGroup("documentation");
         setDescription("Generates AsciiDoc or Markdown documentation from TableTest YAML outputs");
     }
@@ -62,7 +68,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
      *
      * @return property for specifying output format (asciidoc or markdown)
      */
-    @Optional
+    @org.gradle.api.tasks.Optional
     @Input
     public Property<String> getFormat() {
         return format;
@@ -73,6 +79,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
      *
      * @return property for directory containing TableTest YAML files
      */
+    @org.gradle.api.tasks.Optional
     @InputDirectory
     @PathSensitive(PathSensitivity.RELATIVE)
     public DirectoryProperty getInputDir() {
@@ -94,11 +101,17 @@ public abstract class ReportTableTestsTask extends DefaultTask {
      *
      * @return property for optional custom template directory
      */
-    @Optional
+    @org.gradle.api.tasks.Optional
     @InputDirectory
     @PathSensitive(PathSensitivity.RELATIVE)
     public DirectoryProperty getTemplateDir() {
         return templateDir;
+    }
+
+    @org.gradle.api.tasks.Optional
+    @Input
+    public Property<String> getJunitOutputDir() {
+        return junitOutputDir;
     }
 
     /**
@@ -109,43 +122,77 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     @TaskAction
     public void run() {
         final String fmt = format.getOrElse("asciidoc");
-        final Path in = inputDir.get().getAsFile().toPath();
+        final Path defaultInput = getProject()
+                .getLayout()
+                .getBuildDirectory()
+                .dir("junit-jupiter")
+                .get()
+                .getAsFile()
+                .toPath();
+        final Path configuredInput = Optional.ofNullable(toPath(inputDir))
+                .filter(path -> !isSamePath(path, defaultInput))
+                .orElse(null);
         final Path out = outputDir.get().getAsFile().toPath();
 
-        if (!Files.exists(in)) {
-            throw new GradleException("Input directory does not exist: " + in.toAbsolutePath());
-        }
+        final Path baseDir = getProject().getProjectDir().toPath();
+        final String junitOutputDirValue = junitOutputDir.getOrNull();
 
-        Path templateDirectory =
-                templateDir.isPresent() ? templateDir.get().getAsFile().toPath() : null;
-        Format reportFormat = FormatResolver.resolve(fmt, templateDirectory);
+        Path in = resolveInputDirectory(configuredInput, List.of(defaultInput), baseDir, junitOutputDirValue);
+
+        Format reportFormat = FormatResolver.resolve(fmt, toPath(templateDir));
 
         try {
-            TableTestReporter reporter = createReporter();
-            ReportResult result = reporter.report(reportFormat, in, out);
-            if (result.filesGenerated() == 0) {
-                getLogger().warn(result.message());
-            } else {
-                getLogger().lifecycle("Generated {} documentation file(s)", result.filesGenerated());
-            }
+            ReportResult result = createReporter().report(reportFormat, in, out);
+            logResult(result);
         } catch (Exception e) {
             throw new GradleException("Failed to generate TableTest report: " + e.getMessage(), e);
         }
     }
 
-    private TableTestReporter createReporter() {
-        if (!templateDir.isPresent()) {
-            return new TableTestReporter();
-        }
+    private @Nullable Path toPath(DirectoryProperty property) {
+        return Optional.ofNullable(property)
+                .filter(DirectoryProperty::isPresent)
+                .map(dir -> dir.get().getAsFile().toPath())
+                .orElse(null);
+    }
 
-        Path templateDirectory = templateDir.get().getAsFile().toPath();
+    private static Path resolveInputDirectory(
+            Path configuredInput, List<Path> fallbackCandidates, Path baseDir, String junitOutputDirValue) {
+        InputDirectoryResolver.Result inputResult =
+                InputDirectoryResolver.resolve(configuredInput, fallbackCandidates, baseDir, junitOutputDirValue);
+        return Optional.ofNullable(inputResult.path())
+                .filter(Files::exists)
+                .orElseThrow(() -> new GradleException(inputResult.formatMissingInputMessage()));
+    }
+
+    private void logResult(ReportResult result) {
+        if (result.filesGenerated() == 0) {
+            getLogger().warn(result.message());
+        } else {
+            getLogger().lifecycle("Generated {} documentation file(s)", result.filesGenerated());
+        }
+    }
+
+    private TableTestReporter createReporter() {
+        return Optional.of(templateDir)
+                .filter(DirectoryProperty::isPresent)
+                .map(dir -> dir.get().getAsFile().toPath())
+                .map(this::validateTemplateDirectory)
+                .map(TableTestReporter::new)
+                .orElseGet(TableTestReporter::new);
+    }
+
+    private Path validateTemplateDirectory(Path templateDirectory) {
         if (!Files.exists(templateDirectory)) {
             throw new GradleException("Template directory does not exist: " + templateDirectory.toAbsolutePath());
         }
         if (!Files.isDirectory(templateDirectory)) {
             throw new GradleException("Template path is not a directory: " + templateDirectory.toAbsolutePath());
         }
+        return templateDirectory;
+    }
 
-        return new TableTestReporter(templateDirectory);
+    private static boolean isSamePath(Path left, Path right) {
+        return left.toAbsolutePath().normalize().equals(right.toAbsolutePath().normalize());
     }
 }
