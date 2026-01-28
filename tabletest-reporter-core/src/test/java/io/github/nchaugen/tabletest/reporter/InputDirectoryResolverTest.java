@@ -1,7 +1,6 @@
 package io.github.nchaugen.tabletest.reporter;
 
 import io.github.nchaugen.tabletest.junit.TableTest;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -10,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class InputDirectoryResolverTest {
@@ -17,92 +17,114 @@ class InputDirectoryResolverTest {
     @TempDir
     Path tempDir;
 
-    @AfterEach
-    void clearSystemProperties() {
-        System.clearProperty("junit.platform.reporting.output.dir");
+    @TableTest("""
+            Scenario                                        | Build dir | Input dir | JUnit dir    | JUnit dir state  | Fallback dir state | Resolved path?       | Source?        | Searched locations?
+            Configured input dir always take presedence     | build     | my/config | report/junit | yaml             | yaml               | my/config            | CONFIGURED     | [my/config]
+            JUnit with YAML wins over fallback with yaml    | build     |           | report/junit | yaml             | yaml               | report/junit         | JUNIT_PROPERTY | [report/junit, build/junit-jupiter]
+            Fallback with YAML wins over empty JUnit        | target    |           | report/junit | {empty, missing} | yaml               | target/junit-jupiter | FALLBACK       | [report/junit, target/junit-jupiter]
+            Existing JUnit wins over empty fallback         | target    |           | report/junit | empty            | empty              | report/junit         | JUNIT_PROPERTY | [report/junit, target/junit-jupiter]
+            Existing fallback wins over missing JUnit dir   | target    |           |              |                  | {yaml, empty}      | target/junit-jupiter | FALLBACK       | [target/junit-jupiter]
+            Unresolved when both Junit and fallback missing | target    |           | report/junit | missing          | missing            |                      | NONE           | [report/junit, target/junit-jupiter, build/junit-jupiter]
+            Unresolved when fallback missing                | build     |           |              |                  | missing            |                      | NONE           | [target/junit-jupiter, build/junit-jupiter]
+            """)
+    void resolvesWithCorrectPriorityAndSource(
+            String buildDir,
+            String configuredDir,
+            String junitDir,
+            String junitState,
+            String fallbackState,
+            String resolvedDir,
+            InputDirectoryResolver.ResolutionSource source,
+            List<String> searchLocations)
+            throws IOException {
+
+        Path fallbackPath = setupDir(tempDir, buildDir + "/junit-jupiter", fallbackState);
+        Path configuredPath = setupDir(tempDir, configuredDir, "empty");
+        setupDir(tempDir, junitDir, junitState);
+
+        InputDirectoryResolver.Result result = InputDirectoryResolver.resolve(
+                configuredPath, fallbackPath == null ? emptyList() : List.of(fallbackPath), tempDir, junitDir);
+
+        Path expectedPath = resolvedDir != null ? tempDir.resolve(resolvedDir) : null;
+        assertThat(result.source()).isEqualTo(source);
+        assertThat(result.path()).isEqualTo(expectedPath);
+        List<Path> expected = searchLocations.stream().map(tempDir::resolve).toList();
+        assertThat(result.candidates()).isEqualTo(expected);
     }
 
     @TableTest("""
-            Scenario                                | Build Dir | JUnit Property | Configured Input Dir | Resolved Dir?
-            Configured input wins                   | build     | report/junit   | tabletest            | tabletest
-            JUnit property when no configured input | target    | report/junit   |                      | report/junit
-            Fallback when no configured or property | build     |                |                      | build/junit-jupiter
+            Scenario            | Input dir  | Resolved path?
+            Relative path       | sub/dir    | sub/dir
+            Absolute path       | /sub/dir   | /sub/dir
+            With dot components | sub/../dir | dir
             """)
-    void resolvesInputDirectory(
-            String buildDir, String junitProperty, String configuredInputDir, String expectedResolvedDir)
-            throws IOException {
-        Path fallbackDir = tempDir.resolve(buildDir).resolve("junit-jupiter");
-        Files.createDirectories(fallbackDir);
+    void resolvesToNormalizedConfiguredDir(Path configuredDir, Path resolvedDir) {
+        InputDirectoryResolver.Result result = InputDirectoryResolver.resolve(configuredDir, List.of(), tempDir, null);
 
-        if (junitProperty != null) {
-            Path reportingDir = resolveFromBase(junitProperty);
-            Files.createDirectories(reportingDir);
-            System.setProperty("junit.platform.reporting.output.dir", junitProperty);
-        }
-
-        Path configuredPath = configuredInputDir == null ? null : Path.of(configuredInputDir);
-        Path configuredDir = resolveFromBase(configuredInputDir);
-        if (configuredDir != null) {
-            Files.createDirectories(configuredDir);
-        }
-
-        InputDirectoryResolver.Result result = InputDirectoryResolver.resolve(configuredPath, null, tempDir, null);
-
-        assertThat(result.path()).isEqualTo(resolveFromBase(expectedResolvedDir));
+        assertThat(result.path()).isEqualTo(tempDir.resolve(resolvedDir).normalize());
+        assertThat(result.source()).isEqualTo(InputDirectoryResolver.ResolutionSource.CONFIGURED);
     }
 
     @Test
-    void formatMissingInputMessage_with_null_path_and_no_candidates() {
+    void resolvesRelativeJunitDir() throws IOException {
+        String relativePath = "report/junit";
+        Path resolvedPath = tempDir.resolve(relativePath);
+        Files.createDirectories(resolvedPath);
+        createTestOutputFile(resolvedPath);
+
         InputDirectoryResolver.Result result =
-                new InputDirectoryResolver.Result(null, InputDirectoryResolver.ResolutionSource.NONE, List.of());
+                InputDirectoryResolver.resolve(null, List.of(Path.of("nonexistent")), tempDir, relativePath);
 
-        assertThat(result.formatMissingInputMessage()).isEqualTo("Input directory does not exist");
+        assertThat(result.path()).isEqualTo(resolvedPath);
+        assertThat(result.source()).isEqualTo(InputDirectoryResolver.ResolutionSource.JUNIT_PROPERTY);
     }
 
     @Test
-    void formatMissingInputMessage_with_path_and_no_candidates() {
-        Path missing = tempDir.resolve("missing");
+    void resolvesAbsoluteJunitDir() throws IOException {
+        Path absolutePath = tempDir.resolve("report/junit");
+        Files.createDirectories(absolutePath);
+        createTestOutputFile(absolutePath);
+
         InputDirectoryResolver.Result result =
-                new InputDirectoryResolver.Result(missing, InputDirectoryResolver.ResolutionSource.FALLBACK, List.of());
+                InputDirectoryResolver.resolve(null, List.of(Path.of("nonexistent")), tempDir, absolutePath.toString());
 
-        assertThat(result.formatMissingInputMessage())
-                .isEqualTo("Input directory does not exist: " + missing.toAbsolutePath());
+        assertThat(result.path()).isEqualTo(absolutePath);
+        assertThat(result.source()).isEqualTo(InputDirectoryResolver.ResolutionSource.JUNIT_PROPERTY);
     }
 
-    @Test
-    void formatMissingInputMessage_with_null_path_and_candidates() {
-        Path candidate1 = tempDir.resolve("target/junit-jupiter");
-        Path candidate2 = tempDir.resolve("build/junit-jupiter");
+    @TableTest("""
+            Scenario                  | Dir     | Candidates                          | Message?
+            No path, no candidates    |         | []                                  | Input directory does not exist
+            Path, no candidates       | missing | []                                  | Input directory does not exist: /test/missing
+            No path, with candidates  |         | [target/junit-jupiter, build/junit] | Input directory does not exist
+            Path, with candidates     | missing | [target/junit-jupiter]              | Input directory does not exist: /test/missing
+            """)
+    void formatsMissingInputMessage(String dir, List<String> candidates, String expectedMessage) {
+        Path basePath = Path.of("/test");
+        Path resolvedPath = dir != null ? basePath.resolve(dir) : null;
+        List<Path> candidatePaths = candidates.stream().map(basePath::resolve).toList();
+
         InputDirectoryResolver.Result result = new InputDirectoryResolver.Result(
-                null, InputDirectoryResolver.ResolutionSource.NONE, List.of(candidate1, candidate2));
+                resolvedPath, InputDirectoryResolver.ResolutionSource.NONE, candidatePaths);
 
         String message = result.formatMissingInputMessage();
-
-        assertThat(message).startsWith("Input directory does not exist" + System.lineSeparator());
-        assertThat(message).contains("Searched locations:");
-        assertThat(message).contains("  - " + candidate1.toAbsolutePath());
-        assertThat(message).contains("  - " + candidate2.toAbsolutePath());
+        assertThat(message).startsWith(expectedMessage);
+        candidatePaths.forEach(candidate -> assertThat(message).contains("  - " + candidate.toAbsolutePath()));
     }
 
-    @Test
-    void formatMissingInputMessage_with_path_and_candidates() {
-        Path missing = tempDir.resolve("missing");
-        Path candidate = tempDir.resolve("target/junit-jupiter");
-        InputDirectoryResolver.Result result = new InputDirectoryResolver.Result(
-                missing, InputDirectoryResolver.ResolutionSource.FALLBACK, List.of(candidate));
-
-        String message = result.formatMissingInputMessage();
-
-        assertThat(message).startsWith("Input directory does not exist: " + missing.toAbsolutePath());
-        assertThat(message).contains("Searched locations:");
-        assertThat(message).contains("  - " + candidate.toAbsolutePath());
-    }
-
-    private Path resolveFromBase(String value) {
-        if (value == null) {
+    private Path setupDir(Path base, String dir, String state) throws IOException {
+        if (dir == null || state == null || "missing".equals(state)) {
             return null;
         }
-        Path path = Path.of(value);
-        return path.isAbsolute() ? path : tempDir.resolve(path);
+        Path dirPath = base.resolve(dir);
+        Files.createDirectories(dirPath);
+        if ("yaml".equals(state)) {
+            createTestOutputFile(dirPath);
+        }
+        return dirPath;
+    }
+
+    private void createTestOutputFile(Path dir) throws IOException {
+        Files.writeString(dir.resolve("TABLETEST-Test.yaml"), "test: data");
     }
 }
