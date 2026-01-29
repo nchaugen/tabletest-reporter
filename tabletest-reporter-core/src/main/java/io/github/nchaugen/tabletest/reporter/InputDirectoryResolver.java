@@ -25,8 +25,6 @@ import java.util.stream.Stream;
 
 public final class InputDirectoryResolver {
 
-    private static final String JUNIT_PLATFORM_REPORTING_OUTPUT_DIR = "junit.platform.reporting.output.dir";
-
     public enum ResolutionSource {
         CONFIGURED,
         JUNIT_PROPERTY,
@@ -57,7 +55,7 @@ public final class InputDirectoryResolver {
     private InputDirectoryResolver() {}
 
     public static Result resolve(
-            Path configuredInputDir, List<Path> fallbackCandidates, Path baseDir, String junitOutputDirOverride) {
+            Path configuredInputDir, List<Path> fallbackCandidates, Path baseDir, Path junitOutputDir) {
         Path base = baseDir != null ? baseDir : Path.of(".");
         Optional<Path> configured = Optional.ofNullable(configuredInputDir).map(input -> normalize(base, input));
         if (configured.isPresent()) {
@@ -65,14 +63,13 @@ public final class InputDirectoryResolver {
             return new Result(configuredPath, ResolutionSource.CONFIGURED, List.of(configuredPath));
         }
 
-        Optional<Path> junitOutputDir = resolveJunitOutputDir(base, junitOutputDirOverride);
+        Optional<Path> junitDir = Optional.ofNullable(junitOutputDir);
         List<Path> fallbacks = normalizeCandidates(base, fallbackCandidates);
 
-        List<Path> candidates = Stream.concat(junitOutputDir.stream(), fallbacks.stream())
-                .distinct()
-                .toList();
+        List<Path> candidates =
+                Stream.concat(junitDir.stream(), fallbacks.stream()).distinct().toList();
 
-        Optional<Path> junitWithOutputs = junitOutputDir.filter(InputDirectoryResolver::hasOutputs);
+        Optional<Path> junitWithOutputs = junitDir.filter(InputDirectoryResolver::hasOutputs);
         if (junitWithOutputs.isPresent()) {
             return new Result(junitWithOutputs.get(), ResolutionSource.JUNIT_PROPERTY, candidates);
         }
@@ -85,23 +82,12 @@ public final class InputDirectoryResolver {
 
         Optional<Path> existing = candidates.stream().filter(Files::exists).findFirst();
         ResolutionSource source = existing.map(
-                        path -> junitOutputDir.filter(path::equals).isPresent()
+                        path -> junitDir.filter(path::equals).isPresent()
                                 ? ResolutionSource.JUNIT_PROPERTY
                                 : ResolutionSource.FALLBACK)
                 .orElse(ResolutionSource.NONE);
 
         return new Result(existing.orElse(null), source, candidates);
-    }
-
-    private static Optional<Path> resolveJunitOutputDir(Path baseDir, String override) {
-        String value = override == null || override.isBlank()
-                ? System.getProperty(JUNIT_PLATFORM_REPORTING_OUTPUT_DIR)
-                : override;
-        if (value == null || value.isBlank()) {
-            return Optional.empty();
-        }
-        Path path = Path.of(value);
-        return Optional.of(path.isAbsolute() ? path : baseDir.resolve(path));
     }
 
     private static List<Path> defaultCandidates(Path baseDir) {

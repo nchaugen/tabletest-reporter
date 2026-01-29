@@ -1,7 +1,6 @@
 package io.github.nchaugen.tabletest.reporter;
 
 import io.github.nchaugen.tabletest.junit.TableTest;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
@@ -41,9 +40,10 @@ class InputDirectoryResolverTest {
         Path fallbackPath = setupDir(tempDir, buildDir + "/junit-jupiter", fallbackState);
         Path configuredPath = setupDir(tempDir, configuredDir, "empty");
         setupDir(tempDir, junitDir, junitState);
+        Path junitOutputDir = JunitDirParser.parse(tempDir, junitDir).orElse(null);
 
         InputDirectoryResolver.Result result = InputDirectoryResolver.resolve(
-                configuredPath, fallbackPath == null ? emptyList() : List.of(fallbackPath), tempDir, junitDir);
+                configuredPath, fallbackPath == null ? emptyList() : List.of(fallbackPath), tempDir, junitOutputDir);
 
         Path expectedPath = resolvedDir != null ? tempDir.resolve(resolvedDir) : null;
         assertThat(result.source()).isEqualTo(source);
@@ -63,33 +63,6 @@ class InputDirectoryResolverTest {
 
         assertThat(result.path()).isEqualTo(tempDir.resolve(resolvedDir).normalize());
         assertThat(result.source()).isEqualTo(InputDirectoryResolver.ResolutionSource.CONFIGURED);
-    }
-
-    @Test
-    void resolvesRelativeJunitDir() throws IOException {
-        String relativePath = "report/junit";
-        Path resolvedPath = tempDir.resolve(relativePath);
-        Files.createDirectories(resolvedPath);
-        createTestOutputFile(resolvedPath);
-
-        InputDirectoryResolver.Result result =
-                InputDirectoryResolver.resolve(null, List.of(Path.of("nonexistent")), tempDir, relativePath);
-
-        assertThat(result.path()).isEqualTo(resolvedPath);
-        assertThat(result.source()).isEqualTo(InputDirectoryResolver.ResolutionSource.JUNIT_PROPERTY);
-    }
-
-    @Test
-    void resolvesAbsoluteJunitDir() throws IOException {
-        Path absolutePath = tempDir.resolve("report/junit");
-        Files.createDirectories(absolutePath);
-        createTestOutputFile(absolutePath);
-
-        InputDirectoryResolver.Result result =
-                InputDirectoryResolver.resolve(null, List.of(Path.of("nonexistent")), tempDir, absolutePath.toString());
-
-        assertThat(result.path()).isEqualTo(absolutePath);
-        assertThat(result.source()).isEqualTo(InputDirectoryResolver.ResolutionSource.JUNIT_PROPERTY);
     }
 
     @TableTest("""

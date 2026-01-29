@@ -19,6 +19,7 @@ import io.github.nchaugen.tabletest.reporter.Format;
 import io.github.nchaugen.tabletest.reporter.FormatLister;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
 import io.github.nchaugen.tabletest.reporter.InputDirectoryResolver;
+import io.github.nchaugen.tabletest.reporter.JunitDirParser;
 import io.github.nchaugen.tabletest.reporter.ReportResult;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import picocli.CommandLine;
@@ -86,8 +87,11 @@ public final class TableTestReporterCli implements Callable<Integer> {
                     ? buildDir.resolve("generated-docs").resolve("tabletest")
                     : Path.of(outputDirArg);
 
-            InputDirectoryResolver.Result inputResult =
-                    InputDirectoryResolver.resolve(configuredInput, null, Path.of("."), null);
+            InputDirectoryResolver.Result inputResult = InputDirectoryResolver.resolve(
+                    configuredInput,
+                    null,
+                    Path.of("."),
+                    JunitDirParser.parse(Path.of("."), null).orElse(null));
             Path in = inputResult.path();
             if (in == null || !Files.exists(in)) {
                 System.err.println(inputResult.formatMissingInputMessage());

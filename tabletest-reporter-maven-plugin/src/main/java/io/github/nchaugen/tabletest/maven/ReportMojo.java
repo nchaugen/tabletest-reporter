@@ -18,6 +18,7 @@ package io.github.nchaugen.tabletest.maven;
 import io.github.nchaugen.tabletest.reporter.Format;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
 import io.github.nchaugen.tabletest.reporter.InputDirectoryResolver;
+import io.github.nchaugen.tabletest.reporter.JunitDirParser;
 import io.github.nchaugen.tabletest.reporter.ReportResult;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import org.apache.maven.plugin.AbstractMojo;
@@ -81,8 +82,11 @@ public final class ReportMojo extends AbstractMojo {
 
     private Path resolveInputDirectory(Path configuredInputDir, List<Path> fallbacks, Path baseDir)
             throws MojoFailureException {
-        InputDirectoryResolver.Result inputResult =
-                InputDirectoryResolver.resolve(configuredInputDir, fallbacks, baseDir, null);
+        InputDirectoryResolver.Result inputResult = InputDirectoryResolver.resolve(
+                configuredInputDir,
+                fallbacks,
+                baseDir,
+                JunitDirParser.parse(baseDir, null).orElse(null));
         return Optional.ofNullable(inputResult.path())
                 .filter(Files::exists)
                 .orElseThrow(() -> new MojoFailureException(inputResult.formatMissingInputMessage()));

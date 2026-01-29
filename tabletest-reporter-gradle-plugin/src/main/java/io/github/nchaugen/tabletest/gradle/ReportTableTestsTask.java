@@ -18,6 +18,7 @@ package io.github.nchaugen.tabletest.gradle;
 import io.github.nchaugen.tabletest.reporter.Format;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
 import io.github.nchaugen.tabletest.reporter.InputDirectoryResolver;
+import io.github.nchaugen.tabletest.reporter.JunitDirParser;
 import io.github.nchaugen.tabletest.reporter.ReportResult;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
 import org.gradle.api.DefaultTask;
@@ -136,8 +137,9 @@ public abstract class ReportTableTestsTask extends DefaultTask {
 
         final Path baseDir = getProject().getProjectDir().toPath();
         final String junitOutputDirValue = junitOutputDir.getOrNull();
+        final Path junitDir = JunitDirParser.parse(baseDir, junitOutputDirValue).orElse(null);
 
-        Path in = resolveInputDirectory(configuredInput, List.of(defaultInput), baseDir, junitOutputDirValue);
+        Path in = resolveInputDirectory(configuredInput, List.of(defaultInput), baseDir, junitDir);
 
         Format reportFormat = FormatResolver.resolve(fmt, toPath(templateDir));
 
@@ -157,9 +159,9 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     }
 
     private static Path resolveInputDirectory(
-            Path configuredInput, List<Path> fallbackCandidates, Path baseDir, String junitOutputDirValue) {
+            Path configuredInput, List<Path> fallbackCandidates, Path baseDir, Path junitDir) {
         InputDirectoryResolver.Result inputResult =
-                InputDirectoryResolver.resolve(configuredInput, fallbackCandidates, baseDir, junitOutputDirValue);
+                InputDirectoryResolver.resolve(configuredInput, fallbackCandidates, baseDir, junitDir);
         return Optional.ofNullable(inputResult.path())
                 .filter(Files::exists)
                 .orElseThrow(() -> new GradleException(inputResult.formatMissingInputMessage()));
