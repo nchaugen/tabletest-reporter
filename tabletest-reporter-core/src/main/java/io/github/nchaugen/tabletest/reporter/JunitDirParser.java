@@ -19,27 +19,21 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * Parses the JUnit platform reporting output directory from an override value
- * or the system property {@code junit.platform.reporting.output.dir}.
+ * Parses a JUnit platform reporting output directory value into a resolved path.
  */
 public final class JunitDirParser {
-
-    private static final String JUNIT_PLATFORM_REPORTING_OUTPUT_DIR = "junit.platform.reporting.output.dir";
 
     private JunitDirParser() {}
 
     /**
-     * Resolves the JUnit output directory path from an override string or system property.
-     * Returns empty if no value is available.
+     * Parses the given directory value into a resolved path.
+     * Returns empty if the value is null or blank.
      *
      * @param baseDir directory to resolve relative paths against
-     * @param override explicit override value, or null/blank to fall back to system property
-     * @return resolved absolute or base-relative path, or empty if no value found
+     * @param value directory value, or null/blank for empty result
+     * @return resolved absolute or base-relative path, or empty if no value provided
      */
-    public static Optional<Path> parse(Path baseDir, String override) {
-        String value = override == null || override.isBlank()
-                ? System.getProperty(JUNIT_PLATFORM_REPORTING_OUTPUT_DIR)
-                : override;
+    public static Optional<Path> parse(Path baseDir, String value) {
         if (value == null || value.isBlank()) {
             return Optional.empty();
         }
