@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.github.nchaugen.tabletest.compat</groupId>
+    <artifactId>junit-5-maven</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <version.junit>5.12.0</version.junit>
+        <version.tabletest>0.5.8</version.tabletest>
+        <version.tabletest-reporter>0.3.2-SNAPSHOT</version.tabletest-reporter>
+        <version.plugin.surefire>3.5.2</version.plugin.surefire>
+    </properties>
+
+    <dependencies>
+        <!-- JUnit 5.12 (minimum claimed version) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- TableTest -->
+        <dependency>
+            <groupId>io.github.nchaugen</groupId>
+            <artifactId>tabletest-junit</artifactId>
+            <version>${version.tabletest}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- TableTest Reporter JUnit Extension -->
+        <dependency>
+            <groupId>io.github.nchaugen</groupId>
+            <artifactId>tabletest-reporter-junit</artifactId>
+            <version>${version.tabletest-reporter}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${version.plugin.surefire}</version>
+                <configuration>
+                    <!-- Allow intentional test failures for verification -->
+                    <testFailureIgnore>true</testFailureIgnore>
+                    <properties>
+                        <configurationParameters>
+                            junit.jupiter.extensions.autodetection.enabled=true
+                        </configurationParameters>
+                    </properties>
+                    <systemPropertyVariables>
+                        <tabletest.reporter.expectation.pattern>^Expected.*</tabletest.reporter.expectation.pattern>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.github.nchaugen</groupId>
+                <artifactId>tabletest-reporter-maven-plugin</artifactId>
+                <version>${version.tabletest-reporter}</version>
+                <configuration>
+                    <format>markdown</format>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

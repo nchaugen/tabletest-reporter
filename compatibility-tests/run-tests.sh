@@ -67,6 +67,7 @@ else
 fi
 
 # Run all compatibility tests
+run_test "junit-5-maven"
 run_test "junit-6-maven"
 run_test "spring-boot-min"
 run_test "spring-boot-latest"
