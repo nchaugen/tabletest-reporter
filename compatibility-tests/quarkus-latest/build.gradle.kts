@@ -61,13 +61,6 @@ tasks.test {
 
     // Enable JUnit extension autodetection
     systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
-
-    // Configure JUnit Platform output directory for publishFile() API
-    // JUnit 6+ prepends the engine ID (junit-jupiter) to the path, so use build directory as base
-    val outputDir = layout.buildDirectory
-    jvmArgumentProviders += CommandLineArgumentProvider {
-        listOf("-Djunit.platform.reporting.output.dir=${outputDir.get().asFile.absolutePath}")
-    }
 }
 
 // Configure tabletest-reporter plugin for AsciiDoc output

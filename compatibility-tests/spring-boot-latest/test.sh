@@ -31,42 +31,24 @@ if [ -z "$JAVA_HOME" ] || ! "$JAVA_HOME/bin/java" -version 2>&1 | grep -q "versi
 fi
 
 # Step 1: Run tests
-echo -e "\n${YELLOW}[1/5] Running tests...${NC}"
+echo -e "\n${YELLOW}[1/4] Running tests...${NC}"
 ./gradlew --console=plain clean test
 echo -e "${GREEN}✓ Tests completed${NC}"
 
 # Step 2: Validate YAML generation
-echo -e "\n${YELLOW}[2/5] Validating YAML generation...${NC}"
+echo -e "\n${YELLOW}[2/4] Validating YAML generation...${NC}"
 validate_yaml_files "build/junit-jupiter"
 echo -e "${GREEN}✓ YAML files generated${NC}"
 
 # Step 3: Generate Markdown with Gradle plugin
-echo -e "\n${YELLOW}[3/5] Generating Markdown documentation...${NC}"
+echo -e "\n${YELLOW}[3/4] Generating Markdown documentation...${NC}"
 ./gradlew --console=plain reportTableTests
 echo -e "${GREEN}✓ Markdown generation completed${NC}"
 
 # Step 4: Validate Markdown generation
-echo -e "\n${YELLOW}[4/5] Validating Markdown generation...${NC}"
+echo -e "\n${YELLOW}[4/4] Validating Markdown generation...${NC}"
 validate_output_files "build/generated-docs/tabletest" "*.md" "Markdown"
 echo -e "${GREEN}✓ Markdown files generated${NC}"
-
-# Step 5: Test custom inputDirectory and outputDirectory configuration
-echo -e "\n${YELLOW}[5/5] Testing custom inputDirectory and outputDirectory...${NC}"
-
-# Copy YAML files to custom location
-mkdir -p custom-input
-cp -r build/junit-jupiter/* custom-input/
-
-# Validate YAML files were copied
-validate_yaml_files "custom-input"
-
-# Generate documentation from custom location using Gradle task properties
-./gradlew --console=plain reportTableTests \
-    -Ptabletest.inputDir=custom-input \
-    -Ptabletest.outputDir=custom-output
-
-validate_output_files "custom-output" "*.md" "Markdown"
-echo -e "${GREEN}✓ Custom inputDirectory/outputDirectory works${NC}"
 
 echo -e "\n=========================================="
 echo -e "${GREEN}SUCCESS: All verification steps passed${NC}"

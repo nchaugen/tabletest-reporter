@@ -49,23 +49,9 @@ tasks.test {
 
     // Enable JUnit extension autodetection
     systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
-
-    // Configure JUnit Platform output directory for publishFile() API
-    // JUnit 6+ prepends the engine ID (junit-jupiter) to the path, so use build directory as base
-    val outputDir = layout.buildDirectory
-    jvmArgumentProviders += CommandLineArgumentProvider {
-        listOf("-Djunit.platform.reporting.output.dir=${outputDir.get().asFile.absolutePath}")
-    }
 }
 
 // Configure tabletest-reporter plugin for Markdown output
-// Supports property overrides: -Ptabletest.inputDir=... -Ptabletest.outputDir=...
 extensions.configure<io.github.nchaugen.tabletest.gradle.TableTestReporterExtension>("tableTestReporter") {
     format.set("markdown")
-    if (project.hasProperty("tabletest.inputDir")) {
-        inputDir.set(file(project.property("tabletest.inputDir") as String))
-    }
-    if (project.hasProperty("tabletest.outputDir")) {
-        outputDir.set(file(project.property("tabletest.outputDir") as String))
-    }
 }
