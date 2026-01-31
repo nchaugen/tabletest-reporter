@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * Reads the JUnit platform reporting output directory from junit-platform.properties.
@@ -33,27 +35,31 @@ public final class JunitPropertiesReader {
     private JunitPropertiesReader() {}
 
     /**
-     * Result of reading the output directory property.
-     *
-     * @param value the raw property value
-     * @param deterministic true if the value contains no placeholders like {uniqueNumber}
-     */
-    public record Result(String value, boolean deterministic) {}
-
-    /**
-     * Reads the JUnit platform reporting output directory from the properties file.
+     * Resolves the JUnit platform reporting output directory from the properties file.
+     * Placeholders like {uniqueNumber} are stripped, resolving to the parent path segment.
+     * A bare {uniqueNumber} resolves to the base directory itself.
      *
      * @param baseDir project base directory containing src/test/resources
-     * @return the result if the property is present and non-blank, or empty otherwise
+     * @return resolved path, or empty if the property is absent or blank
      */
-    public static Optional<Result> read(Path baseDir) {
+    public static Optional<Path> resolve(Path baseDir) {
         Properties properties = loadProperties(baseDir.resolve(PROPERTIES_PATH));
         String value = properties.getProperty(OUTPUT_DIR_KEY);
         if (value == null || value.isBlank()) {
             return Optional.empty();
         }
-        boolean deterministic = !value.contains("{uniqueNumber}");
-        return Optional.of(new Result(value, deterministic));
+        String resolved = stripPlaceholders(value);
+        return JunitDirParser.parse(baseDir, resolved);
+    }
+
+    private static String stripPlaceholders(String value) {
+        if (!value.contains("{uniqueNumber}")) {
+            return value;
+        }
+        String prefix = Arrays.stream(value.split("/"))
+                .takeWhile(segment -> !segment.contains("{uniqueNumber}"))
+                .collect(Collectors.joining("/"));
+        return prefix.isEmpty() ? "." : prefix;
     }
 
     private static Properties loadProperties(Path path) {

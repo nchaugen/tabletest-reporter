@@ -15,34 +15,40 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JunitPropertiesReaderTest {
 
     @Test
-    void returns_empty_when_file_does_not_exist(@TempDir Path tempDir) {
-        Optional<JunitPropertiesReader.Result> result = JunitPropertiesReader.read(tempDir);
+    void resolve_returns_empty_when_file_does_not_exist(@TempDir Path tempDir) {
+        Optional<Path> result = JunitPropertiesReader.resolve(tempDir);
 
         assertThat(result).isEmpty();
     }
 
     @TableTest("""
-            Scenario             | File Content                                         | Value?           | Deterministic?
-            Deterministic path   | junit.platform.reporting.output.dir=report/out       | report/out       | true
-            Path with placeholder| junit.platform.reporting.output.dir=r/{uniqueNumber} | r/{uniqueNumber} | false
-            Property not present | some.other.property=value                            |                  |
-            Empty value          | junit.platform.reporting.output.dir=                 |                  |
+            Scenario                       | Output dir value              | Resolved path?
+            Deterministic path             | report/out                    | report/out
+            Placeholder stripped to parent | "report/{uniqueNumber}"       | report
+            Bare placeholder resolves to . | "{uniqueNumber}"              | .
+            Placeholder truncates trailing | "build/{uniqueNumber}/report" | build
+            Property not present           |                               |
+            Empty value                    | ''                            |
             """)
-    void reads_output_dir_property(
-            @Scenario String _scenario, String fileContent, String value, Boolean deterministic, @TempDir Path tempDir)
+    void resolves_output_dir_to_path(
+            @Scenario String _scenario, String outputDirValue, String resolvedPath, @TempDir Path tempDir)
             throws IOException {
-        Path propertiesFile = tempDir.resolve("src/test/resources/junit-platform.properties");
-        Files.createDirectories(propertiesFile.getParent());
-        Files.writeString(propertiesFile, fileContent);
+        if (outputDirValue != null) {
+            writeProperties(tempDir, outputDirValue);
+        }
 
-        Optional<JunitPropertiesReader.Result> result = JunitPropertiesReader.read(tempDir);
+        Optional<Path> result = JunitPropertiesReader.resolve(tempDir);
 
-        if (value == null) {
+        if (resolvedPath == null) {
             assertThat(result).isEmpty();
         } else {
-            assertThat(result).isPresent();
-            assertThat(result.get().value()).isEqualTo(value);
-            assertThat(result.get().deterministic()).isEqualTo(deterministic);
+            assertThat(result).contains(tempDir.resolve(resolvedPath));
         }
+    }
+
+    private void writeProperties(Path baseDir, String outputDirValue) throws IOException {
+        Path propertiesFile = baseDir.resolve("src/test/resources/junit-platform.properties");
+        Files.createDirectories(propertiesFile.getParent());
+        Files.writeString(propertiesFile, "junit.platform.reporting.output.dir=" + outputDirValue);
     }
 }

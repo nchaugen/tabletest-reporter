@@ -63,13 +63,14 @@ public final class InputDirectoryResolver {
             return new Result(configuredPath, ResolutionSource.CONFIGURED, List.of(configuredPath));
         }
 
-        Optional<Path> junitDir = Optional.ofNullable(junitOutputDir);
+        List<Path> junitDirs = junitPropertyPaths(junitOutputDir, base);
         List<Path> fallbacks = normalizeCandidates(base, fallbackCandidates);
 
         List<Path> candidates =
-                Stream.concat(junitDir.stream(), fallbacks.stream()).distinct().toList();
+                Stream.concat(junitDirs.stream(), fallbacks.stream()).distinct().toList();
 
-        Optional<Path> junitWithOutputs = junitDir.filter(InputDirectoryResolver::hasOutputs);
+        Optional<Path> junitWithOutputs =
+                junitDirs.stream().filter(InputDirectoryResolver::hasOutputs).findFirst();
         if (junitWithOutputs.isPresent()) {
             return new Result(junitWithOutputs.get(), ResolutionSource.JUNIT_PROPERTY, candidates);
         }
@@ -82,12 +83,16 @@ public final class InputDirectoryResolver {
 
         Optional<Path> existing = candidates.stream().filter(Files::exists).findFirst();
         ResolutionSource source = existing.map(
-                        path -> junitDir.filter(path::equals).isPresent()
-                                ? ResolutionSource.JUNIT_PROPERTY
-                                : ResolutionSource.FALLBACK)
+                        path -> junitDirs.contains(path) ? ResolutionSource.JUNIT_PROPERTY : ResolutionSource.FALLBACK)
                 .orElse(ResolutionSource.NONE);
 
         return new Result(existing.orElse(null), source, candidates);
+    }
+
+    private static List<Path> junitPropertyPaths(Path junitOutputDir, Path baseDir) {
+        Stream<Path> pluginProvided = Optional.ofNullable(junitOutputDir).stream();
+        Stream<Path> fromProperties = JunitPropertiesReader.resolve(baseDir).stream();
+        return Stream.concat(pluginProvided, fromProperties).distinct().toList();
     }
 
     private static List<Path> defaultCandidates(Path baseDir) {

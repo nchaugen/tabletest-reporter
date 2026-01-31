@@ -85,6 +85,44 @@ class InputDirectoryResolverTest {
         candidatePaths.forEach(candidate -> assertThat(message).contains("  - " + candidate.toAbsolutePath()));
     }
 
+    @TableTest("""
+            Scenario                                   | JUnit dir    | JUnit dir state | Properties value              | Fallback dir state | Resolved path?       | Source?        | Searched locations?
+            Properties with YAML wins over fallback    |              |                 | report/props                  | yaml               | report/props         | JUNIT_PROPERTY | [report/props, target/junit-jupiter, build/junit-jupiter]
+            JUnit dir wins over properties             | report/junit | yaml            | report/props                  | yaml               | report/junit         | JUNIT_PROPERTY | [report/junit, report/props, target/junit-jupiter, build/junit-jupiter]
+            Placeholder stripped to parent             |              |                 | "report/props/{uniqueNumber}" | yaml               | report/props         | JUNIT_PROPERTY | [report/props, target/junit-jupiter, build/junit-jupiter]
+            Properties in candidates when unresolved   |              |                 | report/props                  | missing            |                      | NONE           | [report/props, target/junit-jupiter, build/junit-jupiter]
+            """)
+    void resolvesFromPropertiesFile(
+            String junitDir,
+            String junitState,
+            String propertiesValue,
+            String fallbackState,
+            String resolvedDir,
+            InputDirectoryResolver.ResolutionSource source,
+            List<String> searchLocations)
+            throws IOException {
+
+        setupDir(tempDir, "target/junit-jupiter", fallbackState);
+        setupDir(tempDir, junitDir, junitState);
+        setupDir(tempDir, "report/props", fallbackState.equals("missing") ? "missing" : "yaml");
+        setupProperties(tempDir, propertiesValue);
+        Path junitOutputDir = JunitDirParser.parse(tempDir, junitDir).orElse(null);
+
+        InputDirectoryResolver.Result result = InputDirectoryResolver.resolve(null, null, tempDir, junitOutputDir);
+
+        Path expectedPath = resolvedDir != null ? tempDir.resolve(resolvedDir) : null;
+        assertThat(result.source()).isEqualTo(source);
+        assertThat(result.path()).isEqualTo(expectedPath);
+        List<Path> expected = searchLocations.stream().map(tempDir::resolve).toList();
+        assertThat(result.candidates()).isEqualTo(expected);
+    }
+
+    private void setupProperties(Path base, String value) throws IOException {
+        Path propertiesFile = base.resolve("src/test/resources/junit-platform.properties");
+        Files.createDirectories(propertiesFile.getParent());
+        Files.writeString(propertiesFile, "junit.platform.reporting.output.dir=" + value);
+    }
+
     private Path setupDir(Path base, String dir, String state) throws IOException {
         if (dir == null || state == null || "missing".equals(state)) {
             return null;
