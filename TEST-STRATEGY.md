@@ -27,8 +27,8 @@ compatibility-tests/
 ├── run-tests.sh           # Main orchestrator script
 ├── test-common.sh         # Shared utility functions
 ├── README.md              # Test matrix documentation
-├── junit-min/             # JUnit 5.12 + Gradle + Markdown
-├── junit-latest/          # JUnit 6.0.1 + Maven + AsciiDoc + HTML
+├── junit-5-gradle/        # JUnit 5.12 + Gradle + Markdown
+├── junit-6-maven/         # JUnit 6.0.1 + Maven + AsciiDoc + HTML
 ├── spring-boot-min/       # Spring Boot 3.5.0 + Maven + CLI
 ├── spring-boot-latest/    # Spring Boot 4.0.0 + Gradle + Markdown
 ├── quarkus-min/           # Quarkus 3.21.2 + Maven + Markdown
@@ -68,8 +68,8 @@ Each `test.sh` typically:
 
 | Test Project        | Framework   | Version | Build Tool | Autodetection                    | Output        | Reporter       |
 |---------------------|-------------|---------|------------|----------------------------------|---------------|----------------|
-| junit-min           | JUnit       | 5.12    | Gradle     | systemProperty                   | Markdown      | Gradle plugin  |
-| junit-latest        | JUnit       | latest  | Maven      | Surefire configurationParameters | AsciiDoc+HTML | Maven + Asciidoctor |
+| junit-5-gradle      | JUnit       | 5.12    | Gradle     | systemProperty                   | Markdown      | Gradle plugin  |
+| junit-6-maven       | JUnit       | latest  | Maven      | Surefire configurationParameters | AsciiDoc+HTML | Maven + Asciidoctor |
 | spring-boot-min     | Spring Boot | 3.5.0   | Maven      | Surefire plugin                  | AsciiDoc      | CLI            |
 | spring-boot-latest  | Spring Boot | latest  | Gradle     | junit-platform.properties        | Markdown      | Gradle plugin  |
 | quarkus-min         | Quarkus     | 3.21.2  | Maven      | Surefire plugin (workaround)     | Markdown      | Maven plugin   |
@@ -113,9 +113,9 @@ Actual "latest" versions are maintained in the build files (`pom.xml`, `build.gr
 - HTML generation via Asciidoctor with CSS styling
 - File structure mirrors package hierarchy
 
-## HTML CSS Verification (junit-latest)
+## HTML CSS Verification (junit-6-maven)
 
-The junit-latest project includes comprehensive HTML verification:
+The junit-6-maven project includes comprehensive HTML verification:
 
 1. **Intentional test failures**: Tests include deliberately failing assertions
 2. **8-step verification process**:

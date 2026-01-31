@@ -13,7 +13,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo "=========================================="
-echo "JUnit Latest with Asciidoctor HTML Test"
+echo "JUnit 6 Maven with Asciidoctor HTML Test"
 echo "=========================================="
 
 # Step 1: Run tests (with intentional failures)

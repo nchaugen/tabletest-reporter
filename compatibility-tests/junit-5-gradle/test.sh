@@ -13,7 +13,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo "=========================================="
-echo "JUnit Min (5.12) with Gradle + Markdown"
+echo "JUnit 5 Gradle with Markdown"
 echo "=========================================="
 
 # Ensure JAVA_HOME points to Java 21 for Gradle daemon

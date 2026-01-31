@@ -721,7 +721,7 @@ See the [Asciidoctor stylesheet documentation](https://docs.asciidoctor.org/asci
 
 **Working Example**
 
-A complete working example is available in the project's compatibility tests: [`compatibility-tests/junit-latest/`](compatibility-tests/junit-latest/)
+A complete working example is available in the project's compatibility tests: [`compatibility-tests/junit-6-maven/`](compatibility-tests/junit-6-maven/)
 
 ### For Plugin Developers
 

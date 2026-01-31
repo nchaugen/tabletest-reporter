@@ -39,10 +39,10 @@ jobs:
             artifact-id: quarkus-bom
             version-file: compatibility-tests/quarkus-latest/pom.xml
           - framework: junit
-            test-dir: junit-latest
+            test-dir: junit-6-maven
             artifact-group: org.junit.jupiter
             artifact-id: junit-jupiter
-            version-file: compatibility-tests/junit-latest/pom.xml
+            version-file: compatibility-tests/junit-6-maven/pom.xml
           - framework: gradle
             test-dir: gradle-latest
             artifact-group: gradle
