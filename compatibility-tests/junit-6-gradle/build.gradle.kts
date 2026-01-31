@@ -38,9 +38,6 @@ dependencies {
 
     // TableTest Reporter JUnit Extension
     testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.3.2-SNAPSHOT")
-
-    // JSoup for HTML CSS verification
-    testImplementation("org.jsoup:jsoup:1.22.1")
 }
 
 tasks.test {
@@ -48,6 +45,9 @@ tasks.test {
 
     // Enable JUnit extension autodetection
     systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
+
+    // Custom expectation pattern for testing
+    systemProperty("tabletest.reporter.expectation.pattern", "^Expected.*")
 
     // Allow intentional test failures
     ignoreFailures = true

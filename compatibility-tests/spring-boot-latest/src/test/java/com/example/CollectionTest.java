@@ -3,11 +3,13 @@ package com.example;
 import io.github.nchaugen.tabletest.junit.Description;
 import io.github.nchaugen.tabletest.junit.TableTest;
 import org.junit.jupiter.api.DisplayName;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SpringBootTest
 @DisplayName("Collection Operations")
 @Description("Tests for list operations")
 class CollectionTest {

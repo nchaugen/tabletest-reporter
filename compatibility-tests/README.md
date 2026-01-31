@@ -93,7 +93,7 @@ Asciidoctor HTML conversion is tested as an extra step in **junit-6-maven**. Fut
 | Quarkus | 3.21 | Maven | 5.x |
 | Quarkus | 3.30 | Gradle | 5.x or 6.x |
 
-Framework projects use their native test annotations (`@SpringBootTest`, `@QuarkusTest`) to exercise framework test runner integration, not plain `@Test`.
+Spring Boot projects use `@SpringBootTest` to exercise framework test runner integration. Quarkus Maven (`quarkus-min`) uses `@QuarkusTest`. Quarkus Gradle (`quarkus-latest`) currently runs without `@QuarkusTest` due to a known bug: the `io.quarkus` Gradle plugin's `FacadeClassLoader` prevents JUnit extension autodetection (see `tabletest-reporter-0ps`).
 
 ## Running Tests
 

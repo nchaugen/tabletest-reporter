@@ -32,6 +32,12 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- Quarkus Arc (CDI implementation required by @QuarkusTest) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc</artifactId>
+        </dependency>
+
         <!-- Quarkus JUnit 5 -->
         <dependency>
             <groupId>io.quarkus</groupId>

@@ -42,7 +42,7 @@ echo -e "${GREEN}✓ Tests completed${NC}"
 
 # Step 2: Validate YAML generation
 echo -e "\n${YELLOW}[2/8] Validating YAML generation at build/junit-jupiter...${NC}"
-validate_yaml_files "build/junit-jupiter" 9
+validate_yaml_files "build/junit-jupiter" 10
 echo -e "${GREEN}✓ YAML files generated${NC}"
 
 # Step 3: Generate AsciiDoc
@@ -52,7 +52,7 @@ echo -e "${GREEN}✓ AsciiDoc generation completed${NC}"
 
 # Step 4: Validate AsciiDoc generation
 echo -e "\n${YELLOW}[4/8] Validating AsciiDoc generation...${NC}"
-validate_output_files "build/generated-docs/tabletest" "*.adoc" "AsciiDoc" 10
+validate_output_files "build/generated-docs/tabletest" "*.adoc" "AsciiDoc" 11
 echo -e "${GREEN}✓ AsciiDoc files generated${NC}"
 
 # ==================================================================
@@ -67,7 +67,7 @@ echo -e "${GREEN}✓ Tests completed${NC}"
 
 # Step 6: Validate YAML generation
 echo -e "\n${YELLOW}[6/8] Validating YAML generation at build/junit-jupiter...${NC}"
-validate_yaml_files "build/junit-jupiter" 9
+validate_yaml_files "build/junit-jupiter" 10
 echo -e "${GREEN}✓ YAML files generated${NC}"
 
 # Step 7: Generate AsciiDoc with explicit inputDir
@@ -77,7 +77,7 @@ echo -e "${GREEN}✓ AsciiDoc generation completed${NC}"
 
 # Step 8: Validate AsciiDoc generation
 echo -e "\n${YELLOW}[8/8] Validating AsciiDoc generation...${NC}"
-validate_output_files "build/generated-docs/tabletest" "*.adoc" "AsciiDoc" 10
+validate_output_files "build/generated-docs/tabletest" "*.adoc" "AsciiDoc" 11
 echo -e "${GREEN}✓ AsciiDoc files generated${NC}"
 
 echo -e "\n=========================================="

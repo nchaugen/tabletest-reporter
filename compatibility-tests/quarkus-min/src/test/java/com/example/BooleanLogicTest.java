@@ -2,10 +2,12 @@ package com.example;
 
 import io.github.nchaugen.tabletest.junit.Description;
 import io.github.nchaugen.tabletest.junit.TableTest;
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.DisplayName;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@QuarkusTest
 @DisplayName("Boolean Logic")
 @Description("Boolean operations and truth tables")
 class BooleanLogicTest {

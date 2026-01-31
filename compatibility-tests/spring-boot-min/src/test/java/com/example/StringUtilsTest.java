@@ -3,9 +3,11 @@ package com.example;
 import io.github.nchaugen.tabletest.junit.Description;
 import io.github.nchaugen.tabletest.junit.TableTest;
 import org.junit.jupiter.api.DisplayName;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SpringBootTest
 @DisplayName("String Utilities")
 @Description("String manipulation operations")
 class StringUtilsTest {
