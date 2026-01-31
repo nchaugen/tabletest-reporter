@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Auto-detection of JUnit output directory from Maven Surefire and Gradle test task configurations
+
 ### Changed
 - CLI, Maven plugin, and Gradle plugin now display file count on successful generation
 - Empty input directories now show informational message instead of silent success

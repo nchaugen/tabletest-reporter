@@ -49,8 +49,7 @@ The extension uses JUnit's ServiceLoader mechanism to activate automatically. Yo
 | **Maven**  | Simple setup (no Surefire config) | Option 2: Maven property                   |
 | **Maven**  | Already using Surefire plugin     | Option 3: Surefire config                  |
 | **Maven**  | Quarkus projects                  | Option 2: Maven property (avoids conflict) |
-| **Gradle** | JUnit 5.12                        | Option 4: Gradle config                    |
-| **Gradle** | JUnit 6+ (Spring Boot 4+)         | Option 4: Gradle config (see JUnit 6 note) |
+| **Gradle** | Standard projects                 | Option 4: Gradle config                    |
 | **CLI**    | Running tests directly            | Option 5: Command-line argument            |
 
 <details>
@@ -139,14 +138,14 @@ tasks.test {
 }
 ```
 
-**JUnit 6+ with Gradle:** If you're using JUnit 6.0+ (e.g., via Spring Boot 4.0+), you also need to configure the JUnit Platform output directory for the `publishFile()` API:
+**Custom output directory:** If you need YAML files written to a specific location, configure `junit.platform.reporting.output.dir`:
 
 ```kotlin
 tasks.test {
     useJUnitPlatform()
     systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
 
-    // Required for JUnit 6+ with Gradle
+    // Optional: custom output directory
     val outputDir = layout.buildDirectory
     jvmArgumentProviders += CommandLineArgumentProvider {
         listOf("-Djunit.platform.reporting.output.dir=${outputDir.get().asFile.absolutePath}")
@@ -154,7 +153,7 @@ tasks.test {
 }
 ```
 
-This is not needed for JUnit 5.12 with Gradle, or for any JUnit version with Maven (Surefire handles it automatically).
+This is not needed for standard projects — YAML files are written to `build/junit-jupiter/` by default. The reporter's Gradle plugin automatically detects custom output directories from the test task configuration. See [Input Directory Resolution](#input-directory-resolution) for details.
 
 **Pros:**
 - Standard Gradle approach for JUnit configuration
@@ -162,7 +161,6 @@ This is not needed for JUnit 5.12 with Gradle, or for any JUnit version with Mav
 
 **Cons:**
 - Gradle-specific
-- JUnit 6+ requires additional output directory configuration
 
 </details>
 
@@ -267,7 +265,7 @@ Each TableTest method produces a YAML file with prefix `TABLETEST-`. File names 
 
 ## Step 4: Generate Documentation
 
-Choose your build tool and run the reporter to generate AsciiDoc or Markdown documentation.
+Choose your build tool and run the reporter to generate AsciiDoc or Markdown documentation. The reporter automatically detects where your test framework writes YAML files, so in most standard Maven and Gradle projects you don't need to configure the input directory at all — just run the plugin. See [Input Directory Resolution](#input-directory-resolution) for details on how detection works and when manual configuration is needed.
 
 ### Maven Plugin
 
@@ -436,6 +434,54 @@ tabletest.reporter.expectation.pattern=.*[Ee]xpected$
 
 # Parenthetical notation: "value (expected)"
 tabletest.reporter.expectation.pattern=.*\\(expected\\)$
+```
+
+### Input Directory Resolution
+
+When you run the reporter, it needs to find the YAML files generated during your test run. In most cases, this is handled automatically.
+
+**Resolution order:**
+
+1. **Explicit configuration** — If you specify an input directory (via plugin config or CLI `-i` option), it is used directly
+2. **Build tool detection** — The Maven and Gradle plugins read the JUnit output directory from your build configuration:
+   - **Maven:** From Surefire's `configurationParameters` (`junit.platform.reporting.output.dir` property)
+   - **Gradle:** From the test task's system properties or JVM argument providers
+3. **Properties file** — From `junit.platform.reporting.output.dir` in `src/test/resources/junit-platform.properties`
+4. **Convention fallback** — `<buildDir>/junit-jupiter` (e.g., `target/junit-jupiter` or `build/junit-jupiter`)
+
+At each step, the reporter checks whether the candidate directory contains `TABLETEST-*.yaml` files. The first directory with matching files is selected.
+
+**When auto-detection works (no configuration needed):**
+
+- Standard Maven projects using Surefire (output goes to `target/junit-jupiter/`)
+- Standard Gradle projects (output goes to `build/junit-jupiter/`)
+- Projects configuring `junit.platform.reporting.output.dir` via Surefire, Gradle test task properties, or `junit-platform.properties`
+- Gradle projects using custom output directories via `jvmArgumentProviders` or system properties (the Gradle plugin detects these automatically)
+
+**When you need to specify the input directory explicitly:**
+
+- **Non-standard engine IDs** — JUnit writes to `<buildDir>/<engine-id>/` by default. If your engine is not `junit-jupiter`, the convention fallback won't match
+- **IDE-specific output directories** — When running tests from an IDE, outputs may go to a different location than the build tool expects
+- **Custom `OutputDirectoryCreator` implementations** — If you've customised where JUnit writes report files
+- **CLI without a build directory** — The CLI falls back to `target/junit-jupiter` or `build/junit-jupiter`; if neither exists, you must specify `-i`
+
+**Configuring the input directory:**
+
+Maven:
+```bash
+mvn tabletest-reporter:report -Dtabletest.report.inputDirectory=/path/to/yaml/files
+```
+
+Gradle:
+```kotlin
+tableTestReporter {
+  inputDir.set(file("/path/to/yaml/files"))
+}
+```
+
+CLI:
+```bash
+java -jar tabletest-reporter-cli.jar -i /path/to/yaml/files
 ```
 
 ### Custom Templates
