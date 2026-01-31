@@ -68,12 +68,13 @@ fi
 
 # Run all compatibility tests
 run_test "junit-5-maven"
+run_test "junit-5-gradle"
 run_test "junit-6-maven"
+run_test "junit-6-gradle"
 run_test "spring-boot-min"
 run_test "spring-boot-latest"
 run_test "quarkus-min"
 run_test "quarkus-latest"
-run_test "junit-5-gradle"
 
 # Summary
 echo ""
