@@ -1,3 +1,6 @@
+import org.gradle.api.provider.Provider
+import org.gradle.process.CommandLineArgumentProvider
+
 buildscript {
     repositories {
         mavenCentral()
@@ -51,6 +54,16 @@ tasks.test {
 
     // Allow intentional test failures
     ignoreFailures = true
+
+    val junitOutputDir: Provider<String> = providers.gradleProperty("junitOutputDir")
+    jvmArgumentProviders.add(CommandLineArgumentProvider {
+        val outputDir: String? = junitOutputDir.orNull
+        if (outputDir == null) {
+            emptyList()
+        } else {
+            listOf("-Djunit.platform.reporting.output.dir=$outputDir")
+        }
+    })
 }
 
 // Configure tabletest-reporter plugin for Markdown output

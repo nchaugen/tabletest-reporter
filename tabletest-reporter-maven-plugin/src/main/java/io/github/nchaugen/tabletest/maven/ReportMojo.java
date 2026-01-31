@@ -26,6 +26,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -56,6 +57,9 @@ public final class ReportMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}", readonly = true)
     private File buildDirectory;
 
+    @Parameter(defaultValue = "${project}", readonly = true)
+    private MavenProject project;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
@@ -63,8 +67,10 @@ public final class ReportMojo extends AbstractMojo {
             final Path baseDir = toPath(baseDirectory);
             final Path buildDir = toPath(buildDirectory, baseDir.resolve("target"));
             final List<Path> fallbacks = List.of(buildDir.resolve("junit-jupiter"));
+            final Path junitDir = SurefireConfigurationParametersReader.resolveOutputDir(project, baseDir)
+                    .orElse(null);
 
-            Path in = resolveInputDirectory(toPath(inputDirectory), fallbacks, baseDir);
+            Path in = resolveInputDirectory(toPath(inputDirectory), fallbacks, baseDir, junitDir);
 
             Format reportFormat = FormatResolver.resolve(format, toPath(templateDirectory));
             ReportResult result = createReporter().report(reportFormat, in, out);
@@ -79,10 +85,10 @@ public final class ReportMojo extends AbstractMojo {
         }
     }
 
-    private Path resolveInputDirectory(Path configuredInputDir, List<Path> fallbacks, Path baseDir)
+    private Path resolveInputDirectory(Path configuredInputDir, List<Path> fallbacks, Path baseDir, Path junitDir)
             throws MojoFailureException {
         InputDirectoryResolver.Result inputResult =
-                InputDirectoryResolver.resolve(configuredInputDir, fallbacks, baseDir, null);
+                InputDirectoryResolver.resolve(configuredInputDir, fallbacks, baseDir, junitDir);
         return Optional.ofNullable(inputResult.path())
                 .filter(Files::exists)
                 .orElseThrow(() -> new MojoFailureException(inputResult.formatMissingInputMessage()));

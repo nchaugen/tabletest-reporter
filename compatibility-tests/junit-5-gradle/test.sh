@@ -30,28 +30,33 @@ if [ -z "$JAVA_HOME" ] || ! "$JAVA_HOME/bin/java" -version 2>&1 | grep -q "versi
     fi
 fi
 
+# ==================================================================
+# Pass 1: Convention fallback (build/junit-jupiter)
+# ==================================================================
+echo -e "\n--- Pass 1: Convention fallback ---"
+
 # Step 1: Run tests (with intentional failures)
-echo -e "\n${YELLOW}[1/5] Running tests (with intentional failures)...${NC}"
+echo -e "\n${YELLOW}[1/9] Running tests (convention fallback)...${NC}"
 ./gradlew --console=plain clean test
 echo -e "${GREEN}✓ Tests completed${NC}"
 
 # Step 2: Validate YAML generation
-echo -e "\n${YELLOW}[2/5] Validating YAML generation...${NC}"
+echo -e "\n${YELLOW}[2/9] Validating YAML generation at build/junit-jupiter...${NC}"
 validate_yaml_files "build/junit-jupiter" 10
 echo -e "${GREEN}✓ YAML files generated${NC}"
 
 # Step 3: Generate Markdown
-echo -e "\n${YELLOW}[3/5] Generating Markdown reports...${NC}"
+echo -e "\n${YELLOW}[3/9] Generating Markdown reports...${NC}"
 ./gradlew --console=plain reportTableTests
 echo -e "${GREEN}✓ Markdown generation completed${NC}"
 
 # Step 4: Validate Markdown generation
-echo -e "\n${YELLOW}[4/5] Validating Markdown generation...${NC}"
+echo -e "\n${YELLOW}[4/9] Validating Markdown generation...${NC}"
 validate_output_files "build/generated-docs/tabletest" "*.md" "Markdown" 11
 echo -e "${GREEN}✓ Markdown files generated${NC}"
 
 # Step 5: Verify custom expectation pattern in YAML
-echo -e "\n${YELLOW}[5/5] Verifying custom expectation pattern...${NC}"
+echo -e "\n${YELLOW}[5/9] Verifying custom expectation pattern...${NC}"
 # Find the method-level YAML file for CustomExpectationPatternTest (contains "headers")
 YAML_FILE=$(find build/junit-jupiter -path "*CustomExpectationPatternTest*" -name "*.yaml" -exec grep -l '"headers"' {} \; | head -1)
 if [ -z "$YAML_FILE" ]; then
@@ -68,6 +73,31 @@ else
     cat "$YAML_FILE"
     exit 1
 fi
+
+# ==================================================================
+# Pass 2: jvmArgumentProviders output dir
+# ==================================================================
+echo -e "\n--- Pass 2: jvmArgumentProviders output dir ---"
+
+# Step 6: Run tests (with intentional failures)
+echo -e "\n${YELLOW}[6/9] Running tests (custom output dir)...${NC}"
+./gradlew --console=plain clean test -PjunitOutputDir=build/custom-reports
+echo -e "${GREEN}✓ Tests completed${NC}"
+
+# Step 7: Validate YAML generation
+echo -e "\n${YELLOW}[7/9] Validating YAML generation at build/custom-reports...${NC}"
+validate_yaml_files "build/custom-reports" 10
+echo -e "${GREEN}✓ YAML files generated${NC}"
+
+# Step 8: Generate Markdown
+echo -e "\n${YELLOW}[8/9] Generating Markdown reports (jvmArgumentProviders)...${NC}"
+./gradlew --console=plain reportTableTests -PjunitOutputDir=build/custom-reports
+echo -e "${GREEN}✓ Markdown generation completed${NC}"
+
+# Step 9: Validate Markdown generation
+echo -e "\n${YELLOW}[9/9] Validating Markdown generation...${NC}"
+validate_output_files "build/generated-docs/tabletest" "*.md" "Markdown" 11
+echo -e "${GREEN}✓ Markdown files generated${NC}"
 
 echo -e "\n=========================================="
 echo -e "${GREEN}SUCCESS: All verification steps passed${NC}"

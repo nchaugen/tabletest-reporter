@@ -19,6 +19,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.testing.Test;
+import org.gradle.process.CommandLineArgumentProvider;
 
 import java.util.Optional;
 
@@ -29,6 +30,8 @@ import java.util.Optional;
  * {@code reportTableTests} task for generating documentation from TableTest YAML files.
  */
 public class TableTestReporterPlugin implements Plugin<Project> {
+
+    private static final String JUNIT_OUTPUT_DIR_PROPERTY = "junit.platform.reporting.output.dir";
 
     /**
      * Creates a new plugin instance.
@@ -63,8 +66,53 @@ public class TableTestReporterPlugin implements Plugin<Project> {
         if (!(testTask instanceof Test test)) {
             return null;
         }
-        return Optional.ofNullable(test.getSystemProperties().get("junit.platform.reporting.output.dir"))
+        String fromSystemProperties = Optional.ofNullable(
+                        test.getSystemProperties().get(JUNIT_OUTPUT_DIR_PROPERTY))
                 .map(Object::toString)
+                .filter(value -> !value.isBlank())
                 .orElse(null);
+        if (fromSystemProperties != null) {
+            return fromSystemProperties;
+        }
+
+        String fromJvmArgs = findSystemPropertyValue(test.getJvmArgs());
+        if (fromJvmArgs != null) {
+            return fromJvmArgs;
+        }
+
+        return findSystemPropertyValueFromProviders(test.getJvmArgumentProviders());
+    }
+
+    private static String findSystemPropertyValueFromProviders(
+            Iterable<? extends CommandLineArgumentProvider> providers) {
+        for (CommandLineArgumentProvider provider : providers) {
+            String value = findSystemPropertyValue(provider.asArguments());
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private static String findSystemPropertyValue(Iterable<String> args) {
+        for (String arg : args) {
+            String value = parseSystemPropertyValue(arg);
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private static String parseSystemPropertyValue(String arg) {
+        if (arg == null) {
+            return null;
+        }
+        String prefix = "-D" + JUNIT_OUTPUT_DIR_PROPERTY + "=";
+        if (!arg.startsWith(prefix)) {
+            return null;
+        }
+        String value = arg.substring(prefix.length());
+        return value.isBlank() ? null : value;
     }
 }

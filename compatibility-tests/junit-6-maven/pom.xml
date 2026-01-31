@@ -19,6 +19,7 @@
         <version.plugin.surefire>3.5.2</version.plugin.surefire>
         <version.jsoup>1.22.1</version.jsoup>
         <version.asciidoctor>3.2.0</version.asciidoctor>
+        <custom.junit.parameters></custom.junit.parameters>
     </properties>
 
     <dependencies>
@@ -67,6 +68,7 @@
                     <properties>
                         <configurationParameters>
                             junit.jupiter.extensions.autodetection.enabled=true
+                            ${custom.junit.parameters}
                         </configurationParameters>
                     </properties>
                 </configuration>
@@ -107,4 +109,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>custom-output</id>
+            <properties>
+                <custom.junit.parameters>junit.platform.reporting.output.dir=target/custom-reports</custom.junit.parameters>
+            </properties>
+        </profile>
+    </profiles>
 </project>
