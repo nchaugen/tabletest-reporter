@@ -32,27 +32,27 @@ jobs:
             test-dir: spring-boot-latest
             artifact-group: org.springframework.boot
             artifact-id: spring-boot-starter-parent
-            version-file: compatibility-tests/spring-boot-latest/pom.xml
+            version-file: compatibility-tests/spring-boot-latest/build.gradle.kts
           - framework: quarkus
             test-dir: quarkus-latest
             artifact-group: io.quarkus.platform
             artifact-id: quarkus-bom
-            version-file: compatibility-tests/quarkus-latest/pom.xml
+            version-file: compatibility-tests/quarkus-latest/build.gradle.kts
           - framework: junit
             test-dir: junit-6-maven
             artifact-group: org.junit.jupiter
             artifact-id: junit-jupiter
             version-file: compatibility-tests/junit-6-maven/pom.xml
           - framework: gradle
-            test-dir: gradle-latest
+            test-dir: junit-5-gradle
             artifact-group: gradle
             artifact-id: gradle
-            version-file: compatibility-tests/gradle-latest/gradle/wrapper/gradle-wrapper.properties
+            version-file: compatibility-tests/junit-5-gradle/gradle/wrapper/gradle-wrapper.properties
           - framework: asciidoctor
-            test-dir: asciidoc-html-maven
+            test-dir: junit-6-maven
             artifact-group: org.asciidoctor
             artifact-id: asciidoctor-maven-plugin
-            version-file: compatibility-tests/asciidoc-html-maven/pom.xml
+            version-file: compatibility-tests/junit-6-maven/pom.xml
 
     steps:
       - name: Check if framework should run
@@ -77,11 +77,10 @@ jobs:
 
           case "${{ matrix.framework }}" in
             spring-boot)
-              # Extract version from parent section
-              CURRENT=$(sed -n '/<parent>/,/<\/parent>/p' "$FILE" | grep -oP '(?<=<version>)[\d.]+(?=</version>)')
+              CURRENT=$(grep -oP 'id\\(\"org.springframework.boot\"\\) version \"\\K[\\d.]+' "$FILE")
               ;;
             quarkus)
-              CURRENT=$(grep -oP '(?<=<version.quarkus>)[\d.]+(?=</version.quarkus>)' "$FILE")
+              CURRENT=$(grep -oP 'id\\(\"io.quarkus\"\\) version \"\\K[\\d.]+' "$FILE")
               ;;
             junit)
               CURRENT=$(grep -oP '(?<=<version.junit>)[\d.]+(?=</version.junit>)' "$FILE")
@@ -183,11 +182,11 @@ jobs:
 
           case "${{ matrix.framework }}" in
             spring-boot)
-              # Update version in parent section only
-              sed -i "/<parent>/,/<\/parent>/s/<version>${CURRENT}<\/version>/<version>${LATEST}<\/version>/" "$FILE"
+              sed -i "s/id(\\\"org.springframework.boot\\\") version \\\"${CURRENT}\\\"/id(\\\"org.springframework.boot\\\") version \\\"${LATEST}\\\"/" "$FILE"
               ;;
             quarkus)
-              sed -i "s/<version.quarkus>${CURRENT}<\/version.quarkus>/<version.quarkus>${LATEST}<\/version.quarkus>/" "$FILE"
+              sed -i "s/id(\\\"io.quarkus\\\") version \\\"${CURRENT}\\\"/id(\\\"io.quarkus\\\") version \\\"${LATEST}\\\"/" "$FILE"
+              sed -i "s/quarkus-bom:${CURRENT}/quarkus-bom:${LATEST}/" "$FILE"
               ;;
             junit)
               sed -i "s/<version.junit>${CURRENT}<\/version.junit>/<version.junit>${LATEST}<\/version.junit>/" "$FILE"
