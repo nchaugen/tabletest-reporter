@@ -12,6 +12,7 @@
 - Empty input directories now show informational message instead of silent success
 
 ### Fixed
+- AsciiDoc description list nesting now cycles colon delimiters to stay within AsciiDoctor's 4-colon limit (issue #11)
 - YAML parsing errors now include file path for easier debugging
 
 ## [0.3.1]

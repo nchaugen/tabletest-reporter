@@ -2,92 +2,92 @@
 
 {% macro renderCell(cell) %}
     {%- if cell.roles is not empty -%}
-        {{- renderValueWithRoles(cell.roles, cell.value, 0) -}}
+        {{- renderValueWithRoles(cell.roles, cell.value, 0, 0) -}}
     {%- else -%}
-        {{- renderValue(cell.value, 0) -}}
+        {{- renderValue(cell.value, 0, 0) -}}
     {%- endif -%}
 {% endmacro %}
 
-{% macro renderValueWithRoles(roles, value, level) %}
+{% macro renderValueWithRoles(roles, value, mapDepth, bulletDepth) %}
     {%- if (value is null) or ((value is iterable or value is map) and value is not empty) -%}
         {{-  "[" -}} {%- for role in roles -%} {{- ".#{role}" -}} {%- endfor -%} {{- "]" }}
-        {{- renderValue(value, level) -}}
+        {{- renderValue(value, mapDepth, bulletDepth) -}}
     {%- else -%}
-        {{-  "[" -}} {%- for role in roles -%} {{- ".#{role}" -}} {%- endfor -%} {{- "]##{renderValue(value, level)}#" -}}
+        {{-  "[" -}} {%- for role in roles -%} {{- ".#{role}" -}} {%- endfor -%} {{- "]##{renderValue(value, mapDepth, bulletDepth)}#" -}}
     {%- endif -%}
 {% endmacro %}
 
-{% macro renderValue(value, level) %}
+{% macro renderValue(value, mapDepth, bulletDepth) %}
     {%- if value == null -%}
     {%- elseif value is set -%}
-        {{- renderSet(value, level) -}}
+        {{- renderSet(value, mapDepth, bulletDepth) -}}
     {%- elseif value is iterable -%}
-        {{- renderList(value, level) -}}
+        {{- renderList(value, mapDepth, bulletDepth) -}}
     {%- elseif value is map -%}
-        {{- renderMap(value, level) -}}
+        {{- renderMap(value, mapDepth, bulletDepth) -}}
     {%- else -%}
         {{- renderLiteral(value) -}}
     {%- endif -%}
 {% endmacro %}
 
-{% macro renderSet(set, level) %}
+{% macro renderSet(set, mapDepth, bulletDepth) %}
     {%- for value in set %}
 
 {# intentional newline above #}
-        {{- indent(level) }} {{- bullet(setBullet(level), level) -}}
+        {{- indent(bulletDepth) }} {{- bullet(setBullet(bulletDepth), bulletDepth) -}}
         {%- if (value is iterable) or (value is map) %}
             {{- ' {empty}' }}
-            {{- renderValue(value, level+1) }}
+            {{- renderValue(value, mapDepth, bulletDepth+1) }}
         {%- else %}
-            {{- ' ' + renderValue(value, level+1) }}
+            {{- ' ' + renderValue(value, mapDepth, bulletDepth+1) }}
         {%- endif %}
     {%- else %}
         {{- '{empty}' }}
     {%- endfor %}
 {% endmacro %}
 
-{% macro renderList(list, level) %}
+{% macro renderList(list, mapDepth, bulletDepth) %}
     {%- for value in list %}
 
 {# intentional newline above #}
-        {{- indent(level) }} {{- bullet(listBullet(level), level) -}}
+        {{- indent(bulletDepth) }} {{- bullet(listBullet(bulletDepth), bulletDepth) -}}
         {%- if (value is iterable) or (value is map) %}
             {{- ' {empty}' }}
-            {{- renderValue(value, level+1) }}
+            {{- renderValue(value, mapDepth, bulletDepth+1) }}
         {%- else %}
-            {{- ' ' + renderValue(value, level+1) }}
+            {{- ' ' + renderValue(value, mapDepth, bulletDepth+1) }}
         {%- endif %}
     {%- else %}
         {{- '{empty}' }}
     {%- endfor %}
 {% endmacro %}
 
-{% macro renderMap(map, level) %}
+{% macro renderMap(map, mapDepth, bulletDepth) %}
     {%- for entry in map %}
 
 {# intentional newline above #}
-        {{- indent(level) }} {{- "++#{entry.key}++" }} {{- termDelimiter(level) -}}
+        {{- indent(mapDepth) }} {{- "++#{entry.key}++" }} {{- termDelimiter(mapDepth) -}}
         {%- if ((entry.value is iterable) or (entry.value is map)) and entry.value is not empty %}
             {{- '' }}
-            {{- renderValue(entry.value, level+1) }}
+            {{- renderValue(entry.value, mapDepth+1, bulletDepth) }}
         {%- else %}
-            {{- ' ' + renderValue(entry.value, level+1) }}
+            {{- ' ' + renderValue(entry.value, mapDepth+1, bulletDepth) }}
         {%- endif %}
     {%- else %}
         {{- '{empty}' }}
     {%- endfor %}
 {% endmacro %}
 
-{% macro indent(level) %}
-{#    {{- ' ' | replicate(level*2) | join }}#}
+{% macro indent(depth) %}
+{#    {{- ' ' | replicate(depth*2) | join }}#}
 {% endmacro %}
 
-{% macro bullet(bulletSign, level) %}
-    {{- bulletSign | replicate(level+1) | join -}}
+{% macro bullet(bulletSign, bulletDepth) %}
+    {{- bulletSign | replicate(bulletDepth+1) | join -}}
 {% endmacro %}
 
-{% macro termDelimiter(level) %}
-    {{- ':' | replicate(level+2) | join -}}
+{% macro termDelimiter(mapDepth) %}
+    {{- ':' | replicate(mapDepth % 3 + 2) | join -}}
 {% endmacro %}
 
 {% macro renderLiteral(value) %}
@@ -105,18 +105,18 @@
 {% endmacro %}
 
 {# to be overridable #}
-{% macro listBullet(level) %}
+{% macro listBullet(bulletDepth) %}
     {%- block list_bullet %} {{- '*' -}} {%- endblock %}
 {% endmacro %}
 
-{% macro listStyle(level) %}
+{% macro listStyle(bulletDepth) %}
     {%- block list_style %} {%- endblock %}
 {% endmacro %}
 
-{% macro setBullet(level) %}
+{% macro setBullet(bulletDepth) %}
     {%- block set_bullet %} {{- '*' -}} {%- endblock %}
 {% endmacro %}
 
-{% macro setStyle(level) %}
+{% macro setStyle(bulletDepth) %}
     {%- block set_style %} {%- endblock %}
 {% endmacro %}
