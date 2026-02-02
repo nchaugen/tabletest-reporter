@@ -169,8 +169,7 @@ public final class TemplateEngine {
     }
 
     private static Loader<?> createDelegatingLoader(Path customTemplateDirectory) {
-        FileLoader fileLoader = new FileLoader();
-        fileLoader.setPrefix(customTemplateDirectory.toString());
+        FileLoader fileLoader = new FileLoader(customTemplateDirectory.toString());
         return new DelegatingLoader(Arrays.asList(fileLoader, new ClasspathLoader()));
     }
 }
