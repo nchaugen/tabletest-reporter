@@ -43,3 +43,4 @@ build/
 ### Compatibility tests ###
 compatibility-tests/spring-boot-latest/custom-input/
 compatibility-tests/spring-boot-latest/custom-output/
+/plans/
