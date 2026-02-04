@@ -17,10 +17,10 @@
         <version.tabletest>0.5.8</version.tabletest>
         <version.snakeyaml>3.0.1</version.snakeyaml>
         <version.pebble>4.1.0</version.pebble>
-        <version.logback>1.5.21</version.logback>
+        <version.logback>1.5.27</version.logback>
 
         <version.junit>6.0.1</version.junit>
-        <version.assertj>3.27.6</version.assertj>
+        <version.assertj>3.27.7</version.assertj>
         <version.commonmark>0.24.0</version.commonmark>
         <version.asciidoctorj>3.0.0</version.asciidoctorj>
     </properties>

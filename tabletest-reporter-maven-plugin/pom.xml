@@ -16,7 +16,7 @@
     <properties>
         <version.plugin.plugin-api>3.9.11</version.plugin.plugin-api>
         <version.plugin.plugin>3.15.2</version.plugin.plugin>
-        <version.assertj>3.27.3</version.assertj>
+        <version.assertj>3.27.7</version.assertj>
     </properties>
 
     <dependencies>
