@@ -18,6 +18,7 @@ package io.github.nchaugen.tabletest.cli;
 import io.github.nchaugen.tabletest.reporter.Format;
 import io.github.nchaugen.tabletest.reporter.FormatLister;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
+import io.github.nchaugen.tabletest.reporter.IndexDepth;
 import io.github.nchaugen.tabletest.reporter.InputDirectoryResolver;
 import io.github.nchaugen.tabletest.reporter.ReportResult;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
@@ -64,6 +65,12 @@ public final class TableTestReporterCli implements Callable<Integer> {
             names = {"-t", "--template-dir"},
             description = "Custom template directory for overriding built-in templates")
     private String templateDirArg;
+
+    @Option(
+            names = {"--index-depth"},
+            description = "Levels to show in index files (1=immediate children, 'infinite'=all). Default: infinite",
+            defaultValue = "infinite")
+    private String indexDepthArg;
 
     public static void main(String[] args) {
         int exit = new CommandLine(new TableTestReporterCli()).execute(args);
@@ -113,7 +120,8 @@ public final class TableTestReporterCli implements Callable<Integer> {
     }
 
     private TableTestReporter createReporter(Path templateDir) {
-        return templateDir != null ? new TableTestReporter(templateDir) : new TableTestReporter();
+        IndexDepth indexDepth = IndexDepth.parse(indexDepthArg);
+        return new TableTestReporter(templateDir, indexDepth);
     }
 
     private Path resolveTemplateDir() {

@@ -17,6 +17,7 @@ package io.github.nchaugen.tabletest.maven;
 
 import io.github.nchaugen.tabletest.reporter.Format;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
+import io.github.nchaugen.tabletest.reporter.IndexDepth;
 import io.github.nchaugen.tabletest.reporter.InputDirectoryResolver;
 import io.github.nchaugen.tabletest.reporter.ReportResult;
 import io.github.nchaugen.tabletest.reporter.TableTestReporter;
@@ -50,6 +51,9 @@ public final class ReportMojo extends AbstractMojo {
 
     @Parameter(property = "tabletest.report.templateDirectory")
     private File templateDirectory;
+
+    @Parameter(property = "tabletest.report.indexDepth", defaultValue = "infinite")
+    private String indexDepth;
 
     @Parameter(defaultValue = "${project.basedir}", readonly = true)
     private File baseDirectory;
@@ -112,16 +116,16 @@ public final class ReportMojo extends AbstractMojo {
 
     private TableTestReporter createReporter() throws MojoFailureException {
         Path templateDir = toPath(templateDirectory);
-        if (templateDir == null) {
-            return new TableTestReporter();
-        }
-        if (!Files.exists(templateDir)) {
-            throw new MojoFailureException("Template directory does not exist: " + templateDir.toAbsolutePath());
-        }
-        if (!Files.isDirectory(templateDir)) {
-            throw new MojoFailureException("Template path is not a directory: " + templateDir.toAbsolutePath());
+        if (templateDir != null) {
+            if (!Files.exists(templateDir)) {
+                throw new MojoFailureException("Template directory does not exist: " + templateDir.toAbsolutePath());
+            }
+            if (!Files.isDirectory(templateDir)) {
+                throw new MojoFailureException("Template path is not a directory: " + templateDir.toAbsolutePath());
+            }
         }
 
-        return new TableTestReporter(templateDir);
+        IndexDepth depth = IndexDepth.parse(indexDepth);
+        return new TableTestReporter(templateDir, depth);
     }
 }

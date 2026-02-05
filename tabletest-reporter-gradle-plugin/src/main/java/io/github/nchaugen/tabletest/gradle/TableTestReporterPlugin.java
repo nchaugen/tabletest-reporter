@@ -51,6 +51,7 @@ public class TableTestReporterPlugin implements Plugin<Project> {
             t.getOutputDir().convention(ext.getOutputDir());
             t.getTemplateDir().convention(ext.getTemplateDir());
             t.getJunitOutputDir().convention(project.provider(() -> resolveJunitOutputDir(project)));
+            t.getIndexDepth().convention(ext.getIndexDepth());
         });
 
         // Register list formats task

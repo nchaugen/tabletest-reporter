@@ -298,6 +298,7 @@ Documentation is generated to `target/generated-docs/tabletest/`.
   <format>asciidoc</format>  <!-- or 'markdown' -->
   <inputDirectory>${project.build.directory}/junit-jupiter</inputDirectory>
   <outputDirectory>${project.build.directory}/generated-docs/tabletest</outputDirectory>
+  <indexDepth>infinite</indexDepth>  <!-- levels in index (1, 2, ..., or 'infinite') -->
 </configuration>
 ```
 
@@ -329,6 +330,7 @@ tableTestReporter {
   format.set("markdown")  // default: "asciidoc"
   inputDir.set(layout.buildDirectory.dir("junit-jupiter"))
   outputDir.set(layout.buildDirectory.dir("generated-docs/tabletest"))
+  indexDepth.set("infinite")  // levels in index (1, 2, ..., or "infinite")
 }
 ```
 
@@ -779,7 +781,8 @@ The CLI can be used standalone if you're building custom tooling:
 java -jar tabletest-reporter-cli.jar \
   -f markdown \
   -i target/junit-jupiter \
-  -o target/generated-docs/tabletest
+  -o target/generated-docs/tabletest \
+  --index-depth 2  # levels in index (1, 2, ..., or 'infinite')
 ```
 
 **Building from Source:**

@@ -32,6 +32,7 @@ public abstract class TableTestReporterExtension {
     private final DirectoryProperty inputDir;
     private final DirectoryProperty outputDir;
     private final DirectoryProperty templateDir;
+    private final Property<String> indexDepth;
 
     /**
      * Creates a new extension instance with default configuration values.
@@ -47,6 +48,7 @@ public abstract class TableTestReporterExtension {
         this.outputDir = objects.directoryProperty()
                 .convention(layout.getBuildDirectory().dir("generated-docs/tabletest"));
         this.templateDir = objects.directoryProperty();
+        this.indexDepth = objects.property(String.class).convention("infinite");
     }
 
     /**
@@ -83,5 +85,14 @@ public abstract class TableTestReporterExtension {
      */
     public DirectoryProperty getTemplateDir() {
         return templateDir;
+    }
+
+    /**
+     * Returns the index depth property.
+     *
+     * @return property for specifying how many levels to show in index files (1, 2, ..., or "infinite")
+     */
+    public Property<String> getIndexDepth() {
+        return indexDepth;
     }
 }

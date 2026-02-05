@@ -1,6 +1,8 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+### Added
+- Configurable index depth to control how many levels of nested items appear in each index file
 
 ## [0.3.2] - 2026-02-03
 ### Added

@@ -52,7 +52,11 @@ public class EndToEndTableReportTest {
         new TableTestReporter().report(ASCIIDOC, inDir, outDir);
 
         assertThat(Files.readAllLines(outDir.resolve("index.adoc")))
-                .containsExactly("= ++example++", "", "* xref:./calendar-calculations/index.adoc[++Calendar++]");
+                .containsExactly(
+                        "= ++example++",
+                        "",
+                        "* xref:./calendar-calculations/index.adoc[++Calendar++]",
+                        "** xref:./calendar-calculations/leap-year-rules.adoc[++Leap Year Rules with Single Example++]");
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.adoc")))
                 .containsExactly(
@@ -94,7 +98,11 @@ public class EndToEndTableReportTest {
         new TableTestReporter().report(MARKDOWN, inDir, outDir);
 
         assertThat(Files.readAllLines(outDir.resolve("index.md")))
-                .containsExactly("# example", "", "* [Calendar](./calendar-calculations/index.md)");
+                .containsExactly(
+                        "# example",
+                        "",
+                        "* [Calendar](./calendar-calculations/index.md)",
+                        "  * [Leap Year Rules with Single Example](./calendar-calculations/leap-year-rules.md)");
 
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("index.md")))
                 .containsExactly(

@@ -1,3 +1,14 @@
+{# Macros for rendering index items in AsciiDoc format #}
+
+{%- macro renderIndexItem(item, bulletDepth) -%}
+    {{ '*' | replicate(bulletDepth) | join }} xref:./{{ item.path }}{{ item.type == "index" ? "/index.adoc" : ".adoc" }}[++{{ item.title ? item.title : item.name }}++]
+{% if item.contents is not empty -%}
+        {% for nested in item.contents -%}
+        {{ renderIndexItem(nested, bulletDepth + 1) }}
+        {%- endfor -%}
+    {% endif -%}
+{%- endmacro -%}
+
 {# Macros for rendering table cells in AsciiDoc format #}
 
 {% macro renderCell(cell) %}

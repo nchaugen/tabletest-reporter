@@ -12,8 +12,8 @@
 {% endif %}
 {% endblock %}
 {% block contents %}
-{% for child in contents %}
-* xref:./{{ child.path }}{{ child.type == "index" ? "/index.adoc" : ".adoc"  }}[++{{ child.title ? child.title : child.name }}++]
+{% for child in contents -%}
+{{ renderIndexItem(child, 1) }}
 {% endfor %}
 {% endblock %}
 {% block footer %}{% endblock %}

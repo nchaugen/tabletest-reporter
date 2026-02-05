@@ -1,4 +1,13 @@
 {# MACROS #}
+{%- macro renderIndexItem(item, indentLevel) -%}
+    {{ '  ' | replicate(indentLevel) | join }}* [{{ item.title ? item.title : item.name }}](./{{ item.path }}{{ item.type == "index" ? "/index.md" : ".md" }})
+{% if item.contents is not empty -%}
+        {% for nested in item.contents -%}
+        {{ renderIndexItem(nested, indentLevel + 1) }}
+        {%- endfor -%}
+    {% endif -%}
+{%- endmacro -%}
+
 {% macro renderCell(cell) %}
     {{- renderValue(cell.value) -}}
 {% endmacro %}

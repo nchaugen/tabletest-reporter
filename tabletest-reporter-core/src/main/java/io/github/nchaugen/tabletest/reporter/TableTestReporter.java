@@ -26,13 +26,20 @@ import java.util.Map;
 public class TableTestReporter {
 
     private final TemplateEngine templateEngine;
+    private final IndexDepth indexDepth;
 
     public TableTestReporter() {
-        this.templateEngine = new TemplateEngine();
+        this(null, IndexDepth.DEFAULT);
     }
 
     public TableTestReporter(Path customTemplateDirectory) {
-        this.templateEngine = new TemplateEngine(customTemplateDirectory);
+        this(customTemplateDirectory, IndexDepth.DEFAULT);
+    }
+
+    public TableTestReporter(Path customTemplateDirectory, IndexDepth indexDepth) {
+        this.templateEngine =
+                customTemplateDirectory != null ? new TemplateEngine(customTemplateDirectory) : new TemplateEngine();
+        this.indexDepth = indexDepth;
     }
 
     public ReportResult report(Format format, Path inDir, Path outDir) {
@@ -74,7 +81,7 @@ public class TableTestReporter {
     private Map<String, Object> createIndexContext(IndexNode index, Path relativeOutPath) {
         Map<String, Object> context = copyContext(index.resource());
         context.put("name", index.name());
-        context.put("contents", buildContentsForTemplate(index.contents(), relativeOutPath));
+        context.put("contents", buildContentsForTemplate(index.contents(), relativeOutPath, 1));
         return context;
     }
 
@@ -84,7 +91,8 @@ public class TableTestReporter {
         return context;
     }
 
-    private List<Map<String, Object>> buildContentsForTemplate(List<ReportNode> contents, Path relativeOutPath) {
+    private List<Map<String, Object>> buildContentsForTemplate(
+            List<ReportNode> contents, Path relativeOutPath, int currentDepth) {
         return contents.stream()
                 .map(child -> {
                     Map<String, Object> contentMap = new HashMap<>();
@@ -96,6 +104,14 @@ public class TableTestReporter {
                         Object title = child.resource().get("title");
                         if (title != null) {
                             contentMap.put("title", title);
+                        }
+                    }
+
+                    if (child instanceof IndexNode indexChild && currentDepth < indexDepth.value()) {
+                        List<Map<String, Object>> nested =
+                                buildContentsForTemplate(indexChild.contents(), relativeOutPath, currentDepth + 1);
+                        if (!nested.isEmpty()) {
+                            contentMap.put("contents", nested);
                         }
                     }
 

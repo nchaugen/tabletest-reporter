@@ -17,6 +17,7 @@ package io.github.nchaugen.tabletest.gradle;
 
 import io.github.nchaugen.tabletest.reporter.Format;
 import io.github.nchaugen.tabletest.reporter.FormatResolver;
+import io.github.nchaugen.tabletest.reporter.IndexDepth;
 import io.github.nchaugen.tabletest.reporter.InputDirectoryResolver;
 import io.github.nchaugen.tabletest.reporter.JunitDirParser;
 import io.github.nchaugen.tabletest.reporter.ReportResult;
@@ -49,6 +50,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     private final DirectoryProperty outputDir;
     private final DirectoryProperty templateDir;
     private final Property<String> junitOutputDir;
+    private final Property<String> indexDepth;
 
     /**
      * Creates a new task instance with default configuration.
@@ -60,6 +62,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         this.outputDir = getProject().getObjects().directoryProperty();
         this.templateDir = getProject().getObjects().directoryProperty();
         this.junitOutputDir = getProject().getObjects().property(String.class);
+        this.indexDepth = getProject().getObjects().property(String.class);
         setGroup("documentation");
         setDescription("Generates AsciiDoc or Markdown documentation from TableTest YAML outputs");
     }
@@ -113,6 +116,17 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     @Input
     public Property<String> getJunitOutputDir() {
         return junitOutputDir;
+    }
+
+    /**
+     * Returns the index depth property.
+     *
+     * @return property for specifying how many levels to show in index files (1, 2, ..., or "infinite")
+     */
+    @org.gradle.api.tasks.Optional
+    @Input
+    public Property<String> getIndexDepth() {
+        return indexDepth;
     }
 
     /**
@@ -176,12 +190,13 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     }
 
     private TableTestReporter createReporter() {
-        return Optional.of(templateDir)
+        Path templateDirPath = Optional.of(templateDir)
                 .filter(DirectoryProperty::isPresent)
                 .map(dir -> dir.get().getAsFile().toPath())
                 .map(this::validateTemplateDirectory)
-                .map(TableTestReporter::new)
-                .orElseGet(TableTestReporter::new);
+                .orElse(null);
+        IndexDepth depth = IndexDepth.parse(indexDepth.getOrElse("infinite"));
+        return new TableTestReporter(templateDirPath, depth);
     }
 
     private Path validateTemplateDirectory(Path templateDirectory) {

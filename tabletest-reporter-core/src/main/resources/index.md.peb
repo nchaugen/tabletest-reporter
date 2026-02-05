@@ -13,8 +13,8 @@
 {% endblock %}
 
 {% block contents %}
-{% for child in contents %}
-* [{{ child.title ? child.title : child.name }}](./{{ child.path }}{{ child.type == "index" ? "/index.md" : ".md"  }})
+{% for child in contents -%}
+{{ renderIndexItem(child, 0) }}
 {% endfor %}
 {% endblock %}
 {% block footer %}{% endblock %}
