@@ -8,7 +8,7 @@ maven-build:
 	mvn clean install
 
 gradle-plugin-build:
-	cd tabletest-reporter-gradle-plugin && ./gradlew clean build publishToMavenLocal
+	cd tabletest-reporter-gradle-plugin && ./gradlew --refresh-dependencies clean build publishToMavenLocal
 
 compatibility-tests:
 	./compatibility-tests/run-tests.sh
