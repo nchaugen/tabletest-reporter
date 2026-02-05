@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Added
 - Configurable index depth to control how many levels of nested items appear in each index file
+- Simplified setup for Gradle: plugin automatically adds `tabletest-reporter-junit` dependency and configures JUnit extension autodetection (Maven continues to require manual setup)
 
 ## [0.3.2] - 2026-02-03
 ### Added

@@ -18,10 +18,14 @@ package io.github.nchaugen.tabletest.gradle;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.process.CommandLineArgumentProvider;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Gradle plugin for generating TableTest documentation.
@@ -32,6 +36,8 @@ import java.util.Optional;
 public class TableTestReporterPlugin implements Plugin<Project> {
 
     private static final String JUNIT_OUTPUT_DIR_PROPERTY = "junit.platform.reporting.output.dir";
+    private static final String JUNIT_AUTODETECTION_PROPERTY = "junit.jupiter.extensions.autodetection.enabled";
+    private static final String TABLETEST_JUNIT_DEPENDENCY = "io.github.nchaugen:tabletest-reporter-junit";
 
     /**
      * Creates a new plugin instance.
@@ -58,8 +64,39 @@ public class TableTestReporterPlugin implements Plugin<Project> {
         project.getTasks().register("listTableTestReportFormats", ListFormatsTask.class, t -> t.getTemplateDir()
                 .convention(ext.getTemplateDir()));
 
-        // Make `build` depend on generation by default? Keep opt-in to avoid surprises.
-        // Users will run `./gradlew reportTableTests` explicitly.
+        // Add tabletest-reporter-junit dependency
+        addTableTestJunitDependency(project);
+
+        // Configure autodetection on test tasks
+        configureTestTaskAutodetection(project);
+    }
+
+    private static void addTableTestJunitDependency(Project project) {
+        String version = loadPluginVersion();
+        DependencyHandler dependencies = project.getDependencies();
+        project.getConfigurations()
+                .matching(config -> config.getName().equals("testImplementation"))
+                .configureEach(
+                        config -> dependencies.add("testImplementation", TABLETEST_JUNIT_DEPENDENCY + ":" + version));
+    }
+
+    private static String loadPluginVersion() {
+        Properties properties = new Properties();
+        try (InputStream input = TableTestReporterPlugin.class.getResourceAsStream("/tabletest-reporter.properties")) {
+            if (input == null) {
+                throw new IllegalStateException("Could not find tabletest-reporter.properties resource");
+            }
+            properties.load(input);
+            return properties.getProperty("version");
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to load plugin version", e);
+        }
+    }
+
+    private static void configureTestTaskAutodetection(Project project) {
+        project.getTasks()
+                .withType(Test.class)
+                .configureEach(testTask -> testTask.systemProperty(JUNIT_AUTODETECTION_PROPERTY, "true"));
     }
 
     private static String resolveJunitOutputDir(Project project) {

@@ -16,6 +16,7 @@
 package io.github.nchaugen.tabletest.gradle;
 
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,8 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -53,6 +56,10 @@ class TableTestReporterPluginTest {
 
     private ListFormatsTask listFormatsTask() {
         return (ListFormatsTask) project.getTasks().getByName("listTableTestReportFormats");
+    }
+
+    private org.gradle.api.tasks.testing.Test testTask() {
+        return (org.gradle.api.tasks.testing.Test) project.getTasks().getByName("test");
     }
 
     private Path outputDir() {
@@ -219,6 +226,32 @@ class TableTestReporterPluginTest {
         extension().getTemplateDir().set(notADirectory.toFile());
 
         listFormatsTask().run();
+    }
+
+    @Test
+    void plugin_adds_tabletest_reporter_junit_to_testImplementation() {
+        project.getPluginManager().apply("java");
+
+        Set<String> dependencyNotations =
+                project.getConfigurations().getByName("testImplementation").getDependencies().stream()
+                        .map(TableTestReporterPluginTest::formatDependency)
+                        .collect(Collectors.toSet());
+
+        assertThat(dependencyNotations)
+                .anyMatch(notation -> notation.startsWith("io.github.nchaugen:tabletest-reporter-junit:"));
+    }
+
+    @Test
+    void plugin_sets_autodetection_system_property_on_test_task() {
+        project.getPluginManager().apply("java");
+
+        Object propertyValue = testTask().getSystemProperties().get("junit.jupiter.extensions.autodetection.enabled");
+
+        assertThat(propertyValue).isEqualTo("true");
+    }
+
+    private static String formatDependency(Dependency dependency) {
+        return dependency.getGroup() + ":" + dependency.getName() + ":" + dependency.getVersion();
     }
 
     private Path setupInputDirectory(Path buildDir) throws IOException {

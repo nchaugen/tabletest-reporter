@@ -4,9 +4,11 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
 
 ## Quick Start
 
-1. Add the JUnit extension to your test dependencies
+1. Add the reporter plugin to your build
 2. Run your tests (YAML files are generated automatically)
 3. Run the reporter plugin to generate documentation
+
+For Gradle users, the plugin handles everything automatically. Maven users need to add the dependency and configure autodetection manually.
 
 ## Requirements
 
@@ -16,88 +18,38 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
 
 Popular frameworks like Spring Boot (3.5.0+) and Quarkus (3.21.2+) include compatible JUnit versions.
 
-## Step 1: Add the JUnit Extension
+## Step 1: Add the Reporter Plugin
 
-Add the TableTest Reporter JUnit extension to your test dependencies and enable JUnit's automatic extension detection.
+### Gradle
 
-### Add Dependency
+Add the plugin to your `build.gradle.kts`:
 
-**Maven:**
-```xml
-<dependency>
-    <groupId>io.github.nchaugen</groupId>
-    <artifactId>tabletest-reporter-junit</artifactId>
-    <version>0.3.2</version>
-    <scope>test</scope>
-</dependency>
-```
-
-**Gradle:**
 ```kotlin
-testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.3.2")
+plugins {
+  id("io.github.nchaugen.tabletest-reporter") version "0.3.2"
+}
 ```
 
-### Enable Automatic Extension Detection
+The plugin automatically:
+- Adds `tabletest-reporter-junit` to your `testImplementation` configuration
+- Configures `junit.jupiter.extensions.autodetection.enabled=true` on test tasks
 
-The extension uses JUnit's ServiceLoader mechanism to activate automatically. You must enable JUnit's automatic extension detection by setting `junit.jupiter.extensions.autodetection.enabled=true`.
+That's it! No additional configuration needed for standard projects.
 
-**Which approach should I use?**
+### Maven
 
-| Build Tool | Scenario                          | Recommended Approach                       |
-|------------|-----------------------------------|--------------------------------------------|
-| **Any**    | Standard projects                 | Option 1: `junit-platform.properties`      |
-| **Maven**  | Simple setup (no Surefire config) | Option 2: Maven property                   |
-| **Maven**  | Already using Surefire plugin     | Option 3: Surefire config                  |
-| **Maven**  | Quarkus projects                  | Option 2: Maven property (avoids conflict) |
-| **Gradle** | Standard projects                 | Option 4: Gradle config                    |
-| **CLI**    | Running tests directly            | Option 5: Command-line argument            |
-
-<details>
-<summary><b>Option 1: JUnit Platform Properties</b> (Recommended for most projects)</summary>
-
-Create `src/test/resources/junit-platform.properties`:
-
-```properties
-junit.jupiter.extensions.autodetection.enabled=true
-```
-
-**Pros:**
-- Works with any build tool (Maven, Gradle, CLI)
-- Configuration stays with test code
-- Can also configure TableTest Reporter options (see [Configuration Options](#configuration-options))
-
-**Cons:**
-- Conflicts with Quarkus (which bundles its own `junit-platform.properties`)
-
-</details>
-
-<details>
-<summary><b>Option 2: Maven Property</b> (Simplest for Maven)</summary>
-
-Add to your `pom.xml`:
+Add the dependency and plugin to your `pom.xml`, and enable JUnit extension autodetection:
 
 ```xml
-<properties>
-    <junit.jupiter.extensions.autodetection.enabled>true</junit.jupiter.extensions.autodetection.enabled>
-</properties>
-```
+<dependencies>
+    <dependency>
+        <groupId>io.github.nchaugen</groupId>
+        <artifactId>tabletest-reporter-junit</artifactId>
+        <version>0.3.2</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
 
-**Pros:**
-- Simplest Maven approach (no plugin configuration needed)
-- Works with Quarkus (no conflict)
-- Can be overridden from command line
-
-**Cons:**
-- Maven-specific
-
-</details>
-
-<details>
-<summary><b>Option 3: Maven Surefire Configuration</b></summary>
-
-If you're already configuring the Surefire plugin, add:
-
-```xml
 <build>
   <plugins>
     <plugin>
@@ -112,24 +64,69 @@ If you're already configuring the Surefire plugin, add:
         </properties>
       </configuration>
     </plugin>
+    <plugin>
+      <groupId>io.github.nchaugen</groupId>
+      <artifactId>tabletest-reporter-maven-plugin</artifactId>
+      <version>0.3.2</version>
+    </plugin>
   </plugins>
 </build>
 ```
 
-**Pros:**
-- Standard approach when using Surefire plugin
-- All test configuration in one place
-
-**Cons:**
-- Requires Surefire plugin configuration
-- More verbose than Maven property approach
-
-</details>
+The `report` goal generates documentation from the collected test data.
 
 <details>
-<summary><b>Option 4: Gradle Configuration</b></summary>
+<summary><b>Manual Setup (Advanced)</b></summary>
 
-Add to your `build.gradle.kts`:
+If you need manual control over the JUnit extension setup (e.g., for the CLI runner or custom configurations), you can add the dependency and configure autodetection manually:
+
+**Add Dependency:**
+
+Maven:
+```xml
+<dependency>
+    <groupId>io.github.nchaugen</groupId>
+    <artifactId>tabletest-reporter-junit</artifactId>
+    <version>0.3.2</version>
+    <scope>test</scope>
+</dependency>
+```
+
+Gradle:
+```kotlin
+testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.3.2")
+```
+
+**Enable Automatic Extension Detection:**
+
+The extension uses JUnit's ServiceLoader mechanism. Enable autodetection using one of these approaches:
+
+| Build Tool | Scenario                          | Recommended Approach                       |
+|------------|-----------------------------------|--------------------------------------------|
+| **Any**    | Standard projects                 | `junit-platform.properties`                |
+| **Maven**  | Simple setup (no Surefire config) | Maven property                             |
+| **Maven**  | Already using Surefire plugin     | Surefire config                            |
+| **Maven**  | Quarkus projects                  | Maven property (avoids conflict)           |
+| **Gradle** | Standard projects                 | Gradle test task config                    |
+| **CLI**    | Running tests directly            | Command-line argument                      |
+
+**Option: JUnit Platform Properties**
+
+Create `src/test/resources/junit-platform.properties`:
+
+```properties
+junit.jupiter.extensions.autodetection.enabled=true
+```
+
+**Option: Maven Property**
+
+```xml
+<properties>
+    <junit.jupiter.extensions.autodetection.enabled>true</junit.jupiter.extensions.autodetection.enabled>
+</properties>
+```
+
+**Option: Gradle Test Task**
 
 ```kotlin
 tasks.test {
@@ -138,61 +135,7 @@ tasks.test {
 }
 ```
 
-**Custom output directory:** If you need YAML files written to a specific location, configure `junit.platform.reporting.output.dir`:
-
-```kotlin
-tasks.test {
-    useJUnitPlatform()
-    systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
-
-    // Optional: custom output directory
-    val outputDir = layout.buildDirectory
-    jvmArgumentProviders += CommandLineArgumentProvider {
-        listOf("-Djunit.platform.reporting.output.dir=${outputDir.get().asFile.absolutePath}")
-    }
-}
-```
-
-This is not needed for standard projects — YAML files are written to `build/junit-jupiter/` by default. The reporter's Gradle plugin automatically detects custom output directories from the test task configuration. See [Input Directory Resolution](#input-directory-resolution) for details.
-
-**Pros:**
-- Standard Gradle approach for JUnit configuration
-- All test configuration in build file
-
-**Cons:**
-- Gradle-specific
-
 </details>
-
-<details>
-<summary><b>Option 5: Command Line</b></summary>
-
-For one-off test runs or CI/CD:
-
-**Maven:**
-```bash
-mvn test -Djunit.jupiter.extensions.autodetection.enabled=true
-```
-
-**Gradle:**
-```bash
-./gradlew test -Djunit.jupiter.extensions.autodetection.enabled=true
-```
-
-**Pros:**
-- No configuration files needed
-- Useful for CI/CD or one-off runs
-- Easy to override existing configuration
-
-**Cons:**
-- Must remember to pass the argument every time
-- Not suitable as permanent solution
-
-</details>
-
----
-
-With any of these configurations, the extension activates automatically—no test annotations required.
 
 ## Step 2: Write Your Tests
 
@@ -265,30 +208,15 @@ Each TableTest method produces a YAML file with prefix `TABLETEST-`. File names 
 
 ## Step 4: Generate Documentation
 
-Choose your build tool and run the reporter to generate AsciiDoc or Markdown documentation. The reporter automatically detects where your test framework writes YAML files, so in most standard Maven and Gradle projects you don't need to configure the input directory at all — just run the plugin. See [Input Directory Resolution](#input-directory-resolution) for details on how detection works and when manual configuration is needed.
+Run the reporter to generate AsciiDoc or Markdown documentation. The reporter automatically detects where your test framework writes YAML files, so in most standard Maven and Gradle projects you don't need to configure the input directory at all — just run the plugin. See [Input Directory Resolution](#input-directory-resolution) for details on how detection works and when manual configuration is needed.
 
-### Maven Plugin
+### Maven
 
-Add the plugin to your `pom.xml`:
+If you configured the `report` goal in your plugin executions (see Step 1), documentation is generated automatically during the build. Otherwise, run manually:
 
-```xml
-<build>
-  <plugins>
-    <plugin>
-      <groupId>io.github.nchaugen</groupId>
-      <artifactId>tabletest-reporter-maven-plugin</artifactId>
-      <version>0.3.2</version>
-    </plugin>
-  </plugins>
-</build>
-```
-
-Run the plugin:
 ```bash
 mvn tabletest-reporter:report
 ```
-
-**Note:** An `<executions>` section can be added if you want the plugin to run automatically during a specific Maven phase.
 
 Documentation is generated to `target/generated-docs/tabletest/`.
 
@@ -307,15 +235,7 @@ Or use command-line properties:
 mvn tabletest-reporter:report -Dtabletest.report.format=markdown
 ```
 
-### Gradle Plugin
-
-Add the plugin to your `build.gradle.kts`:
-
-```kotlin
-plugins {
-  id("io.github.nchaugen.tabletest-reporter") version "0.3.2"
-}
-```
+### Gradle
 
 Run the task:
 ```bash

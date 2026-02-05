@@ -36,18 +36,12 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.0")
 
-    // TableTest
+    // TableTest (tabletest-reporter-junit added automatically by plugin)
     testImplementation("io.github.nchaugen:tabletest-junit:0.5.8")
-
-    // TableTest Reporter JUnit Extension
-    testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.3.3-SNAPSHOT")
 }
 
 tasks.test {
     useJUnitPlatform()
-
-    // Enable JUnit extension autodetection
-    systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
 
     // Custom expectation pattern for testing
     systemProperty("tabletest.reporter.expectation.pattern", "^Expected.*")

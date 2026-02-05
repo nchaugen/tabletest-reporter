@@ -54,11 +54,7 @@
                 <configuration>
                     <!-- Allow intentional test failures for verification -->
                     <testFailureIgnore>true</testFailureIgnore>
-                    <properties>
-                        <configurationParameters>
-                            junit.jupiter.extensions.autodetection.enabled=true
-                        </configurationParameters>
-                    </properties>
+                    <!-- Autodetection configured via junit-platform.properties -->
                     <systemPropertyVariables>
                         <tabletest.reporter.expectation.pattern>^Expected.*</tabletest.reporter.expectation.pattern>
                     </systemPropertyVariables>

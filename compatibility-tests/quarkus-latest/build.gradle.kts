@@ -49,18 +49,12 @@ dependencies {
     // JUnit Platform Launcher (version managed by Quarkus BOM)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    // TableTest
+    // TableTest (tabletest-reporter-junit added automatically by plugin)
     testImplementation("io.github.nchaugen:tabletest-junit:0.5.8")
-
-    // TableTest Reporter JUnit Extension
-    testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.3.3-SNAPSHOT")
 }
 
 tasks.test {
     useJUnitPlatform()
-
-    // Enable JUnit extension autodetection
-    systemProperty("junit.jupiter.extensions.autodetection.enabled", "true")
 }
 
 // Configure tabletest-reporter plugin for AsciiDoc output

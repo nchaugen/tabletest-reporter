@@ -56,6 +56,20 @@ spotless {
     }
 }
 
+val generateVersionProperties by tasks.registering {
+    val outputDir = layout.buildDirectory.dir("generated/resources")
+    outputs.dir(outputDir)
+    doLast {
+        val propsFile = outputDir.get().asFile.resolve("tabletest-reporter.properties")
+        propsFile.parentFile.mkdirs()
+        propsFile.writeText("version=${project.version}")
+    }
+}
+
+sourceSets.main {
+    resources.srcDir(generateVersionProperties)
+}
+
 publishing {
     repositories {
         mavenLocal()
