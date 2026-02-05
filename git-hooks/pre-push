@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pre-push hook: beads sync check and force-push protection
+# Pre-push hook: force-push protection
 
 set -e
 
@@ -32,11 +32,6 @@ do
         fi
     fi
 done
-
-# Run beads pre-push checks if they exist
-if [ -f .git/hooks/pre-push.beads-original ]; then
-    bash .git/hooks/pre-push.beads-original "$@"
-fi
 
 echo ""
 echo -e "${GREEN}✓ Pre-push checks passed${NC}"

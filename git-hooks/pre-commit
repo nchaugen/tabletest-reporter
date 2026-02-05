@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pre-commit hook: bd sync + build with unit tests
+# Pre-commit hook: format + build with unit tests
 
 set -e
 
@@ -15,12 +15,7 @@ if command -v jenv >/dev/null 2>&1; then
     eval "$(jenv init -)"
 fi
 
-# 1. Run beads sync first
-if [ -f .git/hooks/pre-commit.beads ]; then
-    bash .git/hooks/pre-commit.beads
-fi
-
-# 2. Format Java code with Spotless
+# 1. Format Java code with Spotless
 echo ""
 echo "Formatting Java code with Spotless..."
 
@@ -39,7 +34,7 @@ else
     echo "No Java files staged, skipping formatting"
 fi
 
-# 3. Build and run unit tests
+# 2. Build and run unit tests
 echo ""
 echo "Building and running tests..."
 if ! make build; then

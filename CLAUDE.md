@@ -1,10 +1,6 @@
-**Note**: This project uses [bd (beads)](https://github.com/steveyegge/beads)
-for issue tracking. Use `bd` commands instead of markdown TODOs.
+See [README.md](README.md) for project context.
 
-See [AGENTS.md](AGENTS.md) for:
-- How to use bd properly
-
-See [README.md](README.md) for project context
+See [.planning/ideas/](.planning/ideas/) for future improvement ideas (not tracked in git).
 
 # Developer Setup
 
@@ -18,9 +14,8 @@ chmod +x .git/hooks/*
 ```
 
 The pre-commit hook automatically:
-1. Runs `bd sync` (if beads is configured)
-2. **Formats Java code with Spotless** (Maven and Gradle modules)
-3. Builds project and runs unit tests
+1. **Formats Java code with Spotless** (Maven and Gradle modules)
+2. Builds project and runs unit tests
 
 **Code formatting is automatic** - the hook runs `mvn spotless:apply` before each commit, so you don't need to manually format code.
 
@@ -281,7 +276,6 @@ Consider running compatibility tests for:
 
 Skip compatibility tests for:
 
-- Documentation-only changes (README, CHANGELOG, CLAUDE.md, AGENTS.md)
+- Documentation-only changes (README, CHANGELOG, CLAUDE.md)
 - CI/CD workflow changes (`.github/workflows/`)
 - Development tooling (`.gitignore`, `.idea/`, `scripts/`)
-- Beads issue tracking changes (`.beads/`)
