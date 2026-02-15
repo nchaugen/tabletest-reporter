@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.github.nchaugen"
-version = "0.3.3-SNAPSHOT"
+version = "0.4.1-SNAPSHOT"
 
 java {
     toolchain {
@@ -58,11 +58,12 @@ spotless {
 
 val generateVersionProperties by tasks.registering {
     val outputDir = layout.buildDirectory.dir("generated/resources")
+    val projectVersion = project.version.toString()
     outputs.dir(outputDir)
     doLast {
         val propsFile = outputDir.get().asFile.resolve("tabletest-reporter.properties")
         propsFile.parentFile.mkdirs()
-        propsFile.writeText("version=${project.version}")
+        propsFile.writeText("version=$projectVersion")
     }
 }
 

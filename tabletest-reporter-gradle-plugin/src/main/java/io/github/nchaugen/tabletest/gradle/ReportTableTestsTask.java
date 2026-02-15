@@ -51,6 +51,8 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     private final DirectoryProperty templateDir;
     private final Property<String> junitOutputDir;
     private final Property<String> indexDepth;
+    private final DirectoryProperty projectDir;
+    private final DirectoryProperty defaultInputDir;
 
     /**
      * Creates a new task instance with default configuration.
@@ -63,6 +65,8 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         this.templateDir = getProject().getObjects().directoryProperty();
         this.junitOutputDir = getProject().getObjects().property(String.class);
         this.indexDepth = getProject().getObjects().property(String.class);
+        this.projectDir = getProject().getObjects().directoryProperty();
+        this.defaultInputDir = getProject().getObjects().directoryProperty();
         setGroup("documentation");
         setDescription("Generates AsciiDoc or Markdown documentation from TableTest YAML outputs");
     }
@@ -112,6 +116,11 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         return templateDir;
     }
 
+    /**
+     * Returns the JUnit output directory property.
+     *
+     * @return property for overriding the default JUnit XML output directory
+     */
     @org.gradle.api.tasks.Optional
     @Input
     public Property<String> getJunitOutputDir() {
@@ -130,6 +139,26 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     }
 
     /**
+     * Returns the project directory property.
+     *
+     * @return property for the project base directory used for resolving relative paths
+     */
+    @Internal
+    public DirectoryProperty getProjectDir() {
+        return projectDir;
+    }
+
+    /**
+     * Returns the default input directory property.
+     *
+     * @return property for the default directory containing JUnit Jupiter YAML outputs
+     */
+    @Internal
+    public DirectoryProperty getDefaultInputDir() {
+        return defaultInputDir;
+    }
+
+    /**
      * Executes the task to generate documentation from TableTest YAML files.
      *
      * @throws GradleException if input directory does not exist or report generation fails
@@ -137,19 +166,13 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     @TaskAction
     public void run() {
         final String fmt = format.getOrElse("asciidoc");
-        final Path defaultInput = getProject()
-                .getLayout()
-                .getBuildDirectory()
-                .dir("junit-jupiter")
-                .get()
-                .getAsFile()
-                .toPath();
+        final Path defaultInput = defaultInputDir.get().getAsFile().toPath();
         final Path configuredInput = Optional.ofNullable(toPath(inputDir))
                 .filter(path -> !isSamePath(path, defaultInput))
                 .orElse(null);
         final Path out = outputDir.get().getAsFile().toPath();
 
-        final Path baseDir = getProject().getProjectDir().toPath();
+        final Path baseDir = projectDir.get().getAsFile().toPath();
         final String junitOutputDirValue = junitOutputDir.getOrNull();
         final Path junitDir = JunitDirParser.parse(baseDir, junitOutputDirValue).orElse(null);
 
