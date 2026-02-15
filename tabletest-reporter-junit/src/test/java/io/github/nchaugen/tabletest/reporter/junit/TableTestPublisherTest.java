@@ -410,15 +410,11 @@ class TableTestPublisherTest {
     }
 
     private Path findExpectedYamlFile(Path baseDir, String name) throws IOException {
-        // Transform the name to match the filename transformation applied by TableTestPublisher
-        String transformedName = Slugger.slugify(name);
+        String expectedFilename = "TABLETEST-" + Slugger.slugify(name) + ".yaml";
         try (var paths = Files.walk(baseDir)) {
-            return paths.filter(p -> p.toString().contains(transformedName))
-                    .filter(p -> p.getFileName().toString().startsWith("TABLETEST-"))
-                    .filter(p -> p.getFileName().toString().endsWith(".yaml"))
+            return paths.filter(p -> p.getFileName().toString().equals(expectedFilename))
                     .findFirst()
-                    .orElseThrow(() -> new AssertionError("TABLETEST-*.yaml file not found for " + name
-                            + " (transformed to: " + transformedName + ")"));
+                    .orElseThrow(() -> new AssertionError("Expected YAML file not found: " + expectedFilename));
         }
     }
 
