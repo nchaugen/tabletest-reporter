@@ -77,10 +77,10 @@ jobs:
 
           case "${{ matrix.framework }}" in
             spring-boot)
-              CURRENT=$(grep -oP 'id\\(\"org.springframework.boot\"\\) version \"\\K[\\d.]+' "$FILE")
+              CURRENT=$(grep -oP 'id\("org\.springframework\.boot"\) version "\K[\d.]+' "$FILE")
               ;;
             quarkus)
-              CURRENT=$(grep -oP 'id\\(\"io.quarkus\"\\) version \"\\K[\\d.]+' "$FILE")
+              CURRENT=$(grep -oP 'id\("io\.quarkus"\) version "\K[\d.]+' "$FILE")
               ;;
             junit)
               CURRENT=$(grep -oP '(?<=<version.junit>)[\d.]+(?=</version.junit>)' "$FILE")
@@ -89,7 +89,7 @@ jobs:
               CURRENT=$(grep -oP 'gradle-\K[\d.]+(?=-bin\.zip)' "$FILE")
               ;;
             asciidoctor)
-              CURRENT=$(grep -oP '(?<=<asciidoctor.version>)[\d.]+(?=</asciidoctor.version>)' "$FILE")
+              CURRENT=$(grep -oP '(?<=<version\.asciidoctor>)[\d.]+(?=</version\.asciidoctor>)' "$FILE")
               ;;
           esac
 
@@ -195,7 +195,7 @@ jobs:
               sed -i "s/gradle-${CURRENT}-bin\.zip/gradle-${LATEST}-bin.zip/" "$FILE"
               ;;
             asciidoctor)
-              sed -i "s/<asciidoctor.version>${CURRENT}<\/asciidoctor.version>/<asciidoctor.version>${LATEST}<\/asciidoctor.version>/" "$FILE"
+              sed -i "s/<version.asciidoctor>${CURRENT}<\/version.asciidoctor>/<version.asciidoctor>${LATEST}<\/version.asciidoctor>/" "$FILE"
               ;;
           esac
 
