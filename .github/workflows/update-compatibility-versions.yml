@@ -15,7 +15,6 @@ on:
           - spring-boot
           - quarkus
           - junit
-          - gradle
           - asciidoctor
 
 jobs:
@@ -43,11 +42,6 @@ jobs:
             artifact-group: org.junit.jupiter
             artifact-id: junit-jupiter
             version-file: compatibility-tests/junit-6-maven/pom.xml
-          - framework: gradle
-            test-dir: junit-5-gradle
-            artifact-group: gradle
-            artifact-id: gradle
-            version-file: compatibility-tests/junit-5-gradle/gradle/wrapper/gradle-wrapper.properties
           - framework: asciidoctor
             test-dir: junit-6-maven
             artifact-group: org.asciidoctor
@@ -85,9 +79,6 @@ jobs:
             junit)
               CURRENT=$(grep -oP '(?<=<version.junit>)[\d.]+(?=</version.junit>)' "$FILE")
               ;;
-            gradle)
-              CURRENT=$(grep -oP 'gradle-\K[\d.]+(?=-bin\.zip)' "$FILE")
-              ;;
             asciidoctor)
               CURRENT=$(grep -oP '(?<=<version\.asciidoctor>)[\d.]+(?=</version\.asciidoctor>)' "$FILE")
               ;;
@@ -100,22 +91,17 @@ jobs:
         if: steps.should-run.outputs.run == 'true'
         id: latest
         run: |
-          if [ "${{ matrix.framework }}" = "gradle" ]; then
-            # Fetch from Gradle services API
-            LATEST=$(curl -s "https://services.gradle.org/versions/current" | jq -r '.version')
-          else
-            # Fetch from Maven Central
-            GROUP=$(echo "${{ matrix.artifact-group }}" | tr '.' '/')
-            ARTIFACT="${{ matrix.artifact-id }}"
+          # Fetch from Maven Central
+          GROUP=$(echo "${{ matrix.artifact-group }}" | tr '.' '/')
+          ARTIFACT="${{ matrix.artifact-id }}"
 
-            # Get all versions and filter to stable releases only
-            VERSIONS=$(curl -s "https://repo1.maven.org/maven2/${GROUP}/${ARTIFACT}/maven-metadata.xml" | \
-              grep -oP '(?<=<version>)[^<]+(?=</version>)' | \
-              grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | \
-              sort -V)
+          # Get all versions and filter to stable releases only
+          VERSIONS=$(curl -s "https://repo1.maven.org/maven2/${GROUP}/${ARTIFACT}/maven-metadata.xml" | \
+            grep -oP '(?<=<version>)[^<]+(?=</version>)' | \
+            grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | \
+            sort -V)
 
-            LATEST=$(echo "$VERSIONS" | tail -1)
-          fi
+          LATEST=$(echo "$VERSIONS" | tail -1)
 
           echo "version=$LATEST" >> $GITHUB_OUTPUT
           echo "Latest ${{ matrix.framework }} version: $LATEST"
@@ -191,9 +177,6 @@ jobs:
             junit)
               sed -i "s/<version.junit>${CURRENT}<\/version.junit>/<version.junit>${LATEST}<\/version.junit>/" "$FILE"
               ;;
-            gradle)
-              sed -i "s/gradle-${CURRENT}-bin\.zip/gradle-${LATEST}-bin.zip/" "$FILE"
-              ;;
             asciidoctor)
               sed -i "s/<version.asciidoctor>${CURRENT}<\/version.asciidoctor>/<version.asciidoctor>${LATEST}<\/version.asciidoctor>/" "$FILE"
               ;;
@@ -205,12 +188,6 @@ jobs:
       - name: Build main project
         if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
         run: mvn clean install -DskipTests --no-transfer-progress
-
-      - name: Build Gradle plugin
-        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false' && matrix.framework == 'gradle'
-        run: |
-          cd tabletest-reporter-gradle-plugin
-          ./gradlew clean build publishToMavenLocal
 
       - name: Run compatibility test
         if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
