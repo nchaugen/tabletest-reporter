@@ -4,7 +4,7 @@
 
     <groupId>io.github.nchaugen</groupId>
     <artifactId>tabletest-reporter</artifactId>
-    <version>0.3.3-SNAPSHOT</version>
+    <version>0.4.0</version>
     <packaging>pom</packaging>
 
     <inceptionYear>2025</inceptionYear>
@@ -74,7 +74,7 @@
         <connection>scm:git:${repository.url}</connection>
         <developerConnection>scm:git:${repository.url}</developerConnection>
         <url>${repository.url}</url>
-        <tag>HEAD</tag>
+        <tag>tabletest-reporter-0.4.0</tag>
     </scm>
 
     <distributionManagement>
