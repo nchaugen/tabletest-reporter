@@ -1,9 +1,14 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+
+## [0.4.0] - 2026-02-15
+### Changed
+- Index files now show all levels of nested items by default. Set indexDepth = 1 to restore previous behaviour.
 ### Added
 - Configurable index depth to control how many levels of nested items appear in each index file
 - Simplified setup for Gradle: plugin automatically adds `tabletest-reporter-junit` dependency and configures JUnit extension autodetection (Maven continues to require manual setup)
+- Support `org.tabletest.junit.*` annotations
 
 ## [0.3.2] - 2026-02-03
 ### Added
@@ -67,7 +72,8 @@
 
 
 [Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.2...HEAD
-[0.3.1]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.1...tabletest-reporter-0.3.2
+[0.4.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.2...tabletest-reporter-0.4.0
+[0.3.2]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.1...tabletest-reporter-0.3.2
 [0.3.1]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.0...tabletest-reporter-0.3.1
 [0.3.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.2.1...tabletest-reporter-0.3.0
 [0.2.1]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.2.0...tabletest-reporter-0.2.1

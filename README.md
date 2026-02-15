@@ -26,7 +26,7 @@ Add the plugin to your `build.gradle.kts`:
 
 ```kotlin
 plugins {
-  id("io.github.nchaugen.tabletest-reporter") version "0.3.2"
+  id("io.github.nchaugen.tabletest-reporter") version "0.4.0"
 }
 ```
 
@@ -45,7 +45,7 @@ Add the dependency and plugin to your `pom.xml`, and enable JUnit extension auto
     <dependency>
         <groupId>io.github.nchaugen</groupId>
         <artifactId>tabletest-reporter-junit</artifactId>
-        <version>0.3.2</version>
+        <version>0.4.0</version>
         <scope>test</scope>
     </dependency>
 </dependencies>
@@ -67,7 +67,7 @@ Add the dependency and plugin to your `pom.xml`, and enable JUnit extension auto
     <plugin>
       <groupId>io.github.nchaugen</groupId>
       <artifactId>tabletest-reporter-maven-plugin</artifactId>
-      <version>0.3.2</version>
+      <version>0.4.0</version>
     </plugin>
   </plugins>
 </build>
@@ -87,14 +87,14 @@ Maven:
 <dependency>
     <groupId>io.github.nchaugen</groupId>
     <artifactId>tabletest-reporter-junit</artifactId>
-    <version>0.3.2</version>
+    <version>0.4.0</version>
     <scope>test</scope>
 </dependency>
 ```
 
 Gradle:
 ```kotlin
-testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.3.2")
+testImplementation("io.github.nchaugen:tabletest-reporter-junit:0.4.0")
 ```
 
 **Enable Automatic Extension Detection:**
