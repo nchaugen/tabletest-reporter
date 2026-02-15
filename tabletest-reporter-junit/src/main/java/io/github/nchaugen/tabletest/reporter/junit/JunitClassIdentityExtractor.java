@@ -15,7 +15,6 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.junit.Description;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
@@ -34,9 +33,6 @@ final class JunitClassIdentityExtractor {
     }
 
     private static String findDescription(ExtensionContext context) {
-        return context.getTestClass()
-                .map(testClass -> testClass.getAnnotation(Description.class))
-                .map(Description::value)
-                .orElse(null);
+        return context.getTestClass().map(DescriptionResolver::findDescription).orElse(null);
     }
 }

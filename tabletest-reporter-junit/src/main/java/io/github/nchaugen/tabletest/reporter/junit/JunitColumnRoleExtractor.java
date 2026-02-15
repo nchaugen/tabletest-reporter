@@ -19,6 +19,8 @@ import io.github.nchaugen.tabletest.junit.Scenario;
 import io.github.nchaugen.tabletest.parser.Table;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Parameter;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -39,10 +41,25 @@ final class JunitColumnRoleExtractor {
         return explicit.isPresent() ? explicit : getImplicitScenarioColumn(context, table);
     }
 
+    private static final String NEW_SCENARIO_CLASS = "org.tabletest.junit.Scenario";
+
     private static OptionalInt getExplicitScenarioColumn(ExtensionContext context) {
         return IntStream.range(0, context.getRequiredTestMethod().getParameterCount())
-                .filter(i -> context.getRequiredTestMethod().getParameters()[i].isAnnotationPresent(Scenario.class))
+                .filter(i -> isScenarioAnnotated(context.getRequiredTestMethod().getParameters()[i]))
                 .findFirst();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean isScenarioAnnotated(Parameter parameter) {
+        if (parameter.isAnnotationPresent(Scenario.class)) {
+            return true;
+        }
+        try {
+            Class<? extends Annotation> newScenario = (Class<? extends Annotation>) Class.forName(NEW_SCENARIO_CLASS);
+            return parameter.isAnnotationPresent(newScenario);
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private static OptionalInt getImplicitScenarioColumn(ExtensionContext context, Table table) {

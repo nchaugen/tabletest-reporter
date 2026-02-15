@@ -15,8 +15,6 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.junit.InputResolver;
-import io.github.nchaugen.tabletest.junit.TableTest;
 import io.github.nchaugen.tabletest.parser.Table;
 import io.github.nchaugen.tabletest.parser.TableParser;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -49,18 +47,18 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
 
     private void recordInvocationResult(ExtensionContext context, boolean passed, Throwable cause) {
         // Get the parent context (test template context for parameterized tests)
-        context.getParent()
-                .ifPresent(parentContext -> parentContext.getTestMethod().ifPresent(method -> {
-                    TableTest tableTest = method.getAnnotation(TableTest.class);
-                    if (tableTest != null) {
-                        // Ensure table metadata is stored (only happens once per test method)
-                        ensureTableMetadataStored(parentContext, tableTest);
+        context.getParent().ifPresent(parentContext -> parentContext
+                .getTestMethod()
+                .flatMap(method ->
+                        TableTestAnnotationResolver.resolveInput(method, parentContext.getRequiredTestClass()))
+                .ifPresent(input -> {
+                    // Ensure table metadata is stored (only happens once per test method)
+                    ensureTableMetadataStored(parentContext, input);
 
-                        // Store this invocation's result
-                        int rowIndex = getInvocationIndex(context);
-                        store.storeRowResult(
-                                parentContext, new RowResult(rowIndex, passed, cause, context.getDisplayName()));
-                    }
+                    // Store this invocation's result
+                    int rowIndex = getInvocationIndex(context);
+                    store.storeRowResult(
+                            parentContext, new RowResult(rowIndex, passed, cause, context.getDisplayName()));
                 }));
     }
 
@@ -69,13 +67,12 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
      * On first invocation: parses table, stores metadata, marks method for publishing.
      * On subsequent invocations: does nothing (metadata already stored).
      */
-    private void ensureTableMetadataStored(ExtensionContext methodContext, TableTest tableTest) {
+    private void ensureTableMetadataStored(ExtensionContext methodContext, String input) {
         if (store.hasTable(methodContext)) {
             return; // Already stored
         }
 
         // Parse and store table
-        String input = InputResolver.resolveInput(methodContext, tableTest);
         Table table = TableParser.parse(input);
         store.storeTable(methodContext, table);
 
