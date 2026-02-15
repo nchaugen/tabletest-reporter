@@ -204,7 +204,7 @@ jobs:
 
       - name: Build main project
         if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
-        run: mvn clean install -DskipTests
+        run: mvn clean install -DskipTests --no-transfer-progress
 
       - name: Build Gradle plugin
         if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false' && matrix.framework == 'gradle'
@@ -227,7 +227,7 @@ jobs:
           fi
 
       - name: Commit changes
-        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false' && steps.test.outputs.result == 'passed'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -235,26 +235,19 @@ jobs:
           git commit -m "chore: Update ${{ matrix.framework }} to ${{ steps.latest.outputs.version }}"
 
       - name: Push branch
-        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false' && steps.test.outputs.result == 'passed'
         run: |
           BRANCH="update-${{ matrix.framework }}-${{ steps.latest.outputs.version }}"
           git push origin "$BRANCH"
 
       - name: Create Pull Request
-        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false' && steps.test.outputs.result == 'passed'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH="update-${{ matrix.framework }}-${{ steps.latest.outputs.version }}"
           CURRENT="${{ steps.current.outputs.version }}"
           LATEST="${{ steps.latest.outputs.version }}"
-          TEST_RESULT="${{ steps.test.outputs.result }}"
-
-          if [ "$TEST_RESULT" = "passed" ]; then
-            TEST_STATUS="Compatibility tests **passed** ✅"
-          else
-            TEST_STATUS="Compatibility tests **failed** ⚠️ - investigation needed"
-          fi
 
           gh pr create \
             --title "chore: Update ${{ matrix.framework }} to ${LATEST}" \
@@ -263,9 +256,7 @@ jobs:
 
           Updates ${{ matrix.framework }} compatibility test from \`${CURRENT}\` to \`${LATEST}\`.
 
-          ## Test Results
-
-          ${TEST_STATUS}
+          Compatibility tests passed.
 
           ## Changes
 
@@ -277,3 +268,9 @@ jobs:
           )" \
             --head "$BRANCH" \
             --base main
+
+      - name: Fail if compatibility test failed
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false' && steps.test.outputs.result == 'failed'
+        run: |
+          echo "::error::Compatibility test failed for ${{ matrix.framework }} ${{ steps.latest.outputs.version }}"
+          exit 1
