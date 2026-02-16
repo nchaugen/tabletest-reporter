@@ -26,7 +26,7 @@ Add the plugin to your `build.gradle.kts`:
 
 ```kotlin
 plugins {
-  id("org.tabletest.tabletest-reporter") version "1.0.0"
+  id("org.tabletest.reporter") version "1.0.0"
 }
 ```
 

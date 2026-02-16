@@ -15,7 +15,7 @@ plugins {
     java
 }
 
-apply(plugin = "org.tabletest.tabletest-reporter")
+apply(plugin = "org.tabletest.reporter")
 
 group = "org.tabletest.compat"
 version = "1.0-SNAPSHOT"

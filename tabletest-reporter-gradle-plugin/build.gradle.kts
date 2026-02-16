@@ -35,11 +35,11 @@ gradlePlugin {
 
     plugins {
         create("tabletestReporter") {
-            id = "org.tabletest.tabletest-reporter"
+            id = "org.tabletest.reporter"
             implementationClass = "org.tabletest.gradle.TableTestReporterPlugin"
             displayName = "TableTest Reporter"
-            description = "Generate AsciiDoc or Markdown docs from TableTest results"
-            tags.set(listOf("testing", "bdd", "documentation", "tabletest", "asciidoc", "markdown"))
+            description = "Generate docs from TableTest results in AsciiDoc, Markdown or custom format"
+            tags.set(listOf("testing", "bdd", "documentation", "tabletest", "junit", "asciidoc", "markdown"))
         }
     }
 }

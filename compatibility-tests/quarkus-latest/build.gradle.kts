@@ -13,7 +13,7 @@ plugins {
     id("io.quarkus") version "3.31.3"
 }
 
-apply(plugin = "org.tabletest.tabletest-reporter")
+apply(plugin = "org.tabletest.reporter")
 
 group = "org.tabletest.compat"
 version = "1.0-SNAPSHOT"
