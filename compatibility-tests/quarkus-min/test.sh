@@ -21,7 +21,7 @@ PLUGIN_VERSION=$(get_maven_plugin_version)
 # Use Maven plugin to generate Markdown documentation
 # Note: Uses full coordinates including version because plugin is not configured in pom.xml
 echo "Generating Markdown documentation with Maven plugin..."
-mvn -B io.github.nchaugen:tabletest-reporter-maven-plugin:$PLUGIN_VERSION:report -Dtabletest.report.format=markdown
+mvn -B org.tabletest:tabletest-reporter-maven-plugin:$PLUGIN_VERSION:report -Dtabletest.report.format=markdown
 
 validate_output_files "target/generated-docs/tabletest" "*.md" "Markdown"
 echo "SUCCESS"

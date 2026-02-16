@@ -5,7 +5,7 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.github.nchaugen.tabletest.compat</groupId>
+    <groupId>org.tabletest.compat</groupId>
     <artifactId>junit-6-maven</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.junit>6.0.3</version.junit>
         <version.tabletest>1.0.0</version.tabletest>
-        <version.tabletest-reporter>0.4.1-SNAPSHOT</version.tabletest-reporter>
+        <version.tabletest-reporter>1.0.0-SNAPSHOT</version.tabletest-reporter>
         <version.plugin.surefire>3.5.2</version.plugin.surefire>
         <version.jsoup>1.22.1</version.jsoup>
         <version.asciidoctor>3.2.0</version.asciidoctor>
@@ -41,7 +41,7 @@
 
         <!-- TableTest Reporter JUnit Extension -->
         <dependency>
-            <groupId>io.github.nchaugen</groupId>
+            <groupId>org.tabletest</groupId>
             <artifactId>tabletest-reporter-junit</artifactId>
             <version>${version.tabletest-reporter}</version>
             <scope>test</scope>
@@ -74,7 +74,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>io.github.nchaugen</groupId>
+                <groupId>org.tabletest</groupId>
                 <artifactId>tabletest-reporter-maven-plugin</artifactId>
                 <version>${version.tabletest-reporter}</version>
                 <configuration>

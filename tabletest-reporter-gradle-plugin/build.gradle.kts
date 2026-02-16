@@ -5,8 +5,8 @@ plugins {
     id("com.diffplug.spotless") version "8.1.0"
 }
 
-group = "io.github.nchaugen"
-version = "0.4.1-SNAPSHOT"
+group = "org.tabletest"
+version = "1.0.0-SNAPSHOT"
 
 java {
     toolchain {
@@ -21,7 +21,7 @@ repositories {
 
 dependencies {
     // Core library (install to mavenLocal first via: mvn -q -DskipTests install)
-    implementation("io.github.nchaugen:tabletest-reporter-core:${project.version}")
+    implementation("org.tabletest:tabletest-reporter-core:${project.version}")
 
     testImplementation(gradleTestKit())
     testImplementation("org.junit.jupiter:junit-jupiter:6.0.3")
@@ -35,8 +35,8 @@ gradlePlugin {
 
     plugins {
         create("tabletestReporter") {
-            id = "io.github.nchaugen.tabletest-reporter"
-            implementationClass = "io.github.nchaugen.tabletest.gradle.TableTestReporterPlugin"
+            id = "org.tabletest.tabletest-reporter"
+            implementationClass = "org.tabletest.gradle.TableTestReporterPlugin"
             displayName = "TableTest Reporter"
             description = "Generate AsciiDoc or Markdown docs from TableTest results"
             tags.set(listOf("testing", "bdd", "documentation", "tabletest", "asciidoc", "markdown"))

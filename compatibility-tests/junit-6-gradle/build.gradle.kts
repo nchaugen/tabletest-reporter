@@ -4,7 +4,7 @@ buildscript {
         mavenLocal()  // For SNAPSHOT plugin - checked after Central to avoid incomplete artifacts
     }
     dependencies {
-        classpath("io.github.nchaugen:tabletest-reporter-gradle-plugin:0.4.1-SNAPSHOT")
+        classpath("org.tabletest:tabletest-reporter-gradle-plugin:1.0.0-SNAPSHOT")
     }
 }
 
@@ -12,9 +12,9 @@ plugins {
     java
 }
 
-apply(plugin = "io.github.nchaugen.tabletest-reporter")
+apply(plugin = "org.tabletest.tabletest-reporter")
 
-group = "io.github.nchaugen.tabletest.compat"
+group = "org.tabletest.compat"
 version = "1.0-SNAPSHOT"
 
 java {
@@ -50,7 +50,7 @@ tasks.test {
 val reporterInputDir: String? = providers.gradleProperty("tabletestReporterInputDir").orNull
 
 // Configure tabletest-reporter plugin for AsciiDoc output
-extensions.configure<io.github.nchaugen.tabletest.gradle.TableTestReporterExtension>("tableTestReporter") {
+extensions.configure<org.tabletest.gradle.TableTestReporterExtension>("tableTestReporter") {
     format.set("asciidoc")
     if (reporterInputDir != null) {
         inputDir.set(project.layout.projectDirectory.dir(reporterInputDir))

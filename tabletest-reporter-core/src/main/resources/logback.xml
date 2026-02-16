@@ -12,7 +12,7 @@
     <logger name="org.gradle" level="WARN" />
     <logger name="org.slf4j" level="WARN" />
 
-    <logger name="io.github.nchaugen" level="INFO" />
+    <logger name="org.tabletest" level="INFO" />
 
     <!-- Root logger -->
     <root level="INFO">

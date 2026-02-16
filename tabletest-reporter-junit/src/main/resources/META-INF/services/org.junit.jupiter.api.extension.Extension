@@ -1,1 +1,1 @@
-io.github.nchaugen.tabletest.reporter.junit.TableTestPublisher
+org.tabletest.reporter.junit.TableTestPublisher
