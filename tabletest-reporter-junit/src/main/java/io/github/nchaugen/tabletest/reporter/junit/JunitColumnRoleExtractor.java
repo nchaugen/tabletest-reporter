@@ -15,9 +15,9 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.junit.Scenario;
-import io.github.nchaugen.tabletest.parser.Table;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.tabletest.junit.Scenario;
+import org.tabletest.parser.Table;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
@@ -41,7 +41,7 @@ final class JunitColumnRoleExtractor {
         return explicit.isPresent() ? explicit : getImplicitScenarioColumn(context, table);
     }
 
-    private static final String NEW_SCENARIO_CLASS = "org.tabletest.junit.Scenario";
+    private static final String DEPRECATED_SCENARIO_CLASS = "io.github.nchaugen.tabletest.junit.Scenario";
 
     private static OptionalInt getExplicitScenarioColumn(ExtensionContext context) {
         return IntStream.range(0, context.getRequiredTestMethod().getParameterCount())
@@ -55,8 +55,9 @@ final class JunitColumnRoleExtractor {
             return true;
         }
         try {
-            Class<? extends Annotation> newScenario = (Class<? extends Annotation>) Class.forName(NEW_SCENARIO_CLASS);
-            return parameter.isAnnotationPresent(newScenario);
+            Class<? extends Annotation> deprecatedScenario =
+                    (Class<? extends Annotation>) Class.forName(DEPRECATED_SCENARIO_CLASS);
+            return parameter.isAnnotationPresent(deprecatedScenario);
         } catch (Exception ignored) {
             return false;
         }

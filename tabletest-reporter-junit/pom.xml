@@ -14,10 +14,10 @@
     <name>TableTest Reporter JUnit Extension</name>
 
     <properties>
-        <version.tabletest>0.5.8</version.tabletest>
+        <version.tabletest>1.0.0</version.tabletest>
         <version.snakeyaml>3.0.1</version.snakeyaml>
         <version.slugify>3.0.7</version.slugify>
-        <version.junit>6.0.1</version.junit>
+        <version.junit>6.0.3</version.junit>
         <version.assertj>3.27.7</version.assertj>
     </properties>
 
@@ -39,12 +39,12 @@
 
         <!-- TableTest library for parser and JUnit integration -->
         <dependency>
-            <groupId>io.github.nchaugen</groupId>
+            <groupId>org.tabletest</groupId>
             <artifactId>tabletest-parser</artifactId>
             <version>${version.tabletest}</version>
         </dependency>
         <dependency>
-            <groupId>io.github.nchaugen</groupId>
+            <groupId>org.tabletest</groupId>
             <artifactId>tabletest-junit</artifactId>
             <version>${version.tabletest}</version>
         </dependency>

@@ -7,7 +7,7 @@ buildscript {
         mavenLocal()  // For SNAPSHOT plugin - checked after Central to avoid incomplete artifacts
     }
     dependencies {
-        classpath("io.github.nchaugen:tabletest-reporter-gradle-plugin:0.3.3-SNAPSHOT")
+        classpath("io.github.nchaugen:tabletest-reporter-gradle-plugin:0.4.1-SNAPSHOT")
     }
 }
 
@@ -37,7 +37,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.0")
 
     // TableTest (tabletest-reporter-junit added automatically by plugin)
-    testImplementation("io.github.nchaugen:tabletest-junit:0.5.8")
+    testImplementation("io.github.nchaugen:tabletest-junit:1.0.0")
 }
 
 tasks.test {

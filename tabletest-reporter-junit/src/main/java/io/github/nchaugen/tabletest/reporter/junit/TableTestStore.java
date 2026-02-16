@@ -15,8 +15,8 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.parser.Table;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.tabletest.parser.Table;
 
 import java.util.ArrayList;
 import java.util.List;

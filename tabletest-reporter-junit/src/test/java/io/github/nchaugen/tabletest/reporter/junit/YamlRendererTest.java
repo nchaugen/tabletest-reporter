@@ -1,7 +1,7 @@
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.parser.TableParser;
 import org.junit.jupiter.api.Test;
+import org.tabletest.parser.TableParser;
 
 import java.util.List;
 import java.util.Set;

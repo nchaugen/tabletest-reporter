@@ -15,9 +15,6 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.junit.Description;
-import io.github.nchaugen.tabletest.junit.Scenario;
-import io.github.nchaugen.tabletest.junit.TableTest;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +23,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.platform.engine.OutputDirectoryCreator;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.testkit.engine.EngineTestKit;
+import org.tabletest.junit.Description;
+import org.tabletest.junit.Scenario;
+import org.tabletest.junit.TableTest;
 
 import java.io.IOException;
 import java.nio.file.Files;

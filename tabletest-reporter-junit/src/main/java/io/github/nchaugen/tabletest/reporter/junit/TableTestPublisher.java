@@ -15,12 +15,12 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.parser.Table;
-import io.github.nchaugen.tabletest.parser.TableParser;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.MediaType;
 import org.junit.jupiter.api.extension.TestWatcher;
+import org.tabletest.parser.Table;
+import org.tabletest.parser.TableParser;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

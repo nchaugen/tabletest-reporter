@@ -15,7 +15,7 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.junit.Description;
+import org.tabletest.junit.Description;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -27,7 +27,7 @@ import java.util.Optional;
  */
 final class DescriptionResolver {
 
-    private static final String NEW_DESCRIPTION_CLASS = "org.tabletest.junit.Description";
+    private static final String DEPRECATED_DESCRIPTION_CLASS = "io.github.nchaugen.tabletest.junit.Description";
 
     static String findDescription(AnnotatedElement element) {
         return findNewDescription(element)
@@ -35,11 +35,15 @@ final class DescriptionResolver {
                 .orElse(null);
     }
 
-    @SuppressWarnings("unchecked")
     private static Optional<String> findNewDescription(AnnotatedElement element) {
+        return Optional.ofNullable(element.getAnnotation(Description.class)).map(Description::value);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Optional<String> findDeprecatedDescription(AnnotatedElement element) {
         try {
             Class<? extends Annotation> descriptionClass =
-                    (Class<? extends Annotation>) Class.forName(NEW_DESCRIPTION_CLASS);
+                    (Class<? extends Annotation>) Class.forName(DEPRECATED_DESCRIPTION_CLASS);
             Annotation annotation = element.getAnnotation(descriptionClass);
             if (annotation != null) {
                 return Optional.of((String) descriptionClass.getMethod("value").invoke(annotation));
@@ -47,9 +51,5 @@ final class DescriptionResolver {
         } catch (Exception ignored) {
         }
         return Optional.empty();
-    }
-
-    private static Optional<String> findDeprecatedDescription(AnnotatedElement element) {
-        return Optional.ofNullable(element.getAnnotation(Description.class)).map(Description::value);
     }
 }

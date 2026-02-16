@@ -15,7 +15,7 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.parser.Table;
+import org.tabletest.parser.Table;
 
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +59,7 @@ class RowResultMatcher {
         Optional<String> expectedDisplayNamePattern = buildExpectedDisplayName(rowIndex, table, scenarioIndex);
 
         return rowResults.stream()
-                .filter(result -> matchesRow(result.displayName(), expectedDisplayNamePattern, table, rowIndex))
+                .filter(result -> matchesRow(result.displayName(), expectedDisplayNamePattern))
                 .toList();
     }
 
@@ -121,7 +121,7 @@ class RowResultMatcher {
      * Returns {@code false} if no scenario column exists, as matching without a scenario
      * column is unreliable due to parameter type conversion.
      */
-    static boolean matchesRow(String actualDisplayName, Optional<String> expectedPattern, Table table, int rowIndex) {
+    static boolean matchesRow(String actualDisplayName, Optional<String> expectedPattern) {
         // No scenario column means no reliable matching possible
         if (expectedPattern.isEmpty()) {
             return false;

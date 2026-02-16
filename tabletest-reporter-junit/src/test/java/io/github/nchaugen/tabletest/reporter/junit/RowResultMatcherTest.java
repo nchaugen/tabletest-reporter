@@ -1,10 +1,10 @@
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.junit.Scenario;
-import io.github.nchaugen.tabletest.junit.TableTest;
-import io.github.nchaugen.tabletest.parser.Table;
-import io.github.nchaugen.tabletest.parser.TableParser;
 import org.junit.jupiter.api.Test;
+import org.tabletest.junit.Scenario;
+import org.tabletest.junit.TableTest;
+import org.tabletest.parser.Table;
+import org.tabletest.parser.TableParser;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +28,7 @@ class RowResultMatcherTest {
         """)
     void shouldMatchWithScenarioColumn(@Scenario String actualDisplayName, String expectedPattern, boolean matches) {
         Table table = TableParser.parse("a|b");
-        boolean result = RowResultMatcher.matchesRow(actualDisplayName, Optional.of(expectedPattern), table, 0);
+        boolean result = RowResultMatcher.matchesRow(actualDisplayName, Optional.of(expectedPattern));
         assertEquals(matches, result);
     }
 
@@ -40,7 +40,7 @@ class RowResultMatcherTest {
         """)
     void shouldMatchScenarioWithExpansionParameters(@Scenario String actualDisplayName, boolean matches) {
         Table table = TableParser.parse("a|b");
-        boolean result = RowResultMatcher.matchesRow(actualDisplayName, Optional.of("Scenario"), table, 0);
+        boolean result = RowResultMatcher.matchesRow(actualDisplayName, Optional.of("Scenario"));
         assertEquals(matches, result);
     }
 
@@ -50,8 +50,8 @@ class RowResultMatcherTest {
         // so we always return false (no .passed/.failed roles applied)
         Table table = TableParser.parse("a|b|c\n1|2|3");
 
-        assertFalse(RowResultMatcher.matchesRow("[1] 1, 2, 3", Optional.empty(), table, 0));
-        assertFalse(RowResultMatcher.matchesRow("[1] 1, 2, 4", Optional.empty(), table, 0));
+        assertFalse(RowResultMatcher.matchesRow("[1] 1, 2, 3", Optional.empty()));
+        assertFalse(RowResultMatcher.matchesRow("[1] 1, 2, 4", Optional.empty()));
     }
 
     @Test
@@ -110,7 +110,7 @@ class RowResultMatcherTest {
         """)
     void shouldRejectInvalidDisplayNameFormat(@Scenario String actualDisplayName, boolean matches) {
         Table table = TableParser.parse("scenario|value\nTest|foo");
-        boolean result = RowResultMatcher.matchesRow(actualDisplayName, Optional.of("Test"), table, 0);
+        boolean result = RowResultMatcher.matchesRow(actualDisplayName, Optional.of("Test"));
         assertEquals(matches, result);
     }
 
@@ -121,7 +121,7 @@ class RowResultMatcherTest {
 
         // JUnit 6.0+ displays empty string as: [2] ""
         // After stripping quotes, we get empty string, which matches table value
-        boolean result = RowResultMatcher.matchesRow("[2] \"\"", Optional.of(""), table, 0);
+        boolean result = RowResultMatcher.matchesRow("[2] \"\"", Optional.of(""));
         assertTrue(result, "Should match empty string scenario - JUnit displays \\\"\\\" for empty string parameter");
     }
 
@@ -138,7 +138,7 @@ class RowResultMatcherTest {
         // But String.valueOf(null) returns "null" which should match
         String expectedPattern = scenarioValue == null ? "null" : String.valueOf(scenarioValue);
 
-        boolean result = RowResultMatcher.matchesRow("[1] null", Optional.of(expectedPattern), table, 0);
+        boolean result = RowResultMatcher.matchesRow("[1] null", Optional.of(expectedPattern));
         assertTrue(result, "Should match null scenario - JUnit displays 'null' for null parameter");
     }
 }

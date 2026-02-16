@@ -28,11 +28,11 @@ compatibility-tests/
 ├── test-common.sh         # Shared utility functions
 ├── README.md              # Test matrix documentation
 ├── junit-5-gradle/        # JUnit 5.12 + Gradle + Markdown
-├── junit-6-maven/         # JUnit 6.0.1 + Maven + AsciiDoc + HTML
+├── junit-6-maven/         # JUnit latest + Maven + AsciiDoc + HTML
 ├── spring-boot-min/       # Spring Boot 3.5.0 + Maven + CLI
-├── spring-boot-latest/    # Spring Boot 4.0.0 + Gradle + Markdown
+├── spring-boot-latest/    # Spring Boot latest + Gradle + Markdown
 ├── quarkus-min/           # Quarkus 3.21.2 + Maven + Markdown
-└── quarkus-latest/        # Quarkus 3.30.3 + Gradle + AsciiDoc
+└── quarkus-latest/        # Quarkus latest + Gradle + AsciiDoc
 ```
 
 ### Test Execution Flow
@@ -90,7 +90,7 @@ Actual "latest" versions are maintained in the build files (`pom.xml`, `build.gr
 ### JUnit Extension
 - Autodetection works via different configuration methods
 - YAML files are generated correctly
-- Works with both JUnit 5.12 and 6.0.1
+- Works with both JUnit 5.12 and 6.0.3
 
 ### Framework Integration
 - Spring Boot test context doesn't interfere with extension

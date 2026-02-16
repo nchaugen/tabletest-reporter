@@ -1,7 +1,7 @@
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.junit.TableTest;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.tabletest.junit.TableTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

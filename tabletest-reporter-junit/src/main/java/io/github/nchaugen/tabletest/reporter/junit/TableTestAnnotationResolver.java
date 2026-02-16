@@ -15,7 +15,7 @@
  */
 package io.github.nchaugen.tabletest.reporter.junit;
 
-import io.github.nchaugen.tabletest.junit.TableTest;
+import org.tabletest.junit.TableTest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  */
 final class TableTestAnnotationResolver {
 
-    private static final String NEW_TABLETEST_CLASS = "org.tabletest.junit.TableTest";
+    private static final String DEPRECATED_TABLETEST_CLASS = "io.github.nchaugen.tabletest.junit.TableTest";
 
     /**
      * Resolves the table input string from whichever {@code @TableTest} annotation is present.
@@ -46,11 +46,19 @@ final class TableTestAnnotationResolver {
         return findNewAnnotation(method, testClass).or(() -> findDeprecatedAnnotation(method, testClass));
     }
 
-    @SuppressWarnings("unchecked")
     private static Optional<String> findNewAnnotation(Method method, Class<?> testClass) {
+        TableTest annotation = method.getAnnotation(TableTest.class);
+        if (annotation == null) {
+            return Optional.empty();
+        }
+        return Optional.of(resolveInput(annotation.value(), annotation.resource(), annotation.encoding(), testClass));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Optional<String> findDeprecatedAnnotation(Method method, Class<?> testClass) {
         try {
             Class<? extends Annotation> tableTestClass =
-                    (Class<? extends Annotation>) Class.forName(NEW_TABLETEST_CLASS);
+                    (Class<? extends Annotation>) Class.forName(DEPRECATED_TABLETEST_CLASS);
             Annotation annotation = method.getAnnotation(tableTestClass);
             if (annotation != null) {
                 String value = (String) tableTestClass.getMethod("value").invoke(annotation);
@@ -61,14 +69,6 @@ final class TableTestAnnotationResolver {
         } catch (Exception ignored) {
         }
         return Optional.empty();
-    }
-
-    private static Optional<String> findDeprecatedAnnotation(Method method, Class<?> testClass) {
-        TableTest annotation = method.getAnnotation(TableTest.class);
-        if (annotation == null) {
-            return Optional.empty();
-        }
-        return Optional.of(resolveInput(annotation.value(), annotation.resource(), annotation.encoding(), testClass));
     }
 
     private static String resolveInput(String value, String resource, String encoding, Class<?> testClass) {

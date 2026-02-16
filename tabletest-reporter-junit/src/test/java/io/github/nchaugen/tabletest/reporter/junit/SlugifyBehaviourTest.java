@@ -1,7 +1,7 @@
 package io.github.nchaugen.tabletest.reporter.junit;
 
 import com.github.slugify.Slugify;
-import io.github.nchaugen.tabletest.junit.TableTest;
+import org.tabletest.junit.TableTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
