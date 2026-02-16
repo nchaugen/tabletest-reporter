@@ -7,7 +7,7 @@ buildscript {
         mavenLocal()  // For SNAPSHOT plugin - checked after Central to avoid incomplete artifacts
     }
     dependencies {
-        classpath("org.tabletest:tabletest-reporter-gradle-plugin:1.0.0-SNAPSHOT")
+        classpath("org.tabletest:tabletest-reporter-gradle-plugin:1.0.1-SNAPSHOT")
     }
 }
 

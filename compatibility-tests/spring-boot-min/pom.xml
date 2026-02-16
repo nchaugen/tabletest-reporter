@@ -21,7 +21,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.tabletest>1.0.0</version.tabletest>
-        <version.tabletest-reporter>1.0.0-SNAPSHOT</version.tabletest-reporter>
+        <version.tabletest-reporter>1.0.1-SNAPSHOT</version.tabletest-reporter>
         <version.plugin.surefire>3.5.2</version.plugin.surefire>
     </properties>
 
