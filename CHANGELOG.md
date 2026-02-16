@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-02-16
+### Changed
+- Migrated to org.tabletest coordinates
+- Support `io.nchaugen.tabletest.junit.*` annotations for backwards compatibility
+
 ## [0.4.0] - 2026-02-15
 ### Changed
 - Index files now show all levels of nested items by default. Set indexDepth = 1 to restore previous behaviour.
@@ -71,7 +76,8 @@
 - Slugified output directories and filenames
 
 
-[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.2...HEAD
+[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.0.0...HEAD
+[1.0.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.4.0...tabletest-reporter-1.0.0
 [0.4.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.2...tabletest-reporter-0.4.0
 [0.3.2]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.1...tabletest-reporter-0.3.2
 [0.3.1]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.0...tabletest-reporter-0.3.1
