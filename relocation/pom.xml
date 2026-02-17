@@ -18,4 +18,9 @@
         <module>tabletest-reporter-cli</module>
         <module>tabletest-reporter-maven-plugin</module>
     </modules>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.install.skip>true</maven.install.skip>
+    </properties>
 </project>
