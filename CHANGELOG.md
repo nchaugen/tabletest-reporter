@@ -1,6 +1,8 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+
+## [1.0.1] - 2026-02-23
 ### Fixed
 - `FileSystemException: File name too long` when test methods have long fully qualified parameter type signatures (e.g. overloaded methods with complex types)
 
@@ -78,7 +80,8 @@
 - Slugified output directories and filenames
 
 
-[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.0.0...HEAD
+[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.0.1...HEAD
+[1.0.1]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.0.0...tabletest-reporter-1.0.1
 [1.0.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.4.0...tabletest-reporter-1.0.0
 [0.4.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.2...tabletest-reporter-0.4.0
 [0.3.2]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.1...tabletest-reporter-0.3.2
