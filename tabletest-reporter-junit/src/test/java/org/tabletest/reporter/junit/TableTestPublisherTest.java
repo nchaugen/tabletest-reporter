@@ -478,6 +478,51 @@ class TableTestPublisherTest {
         }
     }
 
+    @Test
+    void shouldPublishDistinctYamlFilesForOverloadedMethods() throws IOException {
+        var results = EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(OverloadedMethodsTest.class))
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
+
+        results.testEvents()
+                .assertStatistics(stats -> stats.started(4).succeeded(4).failed(0));
+
+        Path yaml1 = findExpectedYamlFile(tempDir, "overloaded-methods-1");
+        Path yaml2 = findExpectedYamlFile(tempDir, "overloaded-methods-2");
+        assertTrue(Files.exists(yaml1), "First overloaded method YAML should exist");
+        assertTrue(Files.exists(yaml2), "Second overloaded method YAML should exist");
+
+        String content1 = Files.readString(yaml1);
+        String content2 = Files.readString(yaml2);
+        assertTrue(content1.contains("\"slug\": \"overloaded-methods-1\""), "First YAML should have slug -1");
+        assertTrue(content2.contains("\"slug\": \"overloaded-methods-2\""), "Second YAML should have slug -2");
+    }
+
+    @ExtendWith(TableTestPublisher.class)
+    public static class OverloadedMethodsTest {
+        @DisplayName("Overloaded methods")
+        @TableTest("""
+            a | b | sum?
+            1 | 1 | 2
+            2 | 2 | 4
+            """)
+        public void overloadedMethods(int a, int b, @Scenario int sum) {
+            assertEquals(sum, a + b);
+        }
+
+        @DisplayName("Overloaded methods")
+        @TableTest("""
+            a   | b   | sum?
+            1.0 | 1.0 | 2.0
+            2.0 | 2.0 | 4.0
+            """)
+        public void overloadedMethods(double a, double b, @Scenario double sum) {
+            assertEquals(sum, a + b, 0.001);
+        }
+    }
+
     @ExtendWith(TableTestPublisher.class)
     public static class NoTableTestMethodsTest {
         @Test

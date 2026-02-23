@@ -24,8 +24,14 @@ import org.tabletest.parser.TableParser;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
 
 public class TableTestPublisher implements TestWatcher, AfterAllCallback {
 
@@ -63,9 +69,8 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
     }
 
     /**
-     * Ensures table metadata is stored exactly once per test method.
-     * On first invocation: parses table, stores metadata, marks method for publishing.
-     * On subsequent invocations: does nothing (metadata already stored).
+     * Ensures table metadata is stored exactly once per test method. On first invocation: parses table, stores
+     * metadata, marks method for publishing. On subsequent invocations: does nothing (metadata already stored).
      */
     private void ensureTableMetadataStored(ExtensionContext methodContext, String input) {
         if (store.hasTable(methodContext)) {
@@ -103,33 +108,67 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
     public void afterAll(ExtensionContext context) {
         List<ExtensionContext> methodContexts = store.getMethodsToPublish(context);
         if (!methodContexts.isEmpty()) {
-            publishTables(methodContexts);
+            publishTables(context, methodContexts);
             publishTestClass(context);
         }
     }
 
-    private void publishTables(List<ExtensionContext> methodContexts) {
-        for (ExtensionContext methodContext : methodContexts) {
-            Table table = store.getTable(methodContext);
-            List<RowResult> rowResults = store.getRowResults(methodContext);
+    private void publishTables(ExtensionContext classContext, List<ExtensionContext> methodContexts) {
+        List<TableTestIdentity> identities =
+                methodContexts.stream().map(JunitTestIdentityExtractor::extract).toList();
+        List<String> uniqueSlugs = assignUniqueSlugs(identities);
 
-            if (table != null && rowResults != null) {
-                publishTable(methodContext, table, rowResults);
-            }
-        }
+        IntStream.range(0, methodContexts.size())
+                .forEach(i -> publishTable(classContext, methodContexts.get(i), identities.get(i), uniqueSlugs.get(i)));
     }
 
-    private void publishTable(ExtensionContext context, Table table, List<RowResult> rowResults) {
-        TableTestIdentity identity = JunitTestIdentityExtractor.extract(context);
-        ColumnRoles columnRoles = JunitColumnRoleExtractor.extract(context, table);
-        TableTestData data = TableTestDataFactory.create(table, identity, columnRoles, rowResults);
+    private static List<String> assignUniqueSlugs(List<TableTestIdentity> identities) {
+        Map<String, Long> frequency = identities.stream().collect(groupingBy(TableTestIdentity::slug, counting()));
+        Map<String, Integer> counters = new HashMap<>();
+        return identities.stream()
+                .map(identity -> {
+                    String slug = identity.slug();
+                    if (frequency.get(slug) <= 1) {
+                        return slug;
+                    }
+                    int counter = counters.merge(slug, 1, Integer::sum);
+                    return slug + "-" + counter;
+                })
+                .toList();
+    }
 
-        publishFile(context, identity.slug(), (Path path) -> {
+    private void publishTable(
+            ExtensionContext classContext,
+            ExtensionContext methodContext,
+            TableTestIdentity identity,
+            String uniqueSlug) {
+        Table table = store.getTable(methodContext);
+        List<RowResult> rowResults = store.getRowResults(methodContext);
+        if (table == null || rowResults == null) {
+            return;
+        }
+
+        TableTestData data = createTableTestData(methodContext, identity, uniqueSlug, table, rowResults);
+
+        publishFile(classContext, uniqueSlug, (Path path) -> {
             store.storePublishedTableTest(
-                    context,
-                    new PublishedTableTestInfo(path, identity.title(), identity.methodName(), identity.slug()));
+                    methodContext,
+                    new PublishedTableTestInfo(path, identity.title(), identity.methodName(), uniqueSlug));
             return YAML_RENDERER.render(data);
         });
+    }
+
+    private static TableTestData createTableTestData(
+            ExtensionContext methodContext,
+            TableTestIdentity identity,
+            String uniqueSlug,
+            Table table,
+            List<RowResult> rowResults) {
+        return TableTestDataFactory.create(
+                table,
+                new TableTestIdentity(identity.methodName(), uniqueSlug, identity.title(), identity.description()),
+                JunitColumnRoleExtractor.extract(methodContext, table),
+                rowResults);
     }
 
     public void publishTestClass(ExtensionContext context) {
