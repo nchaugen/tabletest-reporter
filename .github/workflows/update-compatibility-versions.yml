@@ -189,6 +189,10 @@ jobs:
         if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
         run: mvn clean install -DskipTests --no-transfer-progress
 
+      - name: Publish Gradle plugin to mavenLocal
+        if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
+        run: cd tabletest-reporter-gradle-plugin && ./gradlew publishToMavenLocal --no-daemon
+
       - name: Run compatibility test
         if: steps.should-run.outputs.run == 'true' && steps.check.outputs.update == 'true' && steps.pr-exists.outputs.exists == 'false'
         id: test

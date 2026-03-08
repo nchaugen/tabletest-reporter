@@ -60,9 +60,19 @@ echo "Building tabletest-reporter (SNAPSHOT)..."
 cd "$PROJECT_ROOT"
 if mvn -B clean install -DskipTests; then
     echo -e "${GREEN}✓ Main project built successfully${NC}"
-    echo ""
 else
     echo -e "${RED}✗ Failed to build main project${NC}"
+    exit 1
+fi
+
+# Publish Gradle plugin to mavenLocal (not part of the Maven build)
+echo "Publishing Gradle plugin to mavenLocal..."
+cd "$PROJECT_ROOT/tabletest-reporter-gradle-plugin"
+if ./gradlew publishToMavenLocal --no-daemon; then
+    echo -e "${GREEN}✓ Gradle plugin published to mavenLocal${NC}"
+    echo ""
+else
+    echo -e "${RED}✗ Failed to publish Gradle plugin${NC}"
     exit 1
 fi
 
