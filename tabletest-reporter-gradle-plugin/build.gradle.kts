@@ -2,7 +2,7 @@ plugins {
     `java-gradle-plugin`
     `maven-publish`
     id("com.gradle.plugin-publish") version "2.1.0"
-    id("com.diffplug.spotless") version "8.1.0"
+    id("com.diffplug.spotless") version "8.3.0"
 }
 
 group = "org.tabletest"
