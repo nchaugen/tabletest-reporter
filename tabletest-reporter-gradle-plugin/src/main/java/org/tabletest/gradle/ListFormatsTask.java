@@ -22,6 +22,7 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 import org.tabletest.reporter.FormatLister;
 
 import javax.inject.Inject;
@@ -35,6 +36,7 @@ import java.nio.file.Path;
  * <p>Displays built-in formats (asciidoc, markdown) and custom formats
  * if a template directory is configured.
  */
+@DisableCachingByDefault(because = "This task only prints output to the console")
 public abstract class ListFormatsTask extends DefaultTask {
 
     private final DirectoryProperty templateDir;
