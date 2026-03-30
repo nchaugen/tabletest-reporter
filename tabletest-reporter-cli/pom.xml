@@ -14,7 +14,7 @@
     <name>TableTest Reporter CLI</name>
 
     <properties>
-        <version.picocli>4.7.6</version.picocli>
+        <version.picocli>4.7.7</version.picocli>
         <version.plugin.shade>3.6.2</version.plugin.shade>
         <version.junit>6.0.3</version.junit>
         <version.assertj>3.27.7</version.assertj>
