@@ -14,7 +14,8 @@
     <name>TableTest Reporter JUnit Extension</name>
 
     <properties>
-        <version.tabletest>1.0.0</version.tabletest>
+        <version.tabletest-junit>1.2.1</version.tabletest-junit>
+        <version.tabletest-parser>1.2.0</version.tabletest-parser>
         <version.snakeyaml>3.0.1</version.snakeyaml>
         <version.slugify>3.0.7</version.slugify>
         <version.junit>6.0.3</version.junit>
@@ -41,12 +42,12 @@
         <dependency>
             <groupId>org.tabletest</groupId>
             <artifactId>tabletest-parser</artifactId>
-            <version>${version.tabletest}</version>
+            <version>${version.tabletest-parser}</version>
         </dependency>
         <dependency>
             <groupId>org.tabletest</groupId>
             <artifactId>tabletest-junit</artifactId>
-            <version>${version.tabletest}</version>
+            <version>${version.tabletest-junit}</version>
         </dependency>
 
         <!-- YAML writing -->

@@ -51,7 +51,8 @@ final class TableTestAnnotationResolver {
         if (annotation == null) {
             return Optional.empty();
         }
-        return Optional.of(resolveInput(annotation.value(), annotation.resource(), annotation.encoding(), testClass));
+        return Optional.of(resolveInput(
+                String.join("\n", annotation.value()), annotation.resource(), annotation.encoding(), testClass));
     }
 
     @SuppressWarnings("unchecked")
