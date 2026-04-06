@@ -14,7 +14,7 @@
     <name>TableTest Reporter Core</name>
 
     <properties>
-        <version.tabletest>1.0.0</version.tabletest>
+        <version.tabletest>1.2.0</version.tabletest>
         <version.snakeyaml>3.0.1</version.snakeyaml>
         <version.pebble>4.1.1</version.pebble>
         <version.logback>1.5.27</version.logback>
