@@ -21,7 +21,7 @@
 
         <version.junit>6.0.3</version.junit>
         <version.assertj>3.27.7</version.assertj>
-        <version.commonmark>0.24.0</version.commonmark>
+        <version.commonmark>0.28.0</version.commonmark>
         <version.asciidoctorj>3.0.1</version.asciidoctorj>
     </properties>
 
