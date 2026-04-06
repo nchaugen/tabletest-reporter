@@ -27,7 +27,7 @@
         <version.plugin.compiler>3.15.0</version.plugin.compiler>
         <version.plugin.surefire>3.5.5</version.plugin.surefire>
         <version.plugin.jar>3.5.0</version.plugin.jar>
-        <version.plugin.install>3.0.1</version.plugin.install>
+        <version.plugin.install>3.1.4</version.plugin.install>
         <version.plugin.deploy>3.1.4</version.plugin.deploy>
         <version.plugin.site>3.21.0</version.plugin.site>
         <version.plugin.help>3.5.1</version.plugin.help>
