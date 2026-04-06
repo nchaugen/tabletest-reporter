@@ -1,6 +1,10 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+### Changed
+- Compatible with tabletest-junit 1.2.1 (array parameter support, quoted map keys)
+### Fixed
+- Gradle `listFormats` task now supports build caching
 
 ## [1.0.1] - 2026-02-23
 ### Fixed
