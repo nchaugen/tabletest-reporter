@@ -1,6 +1,8 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+
+## [1.1.0] - 2026-04-07
 ### Changed
 - Compatible with tabletest-junit 1.2.1 (array parameter support, quoted map keys)
 ### Fixed
@@ -84,7 +86,8 @@
 - Slugified output directories and filenames
 
 
-[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.0.1...HEAD
+[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.1.0...HEAD
+[1.1.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.0.1...tabletest-reporter-1.1.0
 [1.0.1]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.0.0...tabletest-reporter-1.0.1
 [1.0.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.4.0...tabletest-reporter-1.0.0
 [0.4.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-0.3.2...tabletest-reporter-0.4.0
