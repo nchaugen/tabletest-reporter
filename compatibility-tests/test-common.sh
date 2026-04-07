@@ -53,7 +53,7 @@ validate_output_files() {
 # Find CLI jar dynamically (version-independent)
 # Returns the path to the CLI jar or exits with error
 find_cli_jar() {
-    local cli_jar=$(find ../../tabletest-reporter-cli/target -name "tabletest-reporter-cli-*-SNAPSHOT.jar" 2>/dev/null | head -n 1)
+    local cli_jar=$(find ../../tabletest-reporter-cli/target -maxdepth 1 -name "tabletest-reporter-cli-*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" 2>/dev/null | head -n 1)
     if [ -z "$cli_jar" ] || [ ! -f "$cli_jar" ]; then
         echo "ERROR: CLI jar not found in ../../tabletest-reporter-cli/target"
         exit 1
@@ -64,7 +64,7 @@ find_cli_jar() {
 # Get Maven plugin version dynamically (version-independent)
 # Returns the version string or exits with error
 get_maven_plugin_version() {
-    local plugin_jar=$(find ../../tabletest-reporter-maven-plugin/target -name "tabletest-reporter-maven-plugin-*-SNAPSHOT.jar" 2>/dev/null | head -n 1)
+    local plugin_jar=$(find ../../tabletest-reporter-maven-plugin/target -maxdepth 1 -name "tabletest-reporter-maven-plugin-*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" 2>/dev/null | head -n 1)
     if [ -z "$plugin_jar" ] || [ ! -f "$plugin_jar" ]; then
         echo "ERROR: Maven plugin jar not found in ../../tabletest-reporter-maven-plugin/target"
         exit 1
