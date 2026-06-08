@@ -10,7 +10,7 @@ buildscript {
 
 plugins {
     java
-    id("io.quarkus") version "3.36.0"
+    id("io.quarkus") version "3.36.1"
 }
 
 apply(plugin = "org.tabletest.reporter")
@@ -41,7 +41,7 @@ configurations.all {
 
 dependencies {
     // Quarkus BOM for dependency management
-    testImplementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.36.0"))
+    testImplementation(enforcedPlatform("io.quarkus.platform:quarkus-bom:3.36.1"))
 
     // Quarkus JUnit 5
     testImplementation("io.quarkus:quarkus-junit5")
