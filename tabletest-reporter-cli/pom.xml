@@ -16,7 +16,7 @@
     <properties>
         <version.picocli>4.7.7</version.picocli>
         <version.plugin.shade>3.6.2</version.plugin.shade>
-        <version.junit>6.1.0</version.junit>
+        <version.junit>6.1.1</version.junit>
         <version.assertj>3.27.7</version.assertj>
     </properties>
 
