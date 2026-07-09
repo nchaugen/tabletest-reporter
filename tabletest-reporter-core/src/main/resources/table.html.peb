@@ -30,7 +30,7 @@
     </header>
 
     <div class="controls">
-        <input type="search" id="row-filter" placeholder="filter scenarios&hellip;" aria-label="Filter scenarios">
+        <input type="search" id="row-filter" placeholder="filter rows&hellip;" aria-label="Filter rows">
         {%- if hasFailures -%}
             <label class="toggle"><input type="checkbox" id="failing-only"> Failing only</label>
         {%- endif -%}

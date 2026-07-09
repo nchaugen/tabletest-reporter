@@ -1,5 +1,6 @@
 package org.tabletest.reporter.rendering;
 
+import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
 import org.tabletest.reporter.ContextLoader;
 import org.tabletest.reporter.TemplateEngine;
@@ -21,17 +22,25 @@ public class HtmlIndexRenderingTest {
         "title": "Title of the Test Class"
         "description": "What these tables are about."
         "name": "Test Class"
+        "status":
+          "state": "failed"
+          "total": !!int "5"
+          "passed": !!int "3"
+          "broken": !!int "2"
         "contents":
         - "name": "A Table"
           "type": "table"
           "path": "path/to/a_table"
+          "status": "passed"
         - "name": "Nested Package"
           "type": "index"
           "path": "path/to/pkg"
+          "status": "failed"
           "contents":
           - "name": "B Table"
             "type": "table"
             "path": "path/to/pkg/b_table"
+            "status": "failed"
         """);
 
     @Test
@@ -51,9 +60,31 @@ public class HtmlIndexRenderingTest {
         String rendered = templateEngine.renderIndex(HTML, context);
 
         assertThat(rendered)
-                .contains("<a href=\"./path/to/a_table.html\">A Table</a>")
-                .contains("<a href=\"./path/to/pkg/index.html\">Nested Package</a>")
+                .contains(
+                        "<a href=\"./path/to/a_table.html\"><span class=\"status-dot\" aria-hidden=\"true\"></span>A Table</a>")
+                .contains(
+                        "<a href=\"./path/to/pkg/index.html\"><span class=\"status-dot\" aria-hidden=\"true\"></span>Nested Package</a>")
                 .contains("<ul class=\"nav-children\">")
-                .contains("<a href=\"./path/to/pkg/b_table.html\">B Table</a>");
+                .contains(
+                        "<a href=\"./path/to/pkg/b_table.html\"><span class=\"status-dot\" aria-hidden=\"true\"></span>B Table</a>");
+    }
+
+    @Test
+    void marks_each_nav_item_with_its_rolled_up_status() {
+        Document document = HtmlValidator.parse(templateEngine.renderIndex(HTML, context));
+
+        assertThat(document.select("li.nav-item.table.passed > a").text()).isEqualTo("A Table");
+        assertThat(document.select("li.nav-item.index.failed > a").first().text())
+                .contains("Nested Package");
+        assertThat(document.select("li.nav-item.table.failed > a").text()).isEqualTo("B Table");
+    }
+
+    @Test
+    void summarises_the_pass_rate_in_the_masthead() {
+        String rendered = templateEngine.renderIndex(HTML, context);
+
+        assertThat(rendered)
+                .contains("class=\"verdict fail\"")
+                .contains("<span class=\"count\">2</span> of 5 scenarios broken");
     }
 }

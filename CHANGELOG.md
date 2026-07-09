@@ -7,6 +7,8 @@
   nested-collection rendering, pass/fail badges and status colouring, collapsible failure
   details, per-page row filter and "failing only" toggle, roles legend, light/dark toggle,
   and a print stylesheet. Relative links throughout make the output tree GitHub Pages-ready.
+- HTML index pages roll pass/fail status up the tree: each nav item shows a status dot and
+  every index summarises its scenario pass rate ("N of M scenarios broken"/"All passing").
 
 ## [1.1.0] - 2026-04-07
 ### Changed

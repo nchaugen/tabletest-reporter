@@ -82,6 +82,7 @@ public class TableTestReporter {
         Map<String, Object> context = copyContext(index.resource());
         context.put("name", index.name());
         context.put("contents", buildContentsForTemplate(index.contents(), relativeOutPath, 1));
+        context.put("status", StatusRollup.of(index).toMap());
         return context;
     }
 
@@ -99,6 +100,7 @@ public class TableTestReporter {
                     contentMap.put("name", child.name());
                     contentMap.put("path", relativeOutPath.relativize(Path.of("./" + child.outPath())));
                     contentMap.put("type", child.type());
+                    contentMap.put("status", StatusRollup.of(child).state());
 
                     if (child.resource() != null) {
                         Object title = child.resource().get("title");

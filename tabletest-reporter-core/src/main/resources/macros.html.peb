@@ -56,8 +56,8 @@
 {# ----- Index link-tree recursion (ported from macros.adoc.peb) ----- #}
 
 {% macro renderIndexItem(item) %}
-    <li class="nav-item {{ item.type }}">
-        <a href="./{{ item.path }}{{ item.type == 'index' ? '/index.html' : '.html' }}">{{ (item.title ? item.title : item.name) | escape }}</a>
+    <li class="nav-item {{ item.type }} {{ item.status }}">
+        <a href="./{{ item.path }}{{ item.type == 'index' ? '/index.html' : '.html' }}"><span class="status-dot" aria-hidden="true"></span>{{ (item.title ? item.title : item.name) | escape }}</a>
         {%- if item.contents is not empty -%}
             <ul class="nav-children">
             {%- for nested in item.contents -%}
@@ -224,6 +224,11 @@ td.failed.expectation { background: var(--fail-wash); }
 .nav-item.index > a { font-weight: 650; color: var(--ink); }
 .nav-item.index > a::before { content: "\25C6"; color: var(--accent); font-size: 0.7em; }
 .nav-item.table > a::before { content: "\2013"; }
+/* Status dot: colour marks failure; passing is calm, neutral (no run) is muted */
+.status-dot { flex: none; align-self: center; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--marker); }
+.nav-item.passed > a .status-dot { background: var(--pass); }
+.nav-item.failed > a .status-dot { background: var(--fail); }
+.nav-item.neutral > a .status-dot { background: transparent; border: 1px solid var(--marker); }
 
 /* Footer */
 .doc-footer {

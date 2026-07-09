@@ -12,6 +12,13 @@
             {{ themeToggle() }}
         </div>
         <h1>{{ (title ? title : name) | escape }}</h1>
+        {%- if status.total > 0 -%}
+            {%- if status.broken > 0 -%}
+                <p class="verdict fail"><span class="count">{{ status.broken }}</span> of {{ status.total }} scenario{{ status.total == 1 ? '' : 's' }} broken</p>
+            {%- else -%}
+                <p class="verdict pass">All <span class="count">{{ status.total }}</span> scenario{{ status.total == 1 ? '' : 's' }} passing</p>
+            {%- endif -%}
+        {%- endif -%}
         {% if description %}<p class="description">{{ description | escape }}</p>{% endif %}
     </header>
 
