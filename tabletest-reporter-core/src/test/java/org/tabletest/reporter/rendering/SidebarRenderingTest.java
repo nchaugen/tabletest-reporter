@@ -53,6 +53,18 @@ class SidebarRenderingTest {
                 .isEqualTo("calendar-calculations/leap-year-rules.html");
     }
 
+    @Test
+    void a_menu_button_controls_the_off_canvas_drawer() throws IOException {
+        Path outDir = generateReport();
+
+        Document page = HtmlValidator.parse(
+                Files.readString(outDir.resolve("calendar-calculations").resolve("leap-year-rules.html")));
+
+        assertThat(page.select("button#nav-toggle").attr("aria-controls")).isEqualTo("site-nav");
+        assertThat(page.select("aside#site-nav.sidebar")).isNotEmpty();
+        assertThat(page.select(".nav-backdrop")).isNotEmpty();
+    }
+
     private Path generateReport() throws IOException {
         Path inDir = Files.createDirectories(tempDir.resolve("in"));
         Path classDir = Files.createDirectories(inDir.resolve("org.example.CalendarCalculations"));

@@ -545,9 +545,10 @@ Each table page includes:
 Each index page shows a link tree of its tables and sub-packages, with a status dot on every
 entry and a summary of the scenario pass rate ("N of M scenarios broken", or "All passing")
 rolled up from the tables beneath it. Every page also carries a breadcrumb trail of its
-ancestors (root package → class → table) and a persistent sidebar with the whole-report
-navigation tree — the current page highlighted, status dots throughout — so you can jump
-anywhere from any page.
+ancestors (root package → class → table) and a menu button that opens a navigation drawer
+with the whole-report tree — the current page highlighted, status dots throughout — so you
+can jump anywhere from any page. The drawer slides in over the content, keeping the full
+page width available for wide tables.
 
 Because every link and asset reference is relative, the generated tree deploys unchanged
 under a project subpath (e.g. GitHub *project* Pages served from `/<repo>/`).
