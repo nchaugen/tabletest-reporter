@@ -11,6 +11,8 @@
   every index summarises its scenario pass rate ("N of M scenarios broken"/"All passing").
 - Every HTML page shows a breadcrumb trail of its ancestor pages (root package → class →
   table), with relative links so the trail works from any subpath.
+- Every HTML page carries a persistent sidebar with the whole-report navigation tree (status
+  dots included), the current page highlighted and all links relative to that page.
 
 ## [1.1.0] - 2026-04-07
 ### Changed

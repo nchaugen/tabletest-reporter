@@ -88,6 +88,37 @@
     {%- endif -%}
 {% endmacro %}
 
+{# ----- Persistent sidebar: the whole-tree nav, present on every page ----- #}
+
+{% macro renderSidebar(nav) %}
+    {%- if nav is not empty -%}
+    <aside class="sidebar">
+        <a class="sidebar-home{{ nav.home.current ? ' current' : '' }}" href="{{ nav.home.href }}"
+            {{- nav.home.current ? ' aria-current="page"' : '' }}>{{ nav.home.label | escape }}</a>
+        <nav class="site-nav" aria-label="All specifications">
+            <ul class="nav-tree">
+            {%- for item in nav.tree -%}
+                {{ renderNavItem(item) }}
+            {%- endfor -%}
+            </ul>
+        </nav>
+    </aside>
+    {%- endif -%}
+{% endmacro %}
+
+{% macro renderNavItem(item) %}
+    <li class="nav-item {{ item.type }} {{ item.status }}{{ item.current ? ' current' : '' }}">
+        <a href="{{ item.href }}"{{ item.current ? ' aria-current="page"' : '' }}><span class="status-dot" aria-hidden="true"></span>{{ item.label | escape }}</a>
+        {%- if item.contents is not empty -%}
+            <ul class="nav-children">
+            {%- for child in item.contents -%}
+                {{ renderNavItem(child) }}
+            {%- endfor -%}
+            </ul>
+        {%- endif -%}
+    </li>
+{% endmacro %}
+
 {# ----- Self-contained document head: meta + inline stylesheet ----- #}
 
 {% macro head(pageTitle) %}
@@ -129,9 +160,33 @@ body {
     color: var(--ink); background: var(--paper);
     -webkit-font-smoothing: antialiased;
 }
-main { max-width: 1200px; margin: 0 auto; }
+.layout { max-width: 1500px; margin: 0 auto; display: flex; gap: 2.5rem; align-items: flex-start; }
+main { flex: 1; min-width: 0; }
 a { color: var(--accent); text-underline-offset: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+/* Sidebar — the persistent whole-report nav */
+.sidebar {
+    flex: 0 0 15rem; position: sticky; top: 2.5rem; align-self: flex-start;
+    max-height: calc(100vh - 4rem); overflow-y: auto;
+    padding-right: 0.5rem; border-right: 1px solid var(--rule);
+}
+.sidebar-home {
+    display: block; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft);
+    text-decoration: none; padding-bottom: 0.75rem; margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--rule);
+}
+.sidebar-home:hover, .sidebar-home.current { color: var(--accent); }
+.site-nav { font-size: 0.85rem; }
+.site-nav .nav-item.current > a { color: var(--accent); font-weight: 700; }
+@media (max-width: 900px) {
+    .layout { flex-direction: column; gap: 1.5rem; }
+    .sidebar {
+        position: static; flex-basis: auto; width: 100%; max-height: 40vh;
+        border-right: none; border-bottom: 1px solid var(--rule); padding-right: 0;
+    }
+}
 
 /* Breadcrumbs — the ancestor trail above the masthead */
 .breadcrumbs { margin-bottom: 1.25rem; }
@@ -271,7 +326,8 @@ td.failed.expectation { background: var(--fail-wash); }
 
 @media print {
     body { padding: 0; }
-    .controls, .theme-toggle { display: none; }
+    .layout { display: block; max-width: none; }
+    .sidebar, .controls, .theme-toggle { display: none; }
     .table-wrap { overflow: visible; border: none; }
     thead th, tbody td:first-child, tbody th:first-child { position: static; box-shadow: none; }
     .failures details { break-inside: avoid; }

@@ -48,16 +48,16 @@ public class TableTestReporter {
         if (tree == null) {
             return ReportResult.empty(inDir);
         }
-        int count = report(tree, List.of(), format, outDir);
+        int count = report(tree, tree, List.of(), format, outDir);
         return ReportResult.success(count);
     }
 
-    private int report(ReportNode node, List<ReportNode> ancestors, Format format, Path outDir) {
+    private int report(ReportNode node, ReportNode root, List<ReportNode> ancestors, Format format, Path outDir) {
         Path relativeOutPath = Path.of("./" + node.outPath());
 
         return switch (node) {
             case IndexNode index -> {
-                Map<String, Object> context = createIndexContext(index, relativeOutPath, ancestors);
+                Map<String, Object> context = createIndexContext(index, relativeOutPath, root, ancestors);
 
                 Path outPath = outDir.resolve(relativeOutPath).resolve("index" + format.extension());
                 String content = templateEngine.renderIndex(format, context);
@@ -65,12 +65,12 @@ public class TableTestReporter {
 
                 List<ReportNode> childAncestors = append(ancestors, index);
                 int childCount = index.contents().stream()
-                        .mapToInt(child -> report(child, childAncestors, format, outDir))
+                        .mapToInt(child -> report(child, root, childAncestors, format, outDir))
                         .sum();
                 yield 1 + childCount;
             }
             case TableNode table -> {
-                Map<String, Object> context = createTableContext(table, ancestors);
+                Map<String, Object> context = createTableContext(table, root, ancestors);
 
                 Path outPath = outDir.resolve(relativeOutPath + format.extension());
                 String content = templateEngine.renderTable(format, context);
@@ -80,19 +80,22 @@ public class TableTestReporter {
         };
     }
 
-    private Map<String, Object> createIndexContext(IndexNode index, Path relativeOutPath, List<ReportNode> ancestors) {
+    private Map<String, Object> createIndexContext(
+            IndexNode index, Path relativeOutPath, ReportNode root, List<ReportNode> ancestors) {
         Map<String, Object> context = copyContext(index.resource());
         context.put("name", index.name());
         context.put("contents", buildContentsForTemplate(index.contents(), relativeOutPath, 1));
         context.put("status", StatusRollup.of(index).toMap());
         context.put("breadcrumbs", buildBreadcrumbs(ancestors, index));
+        context.put("nav", buildNav(root, index));
         return context;
     }
 
-    private Map<String, Object> createTableContext(TableNode table, List<ReportNode> ancestors) {
+    private Map<String, Object> createTableContext(TableNode table, ReportNode root, List<ReportNode> ancestors) {
         Map<String, Object> context = copyContext(table.resource());
         context.put("name", table.name());
         context.put("breadcrumbs", buildBreadcrumbs(ancestors, table));
+        context.put("nav", buildNav(root, table));
         return context;
     }
 
@@ -103,7 +106,7 @@ public class TableTestReporter {
                 .map(node -> {
                     boolean isCurrent = node == current;
                     Map<String, Object> crumb = new HashMap<>();
-                    crumb.put("label", breadcrumbLabel(node));
+                    crumb.put("label", pageLabel(node));
                     crumb.put("current", isCurrent);
                     if (!isCurrent) {
                         crumb.put("href", NavLinks.href(fromDirectory, node));
@@ -113,7 +116,41 @@ public class TableTestReporter {
                 .toList();
     }
 
-    private static String breadcrumbLabel(ReportNode node) {
+    private Map<String, Object> buildNav(ReportNode root, ReportNode current) {
+        Path fromDirectory = NavLinks.pageDirectory(current);
+        Map<String, Object> home = new HashMap<>();
+        home.put("label", pageLabel(root));
+        home.put("href", NavLinks.href(fromDirectory, root));
+        home.put("current", root == current);
+
+        Map<String, Object> nav = new HashMap<>();
+        nav.put("home", home);
+        nav.put("tree", buildNavTree(root, fromDirectory, current));
+        return nav;
+    }
+
+    private List<Map<String, Object>> buildNavTree(ReportNode node, Path fromDirectory, ReportNode current) {
+        if (!(node instanceof IndexNode index)) {
+            return List.of();
+        }
+        return index.contents().stream()
+                .map(child -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("label", pageLabel(child));
+                    item.put("href", NavLinks.href(fromDirectory, child));
+                    item.put("type", child.type());
+                    item.put("status", StatusRollup.of(child).state());
+                    item.put("current", child == current);
+                    List<Map<String, Object>> children = buildNavTree(child, fromDirectory, current);
+                    if (!children.isEmpty()) {
+                        item.put("contents", children);
+                    }
+                    return item;
+                })
+                .toList();
+    }
+
+    private static String pageLabel(ReportNode node) {
         Object title = node.resource() != null ? node.resource().get("title") : null;
         if (title != null) {
             return title.toString();
