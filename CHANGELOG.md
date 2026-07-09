@@ -9,6 +9,8 @@
   and a print stylesheet. Relative links throughout make the output tree GitHub Pages-ready.
 - HTML index pages roll pass/fail status up the tree: each nav item shows a status dot and
   every index summarises its scenario pass rate ("N of M scenarios broken"/"All passing").
+- Every HTML page shows a breadcrumb trail of its ancestor pages (root package → class →
+  table), with relative links so the trail works from any subpath.
 
 ## [1.1.0] - 2026-04-07
 ### Changed

@@ -18,6 +18,7 @@ package org.tabletest.reporter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -47,28 +48,29 @@ public class TableTestReporter {
         if (tree == null) {
             return ReportResult.empty(inDir);
         }
-        int count = report(tree, format, outDir);
+        int count = report(tree, List.of(), format, outDir);
         return ReportResult.success(count);
     }
 
-    private int report(ReportNode node, Format format, Path outDir) {
+    private int report(ReportNode node, List<ReportNode> ancestors, Format format, Path outDir) {
         Path relativeOutPath = Path.of("./" + node.outPath());
 
         return switch (node) {
             case IndexNode index -> {
-                Map<String, Object> context = createIndexContext(index, relativeOutPath);
+                Map<String, Object> context = createIndexContext(index, relativeOutPath, ancestors);
 
                 Path outPath = outDir.resolve(relativeOutPath).resolve("index" + format.extension());
                 String content = templateEngine.renderIndex(format, context);
                 writeContent(outPath, content);
 
+                List<ReportNode> childAncestors = append(ancestors, index);
                 int childCount = index.contents().stream()
-                        .mapToInt(child -> report(child, format, outDir))
+                        .mapToInt(child -> report(child, childAncestors, format, outDir))
                         .sum();
                 yield 1 + childCount;
             }
             case TableNode table -> {
-                Map<String, Object> context = createTableContext(table);
+                Map<String, Object> context = createTableContext(table, ancestors);
 
                 Path outPath = outDir.resolve(relativeOutPath + format.extension());
                 String content = templateEngine.renderTable(format, context);
@@ -78,18 +80,51 @@ public class TableTestReporter {
         };
     }
 
-    private Map<String, Object> createIndexContext(IndexNode index, Path relativeOutPath) {
+    private Map<String, Object> createIndexContext(IndexNode index, Path relativeOutPath, List<ReportNode> ancestors) {
         Map<String, Object> context = copyContext(index.resource());
         context.put("name", index.name());
         context.put("contents", buildContentsForTemplate(index.contents(), relativeOutPath, 1));
         context.put("status", StatusRollup.of(index).toMap());
+        context.put("breadcrumbs", buildBreadcrumbs(ancestors, index));
         return context;
     }
 
-    private Map<String, Object> createTableContext(TableNode table) {
+    private Map<String, Object> createTableContext(TableNode table, List<ReportNode> ancestors) {
         Map<String, Object> context = copyContext(table.resource());
         context.put("name", table.name());
+        context.put("breadcrumbs", buildBreadcrumbs(ancestors, table));
         return context;
+    }
+
+    private List<Map<String, Object>> buildBreadcrumbs(List<ReportNode> ancestors, ReportNode current) {
+        Path fromDirectory = NavLinks.pageDirectory(current);
+        List<ReportNode> trail = append(ancestors, current);
+        return trail.stream()
+                .map(node -> {
+                    boolean isCurrent = node == current;
+                    Map<String, Object> crumb = new HashMap<>();
+                    crumb.put("label", breadcrumbLabel(node));
+                    crumb.put("current", isCurrent);
+                    if (!isCurrent) {
+                        crumb.put("href", NavLinks.href(fromDirectory, node));
+                    }
+                    return crumb;
+                })
+                .toList();
+    }
+
+    private static String breadcrumbLabel(ReportNode node) {
+        Object title = node.resource() != null ? node.resource().get("title") : null;
+        if (title != null) {
+            return title.toString();
+        }
+        return node.name() != null ? node.name() : "Home";
+    }
+
+    private static List<ReportNode> append(List<ReportNode> nodes, ReportNode node) {
+        List<ReportNode> result = new ArrayList<>(nodes);
+        result.add(node);
+        return List.copyOf(result);
     }
 
     private List<Map<String, Object>> buildContentsForTemplate(

@@ -6,6 +6,7 @@
 </head>
 <body>
 <main>
+    {{ renderBreadcrumbs(breadcrumbs) }}
     <header class="masthead">
         <div class="masthead-top">
             <p class="eyebrow">Specification index</p>
