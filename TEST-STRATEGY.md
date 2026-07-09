@@ -10,6 +10,35 @@ The project uses a multi-layered testing approach combining unit tests, integrat
 
 Located within each module's `src/test/java` directory. These test individual components in isolation.
 
+#### Rendering tests: a blind spot to guard against
+
+The template rendering tests (`rendering/TableWith*Test`) golden-file the generated
+**AsciiDoc/Markdown source**, and `AsciiDocValidator.assertValidAsciiDoc` only checks
+that the source *parses*. Neither asserts anything about how the output *renders* — so a
+template change can keep every golden test green while producing a visually broken
+document. This has bitten us: switching the table to `[%header%autowidth]` (dropping the
+explicit `cols`) parsed fine and matched updated goldens, but Asciidoctor then inferred a
+single column because each cell sits on its own line.
+
+Guard against it with automated structural assertions, not by eyeballing. The mechanism
+already exists: `AsciiDocValidator` loads the rendered output into the AsciidoctorJ AST and
+asserts against the render context, and the `assertValidAsciiDoc(rendered, context)`
+overload asserts that the rendered column count matches the number of headers. Table
+rendering tests call that overload — the single-argument `assertValidAsciiDoc(rendered)` only
+proves the source parses.
+
+**When adding or changing rendered structure, assert it structurally — do not rely on the
+source-level golden alone.** If a template change makes a new structural property matter
+(row count, header emphasis, nesting depth, cell spans, …), add an AST-level check in
+`AsciiDocValidator` the same way `assertColumnsMatchHeaders` does (`document.findBy(...)`
+over the parsed model), and drive the assertion from the render context, which is the
+independent source of truth for what the reporter intended. This is exactly how the
+single-column autowidth regression is now caught automatically.
+
+Eyeballing a generated doc in a real AsciiDoc/Markdown viewer remains a useful final check
+after `table.*.peb` / `macros.*.peb` changes, but it is the backup, not the guard — anything
+worth catching is worth asserting.
+
 ### 2. Integration Tests
 
 Test the interaction between modules (e.g., JUnit extension generating YAML that the core module processes).
