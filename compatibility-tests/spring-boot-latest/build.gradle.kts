@@ -45,7 +45,7 @@ tasks.test {
     useJUnitPlatform()
 }
 
-// Configure tabletest-reporter plugin for Markdown output
+// Configure tabletest-reporter plugin for HTML output
 extensions.configure<org.tabletest.gradle.TableTestReporterExtension>("tableTestReporter") {
-    format.set("markdown")
+    format.set("html")
 }

@@ -18,10 +18,11 @@ validate_yaml_files "target/junit-jupiter"
 # Get Maven plugin version (detect version dynamically)
 PLUGIN_VERSION=$(get_maven_plugin_version)
 
-# Use Maven plugin to generate Markdown documentation
+# Use Maven plugin to generate HTML documentation
 # Note: Uses full coordinates including version because plugin is not configured in pom.xml
-echo "Generating Markdown documentation with Maven plugin..."
-mvn -B org.tabletest:tabletest-reporter-maven-plugin:$PLUGIN_VERSION:report -Dtabletest.report.format=markdown
+echo "Generating HTML documentation with Maven plugin..."
+mvn -B org.tabletest:tabletest-reporter-maven-plugin:$PLUGIN_VERSION:report -Dtabletest.report.format=html
 
-validate_output_files "target/generated-docs/tabletest" "*.md" "Markdown"
+validate_output_files "target/generated-docs/tabletest" "*.html" "HTML"
+assert_self_contained_html "target/generated-docs/tabletest"
 echo "SUCCESS"

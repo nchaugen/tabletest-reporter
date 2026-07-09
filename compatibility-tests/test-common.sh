@@ -50,6 +50,26 @@ validate_output_files() {
     echo "Generated $file_count $file_type files"
 }
 
+# Validate that generated HTML is self-contained (no external resource references).
+# The built-in HTML format inlines all CSS/JS, so no page may pull in an external
+# stylesheet, script, or asset. Matches attribute references only, so escaped URLs
+# appearing as ordinary cell text do not trip the check.
+# Arguments:
+#   $1 - Output directory path
+assert_self_contained_html() {
+    local output_dir=$1
+
+    local offenders=$(grep -rlE '(src|href)="https?:|<link |<script[^>]*src=|@import|url\(https?:' \
+        --include='*.html' "$output_dir" 2>/dev/null)
+    if [ -n "$offenders" ]; then
+        echo "ERROR: HTML output is not self-contained (external references found in):"
+        echo "$offenders"
+        exit 1
+    fi
+
+    echo "Verified HTML output is self-contained (no external references)"
+}
+
 # Find CLI jar dynamically (version-independent)
 # Returns the path to the CLI jar or exits with error
 find_cli_jar() {

@@ -49,8 +49,10 @@ public final class TemplateEngine {
     private final Path customTemplateDirectory;
     private final PebbleTemplate asciidocTableTemplate;
     private final PebbleTemplate markdownTableTemplate;
+    private final PebbleTemplate htmlTableTemplate;
     private final PebbleTemplate asciidocIndexTemplate;
     private final PebbleTemplate markdownIndexTemplate;
+    private final PebbleTemplate htmlIndexTemplate;
     private final Map<String, PebbleTemplate> customTableTemplates;
     private final Map<String, PebbleTemplate> customIndexTemplates;
 
@@ -72,13 +74,17 @@ public final class TemplateEngine {
 
         String asciidocTableName = discoverTemplate(customTemplateDirectory, "table.adoc.peb", "*-table.adoc.peb");
         String markdownTableName = discoverTemplate(customTemplateDirectory, "table.md.peb", "*-table.md.peb");
+        String htmlTableName = discoverTemplate(customTemplateDirectory, "table.html.peb", "*-table.html.peb");
         String asciidocIndexName = discoverTemplate(customTemplateDirectory, "index.adoc.peb", "*-index.adoc.peb");
         String markdownIndexName = discoverTemplate(customTemplateDirectory, "index.md.peb", "*-index.md.peb");
+        String htmlIndexName = discoverTemplate(customTemplateDirectory, "index.html.peb", "*-index.html.peb");
 
         this.asciidocTableTemplate = engine.getTemplate(asciidocTableName);
         this.markdownTableTemplate = engine.getTemplate(markdownTableName);
+        this.htmlTableTemplate = engine.getTemplate(htmlTableName);
         this.asciidocIndexTemplate = engine.getTemplate(asciidocIndexName);
         this.markdownIndexTemplate = engine.getTemplate(markdownIndexName);
+        this.htmlIndexTemplate = engine.getTemplate(htmlIndexName);
     }
 
     public String renderTable(Format format, Map<String, Object> context) {
@@ -104,6 +110,7 @@ public final class TemplateEngine {
             return switch (reportFormat) {
                 case ASCIIDOC -> asciidocTableTemplate;
                 case MARKDOWN -> markdownTableTemplate;
+                case HTML -> htmlTableTemplate;
             };
         }
         return customTableTemplates.computeIfAbsent(
@@ -115,6 +122,7 @@ public final class TemplateEngine {
             return switch (reportFormat) {
                 case ASCIIDOC -> asciidocIndexTemplate;
                 case MARKDOWN -> markdownIndexTemplate;
+                case HTML -> htmlIndexTemplate;
             };
         }
         return customIndexTemplates.computeIfAbsent(

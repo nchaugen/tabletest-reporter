@@ -1,0 +1,268 @@
+{# Shared macros for the self-contained HTML report format. #}
+
+{# ----- Collection / value rendering (ported from macros.adoc.peb) ----- #}
+{# HTML nesting carries depth structurally, so the AsciiDoc bullet/indent/    #}
+{# encoding machinery is dropped; set vs list vs map survive as CSS classes.  #}
+
+{% macro renderValue(value) %}
+    {%- if value is null -%}
+    {%- elseif value is set -%}
+        {{- renderList(value, 'set') -}}
+    {%- elseif value is iterable -%}
+        {{- renderList(value, 'list') -}}
+    {%- elseif value is map -%}
+        {{- renderMap(value) -}}
+    {%- else -%}
+        {{- renderLiteral(value) -}}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro renderList(items, kind) %}
+    {%- if items is empty -%}
+        <span class="empty">{{ kind == 'set' ? '{}' : '[]' }}</span>
+    {%- else -%}
+        <ul class="coll {{ kind }}">
+        {%- for value in items -%}
+            <li>{{ renderValue(value) }}</li>
+        {%- endfor -%}
+        </ul>
+    {%- endif -%}
+{% endmacro %}
+
+{% macro renderMap(map) %}
+    {%- if map is empty -%}
+        <span class="empty">[:]</span>
+    {%- else -%}
+        <dl class="coll map">
+        {%- for entry in map -%}
+            <dt>{{ entry.key | escape }}</dt><dd>{{ renderValue(entry.value) }}</dd>
+        {%- endfor -%}
+        </dl>
+    {%- endif -%}
+{% endmacro %}
+
+{% macro renderLiteral(value) %}
+    {%- if value == '' -%}
+        <span class="literal empty-string">&#8220;&#8221;</span>
+    {%- else -%}
+        <span class="literal">{{ value | escape }}</span>
+    {%- endif -%}
+{% endmacro %}
+
+{% macro roleClasses(cell) %}
+    {%- if cell.roles is not empty %} {{ cell.roles | join(' ') }}{% endif -%}
+{% endmacro %}
+
+{# ----- Index link-tree recursion (ported from macros.adoc.peb) ----- #}
+
+{% macro renderIndexItem(item) %}
+    <li class="nav-item {{ item.type }}">
+        <a href="./{{ item.path }}{{ item.type == 'index' ? '/index.html' : '.html' }}">{{ (item.title ? item.title : item.name) | escape }}</a>
+        {%- if item.contents is not empty -%}
+            <ul class="nav-children">
+            {%- for nested in item.contents -%}
+                {{ renderIndexItem(nested) }}
+            {%- endfor -%}
+            </ul>
+        {%- endif -%}
+    </li>
+{% endmacro %}
+
+{# ----- Self-contained document head: meta + inline stylesheet ----- #}
+
+{% macro head(pageTitle) %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="tabletest-reporter">
+<title>{{ pageTitle | escape }}</title>
+<style>
+:root {
+    --paper: #fbfaf8; --raised: #f2efe9; --ink: #1b1d24; --ink-soft: #5c6270;
+    --rule: #e6e2d9; --rule-strong: #cdc8bc;
+    --accent: #0e6e6b; --accent-wash: #eaf2f1;
+    --pass: #2e7d57; --fail: #be4a3f; --fail-wash: #fbeeec;
+    --marker: #b4ac9c;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --paper: #14161b; --raised: #1b1e25; --ink: #e6e9ef; --ink-soft: #969caa;
+        --rule: #272b33; --rule-strong: #3a3f49;
+        --accent: #38c6be; --accent-wash: #12201f;
+        --pass: #5fbe86; --fail: #e0736a; --fail-wash: #241a1b;
+        --marker: #565c67;
+    }
+}
+:root[data-theme="dark"] {
+    --paper: #14161b; --raised: #1b1e25; --ink: #e6e9ef; --ink-soft: #969caa;
+    --rule: #272b33; --rule-strong: #3a3f49;
+    --accent: #38c6be; --accent-wash: #12201f;
+    --pass: #5fbe86; --fail: #e0736a; --fail-wash: #241a1b;
+    --marker: #565c67;
+}
+* { box-sizing: border-box; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+body {
+    margin: 0; padding: 2.5rem clamp(1rem, 4vw, 3rem);
+    font-family: var(--font-sans); font-size: 15px; line-height: 1.55;
+    color: var(--ink); background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+}
+main { max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+/* Masthead */
+.masthead { border-bottom: 1px solid var(--rule-strong); padding-bottom: 1.25rem; margin-bottom: 1.5rem; }
+.masthead-top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.eyebrow {
+    font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft);
+    margin: 0;
+}
+h1 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 650; letter-spacing: -0.02em; margin: 0.4rem 0 0; }
+.description { color: var(--ink-soft); margin: 0.75rem 0 0; max-width: 66ch; }
+.verdict {
+    font-family: var(--font-mono); font-size: 0.9rem; margin: 0.85rem 0 0;
+    padding-left: 0.75rem; border-left: 3px solid var(--ink-soft);
+}
+.verdict .count { font-weight: 700; }
+.verdict.pass { color: var(--pass); border-left-color: var(--pass); }
+.verdict.fail { color: var(--fail); border-left-color: var(--fail); }
+
+/* Theme toggle */
+.theme-toggle {
+    flex: none; width: 2.1rem; height: 2.1rem; border: 1px solid var(--rule-strong);
+    border-radius: 50%; background: transparent; color: var(--ink-soft);
+    cursor: pointer; font-size: 1rem; line-height: 1; transition: color 0.15s, border-color 0.15s;
+}
+.theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
+/* Controls */
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin: 1.5rem 0 0.75rem; }
+.controls input[type="search"] {
+    font-family: var(--font-mono); font-size: 0.85rem; padding: 0.4rem 0.7rem;
+    border: 1px solid var(--rule-strong); border-radius: 6px;
+    background: var(--paper); color: var(--ink); min-width: 14rem;
+}
+.controls input[type="search"]::placeholder { color: var(--marker); }
+.toggle { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--ink-soft); user-select: none; cursor: pointer; }
+.legend { display: flex; flex-wrap: wrap; gap: 1.1rem; margin-left: auto; font-size: 0.78rem; color: var(--ink-soft); }
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.legend .chip { width: 0.85rem; height: 0.85rem; border-radius: 3px; }
+.legend .chip.fail { background: var(--fail); }
+.legend .chip.expectation { background: var(--accent-wash); border: 1px solid var(--accent); }
+
+/* Table — ledger: hairline horizontal rules, monospaced data */
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; }
+table { border-collapse: collapse; width: max-content; min-width: 100%; font-family: var(--font-mono); font-size: 0.85rem; }
+th, td { padding: 0.6rem 0.9rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--rule); }
+tbody tr:last-child td { border-bottom: none; }
+thead th {
+    position: sticky; top: 0; z-index: 2; background: var(--raised);
+    border-bottom: 1px solid var(--rule-strong);
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-soft);
+    white-space: nowrap;
+}
+tbody tr:hover td { background: var(--raised); }
+/* Freeze the scenario column (and its header corner) only when the table has one */
+.anchored thead th:first-child { position: sticky; left: 0; z-index: 3; }
+.anchored tbody td:first-child {
+    position: sticky; left: 0; z-index: 1; background: var(--paper);
+    box-shadow: 1px 0 0 var(--rule);
+}
+.anchored tbody tr:hover td:first-child { background: var(--raised); }
+
+/* Roles: expectation = the outcome (accent wash); scenario = the case label */
+td.scenario, th.scenario { font-weight: 600; color: var(--ink); }
+td.expectation, thead th.expectation { background: var(--accent-wash); }
+thead th.expectation { color: var(--accent); }
+
+/* Status: colour marks failure only; success stays calm */
+tr.failed-row td:first-child { box-shadow: inset 3px 0 0 var(--fail); }
+.anchored tr.failed-row td:first-child { box-shadow: inset 3px 0 0 var(--fail), 1px 0 0 var(--rule); }
+tr.failed-row:hover td { background: var(--fail-wash); }
+td.failed { color: var(--fail); background: var(--fail-wash); }
+td.failed.expectation { background: var(--fail-wash); }
+
+/* Values */
+.empty { color: var(--marker); }
+.empty-string { color: var(--ink-soft); }
+.literal { white-space: pre-wrap; }
+.coll { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.15rem; }
+.coll.list > li, .coll.set > li { position: relative; padding-left: 1.15rem; }
+.coll.list > li::before { content: "\2013"; position: absolute; left: 0; color: var(--accent); }
+.coll.set > li::before { content: "\25E6"; position: absolute; left: 0.1rem; color: var(--marker); }
+.coll.map { grid-template-columns: auto 1fr; gap: 0.15rem 0.7rem; }
+.coll.map > dt { color: var(--ink-soft); margin: 0; }
+.coll.map > dt::after { content: ":"; color: var(--marker); }
+.coll.map > dd { margin: 0; }
+
+/* Failures — reads like a test log */
+.failures { margin-top: 2rem; }
+.failures h2 { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fail); margin: 0 0 0.75rem; }
+.failures details {
+    border: 1px solid var(--rule); border-left: 3px solid var(--fail); border-radius: 8px;
+    margin: 0.6rem 0; padding: 0.6rem 0.9rem; background: var(--raised);
+}
+.failures summary { cursor: pointer; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; color: var(--ink); }
+.failures pre {
+    overflow-x: auto; margin: 0.6rem 0 0; padding: 0.75rem;
+    font-family: var(--font-mono); font-size: 0.82rem; color: var(--fail);
+    background: var(--paper); border-radius: 6px;
+}
+
+/* Index tree — a table of contents for the spec suite */
+.nav-tree, .nav-children { list-style: none; margin: 0; padding: 0; }
+.nav-tree { margin-top: 0.5rem; }
+.nav-children { margin-left: 0.6rem; padding-left: 1rem; border-left: 1px solid var(--rule); }
+.nav-item { padding: 0.15rem 0; }
+.nav-item > a { display: inline-flex; align-items: baseline; gap: 0.55rem; text-decoration: none; padding: 0.15rem 0; }
+.nav-item > a:hover { text-decoration: underline; }
+.nav-item > a::before { font-family: var(--font-mono); color: var(--marker); }
+.nav-item.index > a { font-weight: 650; color: var(--ink); }
+.nav-item.index > a::before { content: "\25C6"; color: var(--accent); font-size: 0.7em; }
+.nav-item.table > a::before { content: "\2013"; }
+
+/* Footer */
+.doc-footer {
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule);
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.04em; color: var(--marker);
+}
+.hidden { display: none !important; }
+
+@media print {
+    body { padding: 0; }
+    .controls, .theme-toggle { display: none; }
+    .table-wrap { overflow: visible; border: none; }
+    thead th, tbody td:first-child, tbody th:first-child { position: static; box-shadow: none; }
+    .failures details { break-inside: avoid; }
+}
+</style>
+{% endmacro %}
+
+{# ----- Theme toggle button + script (shared by table and index pages) ----- #}
+
+{% macro themeToggle() %}
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle light or dark theme" title="Toggle theme">&#9680;</button>
+{% endmacro %}
+
+{% macro themeScript() %}
+<script>
+(function () {
+    var root = document.documentElement;
+    var stored = null;
+    try { stored = localStorage.getItem("tabletest-theme"); } catch (e) {}
+    if (stored) root.setAttribute("data-theme", stored);
+    var toggle = document.getElementById("theme-toggle");
+    if (toggle) toggle.addEventListener("click", function () {
+        var dark = root.getAttribute("data-theme") === "dark"
+            || (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+        var next = dark ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        try { localStorage.setItem("tabletest-theme", next); } catch (e) {}
+    });
+})();
+</script>
+{% endmacro %}

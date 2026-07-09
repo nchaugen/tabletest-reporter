@@ -53,6 +53,7 @@ public final class FormatResolver {
                 switch (normalizedName) {
                     case "adoc", "asciidoc", "asciidoctor" -> BuiltInFormat.ASCIIDOC;
                     case "md", "markdown" -> BuiltInFormat.MARKDOWN;
+                    case "html" -> BuiltInFormat.HTML;
                     default -> null;
                 };
 

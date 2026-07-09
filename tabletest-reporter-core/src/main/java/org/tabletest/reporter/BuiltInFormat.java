@@ -22,7 +22,8 @@ package org.tabletest.reporter;
  */
 public enum BuiltInFormat implements Format {
     ASCIIDOC("asciidoc", ".adoc"),
-    MARKDOWN("markdown", ".md");
+    MARKDOWN("markdown", ".md"),
+    HTML("html", ".html");
 
     private final String formatName;
     private final String extension;

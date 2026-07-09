@@ -1,6 +1,12 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+### Added
+- Built-in `html` output format: self-contained, single-file-per-page living documentation
+  (inline CSS/JS, no external references) with autowidth tables, sticky header/first column,
+  nested-collection rendering, pass/fail badges and status colouring, collapsible failure
+  details, per-page row filter and "failing only" toggle, roles legend, light/dark toggle,
+  and a print stylesheet. Relative links throughout make the output tree GitHub Pages-ready.
 
 ## [1.1.0] - 2026-04-07
 ### Changed

@@ -13,7 +13,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo "=========================================="
-echo "Spring Boot Latest (4.0.0) with Gradle"
+echo "Spring Boot Latest (4.0.0) with Gradle (HTML)"
 echo "=========================================="
 
 # Ensure JAVA_HOME points to Java 21 for Gradle daemon
@@ -40,15 +40,16 @@ echo -e "\n${YELLOW}[2/4] Validating YAML generation...${NC}"
 validate_yaml_files "build/junit-jupiter"
 echo -e "${GREEN}✓ YAML files generated${NC}"
 
-# Step 3: Generate Markdown with Gradle plugin
-echo -e "\n${YELLOW}[3/4] Generating Markdown documentation...${NC}"
+# Step 3: Generate HTML with Gradle plugin
+echo -e "\n${YELLOW}[3/4] Generating HTML documentation...${NC}"
 ./gradlew --console=plain reportTableTests
-echo -e "${GREEN}✓ Markdown generation completed${NC}"
+echo -e "${GREEN}✓ HTML generation completed${NC}"
 
-# Step 4: Validate Markdown generation
-echo -e "\n${YELLOW}[4/4] Validating Markdown generation...${NC}"
-validate_output_files "build/generated-docs/tabletest" "*.md" "Markdown"
-echo -e "${GREEN}✓ Markdown files generated${NC}"
+# Step 4: Validate HTML generation
+echo -e "\n${YELLOW}[4/4] Validating HTML generation...${NC}"
+validate_output_files "build/generated-docs/tabletest" "*.html" "HTML"
+assert_self_contained_html "build/generated-docs/tabletest"
+echo -e "${GREEN}✓ HTML files generated${NC}"
 
 echo -e "\n=========================================="
 echo -e "${GREEN}SUCCESS: All verification steps passed${NC}"

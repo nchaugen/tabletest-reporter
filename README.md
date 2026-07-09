@@ -228,7 +228,7 @@ Documentation is generated to `target/generated-docs/tabletest/`.
 **Configuration options:**
 ```xml
 <configuration>
-  <format>asciidoc</format>  <!-- or 'markdown' -->
+  <format>asciidoc</format>  <!-- or 'markdown', 'html' -->
   <inputDirectory>${project.build.directory}/junit-jupiter</inputDirectory>
   <outputDirectory>${project.build.directory}/generated-docs/tabletest</outputDirectory>
   <indexDepth>infinite</indexDepth>  <!-- levels in index (1, 2, ..., or 'infinite') -->
@@ -281,6 +281,7 @@ tabletest-reporter --list-formats
 The output shows all available formats, sorted alphabetically. By default, you'll see the built-in formats:
 ```
 asciidoc
+html
 markdown
 ```
 
@@ -523,65 +524,71 @@ Template context includes:
 - `rows` - List of rows, each containing cells with `value` and `roles`
 - `rowResults` - Test results with `displayName`, `passed`, and `errorMessage`
 
+### Built-in HTML Format
+
+The `html` format renders self-contained, living documentation that needs no Asciidoctor
+step. Each page is a standalone `.html` file with inline CSS and JavaScript (no external
+references), so the output tree works directly on any static host, including GitHub Pages.
+
+```bash
+tabletest-reporter -f html -i target/junit-jupiter -o target/generated-docs/tabletest
+```
+
+Each table page includes:
+- wide, autowidth tables in a horizontal-scroll wrapper with a sticky header row and first column
+- nested collections rendered structurally (lists, sets, and maps with distinct markers)
+- a pass/fail badge, per-row and per-cell status colouring, and collapsible failure details
+- expectation- and scenario-column emphasis, a roles legend, per-page row filter, and a
+  "failing only" toggle
+- a light/dark theme toggle and a print stylesheet
+
+Because every link and asset reference is relative, the generated tree deploys unchanged
+under a project subpath (e.g. GitHub *project* Pages served from `/<repo>/`).
+
+To customise the markup, drop your own `table.html.peb` / `index.html.peb` into a template
+directory — an exact filename match overrides the built-in template (see below).
+
 ### Custom Output Formats
 
-Beyond the built-in AsciiDoc and Markdown formats, you can define custom output formats (HTML, XML, JSON, etc.) by providing templates in your template directory.
+Beyond the built-in AsciiDoc, Markdown, and HTML formats, you can define custom output formats (XML, JSON, etc.) by providing templates in your template directory.
 
 **Requirements:**
 - Both `table.{format}.peb` and `index.{format}.peb` must be present
-- Format name becomes the file extension (e.g., "html" → ".html")
+- Format name becomes the file extension (e.g., "xml" → ".xml")
 
-**Example: HTML Format**
+**Example: XML Format**
 
-Create `table.html.peb`:
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ title }}</title>
-</head>
-<body>
-    <h2>{{ title }}</h2>
-    {% if description %}<p>{{ description }}</p>{% endif %}
-    <table>
-        <thead>
-            <tr>
-            {% for header in headers %}
-                <th>{{ header.value }}</th>
-            {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-        {% for row in rows %}
-            <tr>
-            {% for cell in row %}
-                <td>{{ cell.value }}</td>
-            {% endfor %}
-            </tr>
+Create `table.xml.peb`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<table title="{{ title }}">
+    {% if description %}<description>{{ description }}</description>{% endif %}
+    <headers>
+    {% for header in headers %}
+        <header>{{ header.value }}</header>
+    {% endfor %}
+    </headers>
+    <rows>
+    {% for row in rows %}
+        <row>
+        {% for cell in row %}
+            <cell>{{ cell.value }}</cell>
         {% endfor %}
-        </tbody>
-    </table>
-</body>
-</html>
+        </row>
+    {% endfor %}
+    </rows>
+</table>
 ```
 
-Create `index.html.peb`:
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ title ? title : name }}</title>
-</head>
-<body>
-    <h1>{{ title ? title : name }}</h1>
-    {% if description %}<p>{{ description }}</p>{% endif %}
-    <ul>
+Create `index.xml.peb`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<index name="{{ title ? title : name }}">
+    {% if description %}<description>{{ description }}</description>{% endif %}
     {% for item in contents %}
-        <li><a href="{{ item.path }}">{{ item.title }}</a></li>
+    <item path="{{ item.path }}">{{ item.title }}</item>
     {% endfor %}
-    </ul>
-</body>
-</html>
+</index>
 ```
 
 **Usage:**
@@ -591,7 +598,7 @@ Specify the custom format when running the reporter:
 **Maven:**
 ```xml
 <configuration>
-  <format>html</format>
+  <format>xml</format>
   <templateDirectory>${project.basedir}/templates</templateDirectory>
 </configuration>
 ```
@@ -599,7 +606,7 @@ Specify the custom format when running the reporter:
 **Gradle:**
 ```kotlin
 tableTestReporter {
-  format.set("html")
+  format.set("xml")
   templateDir.set(file("templates"))
 }
 ```
@@ -608,7 +615,7 @@ tableTestReporter {
 ```bash
 java -jar tabletest-reporter-cli.jar \
   --template-dir templates \
-  -f html \
+  -f xml \
   -i target/junit-jupiter \
   -o target/generated-docs/tabletest
 ```
