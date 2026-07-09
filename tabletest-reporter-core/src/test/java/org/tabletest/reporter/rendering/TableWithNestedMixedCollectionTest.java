@@ -46,7 +46,7 @@ public class TableWithNestedMixedCollectionTest {
         assertThat(rendered).isEqualTo("""
                 == ++Nested mixed collection++
 
-                [%header,cols="1"]
+                [%header%autowidth,cols="1"]
                 |===
                 |++a++
 
@@ -73,7 +73,7 @@ public class TableWithNestedMixedCollectionTest {
 
                 |===
                 """);
-        assertValidAsciiDoc(rendered);
+        assertValidAsciiDoc(rendered, context);
     }
 
     @Test

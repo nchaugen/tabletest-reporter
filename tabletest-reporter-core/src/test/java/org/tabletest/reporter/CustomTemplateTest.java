@@ -69,6 +69,6 @@ public class CustomTemplateTest {
 
         // Verify built-in template is used
         assertThat(rendered).startsWith("== ++Test Table++");
-        assertThat(rendered).contains("[%header,cols=");
+        assertThat(rendered).contains("[%header%autowidth,cols=");
     }
 }

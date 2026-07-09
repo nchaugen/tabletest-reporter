@@ -35,7 +35,7 @@ public class TableWithPipeTest {
         assertThat(rendered).isEqualTo("""
                 == ++Escaped pipes++
 
-                [%header,cols="1,1,1"]
+                [%header%autowidth,cols="1,1,1"]
                 |===
                 |++a++
                 |++b++
@@ -47,7 +47,7 @@ public class TableWithPipeTest {
 
                 |===
                 """);
-        assertValidAsciiDoc(rendered);
+        assertValidAsciiDoc(rendered, context);
     }
 
     @Test

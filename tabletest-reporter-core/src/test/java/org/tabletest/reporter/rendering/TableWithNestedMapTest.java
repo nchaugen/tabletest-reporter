@@ -39,7 +39,7 @@ public class TableWithNestedMapTest {
         assertThat(rendered).isEqualTo("""
                 == ++Nested map values++
 
-                [%header,cols="1,1"]
+                [%header%autowidth,cols="1,1"]
                 |===
                 |++a++
                 |++b++
@@ -55,7 +55,7 @@ public class TableWithNestedMapTest {
 
                 |===
                 """);
-        assertValidAsciiDoc(rendered);
+        assertValidAsciiDoc(rendered, context);
     }
 
     @Test

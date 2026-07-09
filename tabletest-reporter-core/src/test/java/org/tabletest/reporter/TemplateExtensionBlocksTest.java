@@ -42,7 +42,7 @@ public class TemplateExtensionBlocksTest {
 
         assertThat(rendered).startsWith("---\nlayout: test-report\n---");
         assertThat(rendered).contains("== ++Test Table++");
-        assertThat(rendered).contains("[%header,cols=");
+        assertThat(rendered).contains("[%header%autowidth,cols=");
     }
 
     @Test
@@ -329,7 +329,7 @@ public class TemplateExtensionBlocksTest {
 
         assertThat(rendered).startsWith("= CUSTOM TABLE");
         assertThat(rendered).contains("Title: Test Table");
-        assertThat(rendered).doesNotContain("[%header,cols=");
+        assertThat(rendered).doesNotContain("[%header%autowidth,cols=");
     }
 
     @Test

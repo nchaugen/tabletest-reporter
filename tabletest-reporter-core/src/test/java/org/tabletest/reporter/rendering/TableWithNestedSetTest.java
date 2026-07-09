@@ -46,7 +46,7 @@ public class TableWithNestedSetTest {
         assertThat(rendered).isEqualTo("""
                 == ++Nested set values++
 
-                [%header,cols="1"]
+                [%header%autowidth,cols="1"]
                 |===
                 |++a++
 
@@ -66,7 +66,7 @@ public class TableWithNestedSetTest {
 
                 |===
                 """);
-        assertValidAsciiDoc(rendered);
+        assertValidAsciiDoc(rendered, context);
     }
 
     @Test

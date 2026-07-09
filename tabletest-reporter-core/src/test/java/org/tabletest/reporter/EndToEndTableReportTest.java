@@ -72,7 +72,7 @@ public class EndToEndTableReportTest {
                         "",
                         "The leap year rules should be well-known.",
                         "",
-                        "[%header,cols=\"1,1,1\"]",
+                        "[%header%autowidth,cols=\"1,1,1\"]",
                         "|===",
                         "|++Scenario++",
                         "|++Year++",
@@ -179,7 +179,7 @@ public class EndToEndTableReportTest {
         assertThat(content)
                 .startsWith(":toc: left\n:icons: font")
                 .contains("== ++Leap Year Rules with Single Example++")
-                .contains("[%header,cols=\"1,1,1\"]");
+                .contains("[%header%autowidth,cols=\"1,1,1\"]");
     }
 
     @Test
@@ -242,7 +242,7 @@ public class EndToEndTableReportTest {
                 .startsWith("= CUSTOM TABLE TEMPLATE")
                 .contains("Title: Leap Year Rules with Single Example")
                 .contains("Description: The leap year rules should be well-known.")
-                .doesNotContain("[%header,cols=")
+                .doesNotContain("[%header%autowidth,cols=")
                 .doesNotContain("|===");
     }
 

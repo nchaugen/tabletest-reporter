@@ -40,7 +40,7 @@ public class TableWithSetTest {
         assertThat(rendered).isEqualTo("""
                 == ++Set values++
 
-                [%header,cols="1,1,1"]
+                [%header%autowidth,cols="1,1,1"]
                 |===
                 |++a++
                 |++b++
@@ -56,7 +56,7 @@ public class TableWithSetTest {
 
                 |===
                 """);
-        assertValidAsciiDoc(rendered);
+        assertValidAsciiDoc(rendered, context);
     }
 
     @Test

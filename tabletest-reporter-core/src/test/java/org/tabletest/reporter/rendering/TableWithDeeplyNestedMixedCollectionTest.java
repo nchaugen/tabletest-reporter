@@ -41,7 +41,7 @@ public class TableWithDeeplyNestedMixedCollectionTest {
         assertThat(rendered).isEqualTo("""
                 == ++Map map set map++
 
-                [%header,cols="1"]
+                [%header%autowidth,cols="1"]
                 |===
                 |++a++
 
@@ -57,7 +57,7 @@ public class TableWithDeeplyNestedMixedCollectionTest {
 
                 |===
                 """);
-        assertValidAsciiDoc(rendered);
+        assertValidAsciiDoc(rendered, context);
     }
 
     @Test
@@ -79,7 +79,7 @@ public class TableWithDeeplyNestedMixedCollectionTest {
         assertThat(rendered).isEqualTo("""
                 == ++Map depth cycling++
 
-                [%header,cols="1"]
+                [%header%autowidth,cols="1"]
                 |===
                 |++a++
 
@@ -91,6 +91,6 @@ public class TableWithDeeplyNestedMixedCollectionTest {
 
                 |===
                 """);
-        assertValidAsciiDoc(rendered);
+        assertValidAsciiDoc(rendered, context);
     }
 }

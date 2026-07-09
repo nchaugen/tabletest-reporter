@@ -41,7 +41,7 @@ public class TableWithNestedListTest {
         assertThat(rendered).isEqualTo("""
                 == ++Nested list++
 
-                [%header,cols="1"]
+                [%header%autowidth,cols="1"]
                 |===
                 |++a++
 
@@ -61,7 +61,7 @@ public class TableWithNestedListTest {
 
                 |===
                 """);
-        assertValidAsciiDoc(rendered);
+        assertValidAsciiDoc(rendered, context);
     }
 
     @Test

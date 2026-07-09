@@ -12,7 +12,7 @@
 {% endif %}
 {% endblock %}
 {% block table %}
-[%header,cols="{{ '1' | replicate(headers.size) | join(',') }}"]
+[%header%autowidth,cols="{{ '1' | replicate(headers.size) | join(',') }}"]
 |===
 {% block tableHeaders %}
 {% for header in headers %}

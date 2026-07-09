@@ -75,7 +75,7 @@ public class TableWithRolesTest {
         assertThat(rendered).isEqualTo("""
                 == ++Year selection++
 
-                [%header,cols="1,1,1"]
+                [%header%autowidth,cols="1,1,1"]
                 |===
                 |[.scenario]#++Scenario++#
                 |++Candidates++
@@ -101,7 +101,7 @@ public class TableWithRolesTest {
 
                 |===
                 """);
-        assertValidAsciiDoc(rendered);
+        assertValidAsciiDoc(rendered, context);
     }
 
     @Test
