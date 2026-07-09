@@ -74,6 +74,13 @@ public class HtmlTableRenderingTest {
     }
 
     @Test
+    void renders_table_structure_matching_the_context() {
+        String rendered = templateEngine.renderTable(HTML, passingContext);
+
+        HtmlValidator.assertTableMatchesContext(rendered, passingContext);
+    }
+
+    @Test
     void renders_role_classes_on_cells() {
         String rendered = templateEngine.renderTable(HTML, passingContext);
 
@@ -149,6 +156,7 @@ public class HtmlTableRenderingTest {
 
         String rendered = templateEngine.renderTable(HTML, empties);
 
+        HtmlValidator.assertTableMatchesContext(rendered, empties);
         assertThat(rendered)
                 .contains("<span class=\"empty\">[]</span>")
                 .contains("<span class=\"empty\">{}</span>")
@@ -193,6 +201,7 @@ public class HtmlTableRenderingTest {
 
         String rendered = templateEngine.renderTable(HTML, failingContext);
 
+        HtmlValidator.assertTableMatchesContext(rendered, failingContext);
         assertThat(rendered)
                 .contains("class=\"verdict fail\"")
                 .contains("<span class=\"count\">1</span> of 1 scenario broken")
