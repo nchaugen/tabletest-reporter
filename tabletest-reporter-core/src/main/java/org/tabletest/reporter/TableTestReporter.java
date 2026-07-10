@@ -44,9 +44,20 @@ public class TableTestReporter {
     }
 
     public ReportResult report(Format format, Path inDir, Path outDir) {
+        return report(format, inDir, outDir, false);
+    }
+
+    /**
+     * Generates the report. In single-file mode the whole tree is assembled into one
+     * self-contained document (currently HTML only); otherwise one file is written per node.
+     */
+    public ReportResult report(Format format, Path inDir, Path outDir, boolean singleFile) {
         ReportNode tree = ReportTree.process(inDir);
         if (tree == null) {
             return ReportResult.empty(inDir);
+        }
+        if (singleFile) {
+            return reportSingleFile(format, tree, outDir);
         }
         int count = report(tree, tree, List.of(), format, outDir);
         if (format == BuiltInFormat.HTML) {
@@ -54,6 +65,16 @@ public class TableTestReporter {
                     outDir.resolve(SearchIndex.ASSET_NAME), SearchIndex.of(tree).asJavaScript());
         }
         return ReportResult.success(count);
+    }
+
+    private ReportResult reportSingleFile(Format format, ReportNode tree, Path outDir) {
+        if (format != BuiltInFormat.HTML) {
+            throw new IllegalArgumentException(
+                    "Single-file mode is currently supported only for the html format, not " + format.formatName());
+        }
+        String content = templateEngine.renderSingle(SingleFileModel.of(tree));
+        writeContent(outDir.resolve("index" + format.extension()), content);
+        return ReportResult.success(1);
     }
 
     private int report(ReportNode node, ReportNode root, List<ReportNode> ancestors, Format format, Path outDir) {
@@ -112,7 +133,7 @@ public class TableTestReporter {
                 .map(node -> {
                     boolean isCurrent = node == current;
                     Map<String, Object> crumb = new HashMap<>();
-                    crumb.put("label", pageLabel(node));
+                    crumb.put("label", NavModel.label(node));
                     crumb.put("current", isCurrent);
                     if (!isCurrent) {
                         crumb.put("href", NavLinks.href(fromDirectory, node));
@@ -124,44 +145,7 @@ public class TableTestReporter {
 
     private Map<String, Object> buildNav(ReportNode root, ReportNode current) {
         Path fromDirectory = NavLinks.pageDirectory(current);
-        Map<String, Object> home = new HashMap<>();
-        home.put("label", pageLabel(root));
-        home.put("href", NavLinks.href(fromDirectory, root));
-        home.put("current", root == current);
-
-        Map<String, Object> nav = new HashMap<>();
-        nav.put("home", home);
-        nav.put("tree", buildNavTree(root, fromDirectory, current));
-        return nav;
-    }
-
-    private List<Map<String, Object>> buildNavTree(ReportNode node, Path fromDirectory, ReportNode current) {
-        if (!(node instanceof IndexNode index)) {
-            return List.of();
-        }
-        return index.contents().stream()
-                .map(child -> {
-                    Map<String, Object> item = new HashMap<>();
-                    item.put("label", pageLabel(child));
-                    item.put("href", NavLinks.href(fromDirectory, child));
-                    item.put("type", child.type());
-                    item.put("status", StatusRollup.of(child).state());
-                    item.put("current", child == current);
-                    List<Map<String, Object>> children = buildNavTree(child, fromDirectory, current);
-                    if (!children.isEmpty()) {
-                        item.put("contents", children);
-                    }
-                    return item;
-                })
-                .toList();
-    }
-
-    private static String pageLabel(ReportNode node) {
-        Object title = node.resource() != null ? node.resource().get("title") : null;
-        if (title != null) {
-            return title.toString();
-        }
-        return node.name() != null ? node.name() : "Home";
+        return NavModel.build(root, current, target -> NavLinks.href(fromDirectory, target));
     }
 
     private static List<ReportNode> append(List<ReportNode> nodes, ReportNode node) {

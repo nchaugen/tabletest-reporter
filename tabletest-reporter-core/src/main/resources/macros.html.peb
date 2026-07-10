@@ -53,6 +53,68 @@
     {%- if cell.roles is not empty %} {{ cell.roles | join(' ') }}{% endif -%}
 {% endmacro %}
 
+{# ----- Table content, shared by the per-page shell and the single-file assembly ----- #}
+{# These render only the table's own content (verdict, grid, failures); page chrome     #}
+{# (masthead, per-page filter, nav) stays in whichever shell embeds them.                #}
+
+{% macro tableVerdict(rowResults) %}
+    {%- if rowResults is not empty -%}
+        {%- set total = 0 -%}
+        {%- set passedCount = 0 -%}
+        {%- for result in rowResults -%}{%- set total = total + 1 -%}{%- if result.passed -%}{%- set passedCount = passedCount + 1 -%}{%- endif -%}{%- endfor -%}
+        {%- set brokenCount = total - passedCount -%}
+        {%- if brokenCount > 0 -%}
+            <p class="verdict fail"><span class="count">{{ brokenCount }}</span> of {{ total }} scenario{{ total == 1 ? '' : 's' }} broken</p>
+        {%- else -%}
+            <p class="verdict pass">All <span class="count">{{ total }}</span> scenario{{ total == 1 ? '' : 's' }} hold</p>
+        {%- endif -%}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro tableGrid(headers, rows) %}
+    {%- set firstIsScenario = headers is not empty and headers[0].roles is not empty and headers[0].roles contains 'scenario' -%}
+    <div class="table-wrap">
+        <table{{ firstIsScenario ? ' class="anchored"' : '' }}>
+            <thead>
+                <tr>
+                {%- for header in headers -%}
+                    <th class="cell{{ roleClasses(header) }}">{{ renderValue(header.value) }}</th>
+                {%- endfor -%}
+                </tr>
+            </thead>
+            <tbody>
+            {%- for row in rows -%}
+                {%- set rowFailed = false -%}
+                {%- for cell in row -%}{%- if cell.roles is not empty and cell.roles contains 'failed' -%}{%- set rowFailed = true -%}{%- endif -%}{%- endfor -%}
+                <tr class="{{ rowFailed ? 'failed-row' : '' }}" data-failed="{{ rowFailed ? 'true' : 'false' }}">
+                {%- for cell in row -%}
+                    <td class="cell{{ roleClasses(cell) }}">{{ renderValue(cell.value) }}</td>
+                {%- endfor -%}
+                </tr>
+            {%- endfor -%}
+            </tbody>
+        </table>
+    </div>
+{% endmacro %}
+
+{% macro tableFailures(rowResults) %}
+    {%- set hasFailures = false -%}
+    {%- for result in rowResults -%}{%- if not result.passed -%}{%- set hasFailures = true -%}{%- endif -%}{%- endfor -%}
+    {%- if hasFailures -%}
+    <section class="failures">
+        <h2>Broken scenarios</h2>
+        {%- for result in rowResults -%}
+            {%- if not result.passed -%}
+                <details open>
+                    <summary>{{ result.displayName | escape }}</summary>
+                    <pre>{{ result.errorMessage | escape }}</pre>
+                </details>
+            {%- endif -%}
+        {%- endfor -%}
+    </section>
+    {%- endif -%}
+{% endmacro %}
+
 {# ----- Index link-tree recursion (ported from macros.adoc.peb) ----- #}
 
 {% macro renderIndexItem(item) %}
@@ -399,6 +461,17 @@ td.failed.expectation { background: var(--fail-wash); }
     font-family: var(--font-mono); font-size: 0.82rem; color: var(--fail);
     background: var(--paper); border-radius: 6px;
 }
+
+/* Single-file report: each page inlined as an anchored section */
+.report-section { margin-top: 2.75rem; scroll-margin-top: 1rem; }
+.report-section .section-title {
+    font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 650; letter-spacing: -0.01em;
+    margin: 0 0 0.6rem; padding-top: 0.75rem; border-top: 1px solid var(--rule);
+}
+.report-section.index .section-title { color: var(--accent); border-top-color: var(--rule-strong); }
+.report-section .description { margin: 0.5rem 0 1rem; }
+.report-section .verdict { margin: 0.5rem 0 0.85rem; }
+.report-section .failures { margin-top: 1.25rem; }
 
 /* Index tree — a table of contents for the spec suite */
 .nav-tree, .nav-children { list-style: none; margin: 0; padding: 0; }

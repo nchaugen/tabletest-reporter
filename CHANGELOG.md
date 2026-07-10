@@ -19,6 +19,10 @@
   jump to. Backed by a single shared `tabletest-search-index.js` written once to the output
   root and linked from every page by a relative prefix, so search works offline (`file://`)
   and from any subpath without external requests.
+- Single-file HTML mode (`--single-file` / `-s` on the CLI): assembles the whole report into
+  one self-contained `.html` — every table inlined as an anchored section, sidebar navigation
+  and search targeting in-page anchors, search index inlined, no sibling assets. Ideal for
+  sharing as a release asset, email or ticket attachment. Multi-file stays the default.
 
 ## [1.1.0] - 2026-04-07
 ### Changed

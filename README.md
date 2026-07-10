@@ -560,6 +560,22 @@ Because every link and asset reference is relative, the generated tree deploys u
 under a project subpath (e.g. GitHub *project* Pages served from `/<repo>/`). The
 `tabletest-search-index.js` asset sits at the output root alongside the root `index.html`.
 
+#### Single-file mode
+
+Add `--single-file` (`-s`) to assemble the whole report into **one** self-contained
+`.html` instead of a directory tree:
+
+```bash
+tabletest-reporter -f html --single-file -i target/junit-jupiter -o target/generated-docs/tabletest
+```
+
+Every table is inlined as an anchored section, the sidebar navigation and search jump to
+in-page anchors, and the search index is embedded — so the single `index.html` has no
+sibling assets and no external references at all. This is the most portable form: attach it
+to a release, email or ticket where a directory of files is awkward. The multi-file tree
+remains the default (better for GitHub Pages and per-page linking). Single-file mode
+currently applies to the `html` format only.
+
 To customise the markup, drop your own `table.html.peb` / `index.html.peb` into a template
 directory — an exact filename match overrides the built-in template (see below).
 

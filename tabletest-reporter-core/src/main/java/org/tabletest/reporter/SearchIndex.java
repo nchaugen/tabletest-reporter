@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The whole-report search index: one entry per page, each with the page's root-relative path,
@@ -41,9 +42,18 @@ final class SearchIndex {
         this.entries = entries;
     }
 
+    /** Multi-file index: each entry's path is the target page's file, root-relative. */
     static SearchIndex of(ReportNode root) {
+        return of(root, NavLinks::rootPath);
+    }
+
+    /**
+     * Builds the index resolving each entry's path with the given resolver. Multi-file mode maps a
+     * node to its root-relative file; single-file mode maps it to an in-page {@code #anchor}.
+     */
+    static SearchIndex of(ReportNode root, Function<ReportNode, String> pathResolver) {
         List<Map<String, Object>> entries = new ArrayList<>();
-        collectEntries(root, entries);
+        collectEntries(root, entries, pathResolver);
         return new SearchIndex(List.copyOf(entries));
     }
 
@@ -75,16 +85,17 @@ final class SearchIndex {
         return GLOBAL + " = " + Json.encode(entries) + ";\n";
     }
 
-    private static void collectEntries(ReportNode node, List<Map<String, Object>> entries) {
-        entries.add(entryFor(node));
+    private static void collectEntries(
+            ReportNode node, List<Map<String, Object>> entries, Function<ReportNode, String> pathResolver) {
+        entries.add(entryFor(node, pathResolver));
         if (node instanceof IndexNode index) {
-            index.contents().forEach(child -> collectEntries(child, entries));
+            index.contents().forEach(child -> collectEntries(child, entries, pathResolver));
         }
     }
 
-    private static Map<String, Object> entryFor(ReportNode node) {
+    private static Map<String, Object> entryFor(ReportNode node, Function<ReportNode, String> pathResolver) {
         Map<String, Object> entry = new LinkedHashMap<>();
-        entry.put("path", NavLinks.rootPath(node));
+        entry.put("path", pathResolver.apply(node));
         entry.put("title", title(node));
         entry.put("type", node.type());
         entry.put("status", StatusRollup.of(node).state());

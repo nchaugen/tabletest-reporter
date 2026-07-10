@@ -72,6 +72,11 @@ public final class TableTestReporterCli implements Callable<Integer> {
             defaultValue = "infinite")
     private String indexDepthArg;
 
+    @Option(
+            names = {"-s", "--single-file"},
+            description = "Assemble the whole report into one self-contained file (html format only)")
+    private boolean singleFile;
+
     public static void main(String[] args) {
         int exit = new CommandLine(new TableTestReporterCli()).execute(args);
         System.exit(exit);
@@ -103,7 +108,7 @@ public final class TableTestReporterCli implements Callable<Integer> {
 
             Path templateDir = resolveTemplateDir();
             Format reportFormat = FormatResolver.resolve(format, templateDir);
-            ReportResult result = createReporter(templateDir).report(reportFormat, in, out);
+            ReportResult result = createReporter(templateDir).report(reportFormat, in, out, singleFile);
             if (result.filesGenerated() == 0) {
                 System.err.println(result.message());
             } else {

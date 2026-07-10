@@ -53,6 +53,7 @@ public final class TemplateEngine {
     private final PebbleTemplate asciidocIndexTemplate;
     private final PebbleTemplate markdownIndexTemplate;
     private final PebbleTemplate htmlIndexTemplate;
+    private final PebbleTemplate htmlSingleTemplate;
     private final Map<String, PebbleTemplate> customTableTemplates;
     private final Map<String, PebbleTemplate> customIndexTemplates;
 
@@ -78,6 +79,7 @@ public final class TemplateEngine {
         String asciidocIndexName = discoverTemplate(customTemplateDirectory, "index.adoc.peb", "*-index.adoc.peb");
         String markdownIndexName = discoverTemplate(customTemplateDirectory, "index.md.peb", "*-index.md.peb");
         String htmlIndexName = discoverTemplate(customTemplateDirectory, "index.html.peb", "*-index.html.peb");
+        String htmlSingleName = discoverTemplate(customTemplateDirectory, "single.html.peb", "*-single.html.peb");
 
         this.asciidocTableTemplate = engine.getTemplate(asciidocTableName);
         this.markdownTableTemplate = engine.getTemplate(markdownTableName);
@@ -85,6 +87,7 @@ public final class TemplateEngine {
         this.asciidocIndexTemplate = engine.getTemplate(asciidocIndexName);
         this.markdownIndexTemplate = engine.getTemplate(markdownIndexName);
         this.htmlIndexTemplate = engine.getTemplate(htmlIndexName);
+        this.htmlSingleTemplate = engine.getTemplate(htmlSingleName);
     }
 
     public String renderTable(Format format, Map<String, Object> context) {
@@ -93,6 +96,14 @@ public final class TemplateEngine {
 
     public String renderIndex(Format format, Map<String, Object> context) {
         return render(indexTemplate(format), context);
+    }
+
+    /**
+     * Renders the whole report as one self-contained document (single-file mode). Currently only
+     * the built-in HTML format provides a single-file template.
+     */
+    public String renderSingle(Map<String, Object> context) {
+        return render(htmlSingleTemplate, context);
     }
 
     private String render(PebbleTemplate template, Map<String, Object> context) {
