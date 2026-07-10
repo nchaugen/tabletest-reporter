@@ -50,24 +50,33 @@ validate_output_files() {
     echo "Generated $file_count $file_type files"
 }
 
-# Validate that generated HTML is self-contained (no external resource references).
-# The built-in HTML format inlines all CSS/JS, so no page may pull in an external
-# stylesheet, script, or asset. Matches attribute references only, so escaped URLs
-# appearing as ordinary cell text do not trip the check.
+# Validate that generated HTML pulls in nothing from outside its own output tree.
+# The built-in HTML format inlines all CSS/JS; the sole permitted asset reference is the
+# shared, root-relative search index (tabletest-search-index.js) written to the output root
+# and linked from every page by a depth prefix (e.g. ../tabletest-search-index.js). Matches
+# attribute references only, so escaped URLs appearing as ordinary cell text do not trip it.
 # Arguments:
 #   $1 - Output directory path
 assert_self_contained_html() {
     local output_dir=$1
 
-    local offenders=$(grep -rlE '(src|href)="https?:|<link |<script[^>]*src=|@import|url\(https?:' \
+    # Genuinely external references: absolute/protocol-relative URLs, external stylesheets,
+    # or CSS imports. None may appear in a self-contained report.
+    local external=$(grep -rlE '(src|href)="(https?:)?//|<link |@import|url\(https?:' \
         --include='*.html' "$output_dir" 2>/dev/null)
-    if [ -n "$offenders" ]; then
+
+    # Any <script src=> other than the shared search-index sibling is an external asset.
+    local scripts=$(grep -rnE '<script[^>]*src=' --include='*.html' "$output_dir" 2>/dev/null \
+        | grep -vE 'src="(\.\./)*tabletest-search-index\.js"')
+
+    if [ -n "$external" ] || [ -n "$scripts" ]; then
         echo "ERROR: HTML output is not self-contained (external references found in):"
-        echo "$offenders"
+        [ -n "$external" ] && echo "$external"
+        [ -n "$scripts" ] && echo "$scripts"
         exit 1
     fi
 
-    echo "Verified HTML output is self-contained (no external references)"
+    echo "Verified HTML output is self-contained (only the shared search-index asset is referenced)"
 }
 
 # Find CLI jar dynamically (version-independent)

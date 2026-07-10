@@ -550,8 +550,15 @@ with the whole-report tree — the current page highlighted, status dots through
 can jump anywhere from any page. The drawer slides in over the content, keeping the full
 page width available for wide tables.
 
+The drawer also has a search box that searches the whole report — every page's title,
+description, headers, and cell values — and lists the matching pages (with status dots) to
+jump to. Search is backed by a single `tabletest-search-index.js`, written once to the output
+root and linked from each page by a relative prefix, so it works offline (opened via
+`file://`) and under any subpath without any external requests.
+
 Because every link and asset reference is relative, the generated tree deploys unchanged
-under a project subpath (e.g. GitHub *project* Pages served from `/<repo>/`).
+under a project subpath (e.g. GitHub *project* Pages served from `/<repo>/`). The
+`tabletest-search-index.js` asset sits at the output root alongside the root `index.html`.
 
 To customise the markup, drop your own `table.html.peb` / `index.html.peb` into a template
 directory — an exact filename match overrides the built-in template (see below).

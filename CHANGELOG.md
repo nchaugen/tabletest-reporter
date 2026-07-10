@@ -14,6 +14,11 @@
 - Every HTML page has a menu button opening a navigation drawer with the whole-report tree
   (status dots included), the current page highlighted and all links relative to that page.
   The drawer slides in over the content, so tables always get the full page width.
+- Whole-report search: a search box in the navigation drawer searches across every page's
+  title, description, headers and cell values, listing matching pages (with status dots) to
+  jump to. Backed by a single shared `tabletest-search-index.js` written once to the output
+  root and linked from every page by a relative prefix, so search works offline (`file://`)
+  and from any subpath without external requests.
 
 ## [1.1.0] - 2026-04-07
 ### Changed

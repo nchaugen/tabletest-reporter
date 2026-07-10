@@ -5,7 +5,7 @@
 {{ head(title ? title : name) }}
 </head>
 <body>
-{{ renderSidebar(nav) }}
+{{ renderSidebar(nav, assetRoot) }}
 <main>
     {{ renderBreadcrumbs(breadcrumbs) }}
     <header class="masthead">
@@ -37,5 +37,7 @@
 </main>
 {{ themeScript() }}
 {{ navScript() }}
+<script src="{{ assetRoot }}tabletest-search-index.js"></script>
+{{ searchScript() }}
 </body>
 </html>

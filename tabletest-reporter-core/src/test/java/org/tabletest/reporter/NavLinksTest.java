@@ -31,6 +31,30 @@ class NavLinksTest {
         assertThat(NavLinks.href(NavLinks.pageDirectory(fromNode), targetNode)).isEqualTo(href);
     }
 
+    @TableTest("""
+        Scenario           | Node          | Node type | Root path?
+        Root index         | ''            | index     | index.html
+        Child index        | boolean-logic | index     | boolean-logic/index.html
+        Table under index  | boolean-logic/and-op | table | boolean-logic/and-op.html
+        """)
+    void computes_the_root_relative_path_of_a_page(
+            @Scenario String scenario, String node, String nodeType, String rootPath) {
+        assertThat(NavLinks.rootPath(node(nodeType, node))).isEqualTo(rootPath);
+    }
+
+    @TableTest("""
+        Scenario          | Page                 | Page type | Asset prefix?
+        Root index        | ''                   | index     | ''
+        Child index       | boolean-logic        | index     | ../
+        Table under index | boolean-logic/and-op | table     | ../
+        Deeply nested     | a/b/c                | table     | ../../
+        """)
+    void computes_the_depth_prefix_from_a_page_to_the_output_root(
+            @Scenario String scenario, String page, String pageType, String assetPrefix) {
+        ReportNode root = new IndexNode(null, "", null, List.of());
+        assertThat(NavLinks.rootPrefix(node(pageType, page), root)).isEqualTo(assetPrefix);
+    }
+
     private static ReportNode node(String type, String outPath) {
         if ("index".equals(type)) {
             return new IndexNode(outPath.isEmpty() ? null : outPath, outPath, null, List.of());

@@ -49,6 +49,10 @@ public class TableTestReporter {
             return ReportResult.empty(inDir);
         }
         int count = report(tree, tree, List.of(), format, outDir);
+        if (format == BuiltInFormat.HTML) {
+            writeContent(
+                    outDir.resolve(SearchIndex.ASSET_NAME), SearchIndex.of(tree).asJavaScript());
+        }
         return ReportResult.success(count);
     }
 
@@ -88,6 +92,7 @@ public class TableTestReporter {
         context.put("status", StatusRollup.of(index).toMap());
         context.put("breadcrumbs", buildBreadcrumbs(ancestors, index));
         context.put("nav", buildNav(root, index));
+        context.put("assetRoot", NavLinks.rootPrefix(index, root));
         return context;
     }
 
@@ -96,6 +101,7 @@ public class TableTestReporter {
         context.put("name", table.name());
         context.put("breadcrumbs", buildBreadcrumbs(ancestors, table));
         context.put("nav", buildNav(root, table));
+        context.put("assetRoot", NavLinks.rootPrefix(table, root));
         return context;
     }
 

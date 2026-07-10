@@ -97,12 +97,17 @@
     {%- endif -%}
 {% endmacro %}
 
-{% macro renderSidebar(nav) %}
+{% macro renderSidebar(nav, assetRoot) %}
     {%- if nav is not empty -%}
     <div class="nav-backdrop"></div>
     <aside id="site-nav" class="sidebar" aria-label="Report navigation">
         <a class="sidebar-home{{ nav.home.current ? ' current' : '' }}" href="{{ nav.home.href }}"
             {{- nav.home.current ? ' aria-current="page"' : '' }}>{{ nav.home.label | escape }}</a>
+        <div class="sidebar-search">
+            <input type="search" id="report-search" placeholder="search all specifications&hellip;"
+                aria-label="Search all specifications" data-asset-root="{{ assetRoot }}">
+        </div>
+        <ul id="search-results" class="search-results hidden" aria-label="Search results"></ul>
         <nav class="site-nav" aria-label="All specifications">
             <ul class="nav-tree">
             {%- for item in nav.tree -%}
@@ -129,6 +134,52 @@
     toggle.addEventListener("click", function () { setOpen(!drawer.classList.contains("open")); });
     if (backdrop) backdrop.addEventListener("click", function () { setOpen(false); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") setOpen(false); });
+})();
+</script>
+{% endmacro %}
+
+{# ----- Whole-report search over the shared index asset ----- #}
+{# The index is loaded once per page from the output root (assetRoot-relative <script src>). #}
+{# Each result's path is root-relative; the page's own assetRoot resolves it at click time.   #}
+
+{% macro searchScript() %}
+<script>
+(function () {
+    var index = window.TableTestSearchIndex || [];
+    var input = document.getElementById("report-search");
+    var results = document.getElementById("search-results");
+    var tree = document.querySelector("#site-nav .site-nav");
+    if (!input || !results) return;
+    var assetRoot = input.getAttribute("data-asset-root") || "";
+    function render(matches) {
+        results.innerHTML = "";
+        matches.forEach(function (entry) {
+            var li = document.createElement("li");
+            li.className = "search-result " + entry.status;
+            var a = document.createElement("a");
+            a.href = assetRoot + entry.path;
+            var dot = document.createElement("span");
+            dot.className = "status-dot";
+            dot.setAttribute("aria-hidden", "true");
+            a.appendChild(dot);
+            a.appendChild(document.createTextNode(entry.title));
+            li.appendChild(a);
+            results.appendChild(li);
+        });
+    }
+    function apply() {
+        var needle = input.value.trim().toLowerCase();
+        var searching = needle.length > 0;
+        results.classList.toggle("hidden", !searching);
+        if (tree) tree.classList.toggle("hidden", searching);
+        if (!searching) { results.innerHTML = ""; return; }
+        // Mirrors SearchIndex.search (case-insensitive substring over title + text); the
+        // slice is a display cap only. Keep the two in step.
+        render(index.filter(function (entry) {
+            return (entry.title + " " + entry.text).toLowerCase().indexOf(needle) !== -1;
+        }).slice(0, 50));
+    }
+    input.addEventListener("input", apply);
 })();
 </script>
 {% endmacro %}
@@ -220,6 +271,21 @@ a { color: var(--accent); text-underline-offset: 2px; }
 .sidebar-home:hover, .sidebar-home.current { color: var(--accent); }
 .site-nav { font-size: 0.85rem; }
 .site-nav .nav-item.current > a { color: var(--accent); font-weight: 700; }
+
+/* Whole-report search — a box atop the drawer whose results replace the tree while typing */
+.sidebar-search { margin-bottom: 0.5rem; }
+.sidebar-search input[type="search"] {
+    width: 100%; font-family: var(--font-mono); font-size: 0.8rem; padding: 0.4rem 0.6rem;
+    border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--paper); color: var(--ink);
+}
+.sidebar-search input[type="search"]::placeholder { color: var(--marker); }
+.search-results { list-style: none; margin: 0.25rem 0 0.75rem; padding: 0; font-size: 0.85rem; }
+.search-results .search-result { padding: 0.15rem 0; }
+.search-results a { display: inline-flex; align-items: baseline; gap: 0.55rem; text-decoration: none; color: var(--ink); }
+.search-results a:hover { text-decoration: underline; color: var(--accent); }
+.search-results .search-result.passed .status-dot { background: var(--pass); }
+.search-results .search-result.failed .status-dot { background: var(--fail); }
+.search-results .search-result.neutral .status-dot { background: transparent; border: 1px solid var(--marker); }
 
 /* Breadcrumbs — the ancestor trail above the masthead */
 .breadcrumbs { margin-bottom: 1.25rem; }

@@ -12,7 +12,7 @@
 {{ head(title) }}
 </head>
 <body>
-{{ renderSidebar(nav) }}
+{{ renderSidebar(nav, assetRoot) }}
 <main>
     {{ renderBreadcrumbs(breadcrumbs) }}
     <header class="masthead">
@@ -86,6 +86,8 @@
 </main>
 {{ themeScript() }}
 {{ navScript() }}
+<script src="{{ assetRoot }}tabletest-search-index.js"></script>
+{{ searchScript() }}
 <script>
 (function () {
     var filter = document.getElementById("row-filter");
