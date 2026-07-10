@@ -97,12 +97,14 @@
     </div>
 {% endmacro %}
 
-{% macro tableFailures(rowResults) %}
+{# headingLevel keeps "Broken scenarios" one step below the enclosing title so the document #}
+{# outline stays monotonic: h2 under a per-page h1, or level+1 under a single-file section.  #}
+{% macro tableFailures(rowResults, headingLevel) %}
     {%- set hasFailures = false -%}
     {%- for result in rowResults -%}{%- if not result.passed -%}{%- set hasFailures = true -%}{%- endif -%}{%- endfor -%}
     {%- if hasFailures -%}
     <section class="failures">
-        <h2>Broken scenarios</h2>
+        <h{{ headingLevel }}>Broken scenarios</h{{ headingLevel }}>
         {%- for result in rowResults -%}
             {%- if not result.passed -%}
                 <details open>

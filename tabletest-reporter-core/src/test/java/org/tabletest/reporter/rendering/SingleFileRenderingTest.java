@@ -97,6 +97,10 @@ class SingleFileRenderingTest {
         assertThat(doc.select("tr.failed-row")).isNotEmpty();
         assertThat(doc.select("section.failures details summary").text()).contains("1900 is not leap");
         assertThat(doc.select("section.failures pre").text()).contains("expected: <No> but was: <Yes>");
+        // The failures heading must sit within the section's outline (h6 here, clamped), never
+        // jump back up to a hardcoded <h2> above its enclosing section title.
+        assertThat(doc.select("h2:contains(Broken scenarios)")).isEmpty();
+        assertThat(doc.select("section.failures > h6").text()).contains("Broken scenarios");
     }
 
     private static Document parse(Path page) throws IOException {

@@ -26,7 +26,7 @@
             {{ tableVerdict(section.rowResults) }}
             {% if section.description %}<p class="description">{{ section.description | escape }}</p>{% endif %}
             {{ tableGrid(section.headers, section.rows) }}
-            {{ tableFailures(section.rowResults) }}
+            {{ tableFailures(section.rowResults, section.level < 6 ? section.level + 1 : 6) }}
         {%- else -%}
             {% if section.description %}<p class="description">{{ section.description | escape }}</p>{% endif %}
         {%- endif -%}
