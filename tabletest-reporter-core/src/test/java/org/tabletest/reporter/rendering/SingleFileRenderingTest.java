@@ -77,13 +77,39 @@ class SingleFileRenderingTest {
                 .hasMessageContaining("html");
     }
 
+    @Test
+    void caps_section_heading_level_at_six_however_deep_the_tree() throws IOException {
+        Document doc = parse(generate(deepMixedFixture(), "out-deep").resolve("index.html"));
+
+        // The leap-year table sits six levels below the root, so its natural heading level is 7;
+        // HTML has no <h7>, so it must be clamped to <h6>. No heading beyond <h6> may exist.
+        assertThat(doc.select("section#deep__a__b__c__calendar-calculations__leap-year-rules > h6.section-title"))
+                .isNotEmpty();
+        assertThat(doc.select("h7, h8, h9")).isEmpty();
+    }
+
+    @Test
+    void inlines_failing_verdict_and_broken_scenarios_for_failed_tables() throws IOException {
+        Document doc = parse(generate(deepMixedFixture(), "out-fail").resolve("index.html"));
+
+        assertThat(doc.select("section.report-section.table.failed")).isNotEmpty();
+        assertThat(doc.select("p.verdict.fail").text()).contains("1 of 2 scenarios broken");
+        assertThat(doc.select("tr.failed-row")).isNotEmpty();
+        assertThat(doc.select("section.failures details summary").text()).contains("1900 is not leap");
+        assertThat(doc.select("section.failures pre").text()).contains("expected: <No> but was: <Yes>");
+    }
+
     private static Document parse(Path page) throws IOException {
         return HtmlValidator.parse(Files.readString(page));
     }
 
     private Path generateSingleFile() throws IOException {
-        Path outDir = Files.createDirectory(tempDir.resolve("out"));
-        new TableTestReporter().report(HTML, fixture(), outDir, true);
+        return generate(fixture(), "out");
+    }
+
+    private Path generate(Path inDir, String outName) throws IOException {
+        Path outDir = Files.createDirectory(tempDir.resolve(outName));
+        new TableTestReporter().report(HTML, inDir, outDir, true);
         return outDir;
     }
 
@@ -124,6 +150,68 @@ class SingleFileRenderingTest {
             "rows":
               - - "value": "February"
                 - "value": "28"
+            """);
+        return inDir;
+    }
+
+    /**
+     * A tree deep enough to force the heading-level cap and a table with a broken scenario.
+     * {@code CalendarCalculations} sits under a five-package chain while {@code Trivia} keeps the
+     * common root shallow, so the leap-year table lands six levels down (natural heading level 7).
+     */
+    private Path deepMixedFixture() throws IOException {
+        Path inDir = Files.createDirectories(tempDir.resolve("in-deep"));
+        Path classDir = Files.createDirectories(inDir.resolve("org.example.deep.a.b.c.CalendarCalculations"));
+        Files.writeString(classDir.resolve("TABLETEST-calendar-calculations.yaml"), """
+            "className": "org.example.deep.a.b.c.CalendarCalculations"
+            "slug": "calendar-calculations"
+            "title": "Calendar"
+            "tableTests":
+              - "path": "leapYear(int)/TABLETEST-leap-year-rules.yaml"
+                "methodName": "leapYear"
+                "slug": "leap-year-rules"
+            """);
+        Path leapDir = Files.createDirectories(classDir.resolve("leapYear(int)"));
+        Files.writeString(leapDir.resolve("TABLETEST-leap-year-rules.yaml"), """
+            "title": "Leap Year Rules"
+            "headers":
+              - "value": "Year"
+              - "value": "Is Leap Year?"
+                "roles": ["expectation"]
+            "rows":
+              - - "value": "2004"
+                - "value": "Yes"
+                  "roles": ["expectation", "passed"]
+              - - "value": "1900"
+                - "value": "Yes"
+                  "roles": ["expectation", "failed"]
+            "rowResults":
+              - "rowIndex": 1
+                "passed": true
+                "displayName": "[1] 2004 is leap"
+              - "rowIndex": 2
+                "passed": false
+                "displayName": "[2] 1900 is not leap"
+                "errorMessage": "expected: <No> but was: <Yes>"
+            """);
+
+        Path triviaDir = Files.createDirectories(inDir.resolve("org.example.other.Trivia"));
+        Files.writeString(triviaDir.resolve("TABLETEST-trivia.yaml"), """
+            "className": "org.example.other.Trivia"
+            "slug": "trivia"
+            "title": "Trivia"
+            "tableTests":
+              - "path": "facts()/TABLETEST-facts.yaml"
+                "methodName": "facts"
+                "slug": "facts"
+            """);
+        Path factsDir = Files.createDirectories(triviaDir.resolve("facts()"));
+        Files.writeString(factsDir.resolve("TABLETEST-facts.yaml"), """
+            "title": "Facts"
+            "headers":
+              - "value": "Fact"
+            "rows":
+              - - "value": "Earth orbits the Sun"
             """);
         return inDir;
     }
