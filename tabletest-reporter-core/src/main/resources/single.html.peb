@@ -8,13 +8,7 @@
 {{ renderSidebar(nav, assetRoot) }}
 <main>
     <header class="masthead" id="top">
-        <div class="masthead-top">
-            <div class="masthead-left">
-                {{ navToggle(nav) }}
-                <p class="eyebrow">Specification report</p>
-            </div>
-            {{ themeToggle() }}
-        </div>
+        {{ mastheadBar(null, nav, "Specification report") }}
         <h1>{{ title | escape }}</h1>
         {% if description %}<p class="description">{{ description | escape }}</p>{% endif %}
     </header>

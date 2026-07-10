@@ -9,15 +9,8 @@
 <body>
 {{ renderSidebar(nav, assetRoot) }}
 <main>
-    {{ renderBreadcrumbs(breadcrumbs) }}
     <header class="masthead">
-        <div class="masthead-top">
-            <div class="masthead-left">
-                {{ navToggle(nav) }}
-                <p class="eyebrow">Specification</p>
-            </div>
-            {{ themeToggle() }}
-        </div>
+        {{ mastheadBar(breadcrumbs, nav, "Specification") }}
         <h1>{{ title | escape }}</h1>
         {{ tableVerdict(rowResults) }}
         {% if description %}<p class="description">{{ description | escape }}</p>{% endif %}

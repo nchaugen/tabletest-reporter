@@ -136,7 +136,7 @@
 
 {% macro renderBreadcrumbs(crumbs) %}
     {%- if crumbs is not empty and crumbs | length > 1 -%}
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <nav class="breadcrumbs bar-mid" aria-label="Breadcrumb">
         <ol>
         {%- for crumb in crumbs -%}
             <li>
@@ -150,6 +150,24 @@
         </ol>
     </nav>
     {%- endif -%}
+{% endmacro %}
+
+{# ----- One-line masthead bar: menu | (breadcrumb or eyebrow) | theme ----- #}
+{# The middle slot carries the breadcrumb trail on nested pages and falls back  #}
+{# to the page-type eyebrow on depth-1 pages (root index, single-file report),  #}
+{# so it is never empty and never duplicates the trail. The menu button stays   #}
+{# far left because the drawer it opens slides in from the left.                #}
+
+{% macro mastheadBar(breadcrumbs, nav, eyebrow) %}
+    <div class="masthead-top">
+        {{ navToggle(nav) }}
+        {%- if breadcrumbs is not empty and breadcrumbs | length > 1 -%}
+            {{ renderBreadcrumbs(breadcrumbs) }}
+        {%- else -%}
+            <p class="eyebrow bar-mid">{{ eyebrow | escape }}</p>
+        {%- endif -%}
+        {{ themeToggle() }}
+    </div>
 {% endmacro %}
 
 {# ----- Persistent sidebar: the whole-tree nav, present on every page ----- #}
@@ -351,8 +369,8 @@ a { color: var(--accent); text-underline-offset: 2px; }
 .search-results .search-result.failed .status-dot { background: var(--fail); }
 .search-results .search-result.neutral .status-dot { background: transparent; border: 1px solid var(--marker); }
 
-/* Breadcrumbs — the ancestor trail above the masthead */
-.breadcrumbs { margin-bottom: 1.25rem; }
+/* Breadcrumbs — the ancestor trail; sits in the masthead bar's middle slot */
+.breadcrumbs { margin: 0; }
 .breadcrumbs ol {
     list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: baseline;
     font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-soft);
@@ -363,10 +381,10 @@ a { color: var(--accent); text-underline-offset: 2px; }
 .breadcrumbs a:hover { color: var(--accent); text-decoration: underline; }
 .breadcrumbs [aria-current="page"] { color: var(--ink); font-weight: 600; }
 
-/* Masthead */
+/* Masthead — one-line bar (menu | breadcrumb-or-eyebrow | theme) over the title */
 .masthead { border-bottom: 1px solid var(--rule-strong); padding-bottom: 1.25rem; margin-bottom: 1.5rem; }
-.masthead-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.masthead-left { display: flex; align-items: center; gap: 0.85rem; }
+.masthead-top { display: flex; align-items: center; gap: 0.85rem; margin-bottom: 0.35rem; }
+.masthead-top .bar-mid { flex: 1; min-width: 0; }
 .eyebrow {
     font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600;
     letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft);
