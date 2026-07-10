@@ -107,6 +107,8 @@
                         <importOrder>
                             <order>,javax,java,\#</order>
                         </importOrder>
+                        <!-- Align @TableTest tables (runs last, after Palantir reflow) -->
+                        <tableTestFormatter />
                     </java>
                 </configuration>
                 <executions>

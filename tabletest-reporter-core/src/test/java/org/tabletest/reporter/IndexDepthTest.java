@@ -12,15 +12,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class IndexDepthTest {
 
     @TableTest("""
-        Scenario         | Input      | Expected Depth?
-        Numeric value    | 1          | 1
-        Larger value     | 5          | 5
-        Infinite keyword | infinite   | 2147483647
-        Uppercase        | INFINITE   | 2147483647
-        Mixed case       | Infinite   | 2147483647
-        Null input       |            | 2147483647
-        Empty string     | ''         | 2147483647
-        Blank string     | '   '      | 2147483647
+        Scenario         | Input    | Expected Depth?
+        Numeric value    | 1        | 1
+        Larger value     | 5        | 5
+        Infinite keyword | infinite | 2147483647
+        Uppercase        | INFINITE | 2147483647
+        Mixed case       | Infinite | 2147483647
+        Null input       |          | 2147483647
+        Empty string     | ''       | 2147483647
+        Blank string     | '   '    | 2147483647
         """)
     void parses_valid_values(String input, int expectedDepth) {
         IndexDepth result = IndexDepth.parse(input);
@@ -50,10 +50,10 @@ class IndexDepthTest {
     }
 
     @TableTest("""
-        Scenario           | Input  | Error Contains?
-        Zero depth         | 0      | at least 1
-        Negative depth     | -1     | at least 1
-        Large negative     | -100   | at least 1
+        Scenario       | Input | Error Contains?
+        Zero depth     | 0     | at least 1
+        Negative depth | -1    | at least 1
+        Large negative | -100  | at least 1
         """)
     void rejects_invalid_depth_values(int input, String errorContains) {
         assertThatThrownBy(() -> IndexDepth.of(input))
@@ -62,10 +62,10 @@ class IndexDepthTest {
     }
 
     @TableTest("""
-        Scenario           | Input     | Error Contains?
-        Invalid word       | foo       | Invalid index depth
-        Numeric text       | one       | Invalid index depth
-        Negative string    | -1        | at least 1
+        Scenario        | Input | Error Contains?
+        Invalid word    | foo   | Invalid index depth
+        Numeric text    | one   | Invalid index depth
+        Negative string | -1    | at least 1
         """)
     void parse_rejects_invalid_strings(String input, String errorContains) {
         assertThatThrownBy(() -> IndexDepth.parse(input))

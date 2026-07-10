@@ -16,12 +16,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class StatusRollupTest {
 
     @TableTest("""
-        Scenario         | Row results   | State?  | Total? | Passed?
-        No results run   |               | neutral | 0      | 0
-        Empty results    | []            | neutral | 0      | 0
-        All passing      | [true, true]  | passed  | 2      | 2
-        One broken       | [true, false] | failed  | 2      | 1
-        All broken       | [false]       | failed  | 1      | 0
+        Scenario       | Row results   | State?  | Total? | Passed?
+        No results run |               | neutral | 0      | 0
+        Empty results  | []            | neutral | 0      | 0
+        All passing    | [true, true]  | passed  | 2      | 2
+        One broken     | [true, false] | failed  | 2      | 1
+        All broken     | [false]       | failed  | 1      | 0
         """)
     void derives_table_status_from_row_results(
             @Scenario String scenario, List<Boolean> rowResults, String state, int total, int passed) {
@@ -33,11 +33,11 @@ class StatusRollupTest {
     }
 
     @TableTest("""
-        Scenario                 | Child A       | Child B       | State?  | Total? | Passed?
-        All children passing     | [true]        | [true, true]  | passed  | 3      | 3
-        One child broken         | [true]        | [false]       | failed  | 2      | 1
-        No child has results     |               |               | neutral | 0      | 0
-        Passing plus no-results  | [true]        |               | passed  | 1      | 1
+        Scenario                | Child A | Child B      | State?  | Total? | Passed?
+        All children passing    | [true]  | [true, true] | passed  | 3      | 3
+        One child broken        | [true]  | [false]      | failed  | 2      | 1
+        No child has results    |         |              | neutral | 0      | 0
+        Passing plus no-results | [true]  |              | passed  | 1      | 1
         """)
     void aggregates_index_status_from_children(
             @Scenario String scenario,

@@ -22,14 +22,14 @@ class JunitPropertiesReaderTest {
     }
 
     @TableTest("""
-            Scenario                       | Output dir value              | Resolved path?
-            Deterministic path             | report/out                    | report/out
-            Placeholder stripped to parent | "report/{uniqueNumber}"       | report
-            Bare placeholder resolves to . | "{uniqueNumber}"              | .
-            Placeholder truncates trailing | "build/{uniqueNumber}/report" | build
-            Property not present           |                               |
-            Empty value                    | ''                            |
-            """)
+        Scenario                       | Output dir value              | Resolved path?
+        Deterministic path             | report/out                    | report/out
+        Placeholder stripped to parent | "report/{uniqueNumber}"       | report
+        Bare placeholder resolves to . | "{uniqueNumber}"              | .
+        Placeholder truncates trailing | "build/{uniqueNumber}/report" | build
+        Property not present           |                               |
+        Empty value                    | ''                            |
+        """)
     void resolves_output_dir_to_path(
             @Scenario String _scenario, String outputDirValue, String resolvedPath, @TempDir Path tempDir)
             throws IOException {

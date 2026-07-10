@@ -15,13 +15,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 class NavLinksTest {
 
     @TableTest("""
-        Scenario                    | From                 | From type | Target               | Target type | Href?
-        Root index to child index   | ''                   | index     | boolean-logic        | index       | boolean-logic/index.html
-        Child index up to root      | boolean-logic        | index     | ''                   | index       | ../index.html
-        Index down to its table     | boolean-logic        | index     | boolean-logic/and-op | table       | and-op.html
-        Table up to root index      | boolean-logic/and-op | table     | ''                   | index       | ../index.html
-        Table to its own index      | boolean-logic/and-op | table     | boolean-logic        | index       | index.html
-        Table to sibling table      | boolean-logic/and-op | table     | boolean-logic/or-op  | table       | or-op.html
+        Scenario                  | From                 | From type | Target               | Target type | Href?
+        Root index to child index | ''                   | index     | boolean-logic        | index       | boolean-logic/index.html
+        Child index up to root    | boolean-logic        | index     | ''                   | index       | ../index.html
+        Index down to its table   | boolean-logic        | index     | boolean-logic/and-op | table       | and-op.html
+        Table up to root index    | boolean-logic/and-op | table     | ''                   | index       | ../index.html
+        Table to its own index    | boolean-logic/and-op | table     | boolean-logic        | index       | index.html
+        Table to sibling table    | boolean-logic/and-op | table     | boolean-logic/or-op  | table       | or-op.html
         """)
     void computes_href_relative_to_the_linking_page(
             @Scenario String scenario, String from, String fromType, String target, String targetType, String href) {
@@ -32,10 +32,10 @@ class NavLinksTest {
     }
 
     @TableTest("""
-        Scenario           | Node          | Node type | Root path?
-        Root index         | ''            | index     | index.html
-        Child index        | boolean-logic | index     | boolean-logic/index.html
-        Table under index  | boolean-logic/and-op | table | boolean-logic/and-op.html
+        Scenario          | Node                 | Node type | Root path?
+        Root index        | ''                   | index     | index.html
+        Child index       | boolean-logic        | index     | boolean-logic/index.html
+        Table under index | boolean-logic/and-op | table     | boolean-logic/and-op.html
         """)
     void computes_the_root_relative_path_of_a_page(
             @Scenario String scenario, String node, String nodeType, String rootPath) {

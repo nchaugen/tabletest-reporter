@@ -76,13 +76,13 @@ class SearchIndexTest {
     }
 
     @TableTest("""
-        Scenario                    | Query     | Matching pages?
-        Matches a cell value        | 2004      | [calendar/leap-year-rules.html]
-        Matches a description word  | gregorian | [calendar/leap-year-rules.html]
-        Matches title regardless of case | YEAR | [calendar/leap-year-rules.html]
-        Matches an index by title   | calendar  | [calendar/index.html]
-        No page matches             | zzz       | []
-        Blank query matches nothing | ''        | []
+        Scenario                         | Query     | Matching pages?
+        Matches a cell value             | 2004      | [calendar/leap-year-rules.html]
+        Matches a description word       | gregorian | [calendar/leap-year-rules.html]
+        Matches title regardless of case | YEAR      | [calendar/leap-year-rules.html]
+        Matches an index by title        | calendar  | [calendar/index.html]
+        No page matches                  | zzz       | []
+        Blank query matches nothing      | ''        | []
         """)
     void finds_pages_whose_title_or_text_contains_the_query(
             @Scenario String scenario, String query, List<String> matchingPages) {
