@@ -91,7 +91,11 @@ public class TableTestReporterPlugin implements Plugin<Project> {
                 throw new IllegalStateException("Could not find tabletest-reporter.properties resource");
             }
             properties.load(input);
-            return properties.getProperty("version");
+            String version = properties.getProperty("version");
+            if (version == null || version.isBlank()) {
+                throw new IllegalStateException("Missing 'version' in tabletest-reporter.properties");
+            }
+            return version;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load plugin version", e);
         }
