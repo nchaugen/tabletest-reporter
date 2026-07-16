@@ -530,4 +530,41 @@ class TableTestPublisherTest {
             assertEquals(2, 1 + 1);
         }
     }
+
+    @Test
+    void shouldKeepClassAndTableFilesDistinctWhenSlugsCollide() throws IOException {
+        var results = EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(SlugCollisionTest.class))
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
+
+        results.testEvents()
+                .assertStatistics(stats -> stats.started(1).succeeded(1).failed(0));
+
+        Path classYaml = findExpectedYamlFile(tempDir, "Colliding Name");
+        Path tableYaml = findExpectedYamlFile(tempDir, "colliding-name-1");
+
+        String classContent = Files.readString(classYaml);
+        assertTrue(classContent.contains("\"className\""), "Class YAML should be the class index file");
+        assertTrue(
+                classContent.contains("\"path\": \"TABLETEST-colliding-name-1.yaml\""),
+                "Class YAML should reference the suffixed table file");
+        assertTrue(
+                Files.readString(tableYaml).contains("\"slug\": \"colliding-name-1\""),
+                "Table YAML should carry the suffixed slug");
+    }
+
+    @DisplayName("Colliding Name")
+    @ExtendWith(TableTestPublisher.class)
+    public static class SlugCollisionTest {
+        @DisplayName("Colliding Name")
+        @TableTest("""
+            a | b | sum?
+            1 | 1 | 2
+            """)
+        public void collidingName(int a, int b, @Scenario int sum) {
+            assertEquals(sum, a + b);
+        }
+    }
 }

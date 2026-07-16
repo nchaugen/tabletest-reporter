@@ -108,22 +108,29 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
     public void afterAll(ExtensionContext context) {
         List<ExtensionContext> methodContexts = store.getMethodsToPublish(context);
         if (!methodContexts.isEmpty()) {
-            publishTables(context, methodContexts);
-            publishTestClass(context);
+            TestClassIdentity classIdentity = JunitClassIdentityExtractor.extract(context);
+            publishTables(context, methodContexts, classIdentity.slug());
+            publishTestClass(context, classIdentity);
         }
     }
 
-    private void publishTables(ExtensionContext classContext, List<ExtensionContext> methodContexts) {
+    private void publishTables(ExtensionContext classContext, List<ExtensionContext> methodContexts, String classSlug) {
         List<TableTestIdentity> identities =
                 methodContexts.stream().map(JunitTestIdentityExtractor::extract).toList();
-        List<String> uniqueSlugs = assignUniqueSlugs(identities);
+        List<String> uniqueSlugs = assignUniqueSlugs(identities, classSlug);
 
         IntStream.range(0, methodContexts.size())
                 .forEach(i -> publishTable(classContext, methodContexts.get(i), identities.get(i), uniqueSlugs.get(i)));
     }
 
-    private static List<String> assignUniqueSlugs(List<TableTestIdentity> identities) {
+    /**
+     * Assigns each table a file slug that is unique within the class. The class slug is reserved
+     * up front: both files are published into the same directory, so a table slug equal to the
+     * class slug would make the two YAML files collide.
+     */
+    private static List<String> assignUniqueSlugs(List<TableTestIdentity> identities, String reservedClassSlug) {
         Map<String, Long> frequency = identities.stream().collect(groupingBy(TableTestIdentity::slug, counting()));
+        frequency.merge(reservedClassSlug, 1L, Long::sum);
         Map<String, Integer> counters = new HashMap<>();
         return identities.stream()
                 .map(identity -> {
@@ -172,7 +179,10 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
     }
 
     public void publishTestClass(ExtensionContext context) {
-        TestClassIdentity identity = JunitClassIdentityExtractor.extract(context);
+        publishTestClass(context, JunitClassIdentityExtractor.extract(context));
+    }
+
+    private void publishTestClass(ExtensionContext context, TestClassIdentity identity) {
         List<PublishedTableTestInfo> publishedTests = store.getPublishedTableTests(context);
 
         publishFile(context, identity.slug(), (Path path) -> {

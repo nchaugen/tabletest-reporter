@@ -24,6 +24,9 @@
   and search targeting in-page anchors, search index inlined, no sibling assets. Ideal for
   sharing as a release asset, email or ticket attachment. Multi-file stays the default.
 ### Fixed
+- A table test whose display-name slug equals its class slug (e.g. the same `@DisplayName`
+  on both) no longer silently loses one of the two published YAML files: the table file now
+  gets a numeric suffix, keeping the class and table files distinct.
 - A row whose scenario value is a prefix of another row's scenario (e.g. "Add" and
   "Add negative") no longer absorbs the other row's pass/fail results; and rows with
   duplicated scenario values now get no pass/fail roles (as documented) instead of the
