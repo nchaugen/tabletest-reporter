@@ -15,7 +15,6 @@
  */
 package org.tabletest.reporter;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
@@ -187,7 +186,8 @@ final class TreeBuilder {
             String segment = entry != null && entry.name != null
                     ? entry.name.toLowerCase()
                     : path.getName(i).toString().toLowerCase();
-            sb.append(File.separator).append(segment);
+            // Out paths use '/' on every platform: they end up in hrefs and anchors, not only files
+            sb.append('/').append(segment);
         }
         return sb.toString();
     }

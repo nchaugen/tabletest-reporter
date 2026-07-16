@@ -23,6 +23,10 @@
   one self-contained `.html` — every table inlined as an anchored section, sidebar navigation
   and search targeting in-page anchors, search index inlined, no sibling assets. Ideal for
   sharing as a release asset, email or ticket attachment. Multi-file stays the default.
+### Fixed
+- On Windows, index-page links and single-file anchors used backslashes (the platform file
+  separator) and were broken in browsers and Markdown/AsciiDoc renderers; generated links now
+  use `/` on every platform.
 
 ## [1.1.0] - 2026-04-07
 ### Changed

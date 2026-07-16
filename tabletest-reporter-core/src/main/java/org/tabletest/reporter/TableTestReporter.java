@@ -160,7 +160,7 @@ public class TableTestReporter {
                 .map(child -> {
                     Map<String, Object> contentMap = new HashMap<>();
                     contentMap.put("name", child.name());
-                    contentMap.put("path", relativeOutPath.relativize(Path.of("./" + child.outPath())));
+                    contentMap.put("path", contentHref(relativeOutPath, child));
                     contentMap.put("type", child.type());
                     contentMap.put("status", StatusRollup.of(child).state());
 
@@ -182,6 +182,14 @@ public class TableTestReporter {
                     return contentMap;
                 })
                 .toList();
+    }
+
+    /** Relative link target from an index page to a child entry, with '/' separators on every platform. */
+    private static String contentHref(Path fromDirectory, ReportNode child) {
+        return fromDirectory
+                .relativize(Path.of("./" + child.outPath()))
+                .toString()
+                .replace('\\', '/');
     }
 
     private static void writeContent(Path outPath, String content) {
