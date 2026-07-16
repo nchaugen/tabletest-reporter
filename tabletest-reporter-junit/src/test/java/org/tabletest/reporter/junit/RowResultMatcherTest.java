@@ -25,6 +25,7 @@ class RowResultMatcherTest {
         '[1] Match with (parenthesis)' | 'Match with (parenthesis)' | true
         '[1] "Test scenario"'          | 'Test scenario'            | true
         '[1] Test scenario'            | 'Test scenario'            | true
+        '[1] Simple scenario extended' | 'Simple scenario'          | false
         """)
     void shouldMatchWithScenarioColumn(@Scenario String actualDisplayName, String expectedPattern, boolean matches) {
         boolean result = RowResultMatcher.matchesRow(actualDisplayName, Optional.of(expectedPattern));
@@ -32,10 +33,11 @@ class RowResultMatcherTest {
     }
 
     @TableTest("""
-        Actual Display Name             | Matches?
-        "[1] Scenario (param = value)"  | true
-        "[1] Scenario (a = 1, b = 2)"   | true
-        "[1] Different (param = value)" | false
+        Actual Display Name              | Matches?
+        "[1] Scenario (param = value)"   | true
+        "[1] Scenario (a = 1, b = 2)"    | true
+        '[1] "Scenario" (param = value)' | true
+        "[1] Different (param = value)"  | false
         """)
     void shouldMatchScenarioWithExpansionParameters(@Scenario String actualDisplayName, boolean matches) {
         boolean result = RowResultMatcher.matchesRow(actualDisplayName, Optional.of("Scenario"));
@@ -84,6 +86,29 @@ class RowResultMatcherTest {
         List<RowResult> matches = RowResultMatcher.findMatchingResults(0, table, OptionalInt.of(0), results);
 
         assertEquals(3, matches.size());
+    }
+
+    @Test
+    void shouldNotMatchResultsWhenScenarioValuesAreDuplicated() {
+        // Duplicate scenario values make attribution unreliable, so no results are matched
+        Table table = TableParser.parse("scenario|value\nTest 1|foo\nTest 1|bar");
+        List<RowResult> results =
+                List.of(new RowResult(1, true, null, "[1] Test 1"), new RowResult(2, false, null, "[2] Test 1"));
+
+        assertTrue(RowResultMatcher.findMatchingResults(0, table, OptionalInt.of(0), results)
+                .isEmpty());
+        assertTrue(RowResultMatcher.findMatchingResults(1, table, OptionalInt.of(0), results)
+                .isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyListForRowIndexBeyondTable() {
+        Table table = TableParser.parse("scenario|value\nTest 1|foo");
+        List<RowResult> results = List.of(new RowResult(1, true, null, "[1] Test 1"));
+
+        List<RowResult> matches = RowResultMatcher.findMatchingResults(5, table, OptionalInt.of(0), results);
+
+        assertTrue(matches.isEmpty());
     }
 
     @Test

@@ -56,7 +56,8 @@ class RowResultMatcher {
     static List<RowResult> findMatchingResults(
             int rowIndex, Table table, OptionalInt scenarioIndex, List<RowResult> rowResults) {
 
-        Optional<String> expectedDisplayNamePattern = buildExpectedDisplayName(rowIndex, table, scenarioIndex);
+        Optional<String> expectedDisplayNamePattern = buildExpectedDisplayName(rowIndex, table, scenarioIndex)
+                .filter(scenario -> !isDuplicatedScenario(scenario, table, scenarioIndex));
 
         return rowResults.stream()
                 .filter(result -> matchesRow(result.displayName(), expectedDisplayNamePattern))
@@ -64,9 +65,24 @@ class RowResultMatcher {
     }
 
     /**
+     * Checks whether the given scenario value occurs in more than one table row. Duplicated
+     * scenario values make result attribution unreliable, so such rows match no results.
+     */
+    private static boolean isDuplicatedScenario(String scenario, Table table, OptionalInt scenarioIndex) {
+        if (scenarioIndex.isEmpty() || scenarioIndex.getAsInt() >= table.columnCount()) {
+            return false;
+        }
+        long occurrences = table.rows().stream()
+                .map(row -> formatForJUnitDisplay(row.value(scenarioIndex.getAsInt())))
+                .filter(scenario::equals)
+                .count();
+        return occurrences > 1;
+    }
+
+    /**
      * Builds the expected display name for a table row.
      * - If scenario column exists: returns Optional with the scenario value
-     * - Otherwise: returns empty Optional (no matching will occur)
+     * - Otherwise, or when the row index is out of range: returns empty Optional (no matching)
      * <p>
      * Handles JUnit's display name formatting:
      * - null values are displayed as "null"
@@ -75,7 +91,7 @@ class RowResultMatcher {
     static Optional<String> buildExpectedDisplayName(int rowIndex, Table table, OptionalInt scenarioIndex) {
         var rows = table.rows();
         if (rowIndex >= rows.size()) {
-            return Optional.of("");
+            return Optional.empty();
         }
 
         var row = rows.get(rowIndex);
@@ -113,10 +129,9 @@ class RowResultMatcher {
      * Checks if a test result display name matches the expected row pattern.
      * Display name format: "[index] displayName" or "[index] displayName (expansion params)"
      * <p>
-     * Set expansion adds parameters like "(value = a)" after the scenario name.
-     * We use {@code startsWith()} to match the scenario name, which handles both:
-     * - Scenario names containing parentheses (e.g., "Match (example)")
-     * - Set expansion parameters appended after the scenario name
+     * A display name matches when it equals the scenario value exactly, or when it is the
+     * scenario value followed by set-expansion parameters like " (value = a)". A bare prefix
+     * is not enough: scenario "Add" must not claim the results of scenario "Add negative".
      * <p>
      * Returns {@code false} if no scenario column exists, as matching without a scenario
      * column is unreliable due to parameter type conversion.
@@ -133,13 +148,19 @@ class RowResultMatcher {
         }
 
         String displayNamePart = matcher.group(2);
+        String expected = expectedPattern.get();
 
         // Strip surrounding quotes (JUnit 6.0+ quotes String parameters)
-        displayNamePart = stripSurroundingQuotes(displayNamePart);
+        return stripSurroundingQuotes(displayNamePart).equals(expected)
+                || hasExpansionParameters(displayNamePart, expected);
+    }
 
-        // Check if display name starts with expected pattern
-        // This handles both scenario names with parentheses and set expansion parameters
-        return displayNamePart.startsWith(expectedPattern.get());
+    /**
+     * Checks for the scenario value followed by set-expansion parameters, with or without
+     * JUnit 6.0+ quoting of the scenario value itself.
+     */
+    private static boolean hasExpansionParameters(String displayNamePart, String expected) {
+        return displayNamePart.startsWith(expected + " (") || displayNamePart.startsWith("\"" + expected + "\" (");
     }
 
     /**

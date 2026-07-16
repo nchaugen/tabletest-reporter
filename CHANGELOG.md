@@ -24,6 +24,10 @@
   and search targeting in-page anchors, search index inlined, no sibling assets. Ideal for
   sharing as a release asset, email or ticket attachment. Multi-file stays the default.
 ### Fixed
+- A row whose scenario value is a prefix of another row's scenario (e.g. "Add" and
+  "Add negative") no longer absorbs the other row's pass/fail results; and rows with
+  duplicated scenario values now get no pass/fail roles (as documented) instead of the
+  OR-ed result of all duplicates.
 - When the input directory accumulates YAML from several test runs (e.g. a
   `junit.platform.reporting.output.dir` with `{uniqueNumber}`), the report now reflects the
   most recently modified files instead of whichever run's files happened to sort first.
