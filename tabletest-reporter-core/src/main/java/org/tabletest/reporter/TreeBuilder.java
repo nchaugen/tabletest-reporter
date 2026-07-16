@@ -16,6 +16,7 @@
 package org.tabletest.reporter;
 
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -36,12 +37,12 @@ final class TreeBuilder {
             return null;
         }
 
-        Map<Path, Map<String, Object>> yamlByPath = indexByPath(sources);
+        Map<Path, Source> sourcesByPath = indexByPath(sources);
 
         List<NodeEntry> contentEntries = sources.stream()
                 .map(TreeBuilder::parseClassInfo)
                 .flatMap(Optional::stream)
-                .flatMap(classInfo -> streamNodeEntries(classInfo, yamlByPath))
+                .flatMap(classInfo -> streamNodeEntries(classInfo, sourcesByPath))
                 .toList();
 
         if (contentEntries.isEmpty()) {
@@ -56,24 +57,28 @@ final class TreeBuilder {
                 : buildWithSyntheticRoot(nodesByPath);
     }
 
-    private static Map<Path, Map<String, Object>> indexByPath(List<Source> sources) {
+    private static Map<Path, Source> indexByPath(List<Source> sources) {
         return sources.stream()
-                .collect(toMap(source -> source.path().normalize(), Source::yaml, (left, right) -> left));
+                .collect(toMap(source -> source.path().normalize(), identity(), TreeBuilder::newestSource));
     }
 
-    private static Stream<NodeEntry> streamNodeEntries(ClassInfo classInfo, Map<Path, Map<String, Object>> yamlByPath) {
+    private static Source newestSource(Source left, Source right) {
+        return right.lastModified().isAfter(left.lastModified()) ? right : left;
+    }
+
+    private static Stream<NodeEntry> streamNodeEntries(ClassInfo classInfo, Map<Path, Source> sourcesByPath) {
         Path classPath = TargetPathResolver.classPathFromClassName(classInfo.className);
-        NodeEntry classEntry = new NodeEntry(classPath, classInfo.slug, classInfo.yaml);
+        NodeEntry classEntry = new NodeEntry(classPath, classInfo.slug, classInfo.yaml, classInfo.lastModified);
 
         Stream<NodeEntry> tableEntries = classInfo.tableTests.stream()
-                .map(entry -> toTableEntry(classPath, classInfo.sourcePath, entry, yamlByPath))
+                .map(entry -> toTableEntry(classPath, classInfo.sourcePath, entry, sourcesByPath))
                 .flatMap(Optional::stream);
 
         return Stream.concat(Stream.of(classEntry), tableEntries);
     }
 
     private static Optional<NodeEntry> toTableEntry(
-            Path classPath, Path sourcePath, TableTestRef ref, Map<Path, Map<String, Object>> yamlByPath) {
+            Path classPath, Path sourcePath, TableTestRef ref, Map<Path, Source> sourcesByPath) {
 
         if (ref.slug == null) {
             return Optional.empty();
@@ -84,17 +89,18 @@ final class TreeBuilder {
             return Optional.empty();
         }
 
-        Map<String, Object> tableYaml = yamlByPath.get(tableResource.normalize());
-        if (tableYaml == null) {
+        Source tableSource = sourcesByPath.get(tableResource.normalize());
+        if (tableSource == null) {
             return Optional.empty();
         }
 
-        return Optional.of(new NodeEntry(classPath.resolve(ref.slug), ref.slug, tableYaml));
+        return Optional.of(
+                new NodeEntry(classPath.resolve(ref.slug), ref.slug, tableSource.yaml(), tableSource.lastModified()));
     }
 
     private static Map<Path, NodeEntry> buildNodeMap(List<NodeEntry> contentEntries) {
-        Map<Path, NodeEntry> nodesByPath = contentEntries.stream()
-                .collect(toMap(NodeEntry::path, identity(), (a, b) -> a.resource != null ? a : b));
+        Map<Path, NodeEntry> nodesByPath =
+                contentEntries.stream().collect(toMap(NodeEntry::path, identity(), TreeBuilder::newestEntry));
 
         Set<Path> ancestorPaths = contentEntries.stream()
                 .flatMap(entry -> streamAncestors(entry.path))
@@ -102,9 +108,24 @@ final class TreeBuilder {
 
         ancestorPaths.stream()
                 .filter(path -> !nodesByPath.containsKey(path))
-                .forEach(path -> nodesByPath.put(path, new NodeEntry(path, pathName(path), null)));
+                .forEach(path -> nodesByPath.put(path, new NodeEntry(path, pathName(path), null, null)));
 
         return nodesByPath;
+    }
+
+    /**
+     * On duplicate node paths (typically the same class published by several accumulated test
+     * runs) the entry from the most recently modified source wins, so the report reflects the
+     * latest run rather than whichever file happens to sort first.
+     */
+    private static NodeEntry newestEntry(NodeEntry left, NodeEntry right) {
+        if (left.resource == null || left.lastModified == null) {
+            return right.resource != null ? right : left;
+        }
+        if (right.resource == null || right.lastModified == null) {
+            return left;
+        }
+        return right.lastModified.isAfter(left.lastModified) ? right : left;
     }
 
     private static Stream<Path> streamAncestors(Path path) {
@@ -209,7 +230,7 @@ final class TreeBuilder {
         }
 
         List<TableTestRef> tableTests = parseTableTestRefs(tableTestsValue);
-        return Optional.of(new ClassInfo(source.path(), yaml, className, slug, tableTests));
+        return Optional.of(new ClassInfo(source.path(), yaml, source.lastModified(), className, slug, tableTests));
     }
 
     private static List<TableTestRef> parseTableTestRefs(Object tableTestsValue) {
@@ -238,9 +259,14 @@ final class TreeBuilder {
     // --- Data Records ---
 
     private record ClassInfo(
-            Path sourcePath, Map<String, Object> yaml, String className, String slug, List<TableTestRef> tableTests) {}
+            Path sourcePath,
+            Map<String, Object> yaml,
+            Instant lastModified,
+            String className,
+            String slug,
+            List<TableTestRef> tableTests) {}
 
     private record TableTestRef(String path, String methodName, String slug) {}
 
-    private record NodeEntry(Path path, String name, Map<String, Object> resource) {}
+    private record NodeEntry(Path path, String name, Map<String, Object> resource, Instant lastModified) {}
 }

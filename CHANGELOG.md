@@ -24,6 +24,9 @@
   and search targeting in-page anchors, search index inlined, no sibling assets. Ideal for
   sharing as a release asset, email or ticket attachment. Multi-file stays the default.
 ### Fixed
+- When the input directory accumulates YAML from several test runs (e.g. a
+  `junit.platform.reporting.output.dir` with `{uniqueNumber}`), the report now reflects the
+  most recently modified files instead of whichever run's files happened to sort first.
 - On Windows, index-page links and single-file anchors used backslashes (the platform file
   separator) and were broken in browsers and Markdown/AsciiDoc renderers; generated links now
   use `/` on every platform.

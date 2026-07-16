@@ -15,7 +15,10 @@
  */
 package org.tabletest.reporter;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -27,8 +30,16 @@ final class SourceLoader {
 
     static List<Source> loadSources(Path dir, List<Path> files) {
         return files.stream()
-                .map(file -> new Source(file, readYaml(dir.resolve(file))))
+                .map(file -> new Source(file, readYaml(dir.resolve(file)), lastModified(dir.resolve(file))))
                 .toList();
+    }
+
+    private static Instant lastModified(Path resource) {
+        try {
+            return Files.getLastModifiedTime(resource).toInstant();
+        } catch (IOException e) {
+            return Instant.EPOCH;
+        }
     }
 
     private static Map<String, Object> readYaml(Path resource) {

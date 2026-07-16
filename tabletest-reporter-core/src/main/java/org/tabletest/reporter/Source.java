@@ -16,6 +16,7 @@
 package org.tabletest.reporter;
 
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Map;
 
-record Source(Path path, Map<String, Object> yaml) {}
+record Source(Path path, Map<String, Object> yaml, Instant lastModified) {}

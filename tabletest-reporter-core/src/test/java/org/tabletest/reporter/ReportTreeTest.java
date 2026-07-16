@@ -6,6 +6,8 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -324,6 +326,42 @@ public class ReportTreeTest {
                                                         "bar-table", "/org/b/bar-test/bar-table", emptyYaml())))))))));
 
         assertThat(tree).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(expected);
+    }
+
+    @Test
+    void shouldPreferNewestSourceWhenRunsAccumulate(@TempDir Path tempDir) throws IOException {
+        Path staleRun = Files.createDirectories(tempDir.resolve("a-stale-run"));
+        Path freshRun = Files.createDirectories(tempDir.resolve("b-fresh-run"));
+
+        writeRun(staleRun, "Old title", "Old table title");
+        writeRun(freshRun, "New title", "New table title");
+        FileTime staleTime = FileTime.from(Instant.now().minusSeconds(3600));
+        try (var files = Files.list(staleRun)) {
+            for (Path file : files.toList()) {
+                Files.setLastModifiedTime(file, staleTime);
+            }
+        }
+
+        ReportNode tree = ReportTree.process(tempDir);
+
+        IndexNode root = (IndexNode) tree;
+        IndexNode classNode = (IndexNode) root.contents().getFirst();
+        TableNode tableNode = (TableNode) classNode.contents().getFirst();
+        assertThat(classNode.resource().get("title")).isEqualTo("New title");
+        assertThat(tableNode.resource().get("title")).isEqualTo("New table title");
+    }
+
+    private static void writeRun(Path runDir, String classTitle, String tableTitle) throws IOException {
+        Files.writeString(runDir.resolve("TABLETEST-sample-test.yaml"), """
+                "className": "pkg.SampleTest"
+                "slug": "sample-test"
+                "title": "%s"
+                "tableTests":
+                - "path": "TABLETEST-sample-table.yaml"
+                  "methodName": "sampleTable"
+                  "slug": "sample-table"
+                """.formatted(classTitle));
+        Files.writeString(runDir.resolve("TABLETEST-sample-table.yaml"), "\"title\": \"%s\"\n".formatted(tableTitle));
     }
 
     private static Map<String, Object> classYaml(String className, String slug, List<Map<String, Object>> tableTests) {
