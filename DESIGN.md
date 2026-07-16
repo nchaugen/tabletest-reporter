@@ -210,7 +210,7 @@ if (children.isEmpty()) {
     "roles":
     - "passed"  # or "failed"
 "rowResults":
-- "rowIndex": !!int "1"
+- "rowIndex": !!int "1"  # 1-based JUnit invocation index, not a table row index
   "passed": !!bool "true"
   "displayName": "[1] scenario name"
   "errorMessage": "optional error message"

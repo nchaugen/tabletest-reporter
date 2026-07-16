@@ -19,10 +19,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Represents the test execution result for a single table row.
+ * Represents the test execution result for a single test invocation, ready for serialisation.
  *
- * @param rowIndex     The index of the row in the table (0-based)
- * @param passed       Whether the test passed for this row
+ * @param rowIndex     The JUnit invocation index (1-based). With value-set expansion a table
+ *                     row produces several invocations, so this does not map 1:1 to table rows
+ * @param passed       Whether the test passed for this invocation
  * @param displayName  The display name of the test invocation
  * @param errorMessage The error message if the test failed, null if passed
  */
