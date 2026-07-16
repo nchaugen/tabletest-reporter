@@ -35,7 +35,7 @@ class TableTestReporterCliTest {
         assertThat(content).contains("CUSTOM HEADER");
         assertThat(content).contains("Custom template content");
         assertThat(content).contains("CUSTOM FOOTER");
-        assertThat(content).doesNotContain("[%header,cols=");
+        assertThat(content).doesNotContain("[%header%autowidth,cols=");
     }
 
     @Test
@@ -51,7 +51,7 @@ class TableTestReporterCliTest {
         assertThat(result.exitCode()).isZero();
         String content = Files.readString(findGeneratedFile(outputDir, ".adoc"));
         assertThat(content).startsWith("==");
-        assertThat(content).contains("[%header,cols=");
+        assertThat(content).contains("[%header%autowidth,cols=");
         assertThat(content).contains("|===");
     }
 

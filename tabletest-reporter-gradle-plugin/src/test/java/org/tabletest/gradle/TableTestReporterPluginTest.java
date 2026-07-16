@@ -120,7 +120,7 @@ class TableTestReporterPluginTest {
         assertThat(content).contains("CUSTOM HEADER");
         assertThat(content).contains("Custom template content");
         assertThat(content).contains("CUSTOM FOOTER");
-        assertThat(content).doesNotContain("[%header,cols=");
+        assertThat(content).doesNotContain("[%header%autowidth,cols=");
     }
 
     @Test
@@ -190,7 +190,7 @@ class TableTestReporterPluginTest {
 
         String content = Files.readString(findGeneratedTableFile(outputDir(), ".adoc"));
         assertThat(content).startsWith("==");
-        assertThat(content).contains("[%header,cols=");
+        assertThat(content).contains("[%header%autowidth,cols=");
         assertThat(content).contains("|===");
     }
 

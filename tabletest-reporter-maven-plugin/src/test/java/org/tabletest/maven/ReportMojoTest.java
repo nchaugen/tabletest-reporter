@@ -121,7 +121,7 @@ class ReportMojoTest {
         assertThat(content).contains("CUSTOM HEADER");
         assertThat(content).contains("Custom template content");
         assertThat(content).contains("CUSTOM FOOTER");
-        assertThat(content).doesNotContain("[%header,cols=");
+        assertThat(content).doesNotContain("[%header%autowidth,cols=");
     }
 
     @Test
@@ -247,7 +247,7 @@ class ReportMojoTest {
         String content = Files.readString(generatedFile);
 
         assertThat(content).startsWith("==");
-        assertThat(content).contains("[%header,cols=");
+        assertThat(content).contains("[%header%autowidth,cols=");
         assertThat(content).contains("|===");
     }
 
