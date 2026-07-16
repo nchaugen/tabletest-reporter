@@ -195,6 +195,39 @@ class TableTestReporterPluginTest {
     }
 
     @Test
+    void reportTask_tracks_default_input_yaml_as_task_inputs() throws IOException {
+        setupInputDirectory(buildDir);
+
+        assertThat(trackedSourceFileNames()).contains("TABLETEST-calendar-test.yaml", "TABLETEST-test.yaml");
+    }
+
+    @Test
+    void reportTask_tracks_junit_output_dir_yaml_as_task_inputs() throws IOException {
+        Path junitDir = projectDir.resolve("custom-junit-output");
+        Files.createDirectories(junitDir);
+        Files.writeString(junitDir.resolve("TABLETEST-custom.yaml"), "\"title\": \"Custom\"\n");
+        reportTask().getJunitOutputDir().set("custom-junit-output");
+
+        assertThat(trackedSourceFileNames()).contains("TABLETEST-custom.yaml");
+    }
+
+    @Test
+    void reportTask_runs_after_test_tasks() {
+        project.getPluginManager().apply("java");
+
+        Set<org.gradle.api.Task> ordering =
+                Set.copyOf(reportTask().getMustRunAfter().getDependencies(reportTask()));
+
+        assertThat(ordering).contains(testTask());
+    }
+
+    private Set<String> trackedSourceFileNames() {
+        return reportTask().getSourceYamlFiles().getFiles().stream()
+                .map(java.io.File::getName)
+                .collect(Collectors.toSet());
+    }
+
+    @Test
     void listFormatsTask_is_registered() {
         assertThat(listFormatsTask()).isNotNull();
     }

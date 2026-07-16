@@ -24,6 +24,11 @@
   and search targeting in-page anchors, search index inlined, no sibling assets. Ideal for
   sharing as a release asset, email or ticket attachment. Multi-file stays the default.
 ### Fixed
+- The Gradle `reportTableTests` task now tracks the TableTest YAML files as task inputs even
+  when no explicit `inputDir` is configured (default `build/junit-jupiter`, the JUnit output
+  dir override, and the `junit-platform.properties` location). Previously the task could stay
+  `UP-TO-DATE` — or restore a stale report from the build cache — after new test runs. The
+  task is also ordered to run after `Test` tasks when both are requested.
 - A table test whose display-name slug equals its class slug (e.g. the same `@DisplayName`
   on both) no longer silently loses one of the two published YAML files: the table file now
   gets a numeric suffix, keeping the class and table files distinct.

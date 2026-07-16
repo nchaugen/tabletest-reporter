@@ -17,7 +17,12 @@ package org.tabletest.gradle;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.ConfigurableFileTree;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.FileTree;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +31,7 @@ import org.tabletest.reporter.FormatResolver;
 import org.tabletest.reporter.IndexDepth;
 import org.tabletest.reporter.InputDirectoryResolver;
 import org.tabletest.reporter.JunitDirParser;
+import org.tabletest.reporter.JunitPropertiesReader;
 import org.tabletest.reporter.ReportResult;
 import org.tabletest.reporter.TableTestReporter;
 
@@ -33,8 +39,10 @@ import javax.inject.Inject;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 
 /**
  * Gradle task for generating documentation from TableTest YAML outputs.
@@ -45,6 +53,7 @@ import java.util.Optional;
 @CacheableTask
 public abstract class ReportTableTestsTask extends DefaultTask {
 
+    private final ObjectFactory objects;
     private final Property<String> format;
     private final DirectoryProperty inputDir;
     private final DirectoryProperty outputDir;
@@ -53,20 +62,24 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     private final Property<String> indexDepth;
     private final DirectoryProperty projectDir;
     private final DirectoryProperty defaultInputDir;
+    private final ConfigurableFileCollection sourceYamlFiles;
 
     /**
      * Creates a new task instance with default configuration.
      */
     @Inject
     public ReportTableTestsTask() {
-        this.format = getProject().getObjects().property(String.class);
-        this.inputDir = getProject().getObjects().directoryProperty();
-        this.outputDir = getProject().getObjects().directoryProperty();
-        this.templateDir = getProject().getObjects().directoryProperty();
-        this.junitOutputDir = getProject().getObjects().property(String.class);
-        this.indexDepth = getProject().getObjects().property(String.class);
-        this.projectDir = getProject().getObjects().directoryProperty();
-        this.defaultInputDir = getProject().getObjects().directoryProperty();
+        this.objects = getProject().getObjects();
+        this.format = objects.property(String.class);
+        this.inputDir = objects.directoryProperty();
+        this.outputDir = objects.directoryProperty();
+        this.templateDir = objects.directoryProperty();
+        this.junitOutputDir = objects.property(String.class);
+        this.indexDepth = objects.property(String.class);
+        this.projectDir = objects.directoryProperty();
+        this.defaultInputDir = objects.directoryProperty();
+        this.sourceYamlFiles = objects.fileCollection();
+        this.sourceYamlFiles.from((Callable<List<FileTree>>) this::candidateYamlTrees);
         setGroup("documentation");
         setDescription("Generates AsciiDoc or Markdown documentation from TableTest YAML outputs");
     }
@@ -156,6 +169,50 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     @Internal
     public DirectoryProperty getDefaultInputDir() {
         return defaultInputDir;
+    }
+
+    /**
+     * Returns the TableTest YAML files across all candidate input directories. Tracked as task
+     * inputs so up-to-date checks and the build cache notice new test output even when no
+     * explicit input directory is configured.
+     *
+     * @return file collection of the YAML files the report is generated from
+     */
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    public FileCollection getSourceYamlFiles() {
+        return sourceYamlFiles;
+    }
+
+    private List<FileTree> candidateYamlTrees() {
+        return candidateInputDirectories().stream().map(this::yamlTreeAt).toList();
+    }
+
+    /**
+     * The directories the input resolution may read YAML from when no explicit input directory
+     * is configured: the JUnit output directory override, the directory named in
+     * junit-platform.properties, and the default build/junit-jupiter directory. An explicitly
+     * configured input directory is tracked separately through {@link #getInputDir()}.
+     */
+    private List<Path> candidateInputDirectories() {
+        List<Path> candidates = new ArrayList<>();
+        Path baseDir = toPath(projectDir);
+        if (baseDir != null) {
+            JunitDirParser.parse(baseDir, junitOutputDir.getOrNull()).ifPresent(candidates::add);
+            JunitPropertiesReader.resolve(baseDir).ifPresent(candidates::add);
+        }
+        Path defaultInput = toPath(defaultInputDir);
+        if (defaultInput != null) {
+            candidates.add(defaultInput);
+        }
+        return candidates;
+    }
+
+    private FileTree yamlTreeAt(Path directory) {
+        ConfigurableFileTree tree = objects.fileTree();
+        tree.setDir(directory.toFile());
+        tree.include("**/*.yaml");
+        return tree;
     }
 
     /**

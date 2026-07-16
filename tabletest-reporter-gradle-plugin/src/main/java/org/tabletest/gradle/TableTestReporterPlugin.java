@@ -61,6 +61,7 @@ public class TableTestReporterPlugin implements Plugin<Project> {
             t.getProjectDir().convention(project.getLayout().getProjectDirectory());
             t.getDefaultInputDir()
                     .convention(project.getLayout().getBuildDirectory().dir("junit-jupiter"));
+            t.mustRunAfter(project.getTasks().withType(Test.class));
         });
 
         // Register list formats task
