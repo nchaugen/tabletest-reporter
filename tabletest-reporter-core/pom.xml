@@ -24,7 +24,7 @@
         <version.assertj>3.27.7</version.assertj>
         <version.commonmark>0.29.0</version.commonmark>
         <version.asciidoctorj>3.0.1</version.asciidoctorj>
-        <version.jsoup>1.21.2</version.jsoup>
+        <version.jsoup>1.22.2</version.jsoup>
     </properties>
 
     <dependencies>
