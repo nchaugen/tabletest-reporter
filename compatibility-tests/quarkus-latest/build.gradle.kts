@@ -50,7 +50,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // TableTest (tabletest-reporter-junit added automatically by plugin)
-    testImplementation("org.tabletest:tabletest-junit:1.2.1")
+    testImplementation("org.tabletest:tabletest-junit:1.2.2")
 }
 
 tasks.test {

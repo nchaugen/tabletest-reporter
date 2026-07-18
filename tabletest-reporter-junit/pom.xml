@@ -14,8 +14,8 @@
     <name>TableTest Reporter JUnit Extension</name>
 
     <properties>
-        <version.tabletest-junit>1.2.1</version.tabletest-junit>
-        <version.tabletest-parser>1.2.0</version.tabletest-parser>
+        <version.tabletest-junit>1.2.2</version.tabletest-junit>
+        <version.tabletest-parser>1.2.1</version.tabletest-parser>
         <version.snakeyaml>3.0.1</version.snakeyaml>
         <version.slugify>4.0.1</version.slugify>
         <version.junit>6.1.2</version.junit>

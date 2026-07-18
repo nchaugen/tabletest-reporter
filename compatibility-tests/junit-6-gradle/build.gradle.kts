@@ -30,11 +30,11 @@ repositories {
 
 dependencies {
     // JUnit 6.0 (latest)
-    testImplementation("org.junit.jupiter:junit-jupiter:6.0.3")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.1.2")
 
     // TableTest (tabletest-reporter-junit added automatically by plugin)
-    testImplementation("org.tabletest:tabletest-junit:1.2.1")
+    testImplementation("org.tabletest:tabletest-junit:1.2.2")
 }
 
 tasks.test {
