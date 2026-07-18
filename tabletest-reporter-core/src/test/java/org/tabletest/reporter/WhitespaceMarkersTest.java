@@ -1,10 +1,11 @@
-package org.tabletest.reporter.pebble;
+package org.tabletest.reporter;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
+import org.tabletest.reporter.pebble.FilterMarkWhitespace;
 
 import java.util.Map;
 
@@ -18,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         characters. Copy-paste still yields the original spaces and tabs. Single
         spaces between words are left unmarked.
         """)
-public class FilterMarkWhitespaceTest {
+public class WhitespaceMarkersTest {
 
     private final FilterMarkWhitespace filter = new FilterMarkWhitespace();
 

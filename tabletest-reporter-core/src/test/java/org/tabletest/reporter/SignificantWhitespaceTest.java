@@ -1,10 +1,11 @@
-package org.tabletest.reporter.pebble;
+package org.tabletest.reporter;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
+import org.tabletest.reporter.pebble.TestWhitespaceSignificant;
 
 import java.util.Map;
 
@@ -17,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         single spaces between words stays clean, while the whitespace a reader could
         miscount or miss entirely is flagged for marking.
         """)
-class TestWhitespaceSignificantTest {
+class SignificantWhitespaceTest {
 
     private final TestWhitespaceSignificant test = new TestWhitespaceSignificant();
 
