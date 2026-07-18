@@ -78,6 +78,7 @@ class IndexDepthTest {
                 .hasMessageContaining(errorContains);
     }
 
+    @DisplayName("Option values that are not a number or the keyword are rejected")
     @TableTest("""
         Scenario        | Input | Error Contains?
         Invalid word    | foo   | Invalid index depth
