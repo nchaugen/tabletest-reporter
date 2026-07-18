@@ -166,6 +166,31 @@ public class HtmlTableRenderingTest {
     }
 
     @Test
+    void marks_whitespace_significant_literals_with_a_visible_extent() {
+        Map<String, Object> whitespace = new ContextLoader().fromYaml("""
+            title: Whitespace
+            headers:
+              - value: Scenario
+                roles: ["scenario"]
+              - value: Base indent
+              - value: Row
+            rows:
+              - - value: "two spaces"
+                  roles: ["scenario"]
+                - value: "  "
+                - value: "Alice | 30"
+            """);
+
+        String rendered = templateEngine.renderTable(HTML, whitespace);
+
+        assertThat(rendered)
+                .contains("<span class=\"literal ws\">  </span>")
+                .contains("<span class=\"literal ws\">Alice | 30</span>")
+                .contains("<span class=\"literal\">two spaces</span>")
+                .contains(".literal.ws {");
+    }
+
+    @Test
     void shows_passing_verdict_with_count_when_no_failures() {
         String rendered = templateEngine.renderTable(HTML, passingContext);
 

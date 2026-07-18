@@ -36,7 +36,9 @@ public class PebbleExtension extends AbstractExtension {
 
     @Override
     public Map<String, Test> getTests() {
-        return Map.of(TestSet.NAME, new TestSet());
+        return Map.of(
+                TestSet.NAME, new TestSet(),
+                TestWhitespaceSignificant.NAME, new TestWhitespaceSignificant());
     }
 
     public static void requireNotNull(Map<String, Object> args, String argument, int lineNumber, PebbleTemplate self) {
