@@ -2,11 +2,13 @@
 
 ## [Unreleased]
 ### Added
-- HTML format marks whitespace-significant literals with a visible extent: values with
-  leading/trailing whitespace, tabs, runs of spaces, or pipes (e.g. indent expectations,
-  whitespace-only cells, formatted-row values) render in a subtle monospace box so their
-  start, end, and whitespace content are readable; the value text itself stays unaltered
-  for copy/paste and search.
+- HTML format marks whitespace-significant literals with IDE-style per-character markers:
+  values with leading/trailing whitespace (on any line), tabs, runs of spaces, or pipes
+  (e.g. indent expectations, whitespace-only cells, formatted-row values) render in
+  monospace with a CSS-drawn dot per significant space and an arrow per tab, so space
+  counts and tab-vs-space composition are readable at a glance. Single spaces between
+  words stay unmarked, and the value text itself stays unaltered for copy/paste and
+  search.
 - Built-in `html` output format: self-contained, single-file-per-page living documentation
   (inline CSS/JS, no external references) with autowidth tables, sticky header/first column,
   nested-collection rendering, pass/fail badges and status colouring, collapsible failure

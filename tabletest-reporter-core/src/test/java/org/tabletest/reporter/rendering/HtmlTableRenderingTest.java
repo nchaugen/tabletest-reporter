@@ -166,7 +166,7 @@ public class HtmlTableRenderingTest {
     }
 
     @Test
-    void marks_whitespace_significant_literals_with_a_visible_extent() {
+    void marks_significant_whitespace_runs_in_literals_with_marker_spans() {
         Map<String, Object> whitespace = new ContextLoader().fromYaml("""
             title: Whitespace
             headers:
@@ -179,15 +179,21 @@ public class HtmlTableRenderingTest {
                   roles: ["scenario"]
                 - value: "  "
                 - value: "Alice | 30"
+              - - value: "tab then spaces"
+                  roles: ["scenario"]
+                - value: "\t  "
+                - value: "Bob | 25"
             """);
 
         String rendered = templateEngine.renderTable(HTML, whitespace);
 
         assertThat(rendered)
-                .contains("<span class=\"literal ws\">  </span>")
+                .contains("<span class=\"literal ws\"><span class=\"sp\">  </span></span>")
+                .contains("<span class=\"literal ws\"><span class=\"tab\">\t</span><span class=\"sp\">  </span></span>")
                 .contains("<span class=\"literal ws\">Alice | 30</span>")
                 .contains("<span class=\"literal\">two spaces</span>")
-                .contains(".literal.ws {");
+                .contains(".literal.ws .sp")
+                .contains(".literal.ws .tab");
     }
 
     @Test

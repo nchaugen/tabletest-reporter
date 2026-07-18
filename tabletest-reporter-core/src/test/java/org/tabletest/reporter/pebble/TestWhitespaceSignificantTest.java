@@ -23,10 +23,18 @@ class TestWhitespaceSignificantTest {
         Run of two spaces       | 'a  b'       | true
         Pipe between words      | "a|b"        | true
         Formatted row with pipe | "Alice | 30" | true
+        Multiline plain         | ab\\ncd      | false
+        Space before newline    | 'ab \\ncd'   | true
+        Space after newline     | 'ab\\n cd'   | true
         Null value              |              | false
         """)
     void classifiesWhitespaceSignificance(String value, boolean significant) {
-        assertThat(test.apply(value, Map.of(), null, null, 0)).isEqualTo(significant);
+        assertThat(test.apply(unescapedNewlines(value), Map.of(), null, null, 0))
+                .isEqualTo(significant);
+    }
+
+    private static String unescapedNewlines(String value) {
+        return value == null ? null : value.replace("\\n", "\n");
     }
 
     @Test

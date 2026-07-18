@@ -25,14 +25,14 @@ import java.util.regex.Pattern;
 
 /**
  * Pebble test ({@code value is whitespaceSignificant}) deciding whether a literal
- * contains whitespace or boundaries a reader cannot see in rendered HTML: leading or
- * trailing whitespace, tabs, runs of two or more spaces, or pipe characters. Templates
- * use it to give such literals a visible extent.
+ * contains whitespace or boundaries a reader cannot see in rendered HTML: whitespace at
+ * the start or end of any line, tabs, runs of two or more spaces, or pipe characters.
+ * Templates use it to give such literals visible whitespace markers.
  */
 public class TestWhitespaceSignificant implements Test {
     public static final String NAME = "whitespaceSignificant";
 
-    private static final Pattern SIGNIFICANT = Pattern.compile("^[ \\t]|[ \\t]$|\\t|[ \\t]{2,}|\\|");
+    private static final Pattern SIGNIFICANT = Pattern.compile("^[ \\t]|[ \\t]$|\\t|[ \\t]{2,}|\\|", Pattern.MULTILINE);
 
     @Override
     public boolean apply(

@@ -45,7 +45,7 @@
     {%- if value == '' -%}
         <span class="literal empty-string">&#8220;&#8221;</span>
     {%- elseif value is whitespaceSignificant -%}
-        <span class="literal ws">{{ value | escape }}</span>
+        <span class="literal ws">{{ value | markWhitespace }}</span>
     {%- else -%}
         <span class="literal">{{ value | escape }}</span>
     {%- endif -%}
@@ -461,11 +461,16 @@ td.failed.expectation { background: var(--fail-wash); }
 .empty { color: var(--marker); }
 .empty-string { color: var(--ink-soft); }
 .literal { white-space: pre-wrap; }
-/* Whitespace-significant literals get a bounded box so their extent is visible */
-.literal.ws {
-    font-family: var(--font-mono); font-size: 0.85em;
-    background: var(--raised); box-shadow: inset 0 0 0 1px var(--rule);
-    border-radius: 4px; padding: 0.05rem 0.3rem;
+/* Whitespace-significant literals get CSS-drawn per-character markers on their
+   significant runs; the real characters stay in the DOM for copy and search */
+.literal.ws { font-family: var(--font-mono); font-size: 0.85em; }
+.literal.ws .sp {
+    background: radial-gradient(circle, var(--marker) 1px, transparent 1.5px)
+        left center / 1ch 1em repeat-x;
+}
+.literal.ws .tab { position: relative; }
+.literal.ws .tab::before {
+    content: "\2192"; position: absolute; left: 0.1ch; color: var(--marker);
 }
 .coll { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.15rem; }
 .coll.list > li, .coll.set > li { position: relative; padding-left: 1.15rem; }

@@ -31,7 +31,8 @@ public class PebbleExtension extends AbstractExtension {
         return Map.of(
                 FilterReplicate.NAME, new FilterReplicate(),
                 FilterReplaceAll.NAME, new FilterReplaceAll(),
-                FilterReplaceInMatch.NAME, new FilterReplaceInMatch());
+                FilterReplaceInMatch.NAME, new FilterReplaceInMatch(),
+                FilterMarkWhitespace.NAME, new FilterMarkWhitespace());
     }
 
     @Override
