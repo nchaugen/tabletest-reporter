@@ -1,6 +1,9 @@
 package org.tabletest.reporter;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.tabletest.junit.Description;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
 
@@ -15,6 +18,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * blob flattened from the page's own title, description, headers, and cell values. The index is
  * emitted once to the output root and searched client-side from every page.
  */
+@Tag("spec")
+@DisplayName("Whole-report search")
+@Description("""
+        Every report carries a search index with one entry per page. A table page is
+        searchable by its title, description, column headers, and cell values; an index
+        page only by its title. The index is built once at the output root and searched
+        client-side from every page.
+        """)
 class SearchIndexTest {
 
     private final TableNode leapYear = new TableNode(
@@ -75,6 +86,13 @@ class SearchIndexTest {
         assertThat(javascript).contains("\"calendar/leap-year-rules.html\"");
     }
 
+    @DisplayName("Search finds pages whose title or text contains the query")
+    @Description("""
+            The searched report holds one table, "Leap Year Rules" (description "Gregorian
+            leap year determination", column headers Year and Is Leap Year?, one row:
+            2004 / Yes), inside a chapter titled "Calendar". Matching is case-insensitive
+            substring matching.
+            """)
     @TableTest("""
         Scenario                         | Query     | Matching pages?
         Matches a cell value             | 2004      | [calendar/leap-year-rules.html]

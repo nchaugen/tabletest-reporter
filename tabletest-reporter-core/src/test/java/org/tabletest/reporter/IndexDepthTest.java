@@ -1,6 +1,9 @@
 package org.tabletest.reporter;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -9,8 +12,21 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests for {@link IndexDepth}.
  */
+@Tag("spec")
+@DisplayName("The indexDepth option")
+@Description("""
+        The indexDepth option controls how many levels of nested chapters get their own
+        index pages before the remaining tree is flattened onto one page. It is set on
+        the CLI, Maven, or Gradle surface as a number or the keyword "infinite".
+        """)
 class IndexDepthTest {
 
+    @DisplayName("indexDepth accepts a depth number or the infinite keyword")
+    @Description("""
+            The keyword is case-insensitive, and leaving the option unset means
+            infinite: every chapter level gets its own index page. Infinite is
+            represented as the largest possible depth, 2147483647.
+            """)
     @TableTest("""
         Scenario         | Input    | Expected Depth?
         Numeric value    | 1        | 1
@@ -49,6 +65,7 @@ class IndexDepthTest {
         assertThat(IndexDepth.of(5).isInfinite()).isFalse();
     }
 
+    @DisplayName("Depths below one are rejected")
     @TableTest("""
         Scenario       | Input | Error Contains?
         Zero depth     | 0     | at least 1

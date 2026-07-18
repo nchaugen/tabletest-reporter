@@ -1,5 +1,8 @@
 package org.tabletest.reporter;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.tabletest.junit.Description;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
 
@@ -12,8 +15,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests relative-href computation between report pages. Every href must be relative to the
  * linking page's own directory (never root-absolute) so the tree serves from any subpath.
  */
+@Tag("spec")
+@DisplayName("Relative links")
+@Description("""
+        Every link in a report is relative — never root-absolute — so a generated report
+        works from any directory: a local folder, a web server root, or a subpath like
+        GitHub project Pages. The example pages are a chapter "boolean-logic" holding
+        tables "and-op" and "or-op".
+        """)
 class NavLinksTest {
 
+    @DisplayName("Links are relative to the linking page's own directory")
     @TableTest("""
         Scenario                  | From                 | From type | Target               | Target type | Href?
         Root index to child index | ''                   | index     | boolean-logic        | index       | boolean-logic/index.html
@@ -31,6 +43,7 @@ class NavLinksTest {
         assertThat(NavLinks.href(NavLinks.pageDirectory(fromNode), targetNode)).isEqualTo(href);
     }
 
+    @DisplayName("Every page has a single root-relative path")
     @TableTest("""
         Scenario          | Node                 | Node type | Root path?
         Root index        | ''                   | index     | index.html
@@ -42,6 +55,11 @@ class NavLinksTest {
         assertThat(NavLinks.rootPath(node(nodeType, node))).isEqualTo(rootPath);
     }
 
+    @DisplayName("Shared assets are reached by climbing to the output root")
+    @Description("""
+            Stylesheets and the search index live once at the output root; each page
+            references them through a ../ prefix matching its own depth.
+            """)
     @TableTest("""
         Scenario          | Page                 | Page type | Asset prefix?
         Root index        | ''                   | index     | ''

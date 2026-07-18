@@ -1,5 +1,8 @@
 package org.tabletest.reporter;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.tabletest.junit.Description;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
 
@@ -13,8 +16,16 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests aggregate pass/fail rollup: a table's status derived from its executed row results,
  * and an index's status summed bottom-up from its children.
  */
+@Tag("spec")
+@DisplayName("Pass/fail rollup")
+@Description("""
+        Every page shows how many of its scenarios pass. A table's counts come from its
+        own executed rows; a chapter's counts sum bottom-up from its children. A page
+        with no executed scenarios is neutral: reported without a pass/fail verdict.
+        """)
 class StatusRollupTest {
 
+    @DisplayName("A table's status is derived from its executed row results")
     @TableTest("""
         Scenario       | Row results   | State?  | Total? | Passed?
         No results run |               | neutral | 0      | 0
@@ -32,6 +43,12 @@ class StatusRollupTest {
         assertThat(status.passedScenarios()).isEqualTo(passed);
     }
 
+    @DisplayName("A chapter's status is summed bottom-up from its children")
+    @Description("""
+            Child A and Child B are two tables in the same chapter, given as their row
+            results. A neutral child contributes nothing to the counts and never turns
+            a passing chapter red.
+            """)
     @TableTest("""
         Scenario                | Child A | Child B      | State?  | Total? | Passed?
         All children passing    | [true]  | [true, true] | passed  | 3      | 3

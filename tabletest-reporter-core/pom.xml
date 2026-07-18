@@ -105,4 +105,39 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <!-- Living documentation, self-hosted: runs only the spec-tagged tests with the
+             in-reactor reporter extension and renders the HTML report with this build's own
+             maven plugin. Must run as a single-project build (the plugin reference would be
+             a reactor cycle). After `mvn install -DskipTests` at the root:
+             `mvn -f tabletest-reporter-core -Preport test org.tabletest:tabletest-reporter-maven-plugin:report` -->
+        <profile>
+            <id>report</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <groups>spec</groups>
+                            <properties>
+                                <configurationParameters>
+                                    junit.jupiter.extensions.autodetection.enabled=true
+                                </configurationParameters>
+                            </properties>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.tabletest</groupId>
+                        <artifactId>tabletest-reporter-maven-plugin</artifactId>
+                        <version>${project.version}</version>
+                        <configuration>
+                            <format>html</format>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

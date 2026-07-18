@@ -1,16 +1,33 @@
 package org.tabletest.reporter.pebble;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag("spec")
+@DisplayName("Significant whitespace")
+@Description("""
+        Whitespace markers appear only where whitespace could mislead: prose with
+        single spaces between words stays clean, while the whitespace a reader could
+        miscount or miss entirely is flagged for marking.
+        """)
 class TestWhitespaceSignificantTest {
 
     private final TestWhitespaceSignificant test = new TestWhitespaceSignificant();
 
+    @DisplayName("Whitespace is significant at line edges, in runs, and in tabs")
+    @Description("""
+            Significant means: any leading or trailing whitespace (on any line of a
+            multiline value), any run of two or more spaces, any tab, and values
+            aligned with pipes as in a formatted table row. A single space between
+            words is not significant.
+            """)
     @TableTest("""
         Scenario                | Value        | Significant?
         Plain word              | Alice        | false

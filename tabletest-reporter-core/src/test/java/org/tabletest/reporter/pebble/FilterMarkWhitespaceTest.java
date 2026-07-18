@@ -1,16 +1,33 @@
 package org.tabletest.reporter.pebble;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag("spec")
+@DisplayName("Whitespace markers")
+@Description("""
+        Significant whitespace in a cell is made visible IDE-style: a centred dot per
+        space and an arrow per tab, drawn by the report stylesheet over the real
+        characters. Copy-paste still yields the original spaces and tabs. Single
+        spaces between words are left unmarked.
+        """)
 public class FilterMarkWhitespaceTest {
 
     private final FilterMarkWhitespace filter = new FilterMarkWhitespace();
 
+    @DisplayName("Significant whitespace runs are wrapped in marker spans")
+    @Description("""
+            HTML output: sp spans carry space runs and tab spans carry each tab; the
+            stylesheet draws the dots and arrows. Markup characters in the value are
+            escaped before marking, so cell content can never inject HTML.
+            """)
     @TableTest("""
         Scenario                      | Value        | Marked?
         Plain word                    | Alice        | Alice
