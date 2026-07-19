@@ -1,7 +1,9 @@
 package org.tabletest.reporter;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.tabletest.junit.Description;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
 
@@ -15,8 +17,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests for {@link FormatLister}.
  */
+@DisplayName("Available output formats")
 class FormatListerTest {
 
+    @DisplayName("Available formats are the three built-ins plus any custom templates, sorted")
+    @Description("""
+            asciidoc, html, and markdown are always available; any custom formats
+            discovered in the template directory are merged in and the whole list is
+            sorted alphabetically.
+            """)
     @TableTest("""
         Scenario                      | Template Files                                                             | Expected Output
         Empty template directory      | []                                                                         | [asciidoc, html, markdown]

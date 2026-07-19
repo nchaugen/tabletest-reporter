@@ -1,7 +1,6 @@
 package org.tabletest.reporter;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
@@ -12,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Tests for {@link IndexDepth}.
  */
-@Tag("spec")
 @DisplayName("The indexDepth option")
 @Description("""
         The indexDepth option controls how many levels of nested chapters get their own

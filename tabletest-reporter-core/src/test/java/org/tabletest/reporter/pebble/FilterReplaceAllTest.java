@@ -4,6 +4,7 @@ import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.extension.AbstractExtension;
 import io.pebbletemplates.pebble.extension.Filter;
 import io.pebbletemplates.pebble.loader.StringLoader;
+import org.junit.jupiter.api.Tag;
 import org.tabletest.junit.TableTest;
 
 import java.io.IOException;
@@ -12,6 +13,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// Unpublished: internal mechanism (Pebble template filter), not a user-facing rule.
+@Tag("unpublished")
 class FilterReplaceAllTest {
 
     private static final PebbleEngine ENGINE = new PebbleEngine.Builder()

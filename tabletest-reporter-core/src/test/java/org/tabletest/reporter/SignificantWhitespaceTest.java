@@ -1,7 +1,6 @@
 package org.tabletest.reporter;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
@@ -11,7 +10,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("spec")
 @DisplayName("Significant whitespace")
 @Description("""
         Whitespace markers appear only where whitespace could mislead: prose with

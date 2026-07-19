@@ -1,7 +1,9 @@
 package org.tabletest.reporter;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.tabletest.junit.Description;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
 
@@ -16,8 +18,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests for {@link FormatDiscovery}.
  */
+@DisplayName("Output format discovery")
 class FormatDiscoveryTest {
 
+    @DisplayName("A custom format is discovered only when both its table and index templates are present")
+    @Description("""
+            A directory contributes an output format when it holds both a
+            table.<format>.peb and an index.<format>.peb template. A lone table or
+            index template, other files, and subdirectories are all ignored.
+            """)
     @TableTest("""
         Scenario                   | Template Files                                                                                 | Discovered Formats?
         Single format              | [table.html.peb, index.html.peb]                                                               | [html]

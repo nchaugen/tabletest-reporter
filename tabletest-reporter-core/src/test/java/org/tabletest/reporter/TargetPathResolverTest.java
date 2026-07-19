@@ -1,5 +1,6 @@
 package org.tabletest.reporter;
 
+import org.junit.jupiter.api.Tag;
 import org.tabletest.junit.TableTest;
 
 import java.nio.file.Path;
@@ -9,6 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests for {@link TargetPathResolver}.
  */
+// Unpublished: internal mechanism (class-name to output-path resolution), not a user-facing rule.
+@Tag("unpublished")
 class TargetPathResolverTest {
 
     @TableTest("""

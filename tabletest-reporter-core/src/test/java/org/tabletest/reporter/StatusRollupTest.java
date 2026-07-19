@@ -1,7 +1,6 @@
 package org.tabletest.reporter;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
@@ -16,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests aggregate pass/fail rollup: a table's status derived from its executed row results,
  * and an index's status summed bottom-up from its children.
  */
-@Tag("spec")
 @DisplayName("Pass/fail rollup")
 @Description("""
         Every page shows how many of its scenarios pass. A table's counts come from its

@@ -1,7 +1,6 @@
 package org.tabletest.reporter;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
@@ -11,7 +10,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Tag("spec")
 @DisplayName("Whitespace markers")
 @Description("""
         Significant whitespace in a cell is made visible IDE-style: a centred dot per

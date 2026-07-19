@@ -1,7 +1,6 @@
 package org.tabletest.reporter;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.Scenario;
@@ -18,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * blob flattened from the page's own title, description, headers, and cell values. The index is
  * emitted once to the output root and searched client-side from every page.
  */
-@Tag("spec")
 @DisplayName("Whole-report search")
 @Description("""
         Every report carries a search index with one entry per page. A table page is

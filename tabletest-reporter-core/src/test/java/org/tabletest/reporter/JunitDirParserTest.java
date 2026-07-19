@@ -1,5 +1,6 @@
 package org.tabletest.reporter;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
@@ -9,6 +10,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// Unpublished: internal mechanism (junit output-dir parsing), not a user-facing rule.
+@Tag("unpublished")
 class JunitDirParserTest {
 
     @TableTest("""

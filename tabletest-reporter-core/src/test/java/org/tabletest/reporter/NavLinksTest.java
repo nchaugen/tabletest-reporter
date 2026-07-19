@@ -1,7 +1,6 @@
 package org.tabletest.reporter;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
@@ -15,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests relative-href computation between report pages. Every href must be relative to the
  * linking page's own directory (never root-absolute) so the tree serves from any subpath.
  */
-@Tag("spec")
 @DisplayName("Relative links")
 @Description("""
         Every link in a report is relative — never root-absolute — so a generated report
