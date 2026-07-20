@@ -56,10 +56,11 @@ public class TableTestReporter {
         if (tree == null) {
             return ReportResult.empty(inDir);
         }
+        GeneratedAt generatedAt = GeneratedAt.now();
         if (singleFile) {
-            return reportSingleFile(format, tree, outDir);
+            return reportSingleFile(format, tree, generatedAt, outDir);
         }
-        int count = report(tree, tree, List.of(), format, outDir);
+        int count = report(tree, tree, List.of(), format, generatedAt, outDir);
         if (format == BuiltInFormat.HTML) {
             writeContent(
                     outDir.resolve(SearchIndex.ASSET_NAME), SearchIndex.of(tree).asJavaScript());
@@ -67,22 +68,28 @@ public class TableTestReporter {
         return ReportResult.success(count);
     }
 
-    private ReportResult reportSingleFile(Format format, ReportNode tree, Path outDir) {
+    private ReportResult reportSingleFile(Format format, ReportNode tree, GeneratedAt generatedAt, Path outDir) {
         if (format != BuiltInFormat.HTML) {
             throw new IllegalArgumentException(
                     "Single-file mode is currently supported only for the html format, not " + format.formatName());
         }
-        String content = templateEngine.renderSingle(SingleFileModel.of(tree));
+        String content = templateEngine.renderSingle(SingleFileModel.of(tree, generatedAt));
         writeContent(outDir.resolve("index" + format.extension()), content);
         return ReportResult.success(1);
     }
 
-    private int report(ReportNode node, ReportNode root, List<ReportNode> ancestors, Format format, Path outDir) {
+    private int report(
+            ReportNode node,
+            ReportNode root,
+            List<ReportNode> ancestors,
+            Format format,
+            GeneratedAt generatedAt,
+            Path outDir) {
         Path relativeOutPath = Path.of("./" + node.outPath());
 
         return switch (node) {
             case IndexNode index -> {
-                Map<String, Object> context = createIndexContext(index, relativeOutPath, root, ancestors);
+                Map<String, Object> context = createIndexContext(index, relativeOutPath, root, ancestors, generatedAt);
 
                 Path outPath = outDir.resolve(relativeOutPath).resolve("index" + format.extension());
                 String content = templateEngine.renderIndex(format, context);
@@ -90,12 +97,12 @@ public class TableTestReporter {
 
                 List<ReportNode> childAncestors = append(ancestors, index);
                 int childCount = index.contents().stream()
-                        .mapToInt(child -> report(child, root, childAncestors, format, outDir))
+                        .mapToInt(child -> report(child, root, childAncestors, format, generatedAt, outDir))
                         .sum();
                 yield 1 + childCount;
             }
             case TableNode table -> {
-                Map<String, Object> context = createTableContext(table, root, ancestors);
+                Map<String, Object> context = createTableContext(table, root, ancestors, generatedAt);
 
                 Path outPath = outDir.resolve(relativeOutPath + format.extension());
                 String content = templateEngine.renderTable(format, context);
@@ -106,7 +113,11 @@ public class TableTestReporter {
     }
 
     private Map<String, Object> createIndexContext(
-            IndexNode index, Path relativeOutPath, ReportNode root, List<ReportNode> ancestors) {
+            IndexNode index,
+            Path relativeOutPath,
+            ReportNode root,
+            List<ReportNode> ancestors,
+            GeneratedAt generatedAt) {
         Map<String, Object> context = copyContext(index.resource());
         context.put("name", index.name());
         context.put("contents", buildContentsForTemplate(index.contents(), relativeOutPath, 1));
@@ -114,15 +125,18 @@ public class TableTestReporter {
         context.put("breadcrumbs", buildBreadcrumbs(ancestors, index));
         context.put("nav", buildNav(root, index));
         context.put("assetRoot", NavLinks.rootPrefix(index, root));
+        context.put("generatedAt", generatedAt.toMap());
         return context;
     }
 
-    private Map<String, Object> createTableContext(TableNode table, ReportNode root, List<ReportNode> ancestors) {
+    private Map<String, Object> createTableContext(
+            TableNode table, ReportNode root, List<ReportNode> ancestors, GeneratedAt generatedAt) {
         Map<String, Object> context = copyContext(table.resource());
         context.put("name", table.name());
         context.put("breadcrumbs", buildBreadcrumbs(ancestors, table));
         context.put("nav", buildNav(root, table));
         context.put("assetRoot", NavLinks.rootPrefix(table, root));
+        context.put("generatedAt", generatedAt.toMap());
         return context;
     }
 

@@ -34,8 +34,9 @@ final class SingleFileModel {
 
     private SingleFileModel() {}
 
-    static Map<String, Object> of(ReportNode root) {
+    static Map<String, Object> of(ReportNode root, GeneratedAt generatedAt) {
         Map<String, Object> context = new HashMap<>();
+        context.put("generatedAt", generatedAt.toMap());
         context.put("title", NavModel.label(root));
         context.put("description", description(root));
         context.put("sections", sections(root));
