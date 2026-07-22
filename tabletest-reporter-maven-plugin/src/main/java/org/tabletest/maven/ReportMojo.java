@@ -22,10 +22,10 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.tabletest.reporter.Format;
-import org.tabletest.reporter.FormatResolver;
-import org.tabletest.reporter.IndexDepth;
 import org.tabletest.reporter.InputDirectoryResolver;
+import org.tabletest.reporter.ReportConfiguration;
+import org.tabletest.reporter.ReportConfigurationResolver;
+import org.tabletest.reporter.ReportOptions;
 import org.tabletest.reporter.ReportResult;
 import org.tabletest.reporter.TableTestReporter;
 
@@ -76,8 +76,10 @@ public final class ReportMojo extends AbstractMojo {
 
             Path in = resolveInputDirectory(toPath(inputDirectory), fallbacks, baseDir, junitDir);
 
-            Format reportFormat = FormatResolver.resolve(format, toPath(templateDirectory));
-            ReportResult result = createReporter().report(reportFormat, in, out);
+            ReportConfiguration config = ReportConfigurationResolver.resolve(
+                    new ReportOptions(format, toPath(templateDirectory), indexDepth, null));
+            ReportResult result = new TableTestReporter(config.templateDirectory(), config.indexDepth())
+                    .report(config.format(), in, out, config.singleFile());
             logResult(result);
         } catch (MojoFailureException e) {
             // Propagate user/config failures as-is without wrapping
@@ -112,20 +114,5 @@ public final class ReportMojo extends AbstractMojo {
         } else {
             getLog().info("Generated " + result.filesGenerated() + " documentation file(s)");
         }
-    }
-
-    private TableTestReporter createReporter() throws MojoFailureException {
-        Path templateDir = toPath(templateDirectory);
-        if (templateDir != null) {
-            if (!Files.exists(templateDir)) {
-                throw new MojoFailureException("Template directory does not exist: " + templateDir.toAbsolutePath());
-            }
-            if (!Files.isDirectory(templateDir)) {
-                throw new MojoFailureException("Template path is not a directory: " + templateDir.toAbsolutePath());
-            }
-        }
-
-        IndexDepth depth = IndexDepth.parse(indexDepth);
-        return new TableTestReporter(templateDir, depth);
     }
 }

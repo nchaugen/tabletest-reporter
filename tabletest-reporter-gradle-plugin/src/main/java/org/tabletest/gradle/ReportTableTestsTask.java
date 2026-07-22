@@ -26,12 +26,12 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
 import org.jetbrains.annotations.Nullable;
-import org.tabletest.reporter.Format;
-import org.tabletest.reporter.FormatResolver;
-import org.tabletest.reporter.IndexDepth;
 import org.tabletest.reporter.InputDirectoryResolver;
 import org.tabletest.reporter.JunitDirParser;
 import org.tabletest.reporter.JunitPropertiesReader;
+import org.tabletest.reporter.ReportConfiguration;
+import org.tabletest.reporter.ReportConfigurationResolver;
+import org.tabletest.reporter.ReportOptions;
 import org.tabletest.reporter.ReportResult;
 import org.tabletest.reporter.TableTestReporter;
 
@@ -222,7 +222,6 @@ public abstract class ReportTableTestsTask extends DefaultTask {
      */
     @TaskAction
     public void run() {
-        final String fmt = format.getOrElse("asciidoc");
         final Path defaultInput = defaultInputDir.get().getAsFile().toPath();
         final Path configuredInput = Optional.ofNullable(toPath(inputDir))
                 .filter(path -> !isSamePath(path, defaultInput))
@@ -235,10 +234,12 @@ public abstract class ReportTableTestsTask extends DefaultTask {
 
         Path in = resolveInputDirectory(configuredInput, List.of(defaultInput), baseDir, junitDir);
 
-        Format reportFormat = FormatResolver.resolve(fmt, toPath(templateDir));
+        ReportConfiguration config = ReportConfigurationResolver.resolve(
+                new ReportOptions(format.getOrNull(), toPath(templateDir), indexDepth.getOrNull(), null));
 
         try {
-            ReportResult result = createReporter().report(reportFormat, in, out);
+            ReportResult result = new TableTestReporter(config.templateDirectory(), config.indexDepth())
+                    .report(config.format(), in, out, config.singleFile());
             logResult(result);
         } catch (Exception e) {
             throw new GradleException("Failed to generate TableTest report: " + e.getMessage(), e);
@@ -267,26 +268,6 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         } else {
             getLogger().lifecycle("Generated {} documentation file(s)", result.filesGenerated());
         }
-    }
-
-    private TableTestReporter createReporter() {
-        Path templateDirPath = Optional.of(templateDir)
-                .filter(DirectoryProperty::isPresent)
-                .map(dir -> dir.get().getAsFile().toPath())
-                .map(this::validateTemplateDirectory)
-                .orElse(null);
-        IndexDepth depth = IndexDepth.parse(indexDepth.getOrElse("infinite"));
-        return new TableTestReporter(templateDirPath, depth);
-    }
-
-    private Path validateTemplateDirectory(Path templateDirectory) {
-        if (!Files.exists(templateDirectory)) {
-            throw new GradleException("Template directory does not exist: " + templateDirectory.toAbsolutePath());
-        }
-        if (!Files.isDirectory(templateDirectory)) {
-            throw new GradleException("Template path is not a directory: " + templateDirectory.toAbsolutePath());
-        }
-        return templateDirectory;
     }
 
     private static boolean isSamePath(Path left, Path right) {

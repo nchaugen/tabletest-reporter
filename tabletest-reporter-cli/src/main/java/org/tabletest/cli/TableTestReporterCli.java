@@ -15,11 +15,11 @@
  */
 package org.tabletest.cli;
 
-import org.tabletest.reporter.Format;
 import org.tabletest.reporter.FormatLister;
-import org.tabletest.reporter.FormatResolver;
-import org.tabletest.reporter.IndexDepth;
 import org.tabletest.reporter.InputDirectoryResolver;
+import org.tabletest.reporter.ReportConfiguration;
+import org.tabletest.reporter.ReportConfigurationResolver;
+import org.tabletest.reporter.ReportOptions;
 import org.tabletest.reporter.ReportResult;
 import org.tabletest.reporter.TableTestReporter;
 import picocli.CommandLine;
@@ -106,9 +106,10 @@ public final class TableTestReporterCli implements Callable<Integer> {
                 return 2;
             }
 
-            Path templateDir = resolveTemplateDir();
-            Format reportFormat = FormatResolver.resolve(format, templateDir);
-            ReportResult result = createReporter(templateDir).report(reportFormat, in, out, singleFile);
+            ReportConfiguration config = ReportConfigurationResolver.resolve(
+                    new ReportOptions(format, rawTemplateDir(), indexDepthArg, singleFile));
+            ReportResult result = new TableTestReporter(config.templateDirectory(), config.indexDepth())
+                    .report(config.format(), in, out, config.singleFile());
             if (result.filesGenerated() == 0) {
                 System.err.println(result.message());
             } else {
@@ -124,25 +125,11 @@ public final class TableTestReporterCli implements Callable<Integer> {
         }
     }
 
-    private TableTestReporter createReporter(Path templateDir) {
-        IndexDepth indexDepth = IndexDepth.parse(indexDepthArg);
-        return new TableTestReporter(templateDir, indexDepth);
-    }
-
-    private Path resolveTemplateDir() {
+    private Path rawTemplateDir() {
         if (templateDirArg == null || templateDirArg.isBlank()) {
             return null;
         }
-
-        Path templateDir = Path.of(templateDirArg);
-        if (!Files.exists(templateDir)) {
-            throw new IllegalArgumentException("Template directory does not exist: " + templateDir.toAbsolutePath());
-        }
-        if (!Files.isDirectory(templateDir)) {
-            throw new IllegalArgumentException("Template path is not a directory: " + templateDir.toAbsolutePath());
-        }
-
-        return templateDir;
+        return Path.of(templateDirArg);
     }
 
     private Path resolveTemplateDirLenient() {
