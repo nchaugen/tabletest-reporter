@@ -52,7 +52,7 @@ public class TableTestReporter {
     }
 
     /**
-     * Generates the report. Spec metadata (title, intro, chapter order/titles) is applied on top of
+     * Generates the report. Spec metadata (title, intro, feature order/titles) is applied on top of
      * the built tree before rendering. In single-file mode the whole tree is assembled into one
      * self-contained document (currently HTML only); otherwise one file is written per node.
      */

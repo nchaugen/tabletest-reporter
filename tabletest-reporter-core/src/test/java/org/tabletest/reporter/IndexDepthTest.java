@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @DisplayName("The indexDepth option")
 @Description("""
-        The indexDepth option controls how many levels of nested chapters get their own
+        The indexDepth option controls how many levels of nested features get their own
         index pages before the remaining tree is flattened onto one page. It is set on
         the CLI, Maven, or Gradle surface as a number or the keyword "infinite".
         """)
@@ -22,7 +22,7 @@ class IndexDepthTest {
     @DisplayName("indexDepth accepts a depth number or the infinite keyword")
     @Description("""
             The keyword is case-insensitive, and leaving the option unset means
-            infinite: every chapter level gets its own index page. Infinite is
+            infinite: every feature level gets its own index page. Infinite is
             represented as the largest possible depth, 2147483647.
             """)
     @TableTest("""

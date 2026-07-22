@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Pass/fail rollup")
 @Description("""
         Every page shows how many of its scenarios pass. A table's counts come from its
-        own executed rows; a chapter's counts sum bottom-up from its children. A page
+        own executed rows; a feature's counts sum bottom-up from its children. A page
         with no executed scenarios is neutral: reported without a pass/fail verdict.
         """)
 class StatusRollupTest {
@@ -41,11 +41,11 @@ class StatusRollupTest {
         assertThat(status.passedScenarios()).isEqualTo(passed);
     }
 
-    @DisplayName("A chapter's status is summed bottom-up from its children")
+    @DisplayName("A feature's status is summed bottom-up from its children")
     @Description("""
-            Child A and Child B are two tables in the same chapter, given as their row
+            Child A and Child B are two tables in the same feature, given as their row
             results. A neutral child contributes nothing to the counts and never turns
-            a passing chapter red.
+            a passing feature red.
             """)
     @TableTest("""
         Scenario                | Child A | Child B      | State?  | Total? | Passed?

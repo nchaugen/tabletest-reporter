@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * Report-time curation for a whole spec: the spec title and intro paragraph shown on the root
- * index, plus an ordered chapter tree that retitles intermediate index pages and imposes an
+ * index, plus an ordered feature tree that retitles intermediate index pages and imposes an
  * explicit reading order on them. Sourced from a {@code tabletest-reporter.yaml} sidecar file and
  * applied on top of the deterministic tree the builder produces, so no metadata leaves the report
  * output unchanged from today's behaviour. Every field is optional: {@link #EMPTY} is the absent
@@ -28,15 +28,15 @@ import java.util.Map;
  *
  * @param title the spec title for the root index, or null to keep the derived name
  * @param intro the intro paragraph for the root index, or null for none
- * @param chapters the ordered top-level chapters, empty when none are declared
+ * @param features the ordered top-level features, empty when none are declared
  */
-public record SpecMetadata(String title, String intro, List<ChapterMetadata> chapters) {
+public record SpecMetadata(String title, String intro, List<FeatureMetadata> features) {
 
-    /** The absent case: no title, no intro, no chapters. Applying it leaves a tree unchanged. */
+    /** The absent case: no title, no intro, no features. Applying it leaves a tree unchanged. */
     public static final SpecMetadata EMPTY = new SpecMetadata(null, null, List.of());
 
     public SpecMetadata {
-        chapters = List.copyOf(chapters);
+        features = List.copyOf(features);
     }
 
     /**
@@ -48,29 +48,29 @@ public record SpecMetadata(String title, String intro, List<ChapterMetadata> cha
             return EMPTY;
         }
         return new SpecMetadata(
-                stringValue(yaml, "title"), stringValue(yaml, "intro"), parseChapters(yaml.get("chapters")));
+                stringValue(yaml, "title"), stringValue(yaml, "intro"), parseFeatures(yaml.get("features")));
     }
 
     /** True when this metadata carries nothing, so applying it is a no-op. */
     public boolean isEmpty() {
-        return title == null && intro == null && chapters.isEmpty();
+        return title == null && intro == null && features.isEmpty();
     }
 
     /**
      * Returns the report tree with this metadata applied: the spec title and intro on the root
-     * index, declared chapters retitled and reordered ahead of their alphabetical siblings.
+     * index, declared features retitled and reordered ahead of their alphabetical siblings.
      * Returns the same tree unchanged when this metadata {@link #isEmpty() is empty}.
      */
     public ReportNode applyTo(ReportNode root) {
         return SpecMetadataApplier.apply(root, this);
     }
 
-    static List<ChapterMetadata> parseChapters(Object value) {
+    static List<FeatureMetadata> parseFeatures(Object value) {
         if (!(value instanceof List<?> entries)) {
             return List.of();
         }
         return entries.stream()
-                .map(ChapterMetadata::parse)
+                .map(FeatureMetadata::parse)
                 .flatMap(java.util.Optional::stream)
                 .toList();
     }

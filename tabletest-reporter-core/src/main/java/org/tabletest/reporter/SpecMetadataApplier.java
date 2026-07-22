@@ -24,9 +24,9 @@ import java.util.Map;
 
 /**
  * Applies {@link SpecMetadata} onto an already-built report tree: writes the spec title and intro
- * onto the root index, and for each declared chapter retitles the matched node and imposes the
- * declared reading order on its siblings — declared chapters first, the rest following in their
- * existing (alphabetical) order. A declared chapter that matches no node is logged and skipped, so
+ * onto the root index, and for each declared feature retitles the matched node and imposes the
+ * declared reading order on its siblings — declared features first, the rest following in their
+ * existing (alphabetical) order. A declared feature that matches no node is logged and skipped, so
  * a curation typo never fails a report. The tree is rebuilt immutably; the builder's output is left
  * untouched, which is why empty metadata returns the very same tree.
  */
@@ -43,22 +43,22 @@ final class SpecMetadataApplier {
             return root;
         }
         Map<String, Object> resource = enriched(root.resource(), metadata.title(), metadata.intro());
-        return rebuild(root, resource, reorder(childrenOf(root), metadata.chapters()));
+        return rebuild(root, resource, reorder(childrenOf(root), metadata.features()));
     }
 
-    private static List<ReportNode> reorder(List<ReportNode> children, List<ChapterMetadata> chapters) {
-        if (chapters.isEmpty()) {
+    private static List<ReportNode> reorder(List<ReportNode> children, List<FeatureMetadata> features) {
+        if (features.isEmpty()) {
             return children;
         }
         List<ReportNode> declared = new ArrayList<>();
         List<ReportNode> remaining = new ArrayList<>(children);
-        for (ChapterMetadata chapter : chapters) {
-            ReportNode match = removeMatch(remaining, chapter.name());
+        for (FeatureMetadata feature : features) {
+            ReportNode match = removeMatch(remaining, feature.name());
             if (match == null) {
-                LOGGER.log(Level.WARNING, "No report node matches declared chapter ''{0}''", chapter.name());
+                LOGGER.log(Level.WARNING, "No report node matches declared feature ''{0}''", feature.name());
                 continue;
             }
-            declared.add(enrichChapter(match, chapter));
+            declared.add(enrichFeature(match, feature));
         }
         declared.addAll(remaining);
         return List.copyOf(declared);
@@ -73,9 +73,9 @@ final class SpecMetadataApplier {
         return null;
     }
 
-    private static ReportNode enrichChapter(ReportNode node, ChapterMetadata chapter) {
-        Map<String, Object> resource = enriched(node.resource(), chapter.title(), null);
-        return rebuild(node, resource, reorder(childrenOf(node), chapter.chapters()));
+    private static ReportNode enrichFeature(ReportNode node, FeatureMetadata feature) {
+        Map<String, Object> resource = enriched(node.resource(), feature.title(), null);
+        return rebuild(node, resource, reorder(childrenOf(node), feature.features()));
     }
 
     private static List<ReportNode> childrenOf(ReportNode node) {

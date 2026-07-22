@@ -20,13 +20,13 @@ class SpecMetadataReportTest {
     Path tempDir;
 
     @Test
-    void appliesTitleIntroAndChapterOrderToRootIndex() throws IOException {
+    void appliesTitleIntroAndFeatureOrderToRootIndex() throws IOException {
         Path inDir = setupTwoClassInput();
         Path outDir = Files.createDirectory(tempDir.resolve("out"));
         SpecMetadata metadata = new SpecMetadata(
                 "Example Spec",
                 "How the example behaves.",
-                List.of(new ChapterMetadata("order-test", "Ordered Placement", List.of())));
+                List.of(new FeatureMetadata("order-test", "Ordered Placement", List.of())));
 
         new TableTestReporter().report(MARKDOWN, inDir, outDir, false, metadata);
 
@@ -35,7 +35,7 @@ class SpecMetadataReportTest {
                 .startsWith("# Example Spec")
                 .contains("How the example behaves.")
                 .doesNotContain("# example");
-        // Declared chapter (retitled) leads; the undeclared sibling follows alphabetically.
+        // Declared feature (retitled) leads; the undeclared sibling follows alphabetically.
         assertThat(rootIndex).containsSubsequence("Ordered Placement", "Auth Test");
     }
 

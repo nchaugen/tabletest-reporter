@@ -20,27 +20,27 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Curation metadata for one chapter of a spec: which report node it names, the human title to
- * show in place of the leaked package segment, and the ordered sub-chapters beneath it. A
- * chapter matches a node by {@code name} (its path segment / slug) within its parent's children,
- * so the same short name is unambiguous because it is scoped by nesting. The order chapters
+ * Curation metadata for one feature of a spec: which report node it names, the human title to
+ * show in place of the leaked package segment, and the ordered sub-features beneath it. A
+ * feature matches a node by {@code name} (its path segment / slug) within its parent's children,
+ * so the same short name is unambiguous because it is scoped by nesting. The order features
  * appear in is the reading order applied to the matched siblings.
  *
- * @param name the path segment / slug of the node this chapter names
+ * @param name the path segment / slug of the node this feature names
  * @param title the human title to render, or null to reorder without retitling
- * @param chapters the ordered sub-chapters, empty when this chapter has no declared children
+ * @param features the ordered sub-features, empty when this feature has no declared children
  */
-public record ChapterMetadata(String name, String title, List<ChapterMetadata> chapters) {
+public record FeatureMetadata(String name, String title, List<FeatureMetadata> features) {
 
-    public ChapterMetadata {
-        chapters = List.copyOf(chapters);
+    public FeatureMetadata {
+        features = List.copyOf(features);
     }
 
     /**
-     * Parses one chapter entry from a raw YAML map, ignoring an entry with no {@code name} (there
+     * Parses one feature entry from a raw YAML map, ignoring an entry with no {@code name} (there
      * is nothing to match a node on). Returns empty for anything that is not a well-formed entry.
      */
-    static Optional<ChapterMetadata> parse(Object entry) {
+    static Optional<FeatureMetadata> parse(Object entry) {
         if (!(entry instanceof Map<?, ?> map)) {
             return Optional.empty();
         }
@@ -48,7 +48,7 @@ public record ChapterMetadata(String name, String title, List<ChapterMetadata> c
         if (name == null) {
             return Optional.empty();
         }
-        return Optional.of(new ChapterMetadata(
-                name, SpecMetadata.stringValue(map, "title"), SpecMetadata.parseChapters(map.get("chapters"))));
+        return Optional.of(new FeatureMetadata(
+                name, SpecMetadata.stringValue(map, "title"), SpecMetadata.parseFeatures(map.get("features"))));
     }
 }

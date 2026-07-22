@@ -15,15 +15,15 @@ class SpecMetadataApplyTest {
 
     @TableTest("""
         Scenario                   | Existing  | Declared  | Order?
-        No chapters keeps order    | [a, b, c] | []        | [a, b, c]
+        No features keeps order    | [a, b, c] | []        | [a, b, c]
         Declared come first        | [a, b, c] | [c, a]    | [c, a, b]
         Full reorder               | [b, a]    | [a, b]    | [a, b]
         Unmatched declared ignored | [a, b, c] | [x]       | [a, b, c]
         Partial with unmatched     | [a, b, c] | [c, x, a] | [c, a, b]
         """)
-    void reordersTopLevelChaptersDeclaredFirstThenAlphabetical(
+    void reordersTopLevelFeaturesDeclaredFirstThenAlphabetical(
             List<String> existing, List<String> declared, List<String> order) {
-        SpecMetadata metadata = new SpecMetadata(null, null, chapters(declared));
+        SpecMetadata metadata = new SpecMetadata(null, null, features(declared));
 
         ReportNode applied = metadata.applyTo(indexWithChildren("junit", existing));
 
@@ -42,7 +42,7 @@ class SpecMetadataApplyTest {
     }
 
     @Test
-    void retitlesMatchedChapterAndRecursesIntoItsChildren() {
+    void retitlesMatchedFeatureAndRecursesIntoItsChildren() {
         ReportNode root = new IndexNode(
                 "junit",
                 "",
@@ -55,13 +55,13 @@ class SpecMetadataApplyTest {
                 "Spec",
                 null,
                 List.of(
-                        new ChapterMetadata(
+                        new FeatureMetadata(
                                 "formatter",
                                 "Table Formatter",
                                 List.of(
-                                        new ChapterMetadata("extraction", "Value Extraction", List.of()),
-                                        new ChapterMetadata("displaywidth", "Display Width", List.of()))),
-                        new ChapterMetadata("examples", "Worked Examples", List.of())));
+                                        new FeatureMetadata("extraction", "Value Extraction", List.of()),
+                                        new FeatureMetadata("displaywidth", "Display Width", List.of()))),
+                        new FeatureMetadata("examples", "Worked Examples", List.of())));
 
         ReportNode applied = metadata.applyTo(root);
 
@@ -79,7 +79,7 @@ class SpecMetadataApplyTest {
                 null,
                 List.of(new IndexNode("formatter", "/formatter", Map.of("status", "passing"), List.of())));
         SpecMetadata metadata =
-                new SpecMetadata("Spec", null, List.of(new ChapterMetadata("formatter", "Table Formatter", List.of())));
+                new SpecMetadata("Spec", null, List.of(new FeatureMetadata("formatter", "Table Formatter", List.of())));
 
         ReportNode applied = metadata.applyTo(root);
 
@@ -97,9 +97,9 @@ class SpecMetadataApplyTest {
 
     // --- helpers ---
 
-    private static List<ChapterMetadata> chapters(List<String> names) {
+    private static List<FeatureMetadata> features(List<String> names) {
         return names.stream()
-                .map(name -> new ChapterMetadata(name, null, List.of()))
+                .map(name -> new FeatureMetadata(name, null, List.of()))
                 .toList();
     }
 

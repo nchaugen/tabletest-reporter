@@ -103,7 +103,7 @@ public abstract class TableTestReporterExtension {
     /**
      * Returns the report configuration file property.
      *
-     * @return property for the tabletest-reporter.yaml file holding spec title, intro and chapter order
+     * @return property for the tabletest-reporter.yaml file holding spec title, intro and feature order
      */
     public RegularFileProperty getConfigFile() {
         return configFile;

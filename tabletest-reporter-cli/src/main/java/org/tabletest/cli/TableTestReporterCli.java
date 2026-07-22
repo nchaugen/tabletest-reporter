@@ -80,7 +80,7 @@ public final class TableTestReporterCli implements Callable<Integer> {
 
     @Option(
             names = {"-c", "--config"},
-            description = "Report configuration file with spec title, intro and chapter order "
+            description = "Report configuration file with spec title, intro and feature order "
                     + "(default: ./tabletest-reporter.yaml)")
     private String configFileArg;
 

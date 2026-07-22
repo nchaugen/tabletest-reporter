@@ -266,25 +266,25 @@ tableTestReporter {
 By default the root index of a spec is titled by the deepest common package segment (e.g.
 "junit" or "example") and intermediate index pages show lowercase package names. Drop an
 optional `tabletest-reporter.yaml` in the project directory to give the spec a real title
-and intro, retitle intermediate pages, and set an explicit chapter reading order:
+and intro, retitle intermediate pages, and set an explicit feature reading order:
 
 ```yaml
 title: "TableTest Core — Specification"
 intro: >
   Generated from the executable TableTest suite. Every scenario below runs in CI;
   a broken row means the documented behaviour regressed.
-chapters:
+features:
   - name: formatter          # matches an index page by its path segment / slug
     title: "Table Formatter"
-    chapters:                # list order is the reading order (not alphabetical)
+    features:                # list order is the reading order (not alphabetical)
       - { name: extraction,   title: "Value Extraction" }
       - { name: displaywidth, title: "Display Width" }
   - name: examples
     title: "Worked Examples"
 ```
 
-Everything is optional. Declared chapters render first in the order given; undeclared
-siblings follow alphabetically. A chapter that matches no page is logged and skipped, so a
+Everything is optional. Declared features render first in the order given; undeclared
+siblings follow alphabetically. A feature that matches no page is logged and skipped, so a
 typo never fails the report. The file is read at report time — a project without it reports
 exactly as before. Override its location with the `configFile` option (Maven `<configFile>`,
 Gradle `configFile`, CLI `--config`).

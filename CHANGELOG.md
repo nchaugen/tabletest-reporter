@@ -5,8 +5,8 @@
 - Spec-level metadata via an optional `tabletest-reporter.yaml` in the project directory:
   give the whole spec a real title and intro paragraph on its root index (instead of the
   leaked lowercase package segment like "junit" or "example"), retitle intermediate index
-  pages, and set an explicit chapter reading order for the top-level sections and their
-  children — declared chapters lead, undeclared siblings follow alphabetically. The file is
+  pages, and set an explicit feature reading order for the top-level sections and their
+  children — declared features lead, undeclared siblings follow alphabetically. The file is
   read at report time and applied on top of the generated tree, so a project without it is
   unaffected. Point elsewhere with Maven `<configFile>` / `-Dtabletest.report.configFile`,
   Gradle `configFile`, or the CLI `--config` / `-c` option.

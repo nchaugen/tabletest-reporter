@@ -88,7 +88,7 @@ class SearchIndexTest {
     @Description("""
             The searched report holds one table, "Leap Year Rules" (description "Gregorian
             leap year determination", column headers Year and Is Leap Year?, one row:
-            2004 / Yes), inside a chapter titled "Calendar". Matching is case-insensitive
+            2004 / Yes), inside a feature titled "Calendar". Matching is case-insensitive
             substring matching.
             """)
     @TableTest("""

@@ -27,7 +27,7 @@ class SpecMetadataParseTest {
 
         assertThat(metadata.title()).isEqualTo("TableTest Core — Specification");
         assertThat(metadata.intro()).isEqualTo("Generated from the executable suite.");
-        assertThat(metadata.chapters()).isEmpty();
+        assertThat(metadata.features()).isEmpty();
     }
 
     @Test
@@ -48,52 +48,52 @@ class SpecMetadataParseTest {
     }
 
     @Test
-    void readsNestedChaptersInDeclaredOrder() {
+    void readsNestedFeaturesInDeclaredOrder() {
         SpecMetadata metadata = parse("""
                 title: "Formatter"
-                chapters:
+                features:
                   - name: formatter
                     title: "Table Formatter"
-                    chapters:
+                    features:
                       - { name: extraction, title: "Value Extraction" }
                       - { name: displaywidth, title: "Display Width" }
                   - name: examples
                     title: "Worked Examples"
                 """);
 
-        assertThat(metadata.chapters())
+        assertThat(metadata.features())
                 .containsExactly(
-                        new ChapterMetadata(
+                        new FeatureMetadata(
                                 "formatter",
                                 "Table Formatter",
                                 java.util.List.of(
-                                        new ChapterMetadata("extraction", "Value Extraction", java.util.List.of()),
-                                        new ChapterMetadata("displaywidth", "Display Width", java.util.List.of()))),
-                        new ChapterMetadata("examples", "Worked Examples", java.util.List.of()));
+                                        new FeatureMetadata("extraction", "Value Extraction", java.util.List.of()),
+                                        new FeatureMetadata("displaywidth", "Display Width", java.util.List.of()))),
+                        new FeatureMetadata("examples", "Worked Examples", java.util.List.of()));
     }
 
     @Test
-    void chapterWithoutNameIsSkipped() {
+    void featureWithoutNameIsSkipped() {
         SpecMetadata metadata = parse("""
-                chapters:
+                features:
                   - title: "No name — cannot match a node"
                   - name: examples
                 """);
 
-        assertThat(metadata.chapters()).containsExactly(new ChapterMetadata("examples", null, java.util.List.of()));
+        assertThat(metadata.features()).containsExactly(new FeatureMetadata("examples", null, java.util.List.of()));
     }
 
     @Test
-    void chapterCanReorderWithoutRetitling() {
+    void featureCanReorderWithoutRetitling() {
         SpecMetadata metadata = parse("""
-                chapters:
+                features:
                   - name: formatter
                   - name: examples
                 """);
 
-        assertThat(metadata.chapters())
+        assertThat(metadata.features())
                 .containsExactly(
-                        new ChapterMetadata("formatter", null, java.util.List.of()),
-                        new ChapterMetadata("examples", null, java.util.List.of()));
+                        new FeatureMetadata("formatter", null, java.util.List.of()),
+                        new FeatureMetadata("examples", null, java.util.List.of()));
     }
 }
