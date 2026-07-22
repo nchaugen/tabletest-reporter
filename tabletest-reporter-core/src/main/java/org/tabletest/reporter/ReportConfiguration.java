@@ -28,5 +28,7 @@ import java.nio.file.Path;
  * @param templateDirectory a validated custom template directory, or null for built-in templates
  * @param indexDepth the resolved index depth
  * @param singleFile whether to assemble the report into a single self-contained file
+ * @param specMetadata the resolved spec-level curation, or {@link SpecMetadata#EMPTY} when none
  */
-public record ReportConfiguration(Format format, Path templateDirectory, IndexDepth indexDepth, boolean singleFile) {}
+public record ReportConfiguration(
+        Format format, Path templateDirectory, IndexDepth indexDepth, boolean singleFile, SpecMetadata specMetadata) {}

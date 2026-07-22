@@ -28,5 +28,8 @@ import java.nio.file.Path;
  * @param templateDirectory a custom template directory, or null for the built-in templates
  * @param indexDepth the requested index depth ("1", "2", ..., "infinite"), or null for the default
  * @param singleFile whether to assemble a single-file report, or null for the default (false)
+ * @param configFile the resolved {@code tabletest-reporter.yaml} path to read spec metadata from,
+ *     or null when none applies (no file present or none configured)
  */
-public record ReportOptions(String format, Path templateDirectory, String indexDepth, Boolean singleFile) {}
+public record ReportOptions(
+        String format, Path templateDirectory, String indexDepth, Boolean singleFile, Path configFile) {}

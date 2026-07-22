@@ -17,6 +17,7 @@ package org.tabletest.gradle;
 
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.ProjectLayout;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.ProviderFactory;
@@ -33,6 +34,7 @@ public abstract class TableTestReporterExtension {
     private final DirectoryProperty outputDir;
     private final DirectoryProperty templateDir;
     private final Property<String> indexDepth;
+    private final RegularFileProperty configFile;
 
     /**
      * Creates a new extension instance with default configuration values.
@@ -49,6 +51,8 @@ public abstract class TableTestReporterExtension {
                 .convention(layout.getBuildDirectory().dir("generated-docs/tabletest"));
         this.templateDir = objects.directoryProperty();
         this.indexDepth = objects.property(String.class).convention("infinite");
+        this.configFile =
+                objects.fileProperty().convention(layout.getProjectDirectory().file("tabletest-reporter.yaml"));
     }
 
     /**
@@ -94,5 +98,14 @@ public abstract class TableTestReporterExtension {
      */
     public Property<String> getIndexDepth() {
         return indexDepth;
+    }
+
+    /**
+     * Returns the report configuration file property.
+     *
+     * @return property for the tabletest-reporter.yaml file holding spec title, intro and chapter order
+     */
+    public RegularFileProperty getConfigFile() {
+        return configFile;
     }
 }

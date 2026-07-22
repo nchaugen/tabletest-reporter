@@ -55,6 +55,9 @@ public final class ReportMojo extends AbstractMojo {
     @Parameter(property = "tabletest.report.indexDepth", defaultValue = "infinite")
     private String indexDepth;
 
+    @Parameter(property = "tabletest.report.configFile", defaultValue = "${project.basedir}/tabletest-reporter.yaml")
+    private File configFile;
+
     @Parameter(defaultValue = "${project.basedir}", readonly = true)
     private File baseDirectory;
 
@@ -77,9 +80,9 @@ public final class ReportMojo extends AbstractMojo {
             Path in = resolveInputDirectory(toPath(inputDirectory), fallbacks, baseDir, junitDir);
 
             ReportConfiguration config = ReportConfigurationResolver.resolve(
-                    new ReportOptions(format, toPath(templateDirectory), indexDepth, null));
+                    new ReportOptions(format, toPath(templateDirectory), indexDepth, null, toPath(configFile)));
             ReportResult result = new TableTestReporter(config.templateDirectory(), config.indexDepth())
-                    .report(config.format(), in, out, config.singleFile());
+                    .report(config.format(), in, out, config.singleFile(), config.specMetadata());
             logResult(result);
         } catch (MojoFailureException e) {
             // Propagate user/config failures as-is without wrapping

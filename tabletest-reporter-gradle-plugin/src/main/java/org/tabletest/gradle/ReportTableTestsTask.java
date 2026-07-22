@@ -22,6 +22,7 @@ import org.gradle.api.file.ConfigurableFileTree;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileTree;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
@@ -60,9 +61,11 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     private final DirectoryProperty templateDir;
     private final Property<String> junitOutputDir;
     private final Property<String> indexDepth;
+    private final RegularFileProperty configFile;
     private final DirectoryProperty projectDir;
     private final DirectoryProperty defaultInputDir;
     private final ConfigurableFileCollection sourceYamlFiles;
+    private final ConfigurableFileCollection configFileInput;
 
     /**
      * Creates a new task instance with default configuration.
@@ -76,10 +79,13 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         this.templateDir = objects.directoryProperty();
         this.junitOutputDir = objects.property(String.class);
         this.indexDepth = objects.property(String.class);
+        this.configFile = objects.fileProperty();
         this.projectDir = objects.directoryProperty();
         this.defaultInputDir = objects.directoryProperty();
         this.sourceYamlFiles = objects.fileCollection();
         this.sourceYamlFiles.from((Callable<List<FileTree>>) this::candidateYamlTrees);
+        this.configFileInput = objects.fileCollection();
+        this.configFileInput.from((Callable<List<java.io.File>>) this::existingConfigFile);
         setGroup("documentation");
         setDescription("Generates AsciiDoc or Markdown documentation from TableTest YAML outputs");
     }
@@ -152,6 +158,31 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     }
 
     /**
+     * Returns the report configuration file property.
+     *
+     * @return property for the tabletest-reporter.yaml file holding spec title, intro and chapter order
+     */
+    @Internal
+    public RegularFileProperty getConfigFile() {
+        return configFile;
+    }
+
+    /**
+     * Returns the configuration file as a task input when it exists, so a change to the
+     * tabletest-reporter.yaml invalidates the cached report. Tracked separately from
+     * {@link #getConfigFile()} because the conventional path is often absent, and a declared-but-
+     * missing {@code @InputFile} would fail the build.
+     *
+     * @return file collection holding the configuration file when present, otherwise empty
+     */
+    @org.gradle.api.tasks.Optional
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    public FileCollection getConfigFileInput() {
+        return configFileInput;
+    }
+
+    /**
      * Returns the project directory property.
      *
      * @return property for the project base directory used for resolving relative paths
@@ -208,6 +239,17 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         return candidates;
     }
 
+    private List<java.io.File> existingConfigFile() {
+        Path path = resolvedConfigFile();
+        return path != null && Files.isRegularFile(path) ? List.of(path.toFile()) : List.of();
+    }
+
+    private @Nullable Path resolvedConfigFile() {
+        return Optional.ofNullable(configFile.getOrNull())
+                .map(file -> file.getAsFile().toPath())
+                .orElse(null);
+    }
+
     private FileTree yamlTreeAt(Path directory) {
         ConfigurableFileTree tree = objects.fileTree();
         tree.setDir(directory.toFile());
@@ -234,12 +276,12 @@ public abstract class ReportTableTestsTask extends DefaultTask {
 
         Path in = resolveInputDirectory(configuredInput, List.of(defaultInput), baseDir, junitDir);
 
-        ReportConfiguration config = ReportConfigurationResolver.resolve(
-                new ReportOptions(format.getOrNull(), toPath(templateDir), indexDepth.getOrNull(), null));
+        ReportConfiguration config = ReportConfigurationResolver.resolve(new ReportOptions(
+                format.getOrNull(), toPath(templateDir), indexDepth.getOrNull(), null, resolvedConfigFile()));
 
         try {
             ReportResult result = new TableTestReporter(config.templateDirectory(), config.indexDepth())
-                    .report(config.format(), in, out, config.singleFile());
+                    .report(config.format(), in, out, config.singleFile(), config.specMetadata());
             logResult(result);
         } catch (Exception e) {
             throw new GradleException("Failed to generate TableTest report: " + e.getMessage(), e);

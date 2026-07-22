@@ -21,6 +21,7 @@ import org.tabletest.reporter.ReportConfiguration;
 import org.tabletest.reporter.ReportConfigurationResolver;
 import org.tabletest.reporter.ReportOptions;
 import org.tabletest.reporter.ReportResult;
+import org.tabletest.reporter.SpecMetadataResolver;
 import org.tabletest.reporter.TableTestReporter;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -77,6 +78,12 @@ public final class TableTestReporterCli implements Callable<Integer> {
             description = "Assemble the whole report into one self-contained file (html format only)")
     private boolean singleFile;
 
+    @Option(
+            names = {"-c", "--config"},
+            description = "Report configuration file with spec title, intro and chapter order "
+                    + "(default: ./tabletest-reporter.yaml)")
+    private String configFileArg;
+
     public static void main(String[] args) {
         int exit = new CommandLine(new TableTestReporterCli()).execute(args);
         System.exit(exit);
@@ -107,9 +114,9 @@ public final class TableTestReporterCli implements Callable<Integer> {
             }
 
             ReportConfiguration config = ReportConfigurationResolver.resolve(
-                    new ReportOptions(format, rawTemplateDir(), indexDepthArg, singleFile));
+                    new ReportOptions(format, rawTemplateDir(), indexDepthArg, singleFile, resolveConfigFile()));
             ReportResult result = new TableTestReporter(config.templateDirectory(), config.indexDepth())
-                    .report(config.format(), in, out, config.singleFile());
+                    .report(config.format(), in, out, config.singleFile(), config.specMetadata());
             if (result.filesGenerated() == 0) {
                 System.err.println(result.message());
             } else {
@@ -123,6 +130,12 @@ public final class TableTestReporterCli implements Callable<Integer> {
             System.err.printf("Failed to generate report: %s%n", e.getMessage());
             return 1;
         }
+    }
+
+    private Path resolveConfigFile() {
+        return configFileArg == null || configFileArg.isBlank()
+                ? Path.of(SpecMetadataResolver.DEFAULT_FILE_NAME)
+                : Path.of(configFileArg);
     }
 
     private Path rawTemplateDir() {

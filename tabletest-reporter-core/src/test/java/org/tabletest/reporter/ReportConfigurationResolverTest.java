@@ -34,7 +34,7 @@ class ReportConfigurationResolverTest {
             int resolvedDepth,
             boolean resolvedSingleFile) {
         ReportConfiguration config =
-                ReportConfigurationResolver.resolve(new ReportOptions(format, null, indexDepth, singleFile));
+                ReportConfigurationResolver.resolve(new ReportOptions(format, null, indexDepth, singleFile, null));
 
         assertThat(config.format().formatName()).isEqualTo(resolvedFormat);
         assertThat(config.indexDepth().value()).isEqualTo(resolvedDepth);
@@ -44,16 +44,35 @@ class ReportConfigurationResolverTest {
     @Test
     void passesValidTemplateDirectoryThrough() {
         ReportConfiguration config =
-                ReportConfigurationResolver.resolve(new ReportOptions("asciidoc", tempDir, null, null));
+                ReportConfigurationResolver.resolve(new ReportOptions("asciidoc", tempDir, null, null, null));
 
         assertThat(config.templateDirectory()).isEqualTo(tempDir);
+    }
+
+    @Test
+    void resolvesEmptySpecMetadataWhenNoConfigFile() {
+        ReportConfiguration config =
+                ReportConfigurationResolver.resolve(new ReportOptions(null, null, null, null, null));
+
+        assertThat(config.specMetadata()).isEqualTo(SpecMetadata.EMPTY);
+    }
+
+    @Test
+    void readsSpecMetadataFromConfiguredFile() throws IOException {
+        Path configFile = Files.writeString(tempDir.resolve("tabletest-reporter.yaml"), "title: \"Core Spec\"\n");
+
+        ReportConfiguration config =
+                ReportConfigurationResolver.resolve(new ReportOptions(null, null, null, null, configFile));
+
+        assertThat(config.specMetadata().title()).isEqualTo("Core Spec");
     }
 
     @Test
     void rejectsMissingTemplateDirectory() {
         Path missing = tempDir.resolve("does-not-exist");
 
-        assertThatThrownBy(() -> ReportConfigurationResolver.resolve(new ReportOptions(null, missing, null, null)))
+        assertThatThrownBy(
+                        () -> ReportConfigurationResolver.resolve(new ReportOptions(null, missing, null, null, null)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageStartingWith("Template directory does not exist:");
     }
@@ -62,7 +81,7 @@ class ReportConfigurationResolverTest {
     void rejectsTemplatePathThatIsAFile() throws IOException {
         Path file = Files.createFile(tempDir.resolve("template.txt"));
 
-        assertThatThrownBy(() -> ReportConfigurationResolver.resolve(new ReportOptions(null, file, null, null)))
+        assertThatThrownBy(() -> ReportConfigurationResolver.resolve(new ReportOptions(null, file, null, null, null)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageStartingWith("Template path is not a directory:");
     }

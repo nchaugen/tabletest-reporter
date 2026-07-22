@@ -47,15 +47,21 @@ public class TableTestReporter {
         return report(format, inDir, outDir, false);
     }
 
+    public ReportResult report(Format format, Path inDir, Path outDir, boolean singleFile) {
+        return report(format, inDir, outDir, singleFile, SpecMetadata.EMPTY);
+    }
+
     /**
-     * Generates the report. In single-file mode the whole tree is assembled into one
+     * Generates the report. Spec metadata (title, intro, chapter order/titles) is applied on top of
+     * the built tree before rendering. In single-file mode the whole tree is assembled into one
      * self-contained document (currently HTML only); otherwise one file is written per node.
      */
-    public ReportResult report(Format format, Path inDir, Path outDir, boolean singleFile) {
-        ReportNode tree = ReportTree.process(inDir);
-        if (tree == null) {
+    public ReportResult report(Format format, Path inDir, Path outDir, boolean singleFile, SpecMetadata specMetadata) {
+        ReportNode built = ReportTree.process(inDir);
+        if (built == null) {
             return ReportResult.empty(inDir);
         }
+        ReportNode tree = specMetadata.applyTo(built);
         GeneratedAt generatedAt = GeneratedAt.now();
         if (singleFile) {
             return reportSingleFile(format, tree, generatedAt, outDir);
