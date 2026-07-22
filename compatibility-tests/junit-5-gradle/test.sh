@@ -99,6 +99,15 @@ echo -e "\n${YELLOW}[9/9] Validating Markdown generation...${NC}"
 validate_output_files "build/generated-docs/tabletest" "*.md" "Markdown" 11
 echo -e "${GREEN}✓ Markdown files generated${NC}"
 
+# ==================================================================
+# Spec metadata: tabletest-reporter.yaml discovered from projectDir
+# and applied to the just-generated report
+# ==================================================================
+echo -e "\n--- Spec metadata (tabletest-reporter.yaml) ---"
+echo -e "\n${YELLOW}Validating spec title, intro, retitle and feature order...${NC}"
+validate_spec_metadata "build/generated-docs/tabletest/index.md" "JUnit 5 Gradle Compatibility Spec"
+echo -e "${GREEN}✓ Spec metadata applied${NC}"
+
 echo -e "\n=========================================="
 echo -e "${GREEN}SUCCESS: All verification steps passed${NC}"
 echo -e "=========================================="

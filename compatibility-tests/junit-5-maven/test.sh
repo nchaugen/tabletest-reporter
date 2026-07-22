@@ -102,6 +102,15 @@ cat > "$PROPERTIES_FILE" << 'EOF'
 junit.jupiter.extensions.autodetection.enabled=true
 EOF
 
+# ==================================================================
+# Spec metadata: tabletest-reporter.yaml discovered from ${project.basedir}
+# and applied to the just-generated report
+# ==================================================================
+echo -e "\n--- Spec metadata (tabletest-reporter.yaml) ---"
+echo -e "\n${YELLOW}Validating spec title, intro, retitle and feature order...${NC}"
+validate_spec_metadata "target/generated-docs/tabletest/index.md" "JUnit 5 Maven Compatibility Spec"
+echo -e "${GREEN}✓ Spec metadata applied${NC}"
+
 echo -e "\n=========================================="
 echo -e "${GREEN}SUCCESS: All verification steps passed${NC}"
 echo -e "=========================================="
