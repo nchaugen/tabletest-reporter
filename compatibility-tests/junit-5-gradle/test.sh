@@ -108,6 +108,10 @@ echo -e "\n${YELLOW}Validating spec title, intro, retitle and feature order...${
 validate_spec_metadata "build/generated-docs/tabletest/index.md" "JUnit 5 Gradle Compatibility Spec"
 echo -e "${GREEN}✓ Spec metadata applied${NC}"
 
+echo -e "\n${YELLOW}Validating publish selection (exclude, subtree, include override)...${NC}"
+validate_publish_selection "build/generated-docs/tabletest"
+echo -e "${GREEN}✓ Publish selection applied${NC}"
+
 echo -e "\n=========================================="
 echo -e "${GREEN}SUCCESS: All verification steps passed${NC}"
 echo -e "=========================================="

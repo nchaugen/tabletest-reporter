@@ -9,3 +9,9 @@ features:
     title: "Subpackage Feature"
   - name: multiple-tabletests
     title: "Multiple TableTests"
+publish:
+  exclude:
+    - multiple-tabletests               # the class page and all three of its tables
+    - nested-test-classes/inner-tests   # a nested feature page, taking its table with it
+  include:
+    - multiple-tabletests/addition      # re-admitted, though its class page is excluded

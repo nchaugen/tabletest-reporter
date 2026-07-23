@@ -99,6 +99,54 @@ validate_spec_metadata() {
     echo "Verified spec metadata applied (title, intro, retitle, feature order)"
 }
 
+# Validate that the sidecar's publish section selected the published pages at report time.
+# Proves the surface end-to-end: an excluded page takes its subtree with it, an included page
+# survives below an excluded one (and keeps its feature page alive), and pages held back are
+# neither written nor linked — none of it depending on how the suite was tagged or run.
+# Arguments:
+#   $1 - Generated documentation root (e.g. target/generated-docs/tabletest)
+validate_publish_selection() {
+    local docs_dir=$1
+
+    # Excluded class page: its other tables are held back...
+    for held_back in "multiple-tabletests/multiplication.md" "multiple-tabletests/subtraction.md"; do
+        if [ -f "$docs_dir/$held_back" ]; then
+            echo "ERROR: Excluded page was published: $held_back"
+            exit 1
+        fi
+    done
+
+    # ...while the re-admitted table publishes, keeping its feature page alive.
+    if [ ! -f "$docs_dir/multiple-tabletests/addition.md" ]; then
+        echo "ERROR: Included page below an excluded one was not published: multiple-tabletests/addition.md"
+        exit 1
+    fi
+    if [ ! -f "$docs_dir/multiple-tabletests/index.md" ]; then
+        echo "ERROR: Feature page of a re-admitted table was not published"
+        exit 1
+    fi
+
+    # A held-back page is not linked from the feature index either.
+    if grep -q "subtraction" "$docs_dir/multiple-tabletests/index.md"; then
+        echo "ERROR: Excluded page still linked from multiple-tabletests/index.md"
+        exit 1
+    fi
+
+    # An excluded feature page takes its whole subtree with it.
+    if [ -d "$docs_dir/nested-test-classes/inner-tests" ]; then
+        echo "ERROR: Excluded feature subtree was published: nested-test-classes/inner-tests"
+        exit 1
+    fi
+
+    # Its sibling under the same feature is untouched.
+    if [ ! -f "$docs_dir/nested-test-classes/outer-test.md" ]; then
+        echo "ERROR: Sibling of an excluded page was not published: nested-test-classes/outer-test.md"
+        exit 1
+    fi
+
+    echo "Verified publish selection applied (exclude, subtree, include override)"
+}
+
 # Validate that generated HTML pulls in nothing from outside its own output tree.
 # The built-in HTML format inlines all CSS/JS; the sole permitted asset reference is the
 # shared, root-relative search index (tabletest-search-index.js) written to the output root
