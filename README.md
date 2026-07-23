@@ -20,10 +20,13 @@ For Gradle users, the plugin handles everything automatically. Maven users need 
 - Java 17+ to run your tests (the JUnit extension targets 17)
 - Java 21+ to generate the report (CLI, Maven plugin, or Gradle plugin — this is your build
   JVM, which need not match the Java version your project targets)
-- JUnit 5.12+
-- [TableTest](https://github.com/nchaugen/tabletest) for your tests
+- JUnit 5.12+ or JUnit 6
+- [TableTest](https://github.com/nchaugen/tabletest) 1.0.0+ for your tests
+- Gradle 8.14+ if you use the Gradle plugin
 
 Popular frameworks like Spring Boot (3.5.0+) and Quarkus (3.21.2+) include compatible JUnit versions.
+
+These are the versions the compatibility test suite exercises on every change: JUnit 5.12.0 and 6.1.2 on both Maven and Gradle, Spring Boot 3.5.0 and current, Quarkus 3.21.2 and current.
 
 ## Step 1: Add the Reporter Plugin
 
