@@ -63,7 +63,19 @@ public class TableTestReporter {
      * @return the outcome, carrying the number of files generated
      */
     public ReportResult report(Path inDir, Path outDir) {
-        return report(configuration, inDir, outDir);
+        return report(List.of(inDir), outDir);
+    }
+
+    /**
+     * Generates one report from several directories of TableTest output, so the modules of a
+     * multi-module build publish a single spec.
+     *
+     * @param inDirs the directories of TableTest YAML output to read, in declared order
+     * @param outDir the directory to write the generated documentation to
+     * @return the outcome, carrying the number of files generated
+     */
+    public ReportResult report(List<Path> inDirs, Path outDir) {
+        return report(configuration, inDirs, outDir);
     }
 
     public ReportResult report(Format format, Path inDir, Path outDir) {
@@ -83,7 +95,7 @@ public class TableTestReporter {
                         singleFile,
                         specMetadata,
                         configuration.publishSelection()),
-                inDir,
+                List.of(inDir),
                 outDir);
     }
 
@@ -93,10 +105,10 @@ public class TableTestReporter {
      * of the built tree before rendering. In single-file mode the whole tree is assembled into one
      * self-contained document (currently HTML only); otherwise one file is written per node.
      */
-    private ReportResult report(ReportConfiguration config, Path inDir, Path outDir) {
-        ReportNode built = ReportTree.process(inDir);
+    private ReportResult report(ReportConfiguration config, List<Path> inDirs, Path outDir) {
+        ReportNode built = ReportTree.process(inDirs);
         if (built == null) {
-            return ReportResult.empty(inDir);
+            return ReportResult.empty(inDirs);
         }
         Format format = config.format();
         ReportNode tree =

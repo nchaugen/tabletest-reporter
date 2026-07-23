@@ -16,6 +16,9 @@
 package org.tabletest.reporter;
 
 import java.nio.file.Path;
+import java.util.List;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * Result of a TableTest report generation operation.
@@ -26,7 +29,15 @@ import java.nio.file.Path;
 public record ReportResult(int filesGenerated, String message) {
 
     public static ReportResult empty(Path inputDir) {
-        return new ReportResult(0, "No TableTest YAML files found in: " + inputDir);
+        return empty(List.of(inputDir));
+    }
+
+    /** Nothing to report from any of the directories read, all of them named so the gap is findable. */
+    public static ReportResult empty(List<Path> inputDirs) {
+        return new ReportResult(
+                0,
+                "No TableTest YAML files found in: "
+                        + inputDirs.stream().map(Path::toString).collect(joining(", ")));
     }
 
     public static ReportResult success(int count) {

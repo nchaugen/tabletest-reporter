@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,10 +18,21 @@ class ReportTreeErrorTest {
 
     @Test
     void process_throws_exception_when_directory_is_null() {
-        assertThatThrownBy(() -> ReportTree.process(null))
+        assertThatThrownBy(() -> ReportTree.process((Path) null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("dir")
                 .hasMessageContaining("cannot be null");
+    }
+
+    @Test
+    void process_throws_exception_when_no_directories_are_given() {
+        assertThatThrownBy(() -> ReportTree.process((List<Path>) null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("dirs")
+                .hasMessageContaining("cannot be null or empty");
+        assertThatThrownBy(() -> ReportTree.process(List.<Path>of()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("cannot be null or empty");
     }
 
     @Test

@@ -31,8 +31,29 @@ public class ReportTree {
         if (dir == null) {
             throw new IllegalArgumentException("argument `dir` cannot be null");
         }
-        List<Path> files = TestOutputFileFinder.findTestOutputFiles(dir);
-        List<Source> sources = SourceLoader.loadSources(dir, files);
+        return process(List.of(dir));
+    }
+
+    /**
+     * Processes several top-level directories of TableTest .yaml files into one node hierarchy, so
+     * a multi-module build publishes a single spec. Structure comes from the class names inside the
+     * files, not from where the files sit, so modules merge into the one package hierarchy. Where
+     * two directories hold the same class, the most recently written file wins — the same rule that
+     * settles repeated runs within one directory.
+     *
+     * @param dirs directories to traverse for .yaml files, in declared order
+     * @return typed node hierarchy describing the desired report structure
+     */
+    public static ReportNode process(List<Path> dirs) {
+        if (dirs == null || dirs.isEmpty()) {
+            throw new IllegalArgumentException("argument `dirs` cannot be null or empty");
+        }
+        List<Source> sources =
+                dirs.stream().flatMap(dir -> sourcesIn(dir).stream()).toList();
         return TreeBuilder.buildTree(sources);
+    }
+
+    private static List<Source> sourcesIn(Path dir) {
+        return SourceLoader.loadSources(dir, TestOutputFileFinder.findTestOutputFiles(dir));
     }
 }
