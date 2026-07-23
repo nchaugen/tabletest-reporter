@@ -54,6 +54,7 @@ public class TableTestReporterPlugin implements Plugin<Project> {
         project.getTasks().register("reportTableTests", ReportTableTestsTask.class, t -> {
             t.getFormat().convention(ext.getFormat());
             t.getInputDir().convention(ext.getInputDir());
+            t.getInputDirs().from(ext.getInputDirs());
             t.getOutputDir().convention(ext.getOutputDir());
             t.getTemplateDir().convention(ext.getTemplateDir());
             t.getJunitOutputDir().convention(project.provider(() -> resolveJunitOutputDir(project)));

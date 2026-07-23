@@ -16,6 +16,7 @@
 package org.tabletest.cli;
 
 import org.tabletest.reporter.FormatLister;
+import org.tabletest.reporter.InputDirectories;
 import org.tabletest.reporter.InputDirectoryResolver;
 import org.tabletest.reporter.ReportConfigFile;
 import org.tabletest.reporter.ReportConfiguration;
@@ -29,6 +30,7 @@ import picocli.CommandLine.Option;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 @Command(
@@ -51,10 +53,9 @@ public final class TableTestReporterCli implements Callable<Integer> {
 
     @Option(
             names = {"-i", "--input"},
-            description =
-                    "Input directory containing TableTest YAML files (default: auto-detect or <buildDir>/junit-jupiter)",
-            defaultValue = "")
-    private String inputDirArg;
+            description = "Input directory containing TableTest YAML files (default: auto-detect or "
+                    + "<buildDir>/junit-jupiter). Repeat to merge several modules into one report")
+    private List<String> inputDirArgs;
 
     @Option(
             names = {"-o", "--output"},
@@ -100,16 +101,12 @@ public final class TableTestReporterCli implements Callable<Integer> {
 
         try {
             final Path buildDir = resolveBuildDir();
-            final Path configuredInput = inputDirArg == null || inputDirArg.isBlank() ? null : Path.of(inputDirArg);
             final Path out = outputDirArg == null || outputDirArg.isBlank()
                     ? buildDir.resolve("generated-docs").resolve("tabletest")
                     : Path.of(outputDirArg);
 
-            InputDirectoryResolver.Result inputResult =
-                    InputDirectoryResolver.resolve(configuredInput, null, Path.of("."), null);
-            Path in = inputResult.path();
-            if (in == null || !Files.exists(in)) {
-                System.err.println(inputResult.formatMissingInputMessage());
+            List<Path> in = resolveInputDirectories();
+            if (in.isEmpty()) {
                 return 2;
             }
 
@@ -129,6 +126,38 @@ public final class TableTestReporterCli implements Callable<Integer> {
             System.err.printf("Failed to generate report: %s%n", e.getMessage());
             return 1;
         }
+    }
+
+    /**
+     * The directories to report from: several given ones merged into one report (a module that does
+     * not exist is skipped with a warning), a single given one, or the auto-detected default.
+     * Reports the failure on standard error and answers empty when there is nothing to read.
+     */
+    private List<Path> resolveInputDirectories() {
+        List<String> given = inputDirArgs == null
+                ? List.of()
+                : inputDirArgs.stream().filter(arg -> !arg.isBlank()).toList();
+        if (given.size() > 1) {
+            InputDirectories inputs =
+                    InputDirectories.resolve(given.stream().map(Path::of).toList(), Path.of("."));
+            if (inputs.isEmpty()) {
+                System.err.println(inputs.formatMissingInputMessage());
+                return List.of();
+            }
+            if (!inputs.missing().isEmpty()) {
+                System.err.println(inputs.formatSkippedInputMessage());
+            }
+            return inputs.present();
+        }
+        Path configuredInput = given.isEmpty() ? null : Path.of(given.getFirst());
+        InputDirectoryResolver.Result inputResult =
+                InputDirectoryResolver.resolve(configuredInput, null, Path.of("."), null);
+        Path in = inputResult.path();
+        if (in == null || !Files.exists(in)) {
+            System.err.println(inputResult.formatMissingInputMessage());
+            return List.of();
+        }
+        return List.of(in);
     }
 
     private Path resolveConfigFile() {

@@ -295,6 +295,82 @@ class ReportMojoTest {
         }
     }
 
+    @Test
+    void execute_merges_several_input_directories_into_one_report() throws Exception {
+        Path core = setupModuleInput("core-module", "org.example.core.ParserTest", "parser-test");
+        Path junit = setupModuleInput("junit-module", "org.example.junit.SlugifyTest", "slugify-test");
+        Path outDir = tempDir.resolve("merged");
+
+        ReportMojo mojo = new ReportMojo();
+        setField(mojo, "format", "markdown");
+        setField(mojo, "inputDirectories", new File[] {core.toFile(), junit.toFile()});
+        setField(mojo, "outputDirectory", outDir.toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
+
+        mojo.execute();
+
+        assertThat(outDir.resolve("core/parser-test/rule.md")).exists();
+        assertThat(outDir.resolve("junit/slugify-test/rule.md")).exists();
+    }
+
+    @Test
+    void execute_skips_a_configured_input_directory_that_does_not_exist() throws Exception {
+        Path core = setupModuleInput("core-module", "org.example.core.ParserTest", "parser-test");
+        Path outDir = tempDir.resolve("partial");
+
+        ReportMojo mojo = new ReportMojo();
+        setField(mojo, "format", "markdown");
+        setField(mojo, "inputDirectories", new File[] {
+            core.toFile(), tempDir.resolve("never-built").toFile()
+        });
+        setField(mojo, "outputDirectory", outDir.toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
+
+        mojo.execute();
+
+        assertThat(outDir.resolve("parser-test/rule.md")).exists();
+    }
+
+    @Test
+    void execute_fails_when_no_configured_input_directory_exists() {
+        ReportMojo mojo = new ReportMojo();
+        setField(mojo, "format", "markdown");
+        setField(mojo, "inputDirectories", new File[] {
+            tempDir.resolve("missing-one").toFile(),
+            tempDir.resolve("missing-two").toFile()
+        });
+        setField(mojo, "outputDirectory", tempDir.resolve("out").toFile());
+        setField(mojo, "baseDirectory", tempDir.toFile());
+
+        assertThatThrownBy(mojo::execute)
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("missing-one")
+                .hasMessageContaining("missing-two");
+    }
+
+    /** One module's TableTest output: a single class with a single table. */
+    private Path setupModuleInput(String module, String className, String slug) throws IOException {
+        Path inputDir = tempDir.resolve(module);
+        Path classDir = inputDir.resolve(className);
+        Files.createDirectories(classDir);
+        Files.writeString(classDir.resolve("TABLETEST-" + slug + ".yaml"), """
+            "className": "%s"
+            "slug": "%s"
+            "title": "%s"
+            "tableTests":
+              - "path": "TABLETEST-rule.yaml"
+                "methodName": "rule"
+                "slug": "rule"
+            """.formatted(className, slug, slug));
+        Files.writeString(classDir.resolve("TABLETEST-rule.yaml"), """
+            "title": "Rule"
+            "headers":
+            - "value": "Column A"
+            "rows": []
+            """);
+        return inputDir;
+    }
+
     private static void setField(Object target, String fieldName, Object value) {
         try {
             Field f = target.getClass().getDeclaredField(fieldName);

@@ -27,6 +27,7 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
 import org.jetbrains.annotations.Nullable;
+import org.tabletest.reporter.InputDirectories;
 import org.tabletest.reporter.InputDirectoryResolver;
 import org.tabletest.reporter.JunitDirParser;
 import org.tabletest.reporter.JunitPropertiesReader;
@@ -57,6 +58,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     private final ObjectFactory objects;
     private final Property<String> format;
     private final DirectoryProperty inputDir;
+    private final ConfigurableFileCollection inputDirs;
     private final DirectoryProperty outputDir;
     private final DirectoryProperty templateDir;
     private final Property<String> junitOutputDir;
@@ -75,6 +77,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         this.objects = getProject().getObjects();
         this.format = objects.property(String.class);
         this.inputDir = objects.directoryProperty();
+        this.inputDirs = objects.fileCollection();
         this.outputDir = objects.directoryProperty();
         this.templateDir = objects.directoryProperty();
         this.junitOutputDir = objects.property(String.class);
@@ -111,6 +114,19 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     @PathSensitive(PathSensitivity.RELATIVE)
     public DirectoryProperty getInputDir() {
         return inputDir;
+    }
+
+    /**
+     * Returns the input directories merged into one report, for a multi-project build publishing a
+     * single spec. Overrides {@link #getInputDir()} when it holds anything; a directory that does
+     * not exist is skipped with a warning, so a subproject that has not been built does not fail
+     * the report.
+     *
+     * @return file collection of directories containing TableTest YAML files
+     */
+    @Internal
+    public ConfigurableFileCollection getInputDirs() {
+        return inputDirs;
     }
 
     /**
@@ -226,7 +242,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
      * configured input directory is tracked separately through {@link #getInputDir()}.
      */
     private List<Path> candidateInputDirectories() {
-        List<Path> candidates = new ArrayList<>();
+        List<Path> candidates = new ArrayList<>(configuredInputDirectories());
         Path baseDir = toPath(projectDir);
         if (baseDir != null) {
             JunitDirParser.parse(baseDir, junitOutputDir.getOrNull()).ifPresent(candidates::add);
@@ -237,6 +253,11 @@ public abstract class ReportTableTestsTask extends DefaultTask {
             candidates.add(defaultInput);
         }
         return candidates;
+    }
+
+    /** The explicitly configured multi-directory input, empty when the task reports from a single directory. */
+    private List<Path> configuredInputDirectories() {
+        return inputDirs.getFiles().stream().map(java.io.File::toPath).toList();
     }
 
     private List<java.io.File> existingConfigFile() {
@@ -274,7 +295,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         final String junitOutputDirValue = junitOutputDir.getOrNull();
         final Path junitDir = JunitDirParser.parse(baseDir, junitOutputDirValue).orElse(null);
 
-        Path in = resolveInputDirectory(configuredInput, List.of(defaultInput), baseDir, junitDir);
+        List<Path> in = resolveInputDirectories(configuredInput, defaultInput, baseDir, junitDir);
 
         ReportConfiguration config = ReportConfigurationResolver.resolve(new ReportOptions(
                 format.getOrNull(), toPath(templateDir), indexDepth.getOrNull(), null, resolvedConfigFile()));
@@ -292,6 +313,26 @@ public abstract class ReportTableTestsTask extends DefaultTask {
                 .filter(DirectoryProperty::isPresent)
                 .map(dir -> dir.get().getAsFile().toPath())
                 .orElse(null);
+    }
+
+    /**
+     * The directories to report from: the configured {@code inputDirs} when there are any —
+     * subprojects that have not been built are skipped with a warning — otherwise the single
+     * directory the usual detection finds.
+     */
+    private List<Path> resolveInputDirectories(Path configuredInput, Path defaultInput, Path baseDir, Path junitDir) {
+        List<Path> configuredDirs = configuredInputDirectories();
+        if (configuredDirs.isEmpty()) {
+            return List.of(resolveInputDirectory(configuredInput, List.of(defaultInput), baseDir, junitDir));
+        }
+        InputDirectories inputs = InputDirectories.resolve(configuredDirs, baseDir);
+        if (inputs.isEmpty()) {
+            throw new GradleException(inputs.formatMissingInputMessage());
+        }
+        if (!inputs.missing().isEmpty()) {
+            getLogger().warn(inputs.formatSkippedInputMessage());
+        }
+        return inputs.present();
     }
 
     private static Path resolveInputDirectory(

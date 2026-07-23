@@ -242,6 +242,73 @@ class TableTestReporterCliTest {
         assertThat(result.stderr()).contains("Available formats:");
     }
 
+    @Test
+    void merges_several_input_directories_into_one_report() throws IOException {
+        Path core = setupModuleInput("core-module", "org.example.core.ParserTest", "parser-test");
+        Path junit = setupModuleInput("junit-module", "org.example.junit.SlugifyTest", "slugify-test");
+        Path outputDir = tempDir.resolve("merged");
+
+        CliResult result = runCli(
+                "--input", core.toString(),
+                "--input", junit.toString(),
+                "--output", outputDir.toString(),
+                "--format", "markdown");
+
+        assertThat(result.exitCode()).isZero();
+        assertThat(outputDir.resolve("core/parser-test/rule.md")).exists();
+        assertThat(outputDir.resolve("junit/slugify-test/rule.md")).exists();
+    }
+
+    @Test
+    void skips_an_input_directory_that_does_not_exist() throws IOException {
+        Path core = setupModuleInput("core-module", "org.example.core.ParserTest", "parser-test");
+        Path outputDir = tempDir.resolve("partial");
+
+        CliResult result = runCli(
+                "--input", core.toString(),
+                "--input", tempDir.resolve("never-built").toString(),
+                "--output", outputDir.toString(),
+                "--format", "markdown");
+
+        assertThat(result.exitCode()).isZero();
+        assertThat(result.stderr()).contains("never-built");
+        assertThat(outputDir.resolve("parser-test/rule.md")).exists();
+    }
+
+    @Test
+    void fails_when_no_given_input_directory_exists() {
+        CliResult result = runCli(
+                "--input", tempDir.resolve("missing-one").toString(),
+                "--input", tempDir.resolve("missing-two").toString(),
+                "--output", tempDir.resolve("none").toString());
+
+        assertThat(result.exitCode()).isEqualTo(2);
+        assertThat(result.stderr()).contains("missing-one", "missing-two");
+    }
+
+    /** One module's TableTest output: a single class with a single table. */
+    private Path setupModuleInput(String module, String className, String slug) throws IOException {
+        Path inputDir = tempDir.resolve(module);
+        Path classDir = inputDir.resolve(className);
+        Files.createDirectories(classDir);
+        Files.writeString(classDir.resolve("TABLETEST-" + slug + ".yaml"), """
+            "className": "%s"
+            "slug": "%s"
+            "title": "%s"
+            "tableTests":
+              - "path": "TABLETEST-rule.yaml"
+                "methodName": "rule"
+                "slug": "rule"
+            """.formatted(className, slug, slug));
+        Files.writeString(classDir.resolve("TABLETEST-rule.yaml"), """
+            "title": "Rule"
+            "headers":
+            - "value": "Column A"
+            "rows": []
+            """);
+        return inputDir;
+    }
+
     private Path setupInputDirectory(Path parent) throws IOException {
         Path inputDir = parent.resolve("input");
         Files.createDirectories(inputDir);

@@ -15,6 +15,7 @@
  */
 package org.tabletest.gradle;
 
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.RegularFileProperty;
@@ -31,6 +32,7 @@ public abstract class TableTestReporterExtension {
 
     private final Property<String> format;
     private final DirectoryProperty inputDir;
+    private final ConfigurableFileCollection inputDirs;
     private final DirectoryProperty outputDir;
     private final DirectoryProperty templateDir;
     private final Property<String> indexDepth;
@@ -47,6 +49,7 @@ public abstract class TableTestReporterExtension {
     public TableTestReporterExtension(ObjectFactory objects, ProjectLayout layout, ProviderFactory providers) {
         this.format = objects.property(String.class).convention("asciidoc");
         this.inputDir = objects.directoryProperty();
+        this.inputDirs = objects.fileCollection();
         this.outputDir = objects.directoryProperty()
                 .convention(layout.getBuildDirectory().dir("generated-docs/tabletest"));
         this.templateDir = objects.directoryProperty();
@@ -71,6 +74,17 @@ public abstract class TableTestReporterExtension {
      */
     public DirectoryProperty getInputDir() {
         return inputDir;
+    }
+
+    /**
+     * Returns the input directories to merge into one report — for a multi-project build where
+     * several subprojects' TableTest output belongs in a single spec. Overrides {@code inputDir}
+     * when set; a directory that does not exist is skipped with a warning.
+     *
+     * @return file collection of directories containing TableTest YAML files
+     */
+    public ConfigurableFileCollection getInputDirs() {
+        return inputDirs;
     }
 
     /**

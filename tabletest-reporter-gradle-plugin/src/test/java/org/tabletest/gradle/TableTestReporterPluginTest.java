@@ -287,6 +287,76 @@ class TableTestReporterPluginTest {
         return dependency.getGroup() + ":" + dependency.getName() + ":" + dependency.getVersion();
     }
 
+    @Test
+    void reportTask_merges_several_input_dirs_into_one_report() throws IOException {
+        Path core = setupModuleInput("core-module", "org.example.core.ParserTest", "parser-test");
+        Path junit = setupModuleInput("junit-module", "org.example.junit.SlugifyTest", "slugify-test");
+        extension().getInputDirs().from(core.toFile(), junit.toFile());
+        extension().getFormat().set("markdown");
+
+        reportTask().run();
+
+        assertThat(outputDir().resolve("core/parser-test/rule.md")).exists();
+        assertThat(outputDir().resolve("junit/slugify-test/rule.md")).exists();
+    }
+
+    @Test
+    void reportTask_skips_an_input_dir_that_does_not_exist() throws IOException {
+        Path core = setupModuleInput("core-module", "org.example.core.ParserTest", "parser-test");
+        extension()
+                .getInputDirs()
+                .from(core.toFile(), projectDir.resolve("never-built").toFile());
+        extension().getFormat().set("markdown");
+
+        reportTask().run();
+
+        assertThat(outputDir().resolve("parser-test/rule.md")).exists();
+    }
+
+    @Test
+    void reportTask_fails_when_no_configured_input_dir_exists() {
+        extension()
+                .getInputDirs()
+                .from(
+                        projectDir.resolve("missing-one").toFile(),
+                        projectDir.resolve("missing-two").toFile());
+
+        assertThatThrownBy(() -> reportTask().run())
+                .hasMessageContaining("missing-one")
+                .hasMessageContaining("missing-two");
+    }
+
+    @Test
+    void reportTask_tracks_configured_input_dirs_yaml_as_task_inputs() throws IOException {
+        Path core = setupModuleInput("core-module", "org.example.core.ParserTest", "parser-test");
+        extension().getInputDirs().from(core.toFile());
+
+        assertThat(trackedSourceFileNames()).contains("TABLETEST-rule.yaml");
+    }
+
+    /** One module's TableTest output: a single class with a single table. */
+    private Path setupModuleInput(String module, String className, String slug) throws IOException {
+        Path inputDir = projectDir.resolve(module);
+        Path classDir = inputDir.resolve(className);
+        Files.createDirectories(classDir);
+        Files.writeString(classDir.resolve("TABLETEST-" + slug + ".yaml"), """
+            "className": "%s"
+            "slug": "%s"
+            "title": "%s"
+            "tableTests":
+              - "path": "TABLETEST-rule.yaml"
+                "methodName": "rule"
+                "slug": "rule"
+            """.formatted(className, slug, slug));
+        Files.writeString(classDir.resolve("TABLETEST-rule.yaml"), """
+            "title": "Rule"
+            "headers":
+            - "value": "Column A"
+            "rows": []
+            """);
+        return inputDir;
+    }
+
     private Path setupInputDirectory(Path buildDir) throws IOException {
         Path inputRoot = buildDir.resolve("junit-jupiter");
         Path testClassDir = inputRoot.resolve("org.example.CalendarTest");
