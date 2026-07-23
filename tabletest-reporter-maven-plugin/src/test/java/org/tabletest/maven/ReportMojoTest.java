@@ -371,13 +371,20 @@ class ReportMojoTest {
         return inputDir;
     }
 
+    /** Sets a mojo parameter, whether the goal declares it itself or inherits it from the shared base. */
     private static void setField(Object target, String fieldName, Object value) {
-        try {
-            Field f = target.getClass().getDeclaredField(fieldName);
-            f.setAccessible(true);
-            f.set(target, value);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+        for (Class<?> type = target.getClass(); type != null; type = type.getSuperclass()) {
+            try {
+                Field f = type.getDeclaredField(fieldName);
+                f.setAccessible(true);
+                f.set(target, value);
+                return;
+            } catch (NoSuchFieldException e) {
+                // declared further up the hierarchy
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
+        throw new IllegalArgumentException("No mojo parameter named " + fieldName);
     }
 }
