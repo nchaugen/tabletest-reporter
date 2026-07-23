@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 ### Added
+- Multi-module reports: several directories of TableTest output now merge into a single
+  spec, so the modules of a multi-module build publish one set of documentation. Maven gains
+  a `tabletest-reporter:aggregate` goal that walks the reactor and finds each module's output
+  by itself, plus `<inputDirectories>` on the `report` goal for naming them explicitly;
+  Gradle gains `inputDirs`, and the CLI accepts a repeated `-i`/`--input`. The report tree
+  comes from the test class names, so modules land in one package hierarchy; where two
+  modules published the same class the most recent output wins. A listed directory that does
+  not exist is skipped with a warning, so a partial build still publishes what it has.
 - Report-time publish selection: a `publish` section in `tabletest-reporter.yaml` decides
   which pages the report holds, with `exclude` paths holding a page (and its subtree) back
   and `include` paths re-admitting one below an excluded page, so a single rule table still

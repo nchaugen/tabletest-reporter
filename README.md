@@ -233,6 +233,10 @@ Documentation is generated to `target/generated-docs/tabletest/`.
   <outputDirectory>${project.build.directory}/generated-docs/tabletest</outputDirectory>
   <indexDepth>infinite</indexDepth>  <!-- levels in index (1, 2, ..., or 'infinite') -->
   <configFile>${project.basedir}/tabletest-reporter.yaml</configFile>  <!-- spec metadata + publish selection, see below -->
+  <inputDirectories>  <!-- several modules merged into one spec, see below -->
+    <dir>${project.build.directory}/junit-jupiter</dir>
+    <dir>${project.basedir}/../other-module/target/junit-jupiter</dir>
+  </inputDirectories>
 </configuration>
 ```
 
@@ -258,8 +262,47 @@ tableTestReporter {
   outputDir.set(layout.buildDirectory.dir("generated-docs/tabletest"))
   indexDepth.set("infinite")  // levels in index (1, 2, ..., or "infinite")
   configFile.set(layout.projectDirectory.file("tabletest-reporter.yaml"))  // spec metadata + publish selection, see below
+  inputDirs.from(layout.buildDirectory.dir("junit-jupiter"))  // several modules merged into one spec, see below
 }
 ```
+
+### Multi-module builds (one spec from several modules)
+
+A single spec can span the modules of a multi-module build. The report tree comes from the
+test class names inside the YAML, not from where the files sit, so modules merge into one
+package hierarchy. A listed directory that does not exist is skipped with a warning, so a
+partial build still publishes what it has.
+
+**Maven** — let the plugin walk the reactor:
+```bash
+mvn tabletest-reporter:aggregate
+```
+The `aggregate` goal runs on the aggregator project, finds each module's TableTest output
+the way the `report` goal finds its own (the JUnit output directory a module configures,
+else its `target/junit-jupiter`), and writes one report to the aggregator's output
+directory. To name the directories yourself instead — the option when the goal cannot run
+inside the reactor — use `<inputDirectories>` on the `report` goal (shown above), or:
+```bash
+mvn tabletest-reporter:report -Dtabletest.report.inputDirectories=target/junit-jupiter,../other/target/junit-jupiter
+```
+
+**Gradle** — list the subprojects' directories:
+```kotlin
+tableTestReporter {
+  inputDirs.from(
+    layout.buildDirectory.dir("junit-jupiter"),
+    project(":other-module").layout.buildDirectory.dir("junit-jupiter")
+  )
+}
+```
+
+**CLI** — repeat `-i`:
+```bash
+tabletest-reporter -i core/target/junit-jupiter -i junit/target/junit-jupiter
+```
+
+Where two modules published the same test class, the most recently written output wins —
+the same rule that settles repeated runs within one directory.
 
 ### Spec metadata (`tabletest-reporter.yaml`)
 
