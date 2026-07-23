@@ -17,6 +17,8 @@ package org.tabletest.reporter.junit;
 
 import java.text.Normalizer;
 import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Reduces a name to a lowercase ASCII slug usable as both a filename and a URL segment.
@@ -30,21 +32,47 @@ import java.util.Locale;
  */
 final class AsciiSlug {
 
+    /**
+     * Latin letters that Unicode has no canonical decomposition for, and which the ASCII fold
+     * would therefore drop. Ligatures expand to their component letters and stroked letters fold
+     * to their base letter; {@code þ} takes a digraph because it has no Latin base letter at all.
+     * Letters the fold already handles are deliberately absent — re-mapping them would move slugs
+     * that already serve as published URLs.
+     */
+    private static final Map<String, String> LETTERS_WITHOUT_ASCII_FORM = Map.of(
+            "ß", "ss",
+            "æ", "ae",
+            "œ", "oe",
+            "ø", "o",
+            "ł", "l",
+            "đ", "d",
+            "ð", "d",
+            "þ", "th");
+
     private AsciiSlug() {}
 
     static String of(String name) {
         if (name == null || name.isEmpty()) {
             return name;
         }
-        return joinRemainingWordsWithHyphen(foldToAscii(name).toLowerCase(Locale.ROOT));
+        return joinRemainingWordsWithHyphen(foldToAscii(name.toLowerCase(Locale.ROOT)));
     }
 
     /**
      * Splits accented letters into base letter plus combining mark, then discards everything
      * still outside ASCII — both the marks and any letter that has no ASCII form of its own.
+     * The letters worth keeping are spelled out in ASCII first, so the discard never reaches them.
      */
     private static String foldToAscii(String name) {
-        return Normalizer.normalize(name, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
+        return Normalizer.normalize(spellOutLettersWithoutAsciiForm(name), Normalizer.Form.NFD)
+                .replaceAll("[^\\p{ASCII}]", "");
+    }
+
+    private static String spellOutLettersWithoutAsciiForm(String name) {
+        return name.codePoints()
+                .mapToObj(Character::toString)
+                .map(letter -> LETTERS_WITHOUT_ASCII_FORM.getOrDefault(letter, letter))
+                .collect(Collectors.joining());
     }
 
     private static String joinRemainingWordsWithHyphen(String ascii) {

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 ### Changed
+- Latin letters with no ASCII form now appear in filenames and URLs instead of vanishing from
+  them: `Grüße` becomes `grusse` where it used to become `grue`, and `ÆØÅ` becomes `aeoa` where
+  it used to become `a`. One rule decides the spelling — ligatures expand to their component
+  letters (`ß`→`ss`, `æ`→`ae`, `œ`→`oe`), stroked letters fold to their base letter (`ø`→`o`,
+  `ł`→`l`, `đ`→`d`, `ð`→`d`), and `þ`→`th` because thorn has no Latin base letter. Letters that
+  already folded (`ü ö ä é å ñ`) are untouched, so no slug that works today moves.
 - The JUnit extension no longer depends on the Slugify library: filename slug generation is
   now built in. Slugify required Java 21, which forced every project documenting its tests to
   run them on a 21+ runtime; the extension now targets Java 17, so a Java 17 project can use
