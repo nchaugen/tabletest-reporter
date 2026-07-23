@@ -29,6 +29,13 @@ import java.nio.file.Path;
  * @param indexDepth the resolved index depth
  * @param singleFile whether to assemble the report into a single self-contained file
  * @param specMetadata the resolved spec-level curation, or {@link SpecMetadata#EMPTY} when none
+ * @param publishSelection the resolved page selection, or {@link PublishSelection#EMPTY} to publish
+ *     every page
  */
 public record ReportConfiguration(
-        Format format, Path templateDirectory, IndexDepth indexDepth, boolean singleFile, SpecMetadata specMetadata) {}
+        Format format,
+        Path templateDirectory,
+        IndexDepth indexDepth,
+        boolean singleFile,
+        SpecMetadata specMetadata,
+        PublishSelection publishSelection) {}

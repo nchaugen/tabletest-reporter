@@ -232,7 +232,7 @@ Documentation is generated to `target/generated-docs/tabletest/`.
   <inputDirectory>${project.build.directory}/junit-jupiter</inputDirectory>
   <outputDirectory>${project.build.directory}/generated-docs/tabletest</outputDirectory>
   <indexDepth>infinite</indexDepth>  <!-- levels in index (1, 2, ..., or 'infinite') -->
-  <configFile>${project.basedir}/tabletest-reporter.yaml</configFile>  <!-- spec metadata, see below -->
+  <configFile>${project.basedir}/tabletest-reporter.yaml</configFile>  <!-- spec metadata + publish selection, see below -->
 </configuration>
 ```
 
@@ -257,7 +257,7 @@ tableTestReporter {
   inputDir.set(layout.buildDirectory.dir("junit-jupiter"))
   outputDir.set(layout.buildDirectory.dir("generated-docs/tabletest"))
   indexDepth.set("infinite")  // levels in index (1, 2, ..., or "infinite")
-  configFile.set(layout.projectDirectory.file("tabletest-reporter.yaml"))  // spec metadata, see below
+  configFile.set(layout.projectDirectory.file("tabletest-reporter.yaml"))  // spec metadata + publish selection, see below
 }
 ```
 
@@ -288,6 +288,29 @@ siblings follow alphabetically. A feature that matches no page is logged and ski
 typo never fails the report. The file is read at report time — a project without it reports
 exactly as before. Override its location with the `configFile` option (Maven `<configFile>`,
 Gradle `configFile`, CLI `--config`).
+
+### Selecting what publishes (`publish`)
+
+By default every table that ran is published. Add a `publish` section to the same
+`tabletest-reporter.yaml` to hold pages back — at report time, so changing what publishes
+does not mean running the test suite again, and no test-framework tags are involved:
+
+```yaml
+publish:
+  exclude:
+    - parsing                            # this feature page and everything below it
+    - converting/convert-with            # one table page
+    - "**/kotlin-*"                      # any page whose name starts with "kotlin-"
+  include:
+    - converting/convert-with/precedence # re-admitted, though its class is excluded
+```
+
+Paths name pages the way the report's URLs do: the page names from the root index down,
+separated by `/`. Within a name, `*` matches any part of it; a whole segment of `**`
+matches any number of levels. Excluding a page takes its whole subtree with it, and a
+feature page left with nothing published under it disappears too. `include` wins over
+`exclude`, so a single rule table can still publish from an otherwise internal class. A
+path matching no page is logged and skipped, like a mistyped feature name.
 
 ### Listing Available Formats
 
@@ -776,7 +799,7 @@ java -jar tabletest-reporter-cli.jar \
   -i target/junit-jupiter \
   -o target/generated-docs/tabletest \
   --index-depth 2 \  # levels in index (1, 2, ..., or 'infinite')
-  --config tabletest-reporter.yaml  # spec metadata (default: ./tabletest-reporter.yaml)
+  --config tabletest-reporter.yaml  # spec metadata + publish selection (default: ./tabletest-reporter.yaml)
 ```
 
 **Building from Source:**

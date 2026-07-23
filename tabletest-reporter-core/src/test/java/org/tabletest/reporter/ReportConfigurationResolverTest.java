@@ -50,21 +50,27 @@ class ReportConfigurationResolverTest {
     }
 
     @Test
-    void resolvesEmptySpecMetadataWhenNoConfigFile() {
+    void resolvesEmptyCurationWhenNoConfigFile() {
         ReportConfiguration config =
                 ReportConfigurationResolver.resolve(new ReportOptions(null, null, null, null, null));
 
         assertThat(config.specMetadata()).isEqualTo(SpecMetadata.EMPTY);
+        assertThat(config.publishSelection()).isEqualTo(PublishSelection.EMPTY);
     }
 
     @Test
-    void readsSpecMetadataFromConfiguredFile() throws IOException {
-        Path configFile = Files.writeString(tempDir.resolve("tabletest-reporter.yaml"), "title: \"Core Spec\"\n");
+    void readsSpecMetadataAndPublishSelectionFromConfiguredFile() throws IOException {
+        Path configFile = Files.writeString(tempDir.resolve("tabletest-reporter.yaml"), """
+                title: "Core Spec"
+                publish:
+                  exclude: [parsing]
+                """);
 
         ReportConfiguration config =
                 ReportConfigurationResolver.resolve(new ReportOptions(null, null, null, null, configFile));
 
         assertThat(config.specMetadata().title()).isEqualTo("Core Spec");
+        assertThat(config.publishSelection().exclude()).containsExactly("parsing");
     }
 
     @Test

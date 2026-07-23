@@ -32,6 +32,22 @@ class ReportConfigFileTest {
     }
 
     @Test
+    void readsSpecMetadataAndPublishSelectionFromTheOneFile() throws IOException {
+        Path file = projectDir.resolve(ReportConfigFile.DEFAULT_FILE_NAME);
+        Files.writeString(file, """
+                title: "Core Spec"
+                publish:
+                  exclude:
+                    - parsing
+                """);
+
+        ReportConfigFile settings = ReportConfigFile.read(file);
+
+        assertThat(settings.specMetadata().title()).isEqualTo("Core Spec");
+        assertThat(settings.publishSelection().exclude()).containsExactly("parsing");
+    }
+
+    @Test
     void missingFileYieldsEmptySettings() {
         Path missing = projectDir.resolve(ReportConfigFile.DEFAULT_FILE_NAME);
 

@@ -39,7 +39,12 @@ public class TableTestReporter {
 
     public TableTestReporter(Path customTemplateDirectory, IndexDepth indexDepth) {
         this(new ReportConfiguration(
-                BuiltInFormat.ASCIIDOC, customTemplateDirectory, indexDepth, false, SpecMetadata.EMPTY));
+                BuiltInFormat.ASCIIDOC,
+                customTemplateDirectory,
+                indexDepth,
+                false,
+                SpecMetadata.EMPTY,
+                PublishSelection.EMPTY));
     }
 
     /** Reports against a resolved configuration — the form every entry point uses. */
@@ -76,14 +81,16 @@ public class TableTestReporter {
                         configuration.templateDirectory(),
                         configuration.indexDepth(),
                         singleFile,
-                        specMetadata),
+                        specMetadata,
+                        configuration.publishSelection()),
                 inDir,
                 outDir);
     }
 
     /**
-     * Generates the report. Spec metadata (title, intro, feature order/titles) is applied on top of
-     * the built tree before rendering. In single-file mode the whole tree is assembled into one
+     * Generates the report. The publish selection decides which pages the report holds, and spec
+     * metadata (title, intro, feature order/titles) curates those that remain, both applied on top
+     * of the built tree before rendering. In single-file mode the whole tree is assembled into one
      * self-contained document (currently HTML only); otherwise one file is written per node.
      */
     private ReportResult report(ReportConfiguration config, Path inDir, Path outDir) {
@@ -92,7 +99,8 @@ public class TableTestReporter {
             return ReportResult.empty(inDir);
         }
         Format format = config.format();
-        ReportNode tree = config.specMetadata().applyTo(built);
+        ReportNode tree =
+                config.specMetadata().applyTo(config.publishSelection().applyTo(built));
         GeneratedAt generatedAt = GeneratedAt.now();
         if (config.singleFile()) {
             return reportSingleFile(format, tree, generatedAt, outDir);

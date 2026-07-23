@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 ### Added
+- Report-time publish selection: a `publish` section in `tabletest-reporter.yaml` decides
+  which pages the report holds, with `exclude` paths holding a page (and its subtree) back
+  and `include` paths re-admitting one below an excluded page, so a single rule table still
+  publishes from an otherwise internal class. Paths name pages as the report's URLs do
+  (`converting/convert-with`), with `*` for any part of a page name and `**` for any number
+  of levels. Selection happens when the report is generated, so what publishes is no longer
+  tied to how the suite was tagged or run, and re-curating a spec needs no new test run. A
+  feature page left with nothing published under it drops with its pages; a path matching no
+  page is logged and skipped. Without the section every table publishes, as before.
 - Spec-level metadata via an optional `tabletest-reporter.yaml` in the project directory:
   give the whole spec a real title and intro paragraph on its root index (instead of the
   leaked lowercase package segment like "junit" or "example"), retitle intermediate index

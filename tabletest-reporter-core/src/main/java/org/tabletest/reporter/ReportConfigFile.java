@@ -28,14 +28,15 @@ import java.util.Map;
  * the resulting path here through {@link ReportOptions}.
  *
  * @param specMetadata the spec title, intro and feature ordering declared in the file
+ * @param publishSelection the pages held back or re-admitted by the file's publish section
  */
-public record ReportConfigFile(SpecMetadata specMetadata) {
+public record ReportConfigFile(SpecMetadata specMetadata, PublishSelection publishSelection) {
 
     /** The conventional sidecar file name, looked for in the project directory by default. */
     public static final String DEFAULT_FILE_NAME = "tabletest-reporter.yaml";
 
     /** The absent case: the settings a project with no sidecar file reports under. */
-    public static final ReportConfigFile EMPTY = new ReportConfigFile(SpecMetadata.EMPTY);
+    public static final ReportConfigFile EMPTY = new ReportConfigFile(SpecMetadata.EMPTY, PublishSelection.EMPTY);
 
     private static final ContextLoader LOADER = new ContextLoader();
 
@@ -57,6 +58,6 @@ public record ReportConfigFile(SpecMetadata specMetadata) {
         if (yaml == null || yaml.isEmpty()) {
             return EMPTY;
         }
-        return new ReportConfigFile(SpecMetadata.parse(yaml));
+        return new ReportConfigFile(SpecMetadata.parse(yaml), PublishSelection.parse(yaml));
     }
 }
