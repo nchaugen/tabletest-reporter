@@ -22,6 +22,7 @@ class NativeScriptSlugTest {
         Cyrillic                | Москва          | москва
         Greek with uppercase    | Ελληνικά        | ελληνικά
         CJK has no case         | 日本語のテスト  | 日本語のテスト
+        Halfwidth katakana      | ﾃｽﾄ             | テスト
         Combining marks survive | हिन्दी परीक्षण    | हिन्दी-परीक्षण
         Punctuation collapses   | Москва: тест!   | москва-тест
         Enclosing punctuation   | «Москва»        | москва

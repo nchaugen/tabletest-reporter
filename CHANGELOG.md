@@ -11,6 +11,12 @@
   get two files. Names that already produced a working slug are unaffected.
 
 ### Changed
+- Compatibility characters now reduce to the characters they stand for instead of being dropped
+  from filenames and URLs: `ﬁle ﬂow` becomes `file-flow`, fullwidth `Ｆｕｌｌｗｉｄｔｈ` becomes
+  `fullwidth`, `x² area` becomes `x2-area`, `Chapter Ⅻ` becomes `chapter-xii`. A precomposed
+  accented ligature (`Ǽgir`) no longer loses its letter either. Names written in a script of
+  their own are composed the same way, so halfwidth and fullwidth katakana spellings of one
+  name (`ﾃｽﾄ`, `テスト`) give one slug rather than two.
 - Latin letters with no ASCII form now appear in filenames and URLs instead of vanishing from
   them: `Grüße` becomes `grusse` where it used to become `grue`, and `ÆØÅ` becomes `aeoa` where
   it used to become `a`. One rule decides the spelling — ligatures expand to their component

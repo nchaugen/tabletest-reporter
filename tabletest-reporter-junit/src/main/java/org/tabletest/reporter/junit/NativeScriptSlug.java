@@ -23,8 +23,9 @@ import java.util.Locale;
  * the ASCII fold has no answer for.
  * <p>
  * Letters, digits, combining marks and underscores of any script survive; every other run of
- * characters becomes a single hyphen. The result is composed (NFC) so that the same name slugs
- * to the same string on a filesystem that stores decomposed and one that stores composed.
+ * characters becomes a single hyphen. The result is composed so that the same name slugs to the
+ * same string on a filesystem that stores decomposed and one that stores composed, and so that
+ * two spellings of one name — halfwidth and fullwidth katakana, say — slug to one string.
  * <p>
  * A name holding no letter or digit at all still reduces to the empty string. Callers must
  * treat an empty slug as unusable rather than as a name.
@@ -42,10 +43,11 @@ final class NativeScriptSlug {
 
     /**
      * Composes accented letters back into single characters where Unicode has a composed form,
-     * so a name does not slug differently depending on the form its filesystem hands us.
+     * and reduces compatibility forms to the characters they stand for, so a name does not slug
+     * differently depending on the form its filesystem or its author's keyboard hands us.
      */
     private static String compose(String name) {
-        return Normalizer.normalize(name, Normalizer.Form.NFC);
+        return Normalizer.normalize(name, Normalizer.Form.NFKC);
     }
 
     private static String joinRemainingWordsWithHyphen(String name) {

@@ -19,6 +19,10 @@ class AsciiSlugTest {
         to their base letter, and 'þ' takes a digraph because it has no Latin base at all.
         Letters that already fold under NFD ('ü ö ä é å ñ') are deliberately left alone,
         since re-mapping them would move slugs that already work as published URLs.
+        Compatibility forms — 'ﬁ', fullwidth letters, superscripts, circled and Roman
+        numerals — now reduce to the characters they stand for rather than being dropped.
+        A symbol standing for letters lands as those letters with no word break of its own,
+        which is why 'Widget™ test' reads 'widgettm-test'.
         A name written wholly in a non-Latin script still reduces to the empty string here;
         Slugger layers a fallback above this fold rather than teaching the fold to handle it.
         """)
@@ -56,6 +60,14 @@ class AsciiSlugTest {
         Stroked l                    | Łódź Wrocław          | lodz-wroclaw
         Stroked d                    | Đakovo                | dakovo
         Thorn and eth                | Þingvellir Norðurland | thingvellir-nordurland
+        Accented ligature            | Ǽgir Ǿrn              | aegir-orn
+        Ligature fi and fl           | ﬁle ﬂow               | file-flow
+        Fullwidth letters            | Ｆｕｌｌｗｉｄｔｈ    | fullwidth
+        Superscript digit            | x² area               | x2-area
+        Circled digit                | ① first               | 1-first
+        Roman numeral                | Chapter Ⅻ             | chapter-xii
+        Trademark sign               | Widget™ test          | widgettm-test
+        Vulgar fraction              | ½ cup                 | 12-cup
         Greek script                 | Ελληνικά              | ''
         Cyrillic script              | Москва                | ''
         CJK script                   | 日本語のテスト        | ''

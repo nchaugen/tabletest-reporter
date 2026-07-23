@@ -55,17 +55,19 @@ final class AsciiSlug {
         if (name == null || name.isEmpty()) {
             return name;
         }
-        return joinRemainingWordsWithHyphen(foldToAscii(name.toLowerCase(Locale.ROOT)));
+        return joinRemainingWordsWithHyphen(foldToAscii(name));
     }
 
     /**
-     * Splits accented letters into base letter plus combining mark, then discards everything
-     * still outside ASCII — both the marks and any letter that has no ASCII form of its own.
-     * The letters worth keeping are spelled out in ASCII first, so the discard never reaches them.
+     * Reduces every character to the simplest form Unicode records for it — accented letters to
+     * base letter plus combining mark, compatibility forms such as {@code ﬁ}, {@code ②} and
+     * fullwidth letters to the plain characters they stand for — then discards everything still
+     * outside ASCII. The letters that have no such form are spelled out first, so the discard
+     * never reaches them.
      */
     private static String foldToAscii(String name) {
-        return Normalizer.normalize(spellOutLettersWithoutAsciiForm(name), Normalizer.Form.NFD)
-                .replaceAll("[^\\p{ASCII}]", "");
+        String simplified = Normalizer.normalize(name, Normalizer.Form.NFKD).toLowerCase(Locale.ROOT);
+        return spellOutLettersWithoutAsciiForm(simplified).replaceAll("[^\\p{ASCII}]", "");
     }
 
     private static String spellOutLettersWithoutAsciiForm(String name) {
