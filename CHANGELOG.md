@@ -1,6 +1,8 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+
+## [1.3.0] - 2026-07-23
 > [!IMPORTANT]
 > **Slug generation changed, and some published page names change with it.** A test or class
 > name containing a letter with no ASCII form (`ß æ ø ł þ ð œ đ`), a compatibility character
@@ -209,7 +211,8 @@
 - Slugified output directories and filenames
 
 
-[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.2.0...HEAD
+[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.3.0...HEAD
+[1.3.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.2.0...tabletest-reporter-1.3.0
 [1.2.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.1.0...tabletest-reporter-1.2.0
 [1.1.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.0.1...tabletest-reporter-1.1.0
 [1.0.1]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.0.0...tabletest-reporter-1.0.1
