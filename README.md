@@ -17,7 +17,9 @@ For Gradle users, the plugin handles everything automatically. Maven users need 
 
 ## Requirements
 
-- Java 21+
+- Java 17+ to run your tests (the JUnit extension targets 17)
+- Java 21+ to generate the report (CLI, Maven plugin, or Gradle plugin — this is your build
+  JVM, which need not match the Java version your project targets)
 - JUnit 5.12+
 - [TableTest](https://github.com/nchaugen/tabletest) for your tests
 

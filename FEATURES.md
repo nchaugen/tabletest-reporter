@@ -134,6 +134,7 @@ Configure expectation column detection with:
 
 ## Platform Support
 
-Runs anywhere Java 21+ is available on Linux, macOS, and Windows. Note that the JUnit
-extension that captures table data runs inside your test JVM, so the tests being documented
-need a Java 21+ runtime too.
+Runs on Linux, macOS, and Windows. The JUnit extension that captures table data runs
+inside your test JVM and targets **Java 17**, so a Java 17 project can document its tests on
+its own runtime. Generating the report (CLI, Maven plugin, Gradle plugin) needs **Java 21+** —
+that is your build JVM, which need not match the version your project targets.
