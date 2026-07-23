@@ -43,8 +43,8 @@ public final class ReportConfigurationResolver {
         Format format = FormatResolver.resolve(options.format(), templateDirectory);
         IndexDepth indexDepth = IndexDepth.parse(options.indexDepth());
         boolean singleFile = Boolean.TRUE.equals(options.singleFile());
-        SpecMetadata specMetadata = SpecMetadataResolver.resolve(options.configFile());
-        return new ReportConfiguration(format, templateDirectory, indexDepth, singleFile, specMetadata);
+        ReportConfigFile configFile = ReportConfigFile.read(options.configFile());
+        return new ReportConfiguration(format, templateDirectory, indexDepth, singleFile, configFile.specMetadata());
     }
 
     private static Path validatedTemplateDirectory(Path templateDirectory) {

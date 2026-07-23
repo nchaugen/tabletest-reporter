@@ -12,39 +12,39 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 // Unpublished: internal sidecar-file loading, not a user-facing rule.
 @Tag("unpublished")
-class SpecMetadataResolverTest {
+class ReportConfigFileTest {
 
     @TempDir
     Path projectDir;
 
     @Test
-    void readsMetadataFromAnExistingFile() throws IOException {
-        Path file = projectDir.resolve(SpecMetadataResolver.DEFAULT_FILE_NAME);
+    void readsSpecMetadataFromAnExistingFile() throws IOException {
+        Path file = projectDir.resolve(ReportConfigFile.DEFAULT_FILE_NAME);
         Files.writeString(file, """
                 title: "Core Spec"
                 intro: "An intro."
                 """);
 
-        SpecMetadata metadata = SpecMetadataResolver.resolve(file);
+        SpecMetadata metadata = ReportConfigFile.read(file).specMetadata();
 
         assertThat(metadata.title()).isEqualTo("Core Spec");
         assertThat(metadata.intro()).isEqualTo("An intro.");
     }
 
     @Test
-    void missingFileYieldsEmptyMetadata() {
-        Path missing = projectDir.resolve(SpecMetadataResolver.DEFAULT_FILE_NAME);
+    void missingFileYieldsEmptySettings() {
+        Path missing = projectDir.resolve(ReportConfigFile.DEFAULT_FILE_NAME);
 
-        assertThat(SpecMetadataResolver.resolve(missing)).isEqualTo(SpecMetadata.EMPTY);
+        assertThat(ReportConfigFile.read(missing)).isEqualTo(ReportConfigFile.EMPTY);
     }
 
     @Test
-    void nullPathYieldsEmptyMetadata() {
-        assertThat(SpecMetadataResolver.resolve(null)).isEqualTo(SpecMetadata.EMPTY);
+    void nullPathYieldsEmptySettings() {
+        assertThat(ReportConfigFile.read(null)).isEqualTo(ReportConfigFile.EMPTY);
     }
 
     @Test
-    void directoryPathYieldsEmptyMetadata() {
-        assertThat(SpecMetadataResolver.resolve(projectDir)).isEqualTo(SpecMetadata.EMPTY);
+    void directoryPathYieldsEmptySettings() {
+        assertThat(ReportConfigFile.read(projectDir)).isEqualTo(ReportConfigFile.EMPTY);
     }
 }

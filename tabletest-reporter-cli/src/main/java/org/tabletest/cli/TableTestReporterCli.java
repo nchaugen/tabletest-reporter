@@ -17,11 +17,11 @@ package org.tabletest.cli;
 
 import org.tabletest.reporter.FormatLister;
 import org.tabletest.reporter.InputDirectoryResolver;
+import org.tabletest.reporter.ReportConfigFile;
 import org.tabletest.reporter.ReportConfiguration;
 import org.tabletest.reporter.ReportConfigurationResolver;
 import org.tabletest.reporter.ReportOptions;
 import org.tabletest.reporter.ReportResult;
-import org.tabletest.reporter.SpecMetadataResolver;
 import org.tabletest.reporter.TableTestReporter;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -133,7 +133,7 @@ public final class TableTestReporterCli implements Callable<Integer> {
 
     private Path resolveConfigFile() {
         return configFileArg == null || configFileArg.isBlank()
-                ? Path.of(SpecMetadataResolver.DEFAULT_FILE_NAME)
+                ? Path.of(ReportConfigFile.DEFAULT_FILE_NAME)
                 : Path.of(configFileArg);
     }
 
