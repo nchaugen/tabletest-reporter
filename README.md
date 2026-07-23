@@ -428,10 +428,98 @@ The structure eliminates redundant directory levels—only the branching parts o
 
 ## Publishing Your Documentation
 
-The generated AsciiDoc or Markdown files can be published with standard documentation tools:
+The `html` format is publishable as it stands: every page is self-contained and every link
+relative, so the output directory can be copied to a static host with no build step. The
+AsciiDoc and Markdown formats are intermediate sources for a toolchain you already run:
 
+- **HTML:** Copy the output directory to any static host — no conversion step
 - **AsciiDoc:** Use Asciidoctor Maven/Gradle plugins to convert to HTML
 - **Markdown:** Use your static site generator (Jekyll, Hugo, MkDocs, etc.)
+
+### GitHub Pages via Actions
+
+Living documentation is only worth publishing if it keeps up with the code, which means
+generating it in CI rather than committing it. The workflow below runs the tests, generates
+the HTML report, and deploys it to Pages. Because the report is generated from a test run,
+the `test` phase must run in the same invocation as the `report` goal.
+
+```yaml
+name: Publish living documentation
+
+on:
+  push:
+    branches: [main]
+  # Optional: rebuild on a schedule so the docs track the code even without a push
+  schedule:
+    - cron: '30 6 * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deployment finish rather than cancelling it
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'   # the reporter's JUnit extension needs 21+
+          cache: 'maven'
+      - name: Generate living documentation
+        run: >
+          mvn test org.tabletest:tabletest-reporter-maven-plugin:report
+          -Dtabletest.report.format=html
+          --no-transfer-progress
+      - uses: actions/configure-pages@v4
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: target/generated-docs/tabletest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+For a multi-module build, swap the generate step for the `aggregate` goal so every module
+lands in one spec:
+
+```yaml
+      - name: Generate living documentation
+        run: >
+          mvn test org.tabletest:tabletest-reporter-maven-plugin:aggregate
+          -Dtabletest.report.format=html
+          --no-transfer-progress
+```
+
+Project Pages are served from `/<repo>/`, which the report handles without configuration —
+all its links and assets are relative.
+
+### Other hosting options
+
+| Where | How | Good for |
+|---|---|---|
+| **GitHub Pages** | The workflow above | The default: a browsable URL that tracks `main` |
+| **Build artifact** | `actions/upload-artifact` on the output directory | Private repos, or docs not meant to be public |
+| **Per-PR preview** | Deploy the output to a preview environment keyed by PR number | Reviewing how a change reads before it merges |
+| **Release asset** | Attach the `--single-file` HTML to the release | A frozen spec for a released version |
+| **Netlify / Vercel** | Point at the output directory as the publish directory | Preview URLs and custom domains without Pages |
+
+Single-file mode (`--single-file`) is the one to reach for whenever a directory of files is
+awkward — release assets, email, ticket attachments.
 
 ---
 
