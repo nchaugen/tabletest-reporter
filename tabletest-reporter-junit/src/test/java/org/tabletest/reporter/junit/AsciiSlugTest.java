@@ -1,26 +1,24 @@
 package org.tabletest.reporter.junit;
 
-import com.github.slugify.Slugify;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Documents the behaviour of the Slugify library with different naming conventions.
- * This informs what additional transformation logic we need for filename generation.
+ * Characterises slug generation for the naming conventions test names arrive in.
+ * This informs what additional transformation logic Slugger layers on top.
  */
-class SlugifyBehaviourTest {
-
-    private static final Slugify SLUGIFIER = Slugify.builder().build();
+class AsciiSlugTest {
 
     @Description("""
-        Characterises the Slugify library so a version change cannot alter filename
-        generation unnoticed. The non-ASCII rows record what the library does today,
-        not what it ideally should: Slugify strips diacritics but drops letters it has
-        no ASCII fold for, so 'ß' and 'Æ/Ø' vanish rather than becoming 'ss'/'ae'/'oe'.
+        Pins slug generation so a change cannot alter filenames unnoticed. These rows
+        were characterised against the Slugify library this replaced, and reproduce it
+        exactly. The non-ASCII rows record what happens today, not what ideally should:
+        diacritics fold to the base letter, but a letter with no ASCII form is dropped,
+        so 'ß' and 'Æ/Ø' vanish rather than becoming 'ss'/'ae'/'oe'.
         Open: a name written wholly in a non-Latin script slugs to the empty string,
-        which cannot serve as a filename — see the note on Slugger.
+        which cannot serve as a filename — tracked as its own board item.
         """)
     @TableTest("""
         Scenario                     | Input                | Result?
@@ -60,7 +58,7 @@ class SlugifyBehaviourTest {
         Curly quotes                 | quotes “curly”       | quotes-curly
         Diacritics with underscore   | Ünïcödé_Mïxed        | unicode_mixed
         """)
-    void shouldDocumentSlugifyBehaviour(String input, String expected) {
-        assertThat(SLUGIFIER.slugify(input)).isEqualTo(expected);
+    void shouldReduceNameToAsciiSlug(String input, String expected) {
+        assertThat(AsciiSlug.of(input)).isEqualTo(expected);
     }
 }

@@ -1,6 +1,15 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+### Changed
+- The JUnit extension no longer depends on the Slugify library: filename slug generation is
+  now built in. Slugify required Java 21, which forced every project documenting its tests to
+  run them on a 21+ runtime; the extension now targets Java 17, so a Java 17 project can use
+  it on its own test runtime. Slug output is unchanged — the replacement is pinned by the same
+  characterisation table, extended with non-ASCII cases, and reproduces the library exactly.
+  This also removes Slugify and its SLF4J transitive from the test classpath, so they can no
+  longer conflict with versions a project uses itself. The build still requires Java 21+.
+
 ### Added
 - Multi-module reports: several directories of TableTest output now merge into a single
   spec, so the modules of a multi-module build publish one set of documentation. Maven gains

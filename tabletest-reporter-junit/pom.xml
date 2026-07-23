@@ -13,10 +13,15 @@
     <name>TableTest Reporter JUnit Extension</name>
 
     <properties>
+        <!-- This module loads into the user's test JVM, so it targets the oldest LTS
+             TableTest itself supports; the rest of the build stays on 21. Use `release`,
+             not source/target, so a Java 21 API cannot be referenced by accident. -->
+        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <version.tabletest-junit>1.2.2</version.tabletest-junit>
         <version.tabletest-parser>1.2.1</version.tabletest-parser>
         <version.snakeyaml>3.0.1</version.snakeyaml>
-        <version.slugify>4.0.1</version.slugify>
         <version.junit>6.1.2</version.junit>
         <version.assertj>3.27.7</version.assertj>
     </properties>
@@ -28,13 +33,6 @@
             <artifactId>junit-jupiter-api</artifactId>
             <version>${version.junit}</version>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- Slugify for filename transformation -->
-        <dependency>
-            <groupId>com.github.slugify</groupId>
-            <artifactId>slugify</artifactId>
-            <version>${version.slugify}</version>
         </dependency>
 
         <!-- TableTest library for parser and JUnit integration -->

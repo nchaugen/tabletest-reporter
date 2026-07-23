@@ -15,8 +15,6 @@
  */
 package org.tabletest.reporter.junit;
 
-import com.github.slugify.Slugify;
-
 /**
  * Transforms test class and method names to web-friendly kebab-case filenames.
  * <p>
@@ -29,8 +27,6 @@ import com.github.slugify.Slugify;
  */
 public class Slugger {
 
-    private static final Slugify SLUGIFIER = Slugify.builder().build();
-
     public static String slugify(String name) {
         if (name == null || name.isEmpty()) {
             return name;
@@ -38,7 +34,7 @@ public class Slugger {
 
         if (name.contains(" ")) {
             String normalized = name.replace('_', ' ');
-            return SLUGIFIER.slugify(normalized);
+            return AsciiSlug.of(normalized);
         }
 
         if (name.contains("_")) {
@@ -50,11 +46,11 @@ public class Slugger {
 
     private static String snakeCaseToKebab(String name) {
         String withHyphens = name.replace('_', '-');
-        return SLUGIFIER.slugify(withHyphens);
+        return AsciiSlug.of(withHyphens);
     }
 
     private static String camelCaseToKebab(String name) {
         String withHyphens = CamelCaseSplitter.split(name, '-', Character::toLowerCase);
-        return SLUGIFIER.slugify(withHyphens);
+        return AsciiSlug.of(withHyphens);
     }
 }
