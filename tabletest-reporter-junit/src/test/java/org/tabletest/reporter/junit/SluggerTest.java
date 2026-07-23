@@ -51,6 +51,11 @@ class SluggerTest {
         Mixed space and underscore   | test_method with spaces | test-method-with-spaces
         Mixed snake and camel        | Test_Method_Name        | test-method-name
         Mixed snake and acronym      | XML_Parser              | xml-parser
+        Accented letters             | naïve façade            | naive-facade
+        Ligature letters             | Grüße aus München       | grusse-aus-munchen
+        Nordic letters               | ÆØÅ                     | aeoa
+        Thorn without Latin base     | Þingvellir              | thingvellir
+        Compatibility ligature       | ﬁle ﬂow                 | file-flow
         Greek script                 | Ελληνικά                | ελληνικά
         Cyrillic script              | Москва                  | москва
         CJK script                   | 日本語のテスト          | 日本語のテスト

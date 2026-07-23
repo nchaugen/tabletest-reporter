@@ -1,6 +1,17 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+> [!IMPORTANT]
+> **Slug generation changed, and some published page names change with it.** A test or class
+> name containing a letter with no ASCII form (`ß æ ø ł þ ð œ đ`), a compatibility character
+> (`ﬁ`, fullwidth letters, `x²`, `Ⅻ`, `™`, `½`), or a non-Latin script now produces a different
+> filename and URL than earlier versions did — those characters used to be dropped, so `Grüße`
+> published as `grue` and now publishes as `grusse`. If you already publish your documentation,
+> the affected pages move and existing links to them break; regenerate the whole report rather
+> than an incremental subset, and expect to update any links you control. Names made only of
+> ASCII, and accented letters that already folded to a base letter (`ü ö ä é å ñ`), are
+> unaffected — their slugs are byte-for-byte what they were.
+
 ### Fixed
 - A test named wholly in a non-Latin script no longer produces an empty filename: `Москва` now
   publishes as `москва` rather than as nothing at all, and likewise for Greek, CJK, Devanagari
@@ -22,7 +33,8 @@
   it used to become `a`. One rule decides the spelling — ligatures expand to their component
   letters (`ß`→`ss`, `æ`→`ae`, `œ`→`oe`), stroked letters fold to their base letter (`ø`→`o`,
   `ł`→`l`, `đ`→`d`, `ð`→`d`), and `þ`→`th` because thorn has no Latin base letter. Letters that
-  already folded (`ü ö ä é å ñ`) are untouched, so no slug that works today moves.
+  already folded (`ü ö ä é å ñ`) are untouched, so a name built only from those keeps the exact
+  slug it had; a name containing one of the newly spelled-out letters gets a new one.
 - The JUnit extension no longer depends on the Slugify library: filename slug generation is
   now built in. Slugify required Java 21, which forced every project documenting its tests to
   run them on a 21+ runtime; the extension now targets Java 17, so a Java 17 project can use

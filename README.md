@@ -428,6 +428,28 @@ generated-docs/tabletest/
 
 The structure eliminates redundant directory levels—only the branching parts of your package hierarchy appear in the output. Directory and file names are kebab-case versions of your package, class, and method names.
 
+### How names become filenames
+
+A `@DisplayName`, a Kotlin backtick name, or a camelCase method name is reduced to a lowercase name usable as both a filename and a URL segment. Words are split on spaces, underscores, and camelCase boundaries; every other run of punctuation or symbols becomes a single hyphen.
+
+Names outside plain ASCII are handled as follows:
+
+| Name | Filename | Rule |
+|---|---|---|
+| `Leap Year Rules` | `leap-year-rules` | words split on spaces |
+| `parseHTMLDocument` | `parse-html-document` | camelCase and acronyms split |
+| `naïve façade` | `naive-facade` | accents fold to the base letter |
+| `Grüße aus München` | `grusse-aus-munchen` | ligatures expand: `ß`→`ss`, `æ`→`ae`, `œ`→`oe` |
+| `ÆØÅ` | `aeoa` | stroked letters fold: `ø`→`o`, `ł`→`l`, `đ`→`d`, `ð`→`d` |
+| `Þingvellir` | `thingvellir` | `þ`→`th`, having no Latin base letter |
+| `ﬁle ﬂow` | `file-flow` | compatibility forms reduce to what they stand for |
+| `Москва` | `москва` | a name with no ASCII form keeps its own script |
+| `日本語のテスト` | `日本語のテスト` | likewise for CJK, Greek, Devanagari, and the rest |
+
+A name written in its own script is published as-is: those are legal filenames on every supported platform and legal URLs once a browser percent-encodes them, and GitHub Pages serves UTF-8 paths. A name with no letters or digits at all falls back to `unnamed-` plus a stable hash of the name, so two such names still get two pages.
+
+Two tables in the same class that reduce to the same filename are disambiguated with a numeric suffix (`-1`, `-2`).
+
 ## Publishing Your Documentation
 
 The `html` format is publishable as it stands: every page is self-contained and every link
