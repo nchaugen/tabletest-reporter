@@ -1,6 +1,15 @@
 # TableTest Reporter Changelog
 
 ## [Unreleased]
+### Fixed
+- A test named wholly in a non-Latin script no longer produces an empty filename: `Москва` now
+  publishes as `москва` rather than as nothing at all, and likewise for Greek, CJK, Devanagari
+  and every other script. Such a name keeps its own characters, which browsers percent-encode
+  and GitHub Pages serves as UTF-8; a name whose ASCII form is only a number it contained
+  (`Москва основана в 1147`) is treated the same way rather than published as `1147`. A name
+  with no letters or digits anywhere gets `unnamed-` plus a stable hash, so two of them still
+  get two files. Names that already produced a working slug are unaffected.
+
 ### Changed
 - Latin letters with no ASCII form now appear in filenames and URLs instead of vanishing from
   them: `Grüße` becomes `grusse` where it used to become `grue`, and `ÆØÅ` becomes `aeoa` where

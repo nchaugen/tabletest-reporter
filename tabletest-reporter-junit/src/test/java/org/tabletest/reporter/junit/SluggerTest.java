@@ -1,5 +1,6 @@
 package org.tabletest.reporter.junit;
 
+import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,6 +11,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class SluggerTest {
 
+    @Description("""
+        A name that keeps a letter through the ASCII fold slugs exactly as it always has.
+        A name that does not — one written in a script the fold has no answer for — keeps
+        its own characters instead of collapsing to an unusable empty filename, and a name
+        with no letters or digits anywhere falls back to a stable hash so that two of them
+        still get two filenames.
+        """)
     @TableTest("""
         Scenario                     | Input                   | Result?
         CamelCase PascalCase         | LeapYearRules           | leap-year-rules
@@ -43,6 +51,12 @@ class SluggerTest {
         Mixed space and underscore   | test_method with spaces | test-method-with-spaces
         Mixed snake and camel        | Test_Method_Name        | test-method-name
         Mixed snake and acronym      | XML_Parser              | xml-parser
+        Greek script                 | Ελληνικά                | ελληνικά
+        Cyrillic script              | Москва                  | москва
+        CJK script                   | 日本語のテスト          | 日本語のテスト
+        Cyrillic backtick name       | Москва основана в 1147  | москва-основана-в-1147
+        Cyrillic camelCase           | проверкаИмени           | проверка-имени
+        No letters or digits         | '!!!'                   | unnamed-00008001
         """)
     void shouldSlugifyNames(String input, String expected) {
         assertThat(Slugger.slugify(input)).isEqualTo(expected);
