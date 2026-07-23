@@ -280,8 +280,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
                 format.getOrNull(), toPath(templateDir), indexDepth.getOrNull(), null, resolvedConfigFile()));
 
         try {
-            ReportResult result = new TableTestReporter(config.templateDirectory(), config.indexDepth())
-                    .report(config.format(), in, out, config.singleFile(), config.specMetadata());
+            ReportResult result = new TableTestReporter(config).report(in, out);
             logResult(result);
         } catch (Exception e) {
             throw new GradleException("Failed to generate TableTest report: " + e.getMessage(), e);

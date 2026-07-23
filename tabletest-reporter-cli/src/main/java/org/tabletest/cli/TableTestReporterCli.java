@@ -115,8 +115,7 @@ public final class TableTestReporterCli implements Callable<Integer> {
 
             ReportConfiguration config = ReportConfigurationResolver.resolve(
                     new ReportOptions(format, rawTemplateDir(), indexDepthArg, singleFile, resolveConfigFile()));
-            ReportResult result = new TableTestReporter(config.templateDirectory(), config.indexDepth())
-                    .report(config.format(), in, out, config.singleFile(), config.specMetadata());
+            ReportResult result = new TableTestReporter(config).report(in, out);
             if (result.filesGenerated() == 0) {
                 System.err.println(result.message());
             } else {

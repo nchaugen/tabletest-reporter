@@ -27,7 +27,7 @@ import java.util.Map;
 public class TableTestReporter {
 
     private final TemplateEngine templateEngine;
-    private final IndexDepth indexDepth;
+    private final ReportConfiguration configuration;
 
     public TableTestReporter() {
         this(null, IndexDepth.DEFAULT);
@@ -38,9 +38,27 @@ public class TableTestReporter {
     }
 
     public TableTestReporter(Path customTemplateDirectory, IndexDepth indexDepth) {
-        this.templateEngine =
-                customTemplateDirectory != null ? new TemplateEngine(customTemplateDirectory) : new TemplateEngine();
-        this.indexDepth = indexDepth;
+        this(new ReportConfiguration(
+                BuiltInFormat.ASCIIDOC, customTemplateDirectory, indexDepth, false, SpecMetadata.EMPTY));
+    }
+
+    /** Reports against a resolved configuration — the form every entry point uses. */
+    public TableTestReporter(ReportConfiguration configuration) {
+        this.templateEngine = configuration.templateDirectory() != null
+                ? new TemplateEngine(configuration.templateDirectory())
+                : new TemplateEngine();
+        this.configuration = configuration;
+    }
+
+    /**
+     * Generates the report described by this reporter's configuration.
+     *
+     * @param inDir the directory of TableTest YAML output to read
+     * @param outDir the directory to write the generated documentation to
+     * @return the outcome, carrying the number of files generated
+     */
+    public ReportResult report(Path inDir, Path outDir) {
+        return report(configuration, inDir, outDir);
     }
 
     public ReportResult report(Format format, Path inDir, Path outDir) {
@@ -51,19 +69,32 @@ public class TableTestReporter {
         return report(format, inDir, outDir, singleFile, SpecMetadata.EMPTY);
     }
 
+    public ReportResult report(Format format, Path inDir, Path outDir, boolean singleFile, SpecMetadata specMetadata) {
+        return report(
+                new ReportConfiguration(
+                        format,
+                        configuration.templateDirectory(),
+                        configuration.indexDepth(),
+                        singleFile,
+                        specMetadata),
+                inDir,
+                outDir);
+    }
+
     /**
      * Generates the report. Spec metadata (title, intro, feature order/titles) is applied on top of
      * the built tree before rendering. In single-file mode the whole tree is assembled into one
      * self-contained document (currently HTML only); otherwise one file is written per node.
      */
-    public ReportResult report(Format format, Path inDir, Path outDir, boolean singleFile, SpecMetadata specMetadata) {
+    private ReportResult report(ReportConfiguration config, Path inDir, Path outDir) {
         ReportNode built = ReportTree.process(inDir);
         if (built == null) {
             return ReportResult.empty(inDir);
         }
-        ReportNode tree = specMetadata.applyTo(built);
+        Format format = config.format();
+        ReportNode tree = config.specMetadata().applyTo(built);
         GeneratedAt generatedAt = GeneratedAt.now();
-        if (singleFile) {
+        if (config.singleFile()) {
             return reportSingleFile(format, tree, generatedAt, outDir);
         }
         int count = report(tree, tree, List.of(), format, generatedAt, outDir);
@@ -191,7 +222,8 @@ public class TableTestReporter {
                         }
                     }
 
-                    if (child instanceof IndexNode indexChild && currentDepth < indexDepth.value()) {
+                    if (child instanceof IndexNode indexChild
+                            && currentDepth < configuration.indexDepth().value()) {
                         List<Map<String, Object>> nested =
                                 buildContentsForTemplate(indexChild.contents(), relativeOutPath, currentDepth + 1);
                         if (!nested.isEmpty()) {

@@ -81,8 +81,7 @@ public final class ReportMojo extends AbstractMojo {
 
             ReportConfiguration config = ReportConfigurationResolver.resolve(
                     new ReportOptions(format, toPath(templateDirectory), indexDepth, null, toPath(configFile)));
-            ReportResult result = new TableTestReporter(config.templateDirectory(), config.indexDepth())
-                    .report(config.format(), in, out, config.singleFile(), config.specMetadata());
+            ReportResult result = new TableTestReporter(config).report(in, out);
             logResult(result);
         } catch (MojoFailureException e) {
             // Propagate user/config failures as-is without wrapping
