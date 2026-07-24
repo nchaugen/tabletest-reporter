@@ -3,7 +3,6 @@ package org.tabletest.reporter;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -29,7 +28,6 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
  * the resulting YAML files.
  */
 // Unpublished: internal contract with the junit extension's YAML output, not a user-facing rule.
-@Tag("unpublished")
 class JunitCoreContractTest {
 
     @TempDir

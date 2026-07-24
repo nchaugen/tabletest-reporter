@@ -1,6 +1,5 @@
 package org.tabletest.reporter;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Scenario;
@@ -14,7 +13,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // Unpublished: internal mechanism (junit.properties reading), not a user-facing rule.
-@Tag("unpublished")
 class JunitPropertiesReaderTest {
 
     @Test

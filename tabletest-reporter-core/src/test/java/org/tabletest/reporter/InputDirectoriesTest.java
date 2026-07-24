@@ -1,6 +1,5 @@
 package org.tabletest.reporter;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -13,7 +12,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // Unpublished: internal mechanism (input-directory resolution), not a user-facing rule.
-@Tag("unpublished")
 class InputDirectoriesTest {
 
     @TempDir

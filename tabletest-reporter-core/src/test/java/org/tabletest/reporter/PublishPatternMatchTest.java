@@ -1,6 +1,5 @@
 package org.tabletest.reporter;
 
-import org.junit.jupiter.api.Tag;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 
@@ -9,7 +8,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // Unpublished: internal pattern matching behind the publish selection, not a user-facing rule.
-@Tag("unpublished")
 class PublishPatternMatchTest {
 
     @Description("""

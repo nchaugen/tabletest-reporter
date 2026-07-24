@@ -1,6 +1,5 @@
 package org.tabletest.reporter;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
@@ -17,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * line separators (U+2028/U+2029) that are legal in JSON but break a JS string literal.
  */
 // Unpublished: internal mechanism (JSON value serialization), not a user-facing reporter rule.
-@Tag("unpublished")
 class JsonTest {
 
     @TableTest("""

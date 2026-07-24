@@ -1,6 +1,5 @@
 package org.tabletest.reporter;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.TableTest;
@@ -13,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 // Unpublished: internal mechanism (report-option resolution), not a user-facing rule.
-@Tag("unpublished")
 class ReportConfigurationResolverTest {
 
     @TempDir

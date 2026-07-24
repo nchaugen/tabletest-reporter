@@ -1,6 +1,5 @@
 package org.tabletest.reporter;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
@@ -13,7 +12,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // Unpublished: internal mechanism (locating run-output files), not a user-facing rule.
-@Tag("unpublished")
 class TestOutputFileFinderTest {
 
     @TableTest("""

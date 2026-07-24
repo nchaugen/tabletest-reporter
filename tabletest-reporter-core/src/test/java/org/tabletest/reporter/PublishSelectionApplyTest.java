@@ -1,6 +1,5 @@
 package org.tabletest.reporter;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
@@ -13,7 +12,6 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // Unpublished: internal report-tree transform, not a user-facing rule.
-@Tag("unpublished")
 class PublishSelectionApplyTest {
 
     @Description("""

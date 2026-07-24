@@ -1,0 +1,21 @@
+# Report-time publish selection for the reporter's own self-hosted spec.
+#
+# Every @TableTest publishes by default; the tables below exercise the reporter's
+# internal plumbing rather than a reporter spec rule, so they are held back here
+# instead of with @Tag("unpublished") + a Surefire group filter. Report-time
+# selection keeps what publishes independent of what runs, and survives the
+# second (non-JVM) implementation that has no test tags.
+# See products/reporter/decisions/publish-selection-at-report-time.md.
+publish:
+  exclude:
+    - input-directory-resolver-test      # resolving configured input directories
+    - test-output-file-finder-test       # locating a module's TableTest YAML output
+    - json-test                          # JSON (de)serialisation internals
+    - junit-dir-parser-test              # parsing a JUnit output directory
+    - junit-properties-reader-test       # reading junit-platform.properties
+    - report-configuration-resolver-test # merging config from file, options and defaults
+    - target-path-resolver-test          # mapping a page to its on-disk output path
+    - publish-pattern-match-test         # glob matching behind this very exclude list
+    - publish-selection-apply-test       # applying the exclude/include tree transform
+    - spec-metadata-apply-test           # applying title/intro/order onto the tree
+    - pebble                             # Pebble template filter internals (whole subtree)
