@@ -17,7 +17,7 @@
         <version.tabletest-parser>1.2.1</version.tabletest-parser>
         <version.snakeyaml>3.1.1</version.snakeyaml>
         <version.pebble>4.1.2</version.pebble>
-        <version.logback>1.6.1</version.logback>
+        <version.logback>1.6.3</version.logback>
 
         <version.junit>6.1.3</version.junit>
         <version.assertj>3.27.7</version.assertj>
