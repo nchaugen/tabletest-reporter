@@ -41,7 +41,7 @@ public class HtmlFooterRenderingTest {
         assertThat(document.select("footer.doc-footer time").attr("datetime")).isEqualTo(timestampAttribute);
     }
 
-    @DisplayName("Falls back to plain attribution when the context carries no timestamp")
+    @DisplayName("Falls back to plain attribution without a timestamp")
     @Description("""
         A context assembled without a timestamp — a custom renderer driving the templates
         directly — still gets the attribution rather than a footer with a dangling separator.

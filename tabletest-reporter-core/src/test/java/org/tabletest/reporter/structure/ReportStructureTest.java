@@ -49,7 +49,7 @@ class ReportStructureTest {
         assertThat(ReportStructure.pagesFor(publishedTables, workingDir)).isEqualTo(reportPages);
     }
 
-    @DisplayName("Roots the report at the deepest package every published class shares")
+    @DisplayName("Roots the report at the deepest shared package")
     @Description("""
             The packages above that are the same for every page, so they would be levels a reader
             walks through and never chooses in — they are left out, and the report opens on the

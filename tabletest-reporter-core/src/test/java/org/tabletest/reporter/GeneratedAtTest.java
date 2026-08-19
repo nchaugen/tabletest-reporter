@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Report timestamp")
 public class GeneratedAtTest {
 
-    @DisplayName("States the run timestamp in UTC, whatever zone the run happened in")
+    @DisplayName("States the run timestamp in UTC, whatever zone it ran in")
     @Description("""
         Report timestamps are always stated in UTC, whatever zone the run happened in, so a
         spec generated in CI reads the same for every reader. The label drops sub-second
