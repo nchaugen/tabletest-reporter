@@ -34,6 +34,7 @@
     {{ docFooter(generatedAt) }}
 </main>
 {{ themeScript() }}
+{{ tableScrollScript() }}
 {{ navScript() }}
 <script src="{{ assetRoot }}tabletest-search-index.js"></script>
 {{ searchScript() }}

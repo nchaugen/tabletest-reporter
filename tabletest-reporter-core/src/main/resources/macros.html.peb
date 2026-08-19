@@ -303,7 +303,7 @@
     --rule: #e6e2d9; --rule-strong: #cdc8bc;
     --accent: #0e6e6b; --accent-wash: #eaf2f1;
     --pass: #2e7d57; --fail: #be4a3f; --fail-wash: #fbeeec;
-    --marker: #b4ac9c;
+    --marker: #b4ac9c; --shade: rgba(27, 29, 36, 0.34);
     --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
 }
@@ -313,7 +313,7 @@
         --rule: #272b33; --rule-strong: #3a3f49;
         --accent: #38c6be; --accent-wash: #12201f;
         --pass: #5fbe86; --fail: #e0736a; --fail-wash: #241a1b;
-        --marker: #565c67;
+        --marker: #565c67; --shade: rgba(0, 0, 0, 0.6); --shade: rgba(0, 0, 0, 0.6);
     }
 }
 :root[data-theme="dark"] {
@@ -435,7 +435,19 @@ h1 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 650; letter-spacing: -0.0
 .legend .chip.expectation { background: var(--accent-wash); border: 1px solid var(--accent); }
 
 /* Table — ledger: hairline horizontal rules, monospaced data */
-.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; }
+.table-wrap {
+    overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px;
+    scrollbar-width: thin; scrollbar-color: var(--rule-strong) transparent;
+}
+/* A wide table scrolls inside its own box; say so, or a reader takes the last column for the last */
+.table-wrap::-webkit-scrollbar { height: 9px; }
+.table-wrap::-webkit-scrollbar-thumb { background: var(--rule-strong); border-radius: 5px; }
+.table-wrap::-webkit-scrollbar-track { background: transparent; }
+.table-wrap.more-right { box-shadow: inset -26px 0 16px -18px var(--shade); }
+.table-wrap.more-left { box-shadow: inset 26px 0 16px -18px var(--shade); }
+.table-wrap.more-left.more-right {
+    box-shadow: inset -26px 0 16px -18px var(--shade), inset 26px 0 16px -18px var(--shade);
+}
 table { border-collapse: collapse; width: max-content; min-width: 100%; font-family: var(--font-mono); font-size: 0.85rem; }
 th, td { padding: 0.6rem 0.9rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--rule); }
 tbody tr:last-child td { border-bottom: none; }
@@ -553,6 +565,28 @@ td.failed.expectation { background: var(--fail-wash); }
 
 {% macro themeToggle() %}
 <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle light or dark theme" title="Toggle theme">&#9680;</button>
+{% endmacro %}
+
+{% macro tableScrollScript() %}
+<script>
+(function () {
+    function mark(wrap) {
+        var slack = wrap.scrollWidth - wrap.clientWidth;
+        wrap.classList.toggle("more-left", wrap.scrollLeft > 1);
+        wrap.classList.toggle("more-right", slack > 1 && wrap.scrollLeft < slack - 1);
+    }
+    var wraps = document.querySelectorAll(".table-wrap");
+    for (var i = 0; i < wraps.length; i++) {
+        (function (wrap) {
+            mark(wrap);
+            wrap.addEventListener("scroll", function () { mark(wrap); }, { passive: true });
+        })(wraps[i]);
+    }
+    window.addEventListener("resize", function () {
+        for (var j = 0; j < wraps.length; j++) mark(wraps[j]);
+    }, { passive: true });
+})();
+</script>
 {% endmacro %}
 
 {% macro themeScript() %}

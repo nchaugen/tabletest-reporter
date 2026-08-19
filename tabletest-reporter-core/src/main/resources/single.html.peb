@@ -30,6 +30,7 @@
     {{ docFooter(generatedAt) }}
 </main>
 {{ themeScript() }}
+{{ tableScrollScript() }}
 {{ navScript() }}
 <script>{{ searchData }}</script>
 {{ searchScript() }}

@@ -41,19 +41,19 @@ class RolesAndResultsTest {
             on the scenario name, so that column is marked as the scenario and never passed to the
             test. A column whose header ends in a question mark holds what the row expected. Every
             other column is an input and carries no mark. Read off LeapYearSample:
-            Scenario | Year | Leap?, over a method taking year and leap.
+        Scenario | Year | Leap?, over a method taking year and leap.
             """)
     @TableTest("""
-        Scenario                     | Column   | Mark in HTML? | Mark in AsciiDoc? | Mark in markdown?
-        The column naming the row    | Scenario | scenario      | scenario          |
-        A column the test is given   | Year     |               |                   |
-        The column ending in a query | Leap?    | expectation   | expectation       |
+        Scenario                     | Column   | Mark in markdown? | Mark in AsciiDoc? | Mark in HTML?
+        The column naming the row    | Scenario |                   | scenario          | scenario
+        A column the test is given   | Year     |                   |                   |
+        The column ending in a query | Leap?    |                   | expectation       | expectation
         """)
     void marksTheScenarioAndExpectationColumns(
-            String column, String markInHtml, String markInAsciiDoc, String markInMarkdown) {
-        assertThat(markOf(LeapYearSample.class, "html", column)).isEqualTo(markInHtml);
-        assertThat(markOf(LeapYearSample.class, "asciidoc", column)).isEqualTo(markInAsciiDoc);
+            String column, String markInMarkdown, String markInAsciiDoc, String markInHtml) {
         assertThat(markOf(LeapYearSample.class, "markdown", column)).isEqualTo(markInMarkdown);
+        assertThat(markOf(LeapYearSample.class, "asciidoc", column)).isEqualTo(markInAsciiDoc);
+        assertThat(markOf(LeapYearSample.class, "html", column)).isEqualTo(markInHtml);
     }
 
     @DisplayName("Marks the column of a parameter annotated @Scenario, wherever it sits")
@@ -64,16 +64,16 @@ class RolesAndResultsTest {
             AnnotatedScenarioSample: Year | Case | Leap?, whose second parameter is annotated.
             """)
     @TableTest("""
-        Scenario                          | Column | Mark in HTML? | Mark in AsciiDoc? | Mark in markdown?
-        A column before the annotated one | Year   |               |                   |
-        The annotated column              | Case   | scenario      | scenario          |
-        The expectation is unaffected     | Leap?  | expectation   | expectation       |
+        Scenario                          | Column | Mark in markdown? | Mark in AsciiDoc? | Mark in HTML?
+        A column before the annotated one | Year   |                   |                   |
+        The annotated column              | Case   |                   | scenario          | scenario
+        The expectation is unaffected     | Leap?  |                   | expectation       | expectation
         """)
     void marksTheColumnOfAnAnnotatedParameter(
-            String column, String markInHtml, String markInAsciiDoc, String markInMarkdown) {
-        assertThat(markOf(AnnotatedScenarioSample.class, "html", column)).isEqualTo(markInHtml);
-        assertThat(markOf(AnnotatedScenarioSample.class, "asciidoc", column)).isEqualTo(markInAsciiDoc);
+            String column, String markInMarkdown, String markInAsciiDoc, String markInHtml) {
         assertThat(markOf(AnnotatedScenarioSample.class, "markdown", column)).isEqualTo(markInMarkdown);
+        assertThat(markOf(AnnotatedScenarioSample.class, "asciidoc", column)).isEqualTo(markInAsciiDoc);
+        assertThat(markOf(AnnotatedScenarioSample.class, "html", column)).isEqualTo(markInHtml);
     }
 
     @DisplayName("Marks a column as the expectation when its header matches the expectation pattern")
@@ -84,7 +84,7 @@ class RolesAndResultsTest {
             the default rather than adding to it. Which column gets the mark is decided before any
             format renders it, so this rule is read off the HTML page alone; where each format then
             puts the mark is the rule above. Read off ExpectationPatternSample:
-            Scenario | Year | Leap? | Expected note.
+        Scenario | Year | Leap? | Expected note.
             """)
     @TableTest("""
         Scenario              | Expectation pattern | Column        | Holds the expectation?
@@ -110,21 +110,21 @@ class RolesAndResultsTest {
             century row claims the wrong answer on purpose.
             """)
     @TableTest("""
-        Scenario         | Row                      | Verdict in HTML? | Verdict in AsciiDoc? | Verdict in markdown? | Message below the table?
-        A row that held  | A year divisible by four | passed           | passed               |                      |
-        A row that broke | A century year           | failed           | failed               |                      | ['expected: "Yes"', ' but was: "No"']
+        Scenario         | Row                      | Verdict in markdown? | Verdict in AsciiDoc? | Verdict in HTML? | Message below the table?
+        A row that held  | A year divisible by four |                      | passed               | passed           |
+        A row that broke | A century year           |                      | failed               | failed           | ['expected: "Yes"', ' but was: "No"']
         """)
     void carriesTheVerdictOfTheScenarioItRan(
             String row,
-            String verdictInHtml,
-            String verdictInAsciiDoc,
             String verdictInMarkdown,
+            String verdictInAsciiDoc,
+            String verdictInHtml,
             List<String> messageBelowTheTable) {
-        assertThat(verdictOf(LeapYearSample.class, "html", row)).isEqualTo(verdictInHtml);
-        assertThat(verdictOf(LeapYearSample.class, "asciidoc", row)).isEqualTo(verdictInAsciiDoc);
         assertThat(verdictOf(LeapYearSample.class, "markdown", row)).isEqualTo(verdictInMarkdown);
+        assertThat(verdictOf(LeapYearSample.class, "asciidoc", row)).isEqualTo(verdictInAsciiDoc);
+        assertThat(verdictOf(LeapYearSample.class, "html", row)).isEqualTo(verdictInHtml);
 
-        for (String format : List.of("html", "asciidoc", "markdown")) {
+        for (String format : List.of("markdown", "asciidoc", "html")) {
             assertThat(publishedTableOf(LeapYearSample.class, format).failureMessageOf(row))
                     .describedAs("the message published in %s", format)
                     .isEqualTo(messageBelowTheTable);

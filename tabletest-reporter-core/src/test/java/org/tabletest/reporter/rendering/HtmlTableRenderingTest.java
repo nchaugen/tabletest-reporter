@@ -109,8 +109,18 @@ public class HtmlTableRenderingTest {
 
         assertThat(rendered)
                 .contains("class=\"table-wrap\"")
-                .contains(".table-wrap { overflow-x: auto")
+                .contains("overflow-x: auto")
                 .contains("position: sticky");
+    }
+
+    @Test
+    void tells_a_reader_a_wide_table_has_more_to_either_side() {
+        String rendered = templateEngine.renderTable(HTML, passingContext);
+
+        assertThat(rendered)
+                .contains(".table-wrap.more-right")
+                .contains(".table-wrap.more-left")
+                .contains("classList.toggle(\"more-right\"");
     }
 
     @Test

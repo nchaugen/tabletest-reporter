@@ -3,6 +3,10 @@
 ## [Unreleased]
 
 ### Added
+- A table wide enough to scroll sideways now says so: the scroll box keeps a visible slim
+  scrollbar, and a shaded edge appears on whichever side has more table beyond it. Previously the
+  box scrolled silently — on a platform with overlay scrollbars a reader had no way to tell the
+  last column on screen was not the last column.
 - A feature in the `tabletest-reporter.yaml` `features:` tree can carry a `description`, rendered
   under the feature's title on its own index page the way a test class's `@Description` is. An
   intermediate index page could previously carry only a title, so anything true of a whole group
