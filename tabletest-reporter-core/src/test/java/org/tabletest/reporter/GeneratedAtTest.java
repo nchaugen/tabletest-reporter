@@ -1,5 +1,6 @@
 package org.tabletest.reporter;
 
+import org.junit.jupiter.api.DisplayName;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 
@@ -11,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Verifies how a report run's timestamp reaches the footer: an exact machine-readable
  * instant beside a label a reader can scan.
  */
+@DisplayName("Report timestamp")
 public class GeneratedAtTest {
 
     @Description("""

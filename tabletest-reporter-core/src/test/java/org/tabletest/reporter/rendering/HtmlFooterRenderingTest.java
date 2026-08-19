@@ -1,6 +1,7 @@
 package org.tabletest.reporter.rendering;
 
 import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.DisplayName;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 import org.tabletest.reporter.TemplateEngine;
@@ -15,6 +16,7 @@ import static org.tabletest.reporter.BuiltInFormat.HTML;
 /**
  * Verifies the footer every HTML page ends with: who generated the report, and when.
  */
+@DisplayName("Page footer")
 public class HtmlFooterRenderingTest {
 
     private static final Map<String, Object> RUN_TIMESTAMP =
