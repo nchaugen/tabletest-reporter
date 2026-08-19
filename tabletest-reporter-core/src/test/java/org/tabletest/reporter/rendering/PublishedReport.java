@@ -25,15 +25,40 @@ final class PublishedReport {
 
     /** The HTML page at the given report URL, in a report built from the given published tables. */
     static Document pageAt(String url, List<String> publishedTables, Path workingDir) {
-        return HtmlValidator.parse(read(fileAt(url, HTML, generate(HTML, publishedTables, workingDir))));
+        return HtmlValidator.parse(read(fileAt(url, HTML, generate(HTML, false, publishedTables, workingDir))));
     }
 
     /** The lines of the page at the given report URL, rendered in the named format. */
     static List<String> linesAt(String url, String formatName, List<String> publishedTables, Path workingDir) {
         Format format = formatNamed(formatName);
-        return read(fileAt(url, format, generate(format, publishedTables, workingDir)))
+        return read(fileAt(url, format, generate(format, false, publishedTables, workingDir)))
                 .lines()
                 .toList();
+    }
+
+    /**
+     * The output directory of a report generated in the named format, so a rule can state what
+     * was written rather than what one page says.
+     */
+    static Path outputOf(String formatName, boolean singleFile, List<String> publishedTables, Path workingDir) {
+        return generate(formatNamed(formatName), singleFile, publishedTables, workingDir);
+    }
+
+    /** The files a report wrote, as paths relative to its output directory, in sorted order. */
+    static List<String> filesIn(Path outputDirectory) {
+        try (var paths = Files.walk(outputDirectory)) {
+            return paths.filter(Files::isRegularFile)
+                    .map(file -> outputDirectory.relativize(file).toString())
+                    .sorted()
+                    .toList();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /** The text of a file in a report's output directory. */
+    static String textOf(Path file) {
+        return read(file);
     }
 
     private static Format formatNamed(String formatName) {
@@ -43,10 +68,10 @@ final class PublishedReport {
                 .orElseThrow(() -> new IllegalArgumentException("No built-in format named " + formatName));
     }
 
-    private static Path generate(Format format, List<String> publishedTables, Path workingDir) {
+    private static Path generate(Format format, boolean singleFile, List<String> publishedTables, Path workingDir) {
         Path inputDirectory = PublishedRun.outputFor(publishedTables, workingDir);
         Path outputDirectory = createTempDirectory(workingDir);
-        new TableTestReporter().report(format, inputDirectory, outputDirectory);
+        new TableTestReporter().report(format, inputDirectory, outputDirectory, singleFile);
         return outputDirectory;
     }
 
