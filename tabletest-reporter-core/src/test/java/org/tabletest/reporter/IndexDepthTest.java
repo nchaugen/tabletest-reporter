@@ -7,7 +7,6 @@ import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for {@link IndexDepth}.
@@ -27,15 +26,13 @@ class IndexDepthTest {
             represented as the largest possible depth, 2147483647.
             """)
     @TableTest("""
-        Scenario         | Input    | Expected Depth?
-        Numeric value    | 1        | 1
-        Larger value     | 5        | 5
-        Infinite keyword | infinite | 2147483647
-        Uppercase        | INFINITE | 2147483647
-        Mixed case       | Infinite | 2147483647
-        Null input       |          | 2147483647
-        Empty string     | ''       | 2147483647
-        Blank string     | '   '    | 2147483647
+        Scenario                   | Input                          | Expected Depth?
+        Numeric value              | 1                              | 1
+        Larger value               | 5                              | 5
+        Infinite keyword, any case | {infinite, INFINITE, Infinite} | 2147483647
+        Null input                 |                                | 2147483647
+        Empty string               | ''                             | 2147483647
+        Blank string               | '   '                          | 2147483647
         """)
     void parses_valid_values(String input, int expectedDepth) {
         IndexDepth result = IndexDepth.parse(input);
@@ -90,16 +87,18 @@ class IndexDepthTest {
         }
     }
 
-    @DisplayName("Option values that are not a number or the keyword are rejected")
+    @DisplayName("An option value that is neither a number nor the keyword is rejected")
+    @Description("""
+            The message repeats the value it could not read and names what it would have
+            accepted. A value that does read as a number but is out of range is the shallowest
+            depth rule above, not this one.
+            """)
     @TableTest("""
-        Scenario        | Input | Error Contains?
-        Invalid word    | foo   | Invalid index depth
-        Numeric text    | one   | Invalid index depth
-        Negative string | -1    | at least 1
+        Scenario               | Input | Error message?
+        A word that is not one | foo   | "Invalid index depth: 'foo'. Expected a positive integer or 'infinite'."
+        A number written out   | one   | "Invalid index depth: 'one'. Expected a positive integer or 'infinite'."
         """)
-    void parse_rejects_invalid_strings(String input, String errorContains) {
-        assertThatThrownBy(() -> IndexDepth.parse(input))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining(errorContains);
+    void parse_rejects_invalid_strings(String input, String errorMessage) {
+        assertThat(errorMessageFrom(() -> IndexDepth.parse(input))).isEqualTo(errorMessage);
     }
 }
