@@ -3,26 +3,21 @@ package org.tabletest.reporter.tables;
 import org.junit.jupiter.api.DisplayName;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
-import org.tabletest.reporter.TemplateEngine;
-import org.tabletest.reporter.support.RenderBridge;
-
-import java.util.List;
+import org.tabletest.reporter.support.PublishedCell;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.tabletest.reporter.BuiltInFormat.MARKDOWN;
 
 @DisplayName("Cell rendering")
 @Description("""
         The reporter publishes the value a row actually ran with, not the text of the cell, so a
         collection arrives as a collection and has to be written back out. Each format writes it
-        back the way that format expresses structure: markdown in the notation a TableTest table
-        uses, AsciiDoc as a bulleted or description-list block, HTML as nested list markup. Only
-        markdown can put a whole collection inside a table cell, so the rules below are read off
-        the markdown report.
+        back the way that format expresses structure, and only markdown can put a whole collection
+        inside a table cell: markdown writes the notation a TableTest table uses, AsciiDoc opens a
+        bulleted or description-list block below the cell, HTML nests list markup inside it. The
+        notation rule below is therefore markdown's alone; the pipe rule holds for all three and
+        shows them side by side.
         """)
 public class CellRenderingTest {
-
-    private final TemplateEngine templateEngine = new TemplateEngine();
 
     @DisplayName("Publishes a markdown cell in the notation the value was written in")
     @Description("""
@@ -44,41 +39,30 @@ public class CellRenderingTest {
         A list within a list | '[[1, 2], [a, b]]'    | '[[1, 2], [a, b]]'
         A map within a map   | '[a: [b: 1]]'         | '[a: [b: 1]]'
         Collections mixed    | '[a: [1, 2], b: {3}]' | '[a: [1, 2], b: {3}]'
+        A list holding pipes | '["|", "|"]'          | '[\\|, \\|]'
         """)
-    void publishesACellInTheNotationItWasWrittenIn(String cell, String publishedCell) {
-        assertThat(publishedCellFor(cell)).isEqualTo(publishedCell);
+    void publishesAMarkdownCellInTheNotationItWasWrittenIn(String cell, String publishedCell) {
+        assertThat(PublishedCell.of("markdown", cell)).isEqualTo(publishedCell);
     }
 
-    @DisplayName("Escapes a pipe inside a value so it cannot end the cell")
+    @DisplayName("Escapes a pipe where the format would end the cell at it")
     @Description("""
-            Markdown ends a cell at a pipe, so a value holding one would split the row and the
-            table would lose a column from that point on. Every pipe the value itself contains is
-            escaped instead, wherever it sits — in a plain value, inside a collection, or in a
-            column header. AsciiDoc escapes a pipe the same way and for the same reason; HTML has
-            no cell delimiter to protect.
+            Markdown and AsciiDoc both end a cell at a pipe, so a value holding one would split
+            the row and the table would lose a column from that point on. Both escape every pipe
+            the value contains, wherever it sits — in a plain value, in a sentence, or inside a
+            collection. HTML has no cell delimiter to protect and leaves the character alone; it
+            still counts a pipe as whitespace-significant, which is the ws class in its column.
             """)
     @TableTest("""
-        Scenario                  | Cell                   | Published cell?
-        A value that is one pipe  | '"|"'                  | '\\|'
-        A pipe inside a sentence  | '"Text with | a pipe"' | 'Text with \\| a pipe'
-        Pipes inside a list       | '["|", "|"]'           | '[\\|, \\|]'
-        Pipes inside a set        | '{"||"}'               | '{\\|\\|}'
-        A pipe inside a map value | '[b: "||"]'            | '[b: \\|\\|]'
+        Scenario                  | Cell                   | In HTML?                                                                          | In markdown?           | In AsciiDoc?
+        A value that is one pipe  | '"|"'                  | '<span class="literal ws">|</span>'                                               | '\\|'                  | '\\|'
+        A pipe inside a sentence  | '"Text with | a pipe"' | '<span class="literal ws">Text with | a pipe</span>'                              | 'Text with \\| a pipe' | '++Text with ++\\|++ a pipe++'
+        A pipe inside a set       | '{"||"}'               | '<ul class="coll set"><li><span class="literal ws">||</span></li></ul>'           | '{\\|\\|}'             | '* \\|\\|'
+        A pipe inside a map value | '[b: "||"]'            | '<dl class="coll map"><dt>b</dt><dd><span class="literal ws">||</span></dd></dl>' | '[b: \\|\\|]'          | '++b++:: \\|\\|'
         """)
-    void escapesEveryPipeInsideAValue(String cell, String publishedCell) {
-        assertThat(publishedCellFor(cell)).isEqualTo(publishedCell);
-    }
-
-    /**
-     * The markdown the report publishes for a one-column table whose single row holds this cell,
-     * rendered through the same path a real test run takes — see {@link RenderBridge}.
-     */
-    private String publishedCellFor(String cell) {
-        String rendered =
-                templateEngine.renderTable(MARKDOWN, RenderBridge.contextFor("Value\n" + cell + "\n", "Values"));
-
-        List<String> lines = rendered.lines().filter(line -> !line.isBlank()).toList();
-        String dataRow = lines.getLast();
-        return dataRow.substring(1, dataRow.length() - 1).trim();
+    void escapesEveryPipeInsideAValue(String cell, String inHtml, String inMarkdown, String inAsciiDoc) {
+        assertThat(PublishedCell.of("html", cell)).isEqualTo(inHtml);
+        assertThat(PublishedCell.of("markdown", cell)).isEqualTo(inMarkdown);
+        assertThat(PublishedCell.of("asciidoc", cell)).isEqualTo(inAsciiDoc);
     }
 }
