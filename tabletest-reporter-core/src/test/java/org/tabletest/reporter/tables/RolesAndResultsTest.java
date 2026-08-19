@@ -25,10 +25,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Description("""
         A published table is not just its text: the reporter marks which column names the scenario
         and which holds the expectation, and records how each row fared when it ran. A mark needs
-        somewhere to live — HTML gives it a class on the cell and AsciiDoc a role on the value,
-        while markdown has nowhere to put one and shows the values alone. The rules below carry a
-        column per format for that reason. Each names the sample test class it is read off, and its
-        rows are the columns or the rows of that class's table.
+        somewhere to live, and the three formats have quite different places to put one — a class
+        on the cell in HTML, a role prefix on the value in AsciiDoc, nowhere at all in markdown.
+        The rules below therefore print the cell each format published, rather than naming the
+        mark, so the difference is visible rather than asserted. Each rule names the sample test
+        class it is read off, and its rows are the columns or the rows of that class's table.
         """)
 class RolesAndResultsTest {
 
@@ -44,16 +45,15 @@ class RolesAndResultsTest {
         Scenario | Year | Leap?, over a method taking year and leap.
             """)
     @TableTest("""
-        Scenario                     | Column   | Mark in markdown? | Mark in AsciiDoc? | Mark in HTML?
-        The column naming the row    | Scenario |                   | scenario          | scenario
-        A column the test is given   | Year     |                   |                   |
-        The column ending in a query | Leap?    |                   | expectation       | expectation
+        Scenario                     | Column   | In markdown? | In AsciiDoc?                | In HTML?
+        The column naming the row    | Scenario | Scenario     | '[.scenario]#++Scenario++#' | '<th class="cell scenario"><span class="literal">Scenario</span></th>'
+        A column the test is given   | Year     | Year         | '++Year++'                  | '<th class="cell"><span class="literal">Year</span></th>'
+        The column ending in a query | Leap?    | Leap?        | '[.expectation]#++Leap?++#' | '<th class="cell expectation"><span class="literal">Leap?</span></th>'
         """)
-    void marksTheScenarioAndExpectationColumns(
-            String column, String markInMarkdown, String markInAsciiDoc, String markInHtml) {
-        assertThat(markOf(LeapYearSample.class, "markdown", column)).isEqualTo(markInMarkdown);
-        assertThat(markOf(LeapYearSample.class, "asciidoc", column)).isEqualTo(markInAsciiDoc);
-        assertThat(markOf(LeapYearSample.class, "html", column)).isEqualTo(markInHtml);
+    void marksTheScenarioAndExpectationColumns(String column, String inMarkdown, String inAsciiDoc, String inHtml) {
+        assertThat(headerCellOf(LeapYearSample.class, "markdown", column)).isEqualTo(inMarkdown);
+        assertThat(headerCellOf(LeapYearSample.class, "asciidoc", column)).isEqualTo(inAsciiDoc);
+        assertThat(headerCellOf(LeapYearSample.class, "html", column)).isEqualTo(inHtml);
     }
 
     @DisplayName("Marks the column of a parameter annotated @Scenario, wherever it sits")
@@ -64,16 +64,17 @@ class RolesAndResultsTest {
             AnnotatedScenarioSample: Year | Case | Leap?, whose second parameter is annotated.
             """)
     @TableTest("""
-        Scenario                          | Column | Mark in markdown? | Mark in AsciiDoc? | Mark in HTML?
-        A column before the annotated one | Year   |                   |                   |
-        The annotated column              | Case   |                   | scenario          | scenario
-        The expectation is unaffected     | Leap?  |                   | expectation       | expectation
+        Scenario                          | Column | In markdown? | In AsciiDoc?                | In HTML?
+        A column before the annotated one | Year   | Year         | '++Year++'                  | '<th class="cell"><span class="literal">Year</span></th>'
+        The annotated column              | Case   | Case         | '[.scenario]#++Case++#'     | '<th class="cell scenario"><span class="literal">Case</span></th>'
+        The expectation is unaffected     | Leap?  | Leap?        | '[.expectation]#++Leap?++#' | '<th class="cell expectation"><span class="literal">Leap?</span></th>'
         """)
-    void marksTheColumnOfAnAnnotatedParameter(
-            String column, String markInMarkdown, String markInAsciiDoc, String markInHtml) {
-        assertThat(markOf(AnnotatedScenarioSample.class, "markdown", column)).isEqualTo(markInMarkdown);
-        assertThat(markOf(AnnotatedScenarioSample.class, "asciidoc", column)).isEqualTo(markInAsciiDoc);
-        assertThat(markOf(AnnotatedScenarioSample.class, "html", column)).isEqualTo(markInHtml);
+    void marksTheColumnOfAnAnnotatedParameter(String column, String inMarkdown, String inAsciiDoc, String inHtml) {
+        assertThat(headerCellOf(AnnotatedScenarioSample.class, "markdown", column))
+                .isEqualTo(inMarkdown);
+        assertThat(headerCellOf(AnnotatedScenarioSample.class, "asciidoc", column))
+                .isEqualTo(inAsciiDoc);
+        assertThat(headerCellOf(AnnotatedScenarioSample.class, "html", column)).isEqualTo(inHtml);
     }
 
     @DisplayName("Marks a column as the expectation when its header matches the expectation pattern")
@@ -99,31 +100,44 @@ class RolesAndResultsTest {
         assertThat("expectation".equals(published.markOf(column))).isEqualTo(holds);
     }
 
-    @DisplayName("Publishes each row with the verdict of the scenario it ran, and a broken one's message")
+    @DisplayName("Marks every cell of a row with the verdict the row ran to")
     @Description("""
             The report is generated from a test run, so it publishes what happened, not only what
-            was written: every cell of a row is marked with that row's verdict, and a row that
-            broke is listed again below the table with the message it failed on. A spec whose rows
-            are green is a spec the code still satisfies. The verdict needs somewhere to live and
-            so follows the formats, but the message is published below the table by all three, in
-            the same words — which is why one column serves for it. Read off LeapYearSample, whose
-            century row claims the wrong answer on purpose.
+            was written: every cell of a row carries that row's verdict, which is what lets a
+            reader see at a glance whether the spec still holds. The Year cell stands for the row
+            below — the rule asserts that every cell of the row agrees. Read off LeapYearSample,
+            whose century row claims the wrong answer on purpose.
             """)
     @TableTest("""
-        Scenario         | Row                      | Verdict in markdown? | Verdict in AsciiDoc? | Verdict in HTML? | Message below the table?
-        A row that held  | A year divisible by four |                      | passed               | passed           |
-        A row that broke | A century year           |                      | failed               | failed           | ['expected: "Yes"', ' but was: "No"']
+        Scenario         | Row                      | In markdown? | In AsciiDoc?          | In HTML?
+        A row that held  | A year divisible by four | 2004         | '[.passed]#++2004++#' | '<td class="cell passed"><span class="literal">2004</span></td>'
+        A row that broke | A century year           | 1900         | '[.failed]#++1900++#' | '<td class="cell failed"><span class="literal">1900</span></td>'
         """)
-    void carriesTheVerdictOfTheScenarioItRan(
-            String row,
-            String verdictInMarkdown,
-            String verdictInAsciiDoc,
-            String verdictInHtml,
-            List<String> messageBelowTheTable) {
-        assertThat(verdictOf(LeapYearSample.class, "markdown", row)).isEqualTo(verdictInMarkdown);
-        assertThat(verdictOf(LeapYearSample.class, "asciidoc", row)).isEqualTo(verdictInAsciiDoc);
-        assertThat(verdictOf(LeapYearSample.class, "html", row)).isEqualTo(verdictInHtml);
+    void marksEveryCellOfARowWithItsVerdict(String row, String inMarkdown, String inAsciiDoc, String inHtml) {
+        assertThat(cellOf(LeapYearSample.class, "markdown", row)).isEqualTo(inMarkdown);
+        assertThat(cellOf(LeapYearSample.class, "asciidoc", row)).isEqualTo(inAsciiDoc);
+        assertThat(cellOf(LeapYearSample.class, "html", row)).isEqualTo(inHtml);
 
+        String verdict = inHtml.contains("failed") ? "failed" : "passed";
+        assertThat(verdictOf(LeapYearSample.class, "asciidoc", row)).isEqualTo(verdict);
+        assertThat(verdictOf(LeapYearSample.class, "html", row)).isEqualTo(verdict);
+        assertThat(verdictOf(LeapYearSample.class, "markdown", row)).isNull();
+    }
+
+    @DisplayName("Publishes a broken row's message below the table")
+    @Description("""
+            A row that broke is listed again below the table with the message it failed on, so a
+            reader of the spec sees what the code did instead of what the row claimed. Every
+            format publishes it, each below a heading of its own and fenced its own way, and the
+            message inside is the same text — which is why one column serves for all three. Read
+            off LeapYearSample.
+            """)
+    @TableTest("""
+        Scenario         | Row                      | Message below the table?
+        A row that held  | A year divisible by four |
+        A row that broke | A century year           | ['expected: "Yes"', ' but was: "No"']
+        """)
+    void publishesABrokenRowsMessageBelowTheTable(String row, List<String> messageBelowTheTable) {
         for (String format : List.of("markdown", "asciidoc", "html")) {
             assertThat(publishedTableOf(LeapYearSample.class, format).failureMessageOf(row))
                     .describedAs("the message published in %s", format)
@@ -131,8 +145,13 @@ class RolesAndResultsTest {
         }
     }
 
-    private String markOf(Class<?> sampleClass, String format, String column) {
-        return publishedTableOf(sampleClass, format).markOf(column);
+    private String headerCellOf(Class<?> sampleClass, String format, String column) {
+        return publishedTableOf(sampleClass, format).headerCellOf(column);
+    }
+
+    /** The Year cell of the named row — one cell standing for a row whose cells all agree. */
+    private String cellOf(Class<?> sampleClass, String format, String row) {
+        return publishedTableOf(sampleClass, format).cellOf(row, "Year");
     }
 
     private String verdictOf(Class<?> sampleClass, String format, String row) {
