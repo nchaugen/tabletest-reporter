@@ -1,5 +1,6 @@
 package org.tabletest.reporter;
 
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.DisplayName;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
@@ -22,39 +23,41 @@ class CustomFormatTest {
     @DisplayName("A custom format is named by the extension its files are given")
     @Description("""
             The name arrives without the dot and the extension is the name with one, so a format
-            named html writes .html files. A name that is absent, blank, or already starts with a
-            dot cannot be turned into an extension, and each is refused with a message naming what
-            is wrong.
+            named html writes .html files. A name a built-in format already uses is a name like
+            any other here; which templates it finds is a separate rule.
             """)
     @TableTest("""
-        Scenario                      | Format name | File extension? | Error message?
-        A name of its own             | report      | .report         |
-        A name a built-in also uses   | html        | .html           |
-        No name at all                |             |                 | name
-        A blank name                  | ''          |                 | Format name cannot be blank
-        A name that starts with a dot | .html       |                 | Format name cannot start with a dot: .html
+        Scenario                    | Custom format | File extension
+        A name of its own           | report        | .report
+        A name a built-in also uses | html          | .html
         """)
-    void isNamedByTheExtensionItsFilesAreGiven(String formatName, String fileExtension, String errorMessage) {
-        assertThat(extensionOf(formatName)).isEqualTo(fileExtension);
-        assertThat(errorFromNaming(formatName)).isEqualTo(errorMessage);
+    void isNamedByTheExtensionItsFilesAreGiven(CustomFormat format, String fileExtension) {
+        assertThat(format.extension()).isEqualTo(fileExtension);
     }
 
-    /** The extension a format of this name gives its files, or null where the name is refused. */
-    private static String extensionOf(String formatName) {
-        try {
-            return new CustomFormat(formatName).extension();
-        } catch (RuntimeException refused) {
-            return null;
-        }
+    @DisplayName("A name that could not be an extension is refused when the format is declared")
+    @Description("""
+            A name that is absent, blank, or already starts with a dot cannot be turned into an
+            extension. Each is refused as the format is declared, with a message naming what is
+            wrong, so no report is ever written under a name that could not name its files.
+            """)
+    @TableTest("""
+        Scenario                      | Format name | Error message
+        No name at all                |             | Format name cannot be missing
+        A blank name                  | ''          | Format name cannot be blank
+        A name that starts with a dot | .html       | Format name cannot start with a dot: .html
+        """)
+    void refusesANameThatCouldNotBeAnExtension(String formatName, String errorMessage) {
+        assertThat(errorMessageFrom(() -> new CustomFormat(formatName))).isEqualTo(errorMessage);
     }
 
-    /** The message the name is refused with, or null where it is accepted. */
-    private static String errorFromNaming(String formatName) {
+    /** The message the action fails with, or null when it does not fail. */
+    private static String errorMessageFrom(ThrowableAssert.ThrowingCallable action) {
         try {
-            new CustomFormat(formatName);
+            action.call();
             return null;
-        } catch (RuntimeException refused) {
-            return refused.getMessage();
+        } catch (Throwable thrown) {
+            return thrown.getMessage();
         }
     }
 }

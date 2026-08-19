@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+- Declaring a custom format with no name is now refused with `Format name cannot be missing`
+  instead of a message reading only `name`. The blank-name and leading-dot refusals are
+  unchanged.
+
 ## [1.3.0] - 2026-07-23
 > [!IMPORTANT]
 > **Slug generation changed, and some published page names change with it.** A test or class

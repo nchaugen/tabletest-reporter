@@ -29,7 +29,7 @@ import static java.util.Objects.requireNonNull;
 public record CustomFormat(String name) implements Format {
 
     public CustomFormat {
-        requireNonNull(name, "name");
+        requireNonNull(name, "Format name cannot be missing");
         if (name.isBlank()) {
             throw new IllegalArgumentException("Format name cannot be blank");
         }
