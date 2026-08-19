@@ -16,13 +16,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * that result. Built through {@link ReportStructure}; {@link ReportTreeTest} keeps the
  * whole-node assertions as conformance.
  */
-@DisplayName("Report structure")
+@DisplayName("The page tree")
 @Description("""
         A report is a tree of pages, and nobody chooses its shape: it is the package hierarchy of
         the test classes that published, with a page per class and a page per table. Below, a
         published table is written as the class that ran it and the method that holds it, and the
         pages are listed outermost first, indented one step per level — the same tree the sidebar
-        and the index pages show.
+        and the index pages show. How much of that tree gets its own index page is the indexDepth
+        option, alongside.
         """)
 class ReportStructureTest {
 
