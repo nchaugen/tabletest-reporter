@@ -1,7 +1,5 @@
 package org.tabletest.reporter.rendering;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -12,10 +10,8 @@ import org.tabletest.reporter.SampleRun;
 import org.tabletest.reporter.junit.TableTestPublisher;
 
 import java.nio.file.Path;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,10 +23,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Roles and results")
 @Description("""
         A published table is not just its text: the reporter marks which column names the scenario
-        and which holds the expectation, and records how each row fared when it ran. In HTML those
-        marks are classes on the cell, which is what the rules below read; markdown has nowhere to
-        put them and shows the values alone. Each rule names the sample test class it is read off,
-        and its rows are the columns or the rows of that class's table.
+        and which holds the expectation, and records how each row fared when it ran. A mark needs
+        somewhere to live — HTML gives it a class on the cell and AsciiDoc a role on the value,
+        while markdown has nowhere to put one and shows the values alone. The rules below carry a
+        column per format for that reason. Each names the sample test class it is read off, and its
+        rows are the columns or the rows of that class's table.
         """)
 class RolesAndResultsTest {
 
@@ -46,13 +43,16 @@ class RolesAndResultsTest {
             Scenario | Year | Leap?, over a method taking year and leap.
             """)
     @TableTest("""
-        Scenario                     | Column   | Marked as?
-        The column naming the row    | Scenario | scenario
-        A column the test is given   | Year     |
-        The column ending in a query | Leap?    | expectation
+        Scenario                     | Column   | Mark in HTML? | Mark in AsciiDoc? | Mark in markdown?
+        The column naming the row    | Scenario | scenario      | scenario          |
+        A column the test is given   | Year     |               |                   |
+        The column ending in a query | Leap?    | expectation   | expectation       |
         """)
-    void marksTheScenarioAndExpectationColumns(String column, String markedAs) {
-        assertThat(columnMarkOf(publishedTableOf(LeapYearSample.class), column)).isEqualTo(markedAs);
+    void marksTheScenarioAndExpectationColumns(
+            String column, String markInHtml, String markInAsciiDoc, String markInMarkdown) {
+        assertThat(markOf(LeapYearSample.class, "html", column)).isEqualTo(markInHtml);
+        assertThat(markOf(LeapYearSample.class, "asciidoc", column)).isEqualTo(markInAsciiDoc);
+        assertThat(markOf(LeapYearSample.class, "markdown", column)).isEqualTo(markInMarkdown);
     }
 
     @DisplayName("Marks the column of a parameter annotated @Scenario, wherever it sits")
@@ -63,14 +63,16 @@ class RolesAndResultsTest {
             AnnotatedScenarioSample: Year | Case | Leap?, whose second parameter is annotated.
             """)
     @TableTest("""
-        Scenario                          | Column | Marked as?
-        A column before the annotated one | Year   |
-        The annotated column              | Case   | scenario
-        The expectation is unaffected     | Leap?  | expectation
+        Scenario                          | Column | Mark in HTML? | Mark in AsciiDoc? | Mark in markdown?
+        A column before the annotated one | Year   |               |                   |
+        The annotated column              | Case   | scenario      | scenario          |
+        The expectation is unaffected     | Leap?  | expectation   | expectation       |
         """)
-    void marksTheColumnOfAnAnnotatedParameter(String column, String markedAs) {
-        assertThat(columnMarkOf(publishedTableOf(AnnotatedScenarioSample.class), column))
-                .isEqualTo(markedAs);
+    void marksTheColumnOfAnAnnotatedParameter(
+            String column, String markInHtml, String markInAsciiDoc, String markInMarkdown) {
+        assertThat(markOf(AnnotatedScenarioSample.class, "html", column)).isEqualTo(markInHtml);
+        assertThat(markOf(AnnotatedScenarioSample.class, "asciidoc", column)).isEqualTo(markInAsciiDoc);
+        assertThat(markOf(AnnotatedScenarioSample.class, "markdown", column)).isEqualTo(markInMarkdown);
     }
 
     @DisplayName("Marks a column as the expectation when its header matches the expectation pattern")
@@ -78,7 +80,9 @@ class RolesAndResultsTest {
             The question mark is only the default. The pattern is the JUnit configuration
             parameter tabletest.reporter.expectation.pattern, matched against the whole header, so
             a project that words its expectations differently can say so once. Setting it replaces
-            the default rather than adding to it. Read off ExpectationPatternSample:
+            the default rather than adding to it. Which column gets the mark is decided before any
+            format renders it, so this rule is read off the HTML page alone; where each format then
+            puts the mark is the rule above. Read off ExpectationPatternSample:
             Scenario | Year | Leap? | Expected note.
             """)
     @TableTest("""
@@ -89,9 +93,9 @@ class RolesAndResultsTest {
         A pattern of your own | '^Expected.*'       | Expected note | true
         """)
     void marksTheColumnMatchingTheExpectationPattern(String expectationPattern, String column, boolean holds) {
-        Document published = publishedTableOf(ExpectationPatternSample.class, expectationPattern);
+        PublishedTable published = publishedTableOfRunWith(ExpectationPatternSample.class, expectationPattern);
 
-        assertThat("expectation".equals(columnMarkOf(published, column))).isEqualTo(holds);
+        assertThat("expectation".equals(published.markOf(column))).isEqualTo(holds);
     }
 
     @DisplayName("Publishes each row with the verdict of the scenario it ran, and a broken one's message")
@@ -99,69 +103,51 @@ class RolesAndResultsTest {
             The report is generated from a test run, so it publishes what happened, not only what
             was written: every cell of a row is marked with that row's verdict, and a row that
             broke is listed again below the table with the message it failed on. A spec whose rows
-            are green is a spec the code still satisfies. Read off LeapYearSample, whose century
-            row claims the wrong answer on purpose.
+            are green is a spec the code still satisfies. The verdict needs somewhere to live and
+            so follows the formats, but the message is published below the table by all three, in
+            the same words — which is why one column serves for it. Read off LeapYearSample, whose
+            century row claims the wrong answer on purpose.
             """)
     @TableTest("""
-        Scenario         | Row                      | Verdict? | Message published?
-        A row that held  | A year divisible by four | passed   |
-        A row that broke | A century year           | failed   | ['expected: "Yes"', ' but was: "No"']
+        Scenario         | Row                      | Verdict in HTML? | Verdict in AsciiDoc? | Verdict in markdown? | Message below the table?
+        A row that held  | A year divisible by four | passed           | passed               |                      |
+        A row that broke | A century year           | failed           | failed               |                      | ['expected: "Yes"', ' but was: "No"']
         """)
-    void carriesTheVerdictOfTheScenarioItRan(String row, String verdict, List<String> messagePublished) {
-        Document published = publishedTableOf(LeapYearSample.class);
+    void carriesTheVerdictOfTheScenarioItRan(
+            String row,
+            String verdictInHtml,
+            String verdictInAsciiDoc,
+            String verdictInMarkdown,
+            List<String> messageBelowTheTable) {
+        assertThat(verdictOf(LeapYearSample.class, "html", row)).isEqualTo(verdictInHtml);
+        assertThat(verdictOf(LeapYearSample.class, "asciidoc", row)).isEqualTo(verdictInAsciiDoc);
+        assertThat(verdictOf(LeapYearSample.class, "markdown", row)).isEqualTo(verdictInMarkdown);
 
-        assertThat(verdictOf(published, row)).isEqualTo(verdict);
-        assertThat(messageOf(published, row)).isEqualTo(messagePublished);
+        for (String format : List.of("html", "asciidoc", "markdown")) {
+            assertThat(publishedTableOf(LeapYearSample.class, format).failureMessageOf(row))
+                    .describedAs("the message published in %s", format)
+                    .isEqualTo(messageBelowTheTable);
+        }
     }
 
-    private Document publishedTableOf(Class<?> sampleClass) {
-        return PublishedReport.tablePageOf(SampleRun.outputFor(sampleClass, workingDir), workingDir);
+    private String markOf(Class<?> sampleClass, String format, String column) {
+        return publishedTableOf(sampleClass, format).markOf(column);
     }
 
-    private Document publishedTableOf(Class<?> sampleClass, String expectationPattern) {
+    private String verdictOf(Class<?> sampleClass, String format, String row) {
+        return publishedTableOf(sampleClass, format).verdictOf(row);
+    }
+
+    private PublishedTable publishedTableOf(Class<?> sampleClass, String format) {
+        return PublishedTable.of(SampleRun.outputFor(sampleClass, workingDir), format, workingDir);
+    }
+
+    /** The HTML page of a run configured with an expectation pattern of the project's own. */
+    private PublishedTable publishedTableOfRunWith(Class<?> sampleClass, String expectationPattern) {
         Map<String, String> configuration = expectationPattern == null
                 ? Map.of()
                 : Map.of("tabletest.reporter.expectation.pattern", expectationPattern);
-        return PublishedReport.tablePageOf(SampleRun.outputFor(sampleClass, configuration, workingDir), workingDir);
-    }
-
-    /** The mark the published header carries beyond being a cell, or null where it carries none. */
-    private static String columnMarkOf(Document published, String column) {
-        Element header = published.select("thead th").stream()
-                .filter(cell -> cell.text().equals(column))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("The published table has no column " + column));
-        Set<String> marks = new LinkedHashSet<>(header.classNames());
-        marks.remove("cell");
-        return marks.isEmpty() ? null : String.join(" ", marks);
-    }
-
-    /** The verdict every cell of the named row is marked with. */
-    private static String verdictOf(Document published, String row) {
-        Set<String> verdicts = rowNamed(published, row).select("td").stream()
-                .flatMap(cell -> cell.classNames().stream())
-                .filter(mark -> mark.equals("passed") || mark.equals("failed"))
-                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-        return verdicts.size() == 1 ? verdicts.iterator().next() : String.join(" and ", verdicts);
-    }
-
-    /**
-     * The lines of the message published below the table for the named row, or null where it did
-     * not break.
-     */
-    private static List<String> messageOf(Document published, String row) {
-        return published.select("section.failures details").stream()
-                .filter(broken -> broken.select("summary").text().endsWith(row))
-                .map(broken -> broken.select("pre").text().lines().toList())
-                .findFirst()
-                .orElse(null);
-    }
-
-    private static Element rowNamed(Document published, String row) {
-        return published.select("tbody tr").stream()
-                .filter(cells -> cells.select("td").first().text().equals(row))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("The published table has no row " + row));
+        return PublishedTable.of(SampleRun.outputFor(sampleClass, configuration, workingDir), "html", workingDir);
     }
 
     /**

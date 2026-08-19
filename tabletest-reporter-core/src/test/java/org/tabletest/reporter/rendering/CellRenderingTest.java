@@ -11,18 +11,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.tabletest.reporter.BuiltInFormat.MARKDOWN;
 
 @DisplayName("Cell rendering")
+@Description("""
+        The reporter publishes the value a row actually ran with, not the text of the cell, so a
+        collection arrives as a collection and has to be written back out. Each format writes it
+        back the way that format expresses structure: markdown in the notation a TableTest table
+        uses, AsciiDoc as a bulleted or description-list block, HTML as nested list markup. Only
+        markdown can put a whole collection inside a table cell, so the rules below are read off
+        the markdown report.
+        """)
 public class CellRenderingTest {
 
     private final TemplateEngine templateEngine = new TemplateEngine();
 
-    @DisplayName("Publishes a cell in the notation it was written in")
+    @DisplayName("Publishes a markdown cell in the notation the value was written in")
     @Description("""
-            The reporter publishes the value a row actually ran with, not the text of the cell,
-            so a collection arrives as a collection and has to be written back out. It is written
-            back in the notation the table format uses — square brackets for a list, braces for a
-            set, key: value pairs for a map, nested to any depth — so a reader of the published
-            spec sees the value spelled the way they would spell it themselves. Below, Cell is
-            what a table row holds and Published cell is what the markdown report shows for it.
+            Markdown writes a collection back in the notation a table uses — square brackets for
+            a list, braces for a set, key: value pairs for a map, nested to any depth — so a
+            reader of the published spec sees the value spelled the way they would spell it
+            themselves. Below, Cell is what a table row holds and Published cell is what the
+            markdown report shows for it.
             """)
     @TableTest("""
         Scenario             | Cell                  | Published cell?
@@ -46,7 +53,8 @@ public class CellRenderingTest {
             Markdown ends a cell at a pipe, so a value holding one would split the row and the
             table would lose a column from that point on. Every pipe the value itself contains is
             escaped instead, wherever it sits — in a plain value, inside a collection, or in a
-            column header.
+            column header. AsciiDoc escapes a pipe the same way and for the same reason; HTML has
+            no cell delimiter to protect.
             """)
     @TableTest("""
         Scenario                  | Cell                   | Published cell?
