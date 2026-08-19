@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Available output formats")
 class FormatListerTest {
 
-    @DisplayName("Available formats are the three built-ins plus any custom templates, sorted")
+    @DisplayName("Lists the three built-in formats plus any custom templates, sorted")
     @Description("""
             asciidoc, html, and markdown are always available; any custom formats
             discovered in the template directory are merged in and the whole list is

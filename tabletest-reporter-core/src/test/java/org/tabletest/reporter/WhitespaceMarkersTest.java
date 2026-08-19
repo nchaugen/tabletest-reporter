@@ -21,7 +21,7 @@ public class WhitespaceMarkersTest {
 
     private final FilterMarkWhitespace filter = new FilterMarkWhitespace();
 
-    @DisplayName("Significant whitespace runs are wrapped in marker spans")
+    @DisplayName("Wraps significant whitespace runs in marker spans")
     @Description("""
             HTML output: sp spans carry space runs and tab spans carry each tab; the
             stylesheet draws the dots and arrows. Markup characters in the value are

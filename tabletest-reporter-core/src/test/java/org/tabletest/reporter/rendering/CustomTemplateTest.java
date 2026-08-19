@@ -33,7 +33,7 @@ class CustomTemplateTest {
     @TempDir
     Path workingDir;
 
-    @DisplayName("A template of your own is used when it is named for the page it renders")
+    @DisplayName("Uses a template of your own when it is named for the page it renders")
     @Description("""
             The name says which page a template renders: table or index, then the format. A file
             with exactly that name replaces the built-in one; a file whose name ends in it is used
@@ -60,7 +60,7 @@ class CustomTemplateTest {
         assertThat(tablePageWith(templates, "markdown")).isEqualTo(page);
     }
 
-    @DisplayName("A template that extends a built-in one fills the blocks it leaves")
+    @DisplayName("Lets a template of your own extend a built-in one and fill its blocks")
     @Description("""
             Replacing a template means rewriting the page. Extending one means naming the built-in
             template and filling only the blocks it leaves open — frontMatter above the page, title
@@ -85,7 +85,7 @@ class CustomTemplateTest {
         assertThat(tablePageWith(templates, "markdown")).isEqualTo(page);
     }
 
-    @DisplayName("Every built-in template leaves the same three blocks")
+    @DisplayName("Leaves the same three blocks in every built-in template")
     @Description("""
             The blocks are not a property of one template: a table and an index leave the same
             three, in every format the reporter generates. The one template below is written once

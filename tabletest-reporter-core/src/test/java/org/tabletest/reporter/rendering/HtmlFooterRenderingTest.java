@@ -22,6 +22,7 @@ public class HtmlFooterRenderingTest {
     private static final Map<String, Object> RUN_TIMESTAMP =
             Map.of("datetime", "2026-07-20T14:32:09Z", "label", "20 Jul 2026 14:32 UTC");
 
+    @DisplayName("Records on every page when the report was generated")
     @Description("""
         The run timestamp is what tells a reader whether the published spec still tracks the
         code it was generated from, so every page kind carries it — the per-table page, the
@@ -39,6 +40,7 @@ public class HtmlFooterRenderingTest {
         assertThat(document.select("footer.doc-footer time").attr("datetime")).isEqualTo(timestampAttribute);
     }
 
+    @DisplayName("Falls back to plain attribution when the context carries no timestamp")
     @Description("""
         A context assembled without a timestamp — a custom renderer driving the templates
         directly — still gets the attribution rather than a footer with a dangling separator.

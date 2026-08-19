@@ -52,7 +52,7 @@ public class IndexTest {
           "path": "path/to/c_table"
         """);
 
-    @DisplayName("An index page links to every page beneath it, nested as they are")
+    @DisplayName("Links an index page to every page beneath it, nested as they are")
     @Description("""
             The whole subtree is listed, not just the level below, and one nesting level of the
             list is one level of the report. Each link is written in the syntax of the format

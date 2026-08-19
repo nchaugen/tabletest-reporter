@@ -19,24 +19,36 @@ import static org.assertj.core.api.Assertions.assertThat;
         """)
 class IndexDepthTest {
 
-    @DisplayName("indexDepth accepts a depth number or the infinite keyword")
+    @DisplayName("Reads indexDepth as the number of levels given their own index page")
     @Description("""
-            The keyword is case-insensitive, and leaving the option unset means
-            infinite: every feature level gets its own index page. Infinite is
-            represented as the largest possible depth, 2147483647.
+            The number counts the levels indexed before the rest of the tree is flattened onto
+            one page, so a depth of one indexes the top level only.
             """)
     @TableTest("""
-        Scenario                   | Input                          | Expected Depth?
-        Numeric value              | 1                              | 1
-        Larger value               | 5                              | 5
-        Infinite keyword, any case | {infinite, INFINITE, Infinite} | 2147483647
-        Null input                 |                                | 2147483647
-        Empty string               | ''                             | 2147483647
-        Blank string               | '   '                          | 2147483647
+        Scenario                | Option value | Index depth?
+        The shallowest depth    | 1            | 1
+        Several levels of index | 5            | 5
         """)
-    void parses_valid_values(String input, int expectedDepth) {
-        IndexDepth result = IndexDepth.parse(input);
-        assertThat(result.value()).isEqualTo(expectedDepth);
+    void reads_a_number_as_the_depth(String optionValue, int indexDepth) {
+        assertThat(IndexDepth.parse(optionValue).value()).isEqualTo(indexDepth);
+    }
+
+    @DisplayName("Reads the infinite keyword, and an option left unset, as unlimited depth")
+    @Description("""
+            The keyword is case-insensitive, and an option that was never set — absent, empty,
+            or blank — means the same as the keyword: every feature level gets its own index
+            page. A depth of its own limits the index; nothing else does.
+            """)
+    @TableTest("""
+        Scenario                 | Option value                   | Unlimited?
+        The keyword, in any case | {infinite, INFINITE, Infinite} | true
+        The option never set     |                                | true
+        An empty value           | ''                             | true
+        A blank value            | '   '                          | true
+        A depth of its own       | 5                              | false
+        """)
+    void reads_the_keyword_and_an_unset_option_as_unlimited(String optionValue, boolean unlimited) {
+        assertThat(IndexDepth.parse(optionValue).isInfinite()).isEqualTo(unlimited);
     }
 
     @Test
@@ -61,7 +73,7 @@ class IndexDepthTest {
         assertThat(IndexDepth.of(5).isInfinite()).isFalse();
     }
 
-    @DisplayName("One is the shallowest depth an index can be built to")
+    @DisplayName("Refuses an index depth below one level")
     @Description("""
             A depth of one indexes the top level only. There is nothing shallower, so anything
             below one is rejected rather than clamped, and the message names the depth it was
@@ -87,7 +99,7 @@ class IndexDepthTest {
         }
     }
 
-    @DisplayName("An option value that is neither a number nor the keyword is rejected")
+    @DisplayName("Refuses an indexDepth value that is neither a number nor the keyword")
     @Description("""
             The message repeats the value it could not read and names what it would have
             accepted. A value that does read as a number but is out of range is the shallowest

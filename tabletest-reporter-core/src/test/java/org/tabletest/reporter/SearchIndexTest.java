@@ -84,7 +84,7 @@ class SearchIndexTest {
         assertThat(javascript).contains("\"calendar/leap-year-rules.html\"");
     }
 
-    @DisplayName("Search finds pages whose title or text contains the query")
+    @DisplayName("Finds pages whose title or text contains the query")
     @Description("""
             The searched report holds one table, "Leap Year Rules" (description "Gregorian
             leap year determination", column headers Year and Is Leap Year?, one row:

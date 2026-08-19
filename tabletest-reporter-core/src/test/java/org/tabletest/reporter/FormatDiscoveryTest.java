@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Output format discovery")
 class FormatDiscoveryTest {
 
-    @DisplayName("A custom format is discovered only when both its table and index templates are present")
+    @DisplayName("Discovers a custom format only when both its table and index templates are present")
     @Description("""
             A directory contributes an output format when it holds both a
             table.<format>.peb and an index.<format>.peb template. A lone table or

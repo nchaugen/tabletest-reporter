@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         """)
 class CustomFormatTest {
 
-    @DisplayName("A custom format is named by the extension its files are given")
+    @DisplayName("Turns a custom format's name into the extension its files get")
     @Description("""
             The name arrives without the dot and the extension is the name with one, so a format
             named html writes .html files. A name a built-in format already uses is a name like
@@ -35,7 +35,7 @@ class CustomFormatTest {
         assertThat(format.extension()).isEqualTo(fileExtension);
     }
 
-    @DisplayName("A name that could not be an extension is refused when the format is declared")
+    @DisplayName("Refuses a format name that could not be an extension")
     @Description("""
             A name that is absent, blank, or already starts with a dot cannot be turned into an
             extension. Each is refused as the format is declared, with a message naming what is

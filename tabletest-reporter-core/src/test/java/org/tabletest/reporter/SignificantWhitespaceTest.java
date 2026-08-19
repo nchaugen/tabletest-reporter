@@ -20,7 +20,7 @@ class SignificantWhitespaceTest {
 
     private final TestWhitespaceSignificant test = new TestWhitespaceSignificant();
 
-    @DisplayName("Whitespace is significant at line edges, in runs, and in tabs")
+    @DisplayName("Treats whitespace as significant at line edges, in runs, and in tabs")
     @Description("""
             Significant means: any leading or trailing whitespace (on any line of a
             multiline value), any run of two or more spaces, any tab, and values

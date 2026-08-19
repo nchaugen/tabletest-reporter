@@ -15,7 +15,7 @@ public class CellRenderingTest {
 
     private final TemplateEngine templateEngine = new TemplateEngine();
 
-    @DisplayName("A cell is published in the notation it was written in")
+    @DisplayName("Publishes a cell in the notation it was written in")
     @Description("""
             The reporter publishes the value a row actually ran with, not the text of the cell,
             so a collection arrives as a collection and has to be written back out. It is written
@@ -41,7 +41,7 @@ public class CellRenderingTest {
         assertThat(publishedCellFor(cell)).isEqualTo(publishedCell);
     }
 
-    @DisplayName("A pipe inside a value is escaped so it cannot end the cell")
+    @DisplayName("Escapes a pipe inside a value so it cannot end the cell")
     @Description("""
             Markdown ends a cell at a pipe, so a value holding one would split the row and the
             table would lose a column from that point on. Every pipe the value itself contains is

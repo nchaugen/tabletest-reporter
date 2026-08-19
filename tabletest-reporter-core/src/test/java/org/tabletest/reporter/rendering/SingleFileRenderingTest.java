@@ -37,7 +37,7 @@ class SingleFileRenderingTest {
     @TempDir
     Path workingDir;
 
-    @DisplayName("Single-file mode writes one file where the default writes a tree")
+    @DisplayName("Writes one file in single-file mode where the default writes a tree")
     @Description("""
             The default report writes a page per index and per table, plus the search index as a
             script beside them. Single-file mode writes index.html and nothing else — the same
@@ -54,7 +54,7 @@ class SingleFileRenderingTest {
         assertThat(PublishedReport.filesIn(output)).isEqualTo(filesWritten);
     }
 
-    @DisplayName("The one file reaches for nothing outside itself")
+    @DisplayName("Inlines everything the one file would otherwise reach for")
     @Description("""
             Everything the report needs is in the file: no stylesheet or script is linked, no
             address is fetched, and the search index that is a sibling script in the default
@@ -73,7 +73,7 @@ class SingleFileRenderingTest {
         assertThat(singleFileText().contains(text)).isEqualTo(foundInTheFile);
     }
 
-    @DisplayName("Every table becomes a section the report's own links point at")
+    @DisplayName("Turns every table into a section the report's own links point at")
     @Description("""
             A table that was a page of its own becomes a section of the one file, named after the
             path it had. The sidebar and the search results point at that name as an in-page
@@ -95,7 +95,7 @@ class SingleFileRenderingTest {
                 .contains(link);
     }
 
-    @DisplayName("A section is headed at its depth in the report, and no deeper than six")
+    @DisplayName("Heads each section at its depth in the report, and no deeper than six")
     @Description("""
             The one file has to carry the outline the tree carried, so a section is headed one
             level below the section it sits in. HTML stops at h6, so a report deep enough to need
@@ -115,7 +115,7 @@ class SingleFileRenderingTest {
         assertThat(sectionHeadingOf(singleFilePageFor(publishedTables))).isEqualTo(sectionHeading);
     }
 
-    @DisplayName("Single-file mode is offered for HTML only")
+    @DisplayName("Offers single-file mode for HTML only")
     @Description("""
             The other formats have no way to be self-contained — an AsciiDoc or markdown page
             carries its structure in files and links, not in one document — so asking for a single

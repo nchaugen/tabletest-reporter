@@ -37,7 +37,7 @@ class RolesAndResultsTest {
     @TempDir
     Path workingDir;
 
-    @DisplayName("A table marks the column naming the scenario and the column holding the expectation")
+    @DisplayName("Marks the column naming the scenario and the column holding the expectation")
     @Description("""
             A table with more columns than the test method has parameters spends its first column
             on the scenario name, so that column is marked as the scenario and never passed to the
@@ -55,7 +55,7 @@ class RolesAndResultsTest {
         assertThat(columnMarkOf(publishedTableOf(LeapYearSample.class), column)).isEqualTo(markedAs);
     }
 
-    @DisplayName("A parameter annotated @Scenario marks its column, wherever it sits")
+    @DisplayName("Marks the column of a parameter annotated @Scenario, wherever it sits")
     @Description("""
             Spending the first column is a convention, not a requirement. A test that takes every
             column as a parameter can still name one of them the scenario by annotating it with
@@ -73,7 +73,7 @@ class RolesAndResultsTest {
                 .isEqualTo(markedAs);
     }
 
-    @DisplayName("A column holds the expectation when its header matches the expectation pattern")
+    @DisplayName("Marks a column as the expectation when its header matches the expectation pattern")
     @Description("""
             The question mark is only the default. The pattern is the JUnit configuration
             parameter tabletest.reporter.expectation.pattern, matched against the whole header, so
@@ -94,7 +94,7 @@ class RolesAndResultsTest {
         assertThat("expectation".equals(columnMarkOf(published, column))).isEqualTo(holds);
     }
 
-    @DisplayName("A row carries the verdict of the scenario it ran, and a broken one its message")
+    @DisplayName("Publishes each row with the verdict of the scenario it ran, and a broken one's message")
     @Description("""
             The report is generated from a test run, so it publishes what happened, not only what
             was written: every cell of a row is marked with that row's verdict, and a row that

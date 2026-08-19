@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         """)
 class StatusRollupTest {
 
-    @DisplayName("A table's status is derived from its executed row results")
+    @DisplayName("Derives a table's status from its executed row results")
     @TableTest("""
         Scenario       | Row results   | State?  | Total? | Passed?
         No results run |               | neutral | 0      | 0
@@ -41,7 +41,7 @@ class StatusRollupTest {
         assertThat(status.passedScenarios()).isEqualTo(passed);
     }
 
-    @DisplayName("A feature's status is summed bottom-up from its children")
+    @DisplayName("Sums a feature's status bottom-up from its children")
     @Description("""
             Child A and Child B are two tables in the same feature, given as their row
             results. A neutral child contributes nothing to the counts and never turns

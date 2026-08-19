@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         """)
 class NavLinksTest {
 
-    @DisplayName("Links are relative to the linking page's own directory")
+    @DisplayName("Writes every link relative to the linking page's own directory")
     @TableTest("""
         Scenario                  | From                 | From type | Target               | Target type | Href?
         Root index to child index | ''                   | index     | boolean-logic        | index       | boolean-logic/index.html
@@ -41,7 +41,7 @@ class NavLinksTest {
         assertThat(NavLinks.href(NavLinks.pageDirectory(fromNode), targetNode)).isEqualTo(href);
     }
 
-    @DisplayName("Every page has a single root-relative path")
+    @DisplayName("Gives every page a single root-relative path")
     @TableTest("""
         Scenario          | Node                 | Node type | Root path?
         Root index        | ''                   | index     | index.html
@@ -53,7 +53,7 @@ class NavLinksTest {
         assertThat(NavLinks.rootPath(node(nodeType, node))).isEqualTo(rootPath);
     }
 
-    @DisplayName("Shared assets are reached by climbing to the output root")
+    @DisplayName("Reaches shared assets by climbing to the output root")
     @Description("""
             Stylesheets and the search index live once at the output root; each page
             references them through a ../ prefix matching its own depth.
