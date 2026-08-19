@@ -41,18 +41,41 @@ final class PublishedReport {
      * {@code SampleRun}. Rules about what a real run records read off this page.
      */
     static Document tablePageOf(Path publishedRunOutput, Path workingDir) {
-        Path outputDirectory = createTempDirectory(workingDir);
-        new TableTestReporter().report(HTML, publishedRunOutput, outputDirectory);
-        return HtmlValidator.parse(read(onlyTablePageIn(outputDirectory)));
+        return HtmlValidator.parse(read(pageOf(publishedRunOutput, HTML, null, false, workingDir)));
     }
 
-    private static Path onlyTablePageIn(Path outputDirectory) {
+    /**
+     * The lines of the table page, or of the class index page, of a report generated from output
+     * the extension published — rendered in the named format, and with the given directory of
+     * templates of the reader's own, or null for the built-in templates alone.
+     */
+    static List<String> pageLinesOf(
+            Path publishedRunOutput, String formatName, Path templateDirectory, boolean index, Path workingDir) {
+        return read(pageOf(publishedRunOutput, formatNamed(formatName), templateDirectory, index, workingDir))
+                .lines()
+                .toList();
+    }
+
+    private static Path pageOf(
+            Path publishedRunOutput, Format format, Path templateDirectory, boolean index, Path workingDir) {
+        Path outputDirectory = createTempDirectory(workingDir);
+        new TableTestReporter(templateDirectory).report(format, publishedRunOutput, outputDirectory);
+        return onlyPageIn(outputDirectory, format, index);
+    }
+
+    /**
+     * A report of one class with one table holds one table page and, below the root, one class
+     * index page — enough for a rule to name the page it means with a flag.
+     */
+    private static Path onlyPageIn(Path outputDirectory, Format format, boolean index) {
+        String indexPage = "index" + format.extension();
         try (var paths = Files.walk(outputDirectory)) {
             return paths.filter(Files::isRegularFile)
-                    .filter(file -> file.getFileName().toString().endsWith(HTML.extension()))
-                    .filter(file -> !file.getFileName().toString().equals("index" + HTML.extension()))
+                    .filter(file -> file.getFileName().toString().endsWith(format.extension()))
+                    .filter(file -> file.getFileName().toString().equals(indexPage) == index)
+                    .filter(file -> !index || !file.getParent().equals(outputDirectory))
                     .findFirst()
-                    .orElseThrow(() -> new AssertionError("The report has no table page"));
+                    .orElseThrow(() -> new AssertionError("The report has no such page"));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
