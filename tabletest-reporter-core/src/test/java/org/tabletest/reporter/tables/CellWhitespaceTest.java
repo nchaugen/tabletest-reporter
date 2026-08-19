@@ -1,4 +1,4 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.tables;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,6 +9,7 @@ import org.tabletest.reporter.Format;
 import org.tabletest.reporter.TemplateEngine;
 import org.tabletest.reporter.pebble.FilterMarkWhitespace;
 import org.tabletest.reporter.pebble.TestWhitespaceSignificant;
+import org.tabletest.reporter.support.RenderBridge;
 
 import java.util.Arrays;
 import java.util.List;

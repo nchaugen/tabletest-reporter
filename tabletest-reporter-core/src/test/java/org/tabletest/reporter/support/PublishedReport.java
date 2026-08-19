@@ -1,9 +1,8 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.support;
 
 import org.jsoup.nodes.Document;
 import org.tabletest.reporter.BuiltInFormat;
 import org.tabletest.reporter.Format;
-import org.tabletest.reporter.PublishedRun;
 import org.tabletest.reporter.TableTestReporter;
 
 import java.io.IOException;
@@ -19,17 +18,17 @@ import static org.tabletest.reporter.BuiltInFormat.HTML;
  * Generates a report for a set of published tables and opens one of its pages, so a rule about
  * what a page carries can name the page by the URL a reader would be at.
  */
-final class PublishedReport {
+public final class PublishedReport {
 
     private PublishedReport() {}
 
     /** The HTML page at the given report URL, in a report built from the given published tables. */
-    static Document pageAt(String url, List<String> publishedTables, Path workingDir) {
+    public static Document pageAt(String url, List<String> publishedTables, Path workingDir) {
         return HtmlValidator.parse(read(fileAt(url, HTML, generate(HTML, false, publishedTables, workingDir))));
     }
 
     /** The lines of the page at the given report URL, rendered in the named format. */
-    static List<String> linesAt(String url, String formatName, List<String> publishedTables, Path workingDir) {
+    public static List<String> linesAt(String url, String formatName, List<String> publishedTables, Path workingDir) {
         Format format = formatNamed(formatName);
         return read(fileAt(url, format, generate(format, false, publishedTables, workingDir)))
                 .lines()
@@ -40,7 +39,7 @@ final class PublishedReport {
      * The one table page of a report generated from output the extension itself published — see
      * {@code SampleRun}. Rules about what a real run records read off this page.
      */
-    static Document tablePageOf(Path publishedRunOutput, Path workingDir) {
+    public static Document tablePageOf(Path publishedRunOutput, Path workingDir) {
         return HtmlValidator.parse(read(pageOf(publishedRunOutput, HTML, null, false, workingDir)));
     }
 
@@ -49,7 +48,7 @@ final class PublishedReport {
      * the extension published — rendered in the named format, and with the given directory of
      * templates of the reader's own, or null for the built-in templates alone.
      */
-    static List<String> pageLinesOf(
+    public static List<String> pageLinesOf(
             Path publishedRunOutput, String formatName, Path templateDirectory, boolean index, Path workingDir) {
         return read(pageOf(publishedRunOutput, formatNamed(formatName), templateDirectory, index, workingDir))
                 .lines()
@@ -85,12 +84,12 @@ final class PublishedReport {
      * The output directory of a report generated in the named format, so a rule can state what
      * was written rather than what one page says.
      */
-    static Path outputOf(String formatName, boolean singleFile, List<String> publishedTables, Path workingDir) {
+    public static Path outputOf(String formatName, boolean singleFile, List<String> publishedTables, Path workingDir) {
         return generate(formatNamed(formatName), singleFile, publishedTables, workingDir);
     }
 
     /** The files a report wrote, as paths relative to its output directory, in sorted order. */
-    static List<String> filesIn(Path outputDirectory) {
+    public static List<String> filesIn(Path outputDirectory) {
         try (var paths = Files.walk(outputDirectory)) {
             return paths.filter(Files::isRegularFile)
                     .map(file -> outputDirectory.relativize(file).toString())
@@ -102,7 +101,7 @@ final class PublishedReport {
     }
 
     /** The text of a file in a report's output directory. */
-    static String textOf(Path file) {
+    public static String textOf(Path file) {
         return read(file);
     }
 

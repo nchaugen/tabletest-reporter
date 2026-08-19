@@ -1,4 +1,4 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.pages;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,6 +7,7 @@ import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 import org.tabletest.reporter.ContextLoader;
 import org.tabletest.reporter.TemplateEngine;
+import org.tabletest.reporter.support.PublishedReport;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -15,8 +16,8 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.tabletest.reporter.BuiltInFormat.ASCIIDOC;
 import static org.tabletest.reporter.BuiltInFormat.MARKDOWN;
-import static org.tabletest.reporter.rendering.AsciiDocValidator.assertValidAsciiDoc;
-import static org.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
+import static org.tabletest.reporter.support.AsciiDocValidator.assertValidAsciiDoc;
+import static org.tabletest.reporter.support.MarkdownValidator.assertValidMarkdown;
 
 @DisplayName("Index pages")
 @Description("""

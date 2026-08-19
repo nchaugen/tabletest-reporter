@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.TableTest;
 import org.tabletest.reporter.junit.TableTestPublisher;
+import org.tabletest.reporter.support.SampleRun;
 
 import java.nio.file.Path;
 import java.util.List;

@@ -1,10 +1,11 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.pages;
 
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.DisplayName;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 import org.tabletest.reporter.TemplateEngine;
+import org.tabletest.reporter.support.HtmlValidator;
 
 import java.util.HashMap;
 import java.util.Map;

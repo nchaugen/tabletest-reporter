@@ -324,6 +324,8 @@ intro: >
 features:
   - name: formatter          # matches an index page by its path segment / slug
     title: "Table Formatter"
+    description: >           # a paragraph introducing the feature on its own index page
+      How a table is laid out, in the order the formatter works in.
     features:                # list order is the reading order (not alphabetical)
       - { name: extraction,   title: "Value Extraction" }
       - { name: displaywidth, title: "Display Width" }
@@ -332,7 +334,9 @@ features:
 ```
 
 Everything is optional. Declared features render first in the order given; undeclared
-siblings follow alphabetically. A feature that matches no page is logged and skipped, so a
+siblings follow alphabetically. A `description` is rendered under the feature's title on its
+index page, the way a test class's `@Description` is — use it for what the whole group has in
+common, so an individual rule need not repeat it. A feature that matches no page is logged and skipped, so a
 typo never fails the report. The file is read at report time — a project without it reports
 exactly as before. Override its location with the `configFile` option (Maven `<configFile>`,
 Gradle `configFile`, CLI `--config`).

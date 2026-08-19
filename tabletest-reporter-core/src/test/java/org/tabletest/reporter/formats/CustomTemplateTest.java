@@ -1,12 +1,13 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.formats;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
-import org.tabletest.reporter.SampleRun;
 import org.tabletest.reporter.junit.TableTestPublisher;
+import org.tabletest.reporter.support.PublishedReport;
+import org.tabletest.reporter.support.SampleRun;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

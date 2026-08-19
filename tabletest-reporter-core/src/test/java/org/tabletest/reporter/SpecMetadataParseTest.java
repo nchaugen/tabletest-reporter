@@ -64,10 +64,28 @@ class SpecMetadataParseTest {
                         new FeatureMetadata(
                                 "formatter",
                                 "Table Formatter",
+                                null,
                                 java.util.List.of(
-                                        new FeatureMetadata("extraction", "Value Extraction", java.util.List.of()),
-                                        new FeatureMetadata("displaywidth", "Display Width", java.util.List.of()))),
-                        new FeatureMetadata("examples", "Worked Examples", java.util.List.of()));
+                                        new FeatureMetadata(
+                                                "extraction", "Value Extraction", null, java.util.List.of()),
+                                        new FeatureMetadata(
+                                                "displaywidth", "Display Width", null, java.util.List.of()))),
+                        new FeatureMetadata("examples", "Worked Examples", null, java.util.List.of()));
+    }
+
+    @Test
+    void featureCarriesADescriptionForItsOwnIndexPage() {
+        SpecMetadata metadata = parse("""
+                features:
+                  - name: pages
+                    title: "Page contents"
+                    description: >
+                      What one page carries besides its table.
+                """);
+
+        assertThat(metadata.features())
+                .containsExactly(new FeatureMetadata(
+                        "pages", "Page contents", "What one page carries besides its table.\n", java.util.List.of()));
     }
 
     @Test
@@ -78,7 +96,8 @@ class SpecMetadataParseTest {
                   - name: examples
                 """);
 
-        assertThat(metadata.features()).containsExactly(new FeatureMetadata("examples", null, java.util.List.of()));
+        assertThat(metadata.features())
+                .containsExactly(new FeatureMetadata("examples", null, null, java.util.List.of()));
     }
 
     @Test
@@ -91,7 +110,7 @@ class SpecMetadataParseTest {
 
         assertThat(metadata.features())
                 .containsExactly(
-                        new FeatureMetadata("formatter", null, java.util.List.of()),
-                        new FeatureMetadata("examples", null, java.util.List.of()));
+                        new FeatureMetadata("formatter", null, null, java.util.List.of()),
+                        new FeatureMetadata("examples", null, null, java.util.List.of()));
     }
 }

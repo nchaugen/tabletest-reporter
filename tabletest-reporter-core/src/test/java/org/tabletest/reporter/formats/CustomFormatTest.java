@@ -1,9 +1,10 @@
-package org.tabletest.reporter;
+package org.tabletest.reporter.formats;
 
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.DisplayName;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
+import org.tabletest.reporter.CustomFormat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

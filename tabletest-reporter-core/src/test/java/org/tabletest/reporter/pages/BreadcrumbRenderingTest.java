@@ -1,10 +1,11 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.pages;
 
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
+import org.tabletest.reporter.support.PublishedReport;
 
 import java.nio.file.Path;
 import java.util.List;

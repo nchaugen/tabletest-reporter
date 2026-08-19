@@ -1,4 +1,4 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.tables;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -6,8 +6,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
-import org.tabletest.reporter.SampleRun;
 import org.tabletest.reporter.junit.TableTestPublisher;
+import org.tabletest.reporter.support.PublishedTable;
+import org.tabletest.reporter.support.SampleRun;
 
 import java.nio.file.Path;
 import java.util.List;

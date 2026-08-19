@@ -1,4 +1,4 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.formats;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
+import org.tabletest.reporter.support.HtmlValidator;
+import org.tabletest.reporter.support.PublishedReport;
 
 import java.io.IOException;
 import java.nio.file.Files;

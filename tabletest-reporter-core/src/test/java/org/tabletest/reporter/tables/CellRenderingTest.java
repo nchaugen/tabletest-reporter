@@ -1,9 +1,10 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.tables;
 
 import org.junit.jupiter.api.DisplayName;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 import org.tabletest.reporter.TemplateEngine;
+import org.tabletest.reporter.support.RenderBridge;
 
 import java.util.List;
 

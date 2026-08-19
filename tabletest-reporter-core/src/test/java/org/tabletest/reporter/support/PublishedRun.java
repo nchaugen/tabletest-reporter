@@ -1,4 +1,4 @@
-package org.tabletest.reporter;
+package org.tabletest.reporter.support;
 
 import org.snakeyaml.engine.v2.api.Dump;
 import org.snakeyaml.engine.v2.api.DumpSettings;

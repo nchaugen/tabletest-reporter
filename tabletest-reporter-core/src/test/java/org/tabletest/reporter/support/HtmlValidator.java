@@ -1,4 +1,4 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.support;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,7 +18,7 @@ import java.util.Map;
  * structure against the context, which is the independent source of truth for what the
  * reporter intended, mirroring {@link AsciiDocValidator} for the HTML format.
  */
-class HtmlValidator {
+public class HtmlValidator {
 
     /**
      * Parses the given HTML into a queryable DOM so tests can assert with CSS selectors.
@@ -26,7 +26,7 @@ class HtmlValidator {
      * @param html the rendered HTML content
      * @return the parsed document
      */
-    static Document parse(String html) {
+    public static Document parse(String html) {
         return Jsoup.parse(html);
     }
 
@@ -37,7 +37,7 @@ class HtmlValidator {
      * @param html    the rendered HTML content
      * @param context the render context the HTML was produced from
      */
-    static void assertTableMatchesContext(String html, Map<String, Object> context) {
+    public static void assertTableMatchesContext(String html, Map<String, Object> context) {
         Document document = parse(html);
         Elements tables = document.select("table");
         if (tables.isEmpty()) {

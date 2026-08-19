@@ -1,9 +1,10 @@
-package org.tabletest.reporter;
+package org.tabletest.reporter.structure;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
+import org.tabletest.reporter.ReportStructure;
 
 import java.nio.file.Path;
 import java.util.List;

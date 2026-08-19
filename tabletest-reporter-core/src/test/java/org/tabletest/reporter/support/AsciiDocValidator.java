@@ -1,4 +1,4 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.support;
 
 import org.asciidoctor.Asciidoctor;
 import org.asciidoctor.Options;
@@ -15,7 +15,7 @@ import java.util.Map;
  * Uses AsciidoctorJ parser to verify that generated AsciiDoc is syntactically valid.
  * Invalid AsciiDoc will cause parsing exceptions.
  */
-class AsciiDocValidator {
+public class AsciiDocValidator {
 
     private static final Asciidoctor ASCIIDOCTOR = Asciidoctor.Factory.create();
 
@@ -25,7 +25,7 @@ class AsciiDocValidator {
      * @param asciidoc the AsciiDoc content to validate
      * @throws RuntimeException if the AsciiDoc is invalid
      */
-    static void assertValidAsciiDoc(String asciidoc) {
+    public static void assertValidAsciiDoc(String asciidoc) {
         try {
             ASCIIDOCTOR.load(asciidoc, Options.builder().build());
         } catch (Exception e) {
@@ -46,7 +46,7 @@ class AsciiDocValidator {
      * @param asciidoc the rendered AsciiDoc content
      * @param context  the render context the AsciiDoc was produced from
      */
-    static void assertValidAsciiDoc(String asciidoc, Map<String, Object> context) {
+    public static void assertValidAsciiDoc(String asciidoc, Map<String, Object> context) {
         assertValidAsciiDoc(asciidoc);
         assertColumnsMatchHeaders(asciidoc, expectedColumns(context));
     }

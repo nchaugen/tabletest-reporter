@@ -3,6 +3,7 @@ package org.tabletest.reporter.rendering;
 import org.junit.jupiter.api.Test;
 import org.tabletest.reporter.ContextLoader;
 import org.tabletest.reporter.TemplateEngine;
+import org.tabletest.reporter.support.HtmlValidator;
 
 import java.util.Map;
 

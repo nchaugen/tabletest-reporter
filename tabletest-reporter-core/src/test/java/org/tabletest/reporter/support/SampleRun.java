@@ -1,4 +1,4 @@
-package org.tabletest.reporter;
+package org.tabletest.reporter.support;
 
 import org.junit.platform.engine.OutputDirectoryCreator;
 import org.junit.platform.engine.TestDescriptor;

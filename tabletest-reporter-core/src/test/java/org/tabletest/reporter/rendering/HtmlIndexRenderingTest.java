@@ -4,6 +4,7 @@ import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
 import org.tabletest.reporter.ContextLoader;
 import org.tabletest.reporter.TemplateEngine;
+import org.tabletest.reporter.support.HtmlValidator;
 
 import java.util.Map;
 

@@ -1,10 +1,11 @@
-package org.tabletest.reporter;
+package org.tabletest.reporter.structure;
 
 import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
+import org.tabletest.reporter.IndexDepth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

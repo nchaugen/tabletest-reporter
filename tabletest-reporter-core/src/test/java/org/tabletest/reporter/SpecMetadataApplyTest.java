@@ -56,10 +56,11 @@ class SpecMetadataApplyTest {
                         new FeatureMetadata(
                                 "formatter",
                                 "Table Formatter",
+                                null,
                                 List.of(
-                                        new FeatureMetadata("extraction", "Value Extraction", List.of()),
-                                        new FeatureMetadata("displaywidth", "Display Width", List.of()))),
-                        new FeatureMetadata("examples", "Worked Examples", List.of())));
+                                        new FeatureMetadata("extraction", "Value Extraction", null, List.of()),
+                                        new FeatureMetadata("displaywidth", "Display Width", null, List.of()))),
+                        new FeatureMetadata("examples", "Worked Examples", null, List.of())));
 
         ReportNode applied = metadata.applyTo(root);
 
@@ -76,14 +77,40 @@ class SpecMetadataApplyTest {
                 "",
                 null,
                 List.of(new IndexNode("formatter", "/formatter", Map.of("status", "passing"), List.of())));
-        SpecMetadata metadata =
-                new SpecMetadata("Spec", null, List.of(new FeatureMetadata("formatter", "Table Formatter", List.of())));
+        SpecMetadata metadata = new SpecMetadata(
+                "Spec", null, List.of(new FeatureMetadata("formatter", "Table Formatter", null, List.of())));
 
         ReportNode applied = metadata.applyTo(root);
 
         assertThat(childNamed(applied, "formatter").resource())
                 .containsEntry("status", "passing")
                 .containsEntry("title", "Table Formatter");
+    }
+
+    @Test
+    void writesADeclaredDescriptionOntoTheFeatureIndexPage() {
+        ReportNode root =
+                new IndexNode("reporter", "", null, List.of(new IndexNode("pages", "/pages", null, List.of())));
+        SpecMetadata metadata = new SpecMetadata(
+                "Spec",
+                null,
+                List.of(new FeatureMetadata("pages", "Page contents", "What one page carries.", List.of())));
+
+        ReportNode applied = metadata.applyTo(root);
+
+        assertThat(childNamed(applied, "pages").resource())
+                .containsEntry("title", "Page contents")
+                .containsEntry("description", "What one page carries.");
+    }
+
+    @Test
+    void leavesAFeatureBareWhenNoDescriptionIsDeclared() {
+        ReportNode root =
+                new IndexNode("reporter", "", null, List.of(new IndexNode("pages", "/pages", null, List.of())));
+        SpecMetadata metadata =
+                new SpecMetadata("Spec", null, List.of(new FeatureMetadata("pages", "Page contents", null, List.of())));
+
+        assertThat(childNamed(metadata.applyTo(root), "pages").resource()).doesNotContainKey("description");
     }
 
     @Test
@@ -97,7 +124,7 @@ class SpecMetadataApplyTest {
 
     private static List<FeatureMetadata> features(List<String> names) {
         return names.stream()
-                .map(name -> new FeatureMetadata(name, null, List.of()))
+                .map(name -> new FeatureMetadata(name, null, null, List.of()))
                 .toList();
     }
 

@@ -11,6 +11,7 @@ import org.tabletest.junit.TableTest;
 import org.tabletest.reporter.ContextLoader;
 import org.tabletest.reporter.TemplateEngine;
 import org.tabletest.reporter.junit.TableTestPublisher;
+import org.tabletest.reporter.support.RenderBridge;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+- A feature in the `tabletest-reporter.yaml` `features:` tree can carry a `description`, rendered
+  under the feature's title on its own index page the way a test class's `@Description` is. An
+  intermediate index page could previously carry only a title, so anything true of a whole group
+  of features had to be repeated on every rule beneath it.
+
 ### Fixed
 - Declaring a custom format with no name is now refused with `Format name cannot be missing`
   instead of a message reading only `name`. The blank-name and leading-dot refusals are

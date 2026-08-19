@@ -1,4 +1,4 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.support;
 
 import org.commonmark.parser.Parser;
 
@@ -8,7 +8,7 @@ import org.commonmark.parser.Parser;
  * Uses CommonMark parser to verify that generated Markdown is syntactically valid.
  * Invalid Markdown will cause parsing exceptions.
  */
-class MarkdownValidator {
+public class MarkdownValidator {
 
     private static final Parser PARSER = Parser.builder().build();
 
@@ -18,7 +18,7 @@ class MarkdownValidator {
      * @param markdown the Markdown content to validate
      * @throws RuntimeException if the Markdown is invalid
      */
-    static void assertValidMarkdown(String markdown) {
+    public static void assertValidMarkdown(String markdown) {
         try {
             PARSER.parse(markdown);
         } catch (Exception e) {

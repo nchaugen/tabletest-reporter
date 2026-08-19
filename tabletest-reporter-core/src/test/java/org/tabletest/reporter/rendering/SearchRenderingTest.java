@@ -4,6 +4,7 @@ import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.reporter.TableTestReporter;
+import org.tabletest.reporter.support.HtmlValidator;
 
 import java.io.IOException;
 import java.nio.file.Files;

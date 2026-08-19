@@ -1,5 +1,7 @@
 package org.tabletest.reporter;
 
+import org.tabletest.reporter.support.PublishedRun;
+
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
@@ -13,10 +15,10 @@ import java.util.stream.Stream;
  * the shape. Here a rule states its input as the test classes that ran (see {@link PublishedRun})
  * and its outcome as the page tree a reader would see in the sidebar.
  */
-final class ReportStructure {
+public final class ReportStructure {
 
     /** The name shown for the root page when the published classes share no package. */
-    static final String UNNAMED_ROOT = "(root)";
+    public static final String UNNAMED_ROOT = "(root)";
 
     private ReportStructure() {}
 
@@ -24,12 +26,12 @@ final class ReportStructure {
      * The report pages for the given published tables, outermost first, indented two spaces per
      * level. Run output is written into a fresh directory under {@code workingDir}.
      */
-    static List<String> pagesFor(List<String> publishedTables, Path workingDir) {
+    public static List<String> pagesFor(List<String> publishedTables, Path workingDir) {
         return pagesOf(ReportTree.process(PublishedRun.outputFor(publishedTables, workingDir)));
     }
 
     /** The pages of a report tree, outermost first, indented two spaces per level. */
-    static List<String> pagesOf(ReportNode tree) {
+    public static List<String> pagesOf(ReportNode tree) {
         return tree == null ? List.of() : pageLines(tree, 0).toList();
     }
 

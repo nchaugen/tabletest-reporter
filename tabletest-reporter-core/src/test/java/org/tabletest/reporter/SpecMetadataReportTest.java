@@ -24,7 +24,7 @@ class SpecMetadataReportTest {
         SpecMetadata metadata = new SpecMetadata(
                 "Example Spec",
                 "How the example behaves.",
-                List.of(new FeatureMetadata("order-test", "Ordered Placement", List.of())));
+                List.of(new FeatureMetadata("order-test", "Ordered Placement", null, List.of())));
 
         new TableTestReporter().report(MARKDOWN, inDir, outDir, false, metadata);
 

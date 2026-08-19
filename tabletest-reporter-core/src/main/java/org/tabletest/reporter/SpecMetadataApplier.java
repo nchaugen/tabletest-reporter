@@ -24,7 +24,8 @@ import java.util.Map;
 
 /**
  * Applies {@link SpecMetadata} onto an already-built report tree: writes the spec title and intro
- * onto the root index, and for each declared feature retitles the matched node and imposes the
+ * onto the root index, and for each declared feature retitles the matched node, introduces it with
+ * the declared description where there is one, and imposes the
  * declared reading order on its siblings — declared features first, the rest following in their
  * existing (alphabetical) order. A declared feature that matches no node is logged and skipped, so
  * a curation typo never fails a report. The tree is rebuilt immutably; the builder's output is left
@@ -74,7 +75,7 @@ final class SpecMetadataApplier {
     }
 
     private static ReportNode enrichFeature(ReportNode node, FeatureMetadata feature) {
-        Map<String, Object> resource = enriched(node.resource(), feature.title(), null);
+        Map<String, Object> resource = enriched(node.resource(), feature.title(), feature.description());
         return rebuild(node, resource, reorder(childrenOf(node), feature.features()));
     }
 

@@ -9,8 +9,8 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.tabletest.reporter.BuiltInFormat.ASCIIDOC;
 import static org.tabletest.reporter.BuiltInFormat.MARKDOWN;
-import static org.tabletest.reporter.rendering.AsciiDocValidator.assertValidAsciiDoc;
-import static org.tabletest.reporter.rendering.MarkdownValidator.assertValidMarkdown;
+import static org.tabletest.reporter.support.AsciiDocValidator.assertValidAsciiDoc;
+import static org.tabletest.reporter.support.MarkdownValidator.assertValidMarkdown;
 
 public class TableWithPipeTest {
 

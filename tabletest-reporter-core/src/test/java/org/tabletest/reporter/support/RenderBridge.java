@@ -1,4 +1,4 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.support;
 
 import org.tabletest.parser.TableParser;
 import org.tabletest.reporter.junit.TableMetadata;
@@ -17,12 +17,12 @@ import java.util.Map;
  * input as the table a reader would actually write. {@code RenderBridgeFidelityTest} pins the
  * bridge against the YAML a real run writes.
  */
-final class RenderBridge {
+public final class RenderBridge {
 
     private RenderBridge() {}
 
     /** The render context for a table written as {@code source}, titled {@code title}. */
-    static Map<String, Object> contextFor(String source, String title) {
+    public static Map<String, Object> contextFor(String source, String title) {
         return new TableMetadata()
                 .withTitle(title)
                 .toTableTestData(TableParser.parse(source))

@@ -1,4 +1,4 @@
-package org.tabletest.reporter.rendering;
+package org.tabletest.reporter.support;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  * markdown has nowhere to put one, and reads back as no mark at all. The message a broken row
  * failed on is published by every format, each below a heading of its own and fenced its own way.
  */
-final class PublishedTable {
+public final class PublishedTable {
 
     /** {@code a|[.scenario.passed]#++A century year++#} — the roles, then the value. */
     private static final Pattern CELL = Pattern.compile("^a?\\|(?:\\[([^]]*)]#)?\\+\\+(.*?)\\+\\+#?$");
@@ -34,14 +34,14 @@ final class PublishedTable {
     }
 
     /** The table page of a report generated in the named format from what a real run published. */
-    static PublishedTable of(Path publishedRunOutput, String formatName, Path workingDir) {
+    public static PublishedTable of(Path publishedRunOutput, String formatName, Path workingDir) {
         List<String> lines = PublishedReport.pageLinesOf(publishedRunOutput, formatName, null, false, workingDir);
         return new PublishedTable(
                 formatName, formatName.equals("html") ? HtmlValidator.parse(String.join("\n", lines)) : null, lines);
     }
 
     /** The mark the named column's header carries beyond being a cell, or null where it carries none. */
-    String markOf(String column) {
+    public String markOf(String column) {
         return switch (formatName) {
             case "html" -> marksOf(htmlHeader(column).classNames());
             case "asciidoc" ->
@@ -51,7 +51,7 @@ final class PublishedTable {
     }
 
     /** The verdict every cell of the named row is marked with, or null where the format shows none. */
-    String verdictOf(String row) {
+    public String verdictOf(String row) {
         return switch (formatName) {
             case "html" -> verdictIn(htmlRow(row).select("td").stream().flatMap(cell -> cell.classNames().stream()));
             case "asciidoc" -> verdictIn(asciiDocRow(row).stream().flatMap(cell -> cell.roleNames().stream()));
@@ -63,7 +63,7 @@ final class PublishedTable {
      * The lines of the message published below the table for the named row, or null where the row
      * did not break.
      */
-    List<String> failureMessageOf(String row) {
+    public List<String> failureMessageOf(String row) {
         return formatName.equals("html") ? htmlFailureMessage(row) : fencedFailureMessage(row);
     }
 

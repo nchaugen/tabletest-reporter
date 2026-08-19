@@ -8,7 +8,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.tabletest.reporter.BuiltInFormat.ASCIIDOC;
-import static org.tabletest.reporter.rendering.AsciiDocValidator.assertValidAsciiDoc;
+import static org.tabletest.reporter.support.AsciiDocValidator.assertValidAsciiDoc;
 
 /**
  * Regression test for GitHub issue #11: deeply nested map/collection combinations

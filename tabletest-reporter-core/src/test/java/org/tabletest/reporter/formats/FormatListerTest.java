@@ -1,4 +1,4 @@
-package org.tabletest.reporter;
+package org.tabletest.reporter.formats;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
+import org.tabletest.reporter.FormatLister;
 
 import java.io.IOException;
 import java.nio.file.Files;
