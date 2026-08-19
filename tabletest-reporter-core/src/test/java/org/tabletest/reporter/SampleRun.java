@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
@@ -30,12 +31,21 @@ public final class SampleRun {
 
     /** The output a run of the given sample class published, in a fresh directory. */
     public static Path outputFor(Class<?> sampleClass, Path workingDir) {
+        return outputFor(sampleClass, Map.of(), workingDir);
+    }
+
+    /**
+     * The output a run of the given sample class published, with the given JUnit configuration
+     * parameters in force — where surface options such as the expectation pattern are read from.
+     */
+    public static Path outputFor(Class<?> sampleClass, Map<String, String> configuration, Path workingDir) {
         Path runDir = createTempDirectory(workingDir);
-        EngineTestKit.engine("junit-jupiter")
+        EngineTestKit.Builder run = EngineTestKit.engine("junit-jupiter")
                 .selectors(selectClass(sampleClass))
                 .enableImplicitConfigurationParameters(true)
-                .outputDirectoryCreator(into(runDir))
-                .execute();
+                .outputDirectoryCreator(into(runDir));
+        configuration.forEach(run::configurationParameter);
+        run.execute();
         return runDir;
     }
 
