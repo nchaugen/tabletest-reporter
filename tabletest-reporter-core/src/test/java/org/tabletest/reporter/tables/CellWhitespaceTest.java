@@ -35,14 +35,18 @@ public class CellWhitespaceTest {
             appear throughout its column.
             """)
     @TableTest("""
-        Scenario              | Cell        | In HTML?                                                        | In markdown?               | In AsciiDoc?
-        Plain word            | Alice       | '<span class="literal">Alice</span>'                            | Alice                      | '++Alice++'
-        Single internal space | Alice Smith | '<span class="literal">Alice Smith</span>'                      | Alice Smith                | '++Alice Smith++'
-        Leading space         | "' x'"      | '<span class="literal ws"><span class="sp"> </span>x</span>'    | '&#x2423;x'                | '&#x2423;++x++'
-        Trailing space        | "'x '"      | '<span class="literal ws">x<span class="sp"> </span></span>'    | 'x&#x2423;'                | '++x++&#x2423;'
-        Run of two spaces     | "'a  b'"    | '<span class="literal ws">a<span class="sp">  </span>b</span>'  | 'a&#x2423;&#x2423;b'       | '++a++&#x2423;&#x2423;++b++'
-        Tab between words     | "'a\tb'"    | '<span class="literal ws">a<span class="tab">\t</span>b</span>' | 'a&#x21E5;b'               | '++a++&#x21E5;++b++'
-        Whitespace-only value | "'   '"     | '<span class="literal ws"><span class="sp">   </span></span>'   | '&#x2423;&#x2423;&#x2423;' | '&#x2423;&#x2423;&#x2423;'
+        Scenario              | Cell        | In HTML?                                                                                                        | In markdown?                 | In AsciiDoc?
+        Plain word            | Alice       | '<span class="literal">Alice</span>'                                                                            | Alice                        | '++Alice++'
+        Single internal space | Alice Smith | '<span class="literal">Alice Smith</span>'                                                                      | Alice Smith                  | '++Alice Smith++'
+        Leading space         | "' x'"      | '<span class="literal ws"><span class="sp"> </span>x</span>'                                                    | '&#x2423;x'                  | '&#x2423;++x++'
+        Trailing space        | "'x '"      | '<span class="literal ws">x<span class="sp"> </span></span>'                                                    | 'x&#x2423;'                  | '++x++&#x2423;'
+        Run of two spaces     | "'a  b'"    | '<span class="literal ws">a<span class="sp">  </span>b</span>'                                                  | 'a&#x2423;&#x2423;b'         | '++a++&#x2423;&#x2423;++b++'
+        Tab between words     | "'a\tb'"    | '<span class="literal ws">a<span class="tab">\t</span>b</span>'                                                 | 'a&#x21E5;b'                 | '++a++&#x21E5;++b++'
+        Whitespace-only value | "'   '"     | '<span class="literal ws"><span class="sp">   </span></span>'                                                   | '&#x2423;&#x2423;&#x2423;'   | '&#x2423;&#x2423;&#x2423;'
+        Run of two tabs       | "'		'"        | '<span class="literal ws"><span class="tab">	</span><span class="tab">	</span></span>'                            | '&#x21E5;&#x21E5;'           | '&#x21E5;&#x21E5;'
+        Tab then space        | "'	 '"       | '<span class="literal ws"><span class="tab">	</span><span class="sp"> </span></span>'                            | '&#x21E5;&#x2423;'           | '&#x21E5;&#x2423;'
+        Spaces around a tab   | "'a 	 b'"    | '<span class="literal ws">a<span class="sp"> </span><span class="tab">	</span><span class="sp"> </span>b</span>' | 'a&#x2423;&#x21E5;&#x2423;b' | '++a++&#x2423;&#x21E5;&#x2423;++b++'
+        An empty value        | "''"        | '<span class="literal empty-string">“”</span>'                                                                  | '""'                         | '+""+'
         """)
     void rendersSignificantWhitespace(String cell, String inHtml, String inMarkdown, String inAsciiDoc) {
         assertThat(PublishedCell.of("html", cell)).isEqualTo(inHtml);
