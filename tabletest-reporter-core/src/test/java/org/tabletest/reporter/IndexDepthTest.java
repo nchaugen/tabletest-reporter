@@ -1,5 +1,6 @@
 package org.tabletest.reporter;
 
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.tabletest.junit.Description;
@@ -63,17 +64,30 @@ class IndexDepthTest {
         assertThat(IndexDepth.of(5).isInfinite()).isFalse();
     }
 
-    @DisplayName("Depths below one are rejected")
+    @DisplayName("One is the shallowest depth an index can be built to")
+    @Description("""
+            A depth of one indexes the top level only. There is nothing shallower, so anything
+            below one is rejected rather than clamped, and the message names the depth it was
+            given.
+            """)
     @TableTest("""
-        Scenario       | Input | Error Contains?
-        Zero depth     | 0     | at least 1
-        Negative depth | -1    | at least 1
-        Large negative | -100  | at least 1
+        Scenario                 | Depth | Error message?
+        The shallowest depth     | 1     |
+        One below the shallowest | 0     | Index depth must be at least 1, was: 0
+        A negative depth         | -1    | Index depth must be at least 1, was: -1
         """)
-    void rejects_invalid_depth_values(int input, String errorContains) {
-        assertThatThrownBy(() -> IndexDepth.of(input))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining(errorContains);
+    void rejects_a_depth_below_one(int depth, String errorMessage) {
+        assertThat(errorMessageFrom(() -> IndexDepth.of(depth))).isEqualTo(errorMessage);
+    }
+
+    /** The message the action fails with, or null when it does not fail. */
+    private static String errorMessageFrom(ThrowableAssert.ThrowingCallable action) {
+        try {
+            action.call();
+            return null;
+        } catch (Throwable thrown) {
+            return thrown.getMessage();
+        }
     }
 
     @DisplayName("Option values that are not a number or the keyword are rejected")
