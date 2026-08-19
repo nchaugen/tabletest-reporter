@@ -1,95 +1,69 @@
 package org.tabletest.reporter.rendering;
 
 import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.tabletest.reporter.TableTestReporter;
+import org.tabletest.junit.Description;
+import org.tabletest.junit.TableTest;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.tabletest.reporter.BuiltInFormat.HTML;
 
 /**
- * Verifies the persistent sidebar: every page carries the whole-report link tree, with each
- * href relative to that page's own directory and the page's own entry marked current, over a
- * three-level tree (root package → class index → table).
+ * The sidebar rules, over a report of one class with one table. {@link PublishedReport}
+ * generates it, so a row names the page by the URL a reader would be at.
  */
+@DisplayName("Sidebar navigation")
+@Description("""
+        Every page carries the whole report as a link tree, so a reader can reach any rule from
+        any page without going back to an index first. The rules below are read off a report
+        built from one test class, com.example.orders.OrderTest, whose only table is items —
+        three pages deep: the package orders, the class page order-test, and the table page items.
+        """)
 class SidebarRenderingTest {
 
+    /** The report every rule below is read off. */
+    private static final List<String> PUBLISHED_TABLES = List.of("com.example.orders.OrderTest#items");
+
     @TempDir
-    Path tempDir;
+    Path workingDir;
 
-    @Test
-    void table_page_shows_the_whole_tree_relative_to_itself_with_itself_current() throws IOException {
-        Path outDir = generateReport();
+    @DisplayName("Every page carries the whole report, with its own entry marked")
+    @Description("""
+            The entries are the same wherever the reader is standing; what moves is which one is
+            marked as the page they are on, and where the links point — each is relative to the
+            directory that page sits in, so the report can be served from any location.
+            """)
+    @TableTest("""
+        Scenario      | Page URL          | Sidebar entries?                  | Their links?                                                     | Current entry?
+        The root page | /                 | ['orders', 'order-test', 'items'] | ['index.html', 'order-test/index.html', 'order-test/items.html'] | orders
+        A class page  | /order-test       | ['orders', 'order-test', 'items'] | ['../index.html', 'index.html', 'items.html']                    | order-test
+        A table page  | /order-test/items | ['orders', 'order-test', 'items'] | ['../index.html', 'index.html', 'items.html']                    | items
+        """)
+    void carriesTheWholeReportWithItsOwnEntryMarked(
+            String pageUrl, List<String> sidebarEntries, List<String> theirLinks, String currentEntry) {
+        Document page = pageAt(pageUrl);
 
-        Document table = HtmlValidator.parse(
-                Files.readString(outDir.resolve("calendar-calculations").resolve("leap-year-rules.html")));
-
-        assertThat(table.select("aside.sidebar a.sidebar-home").attr("href")).isEqualTo("../index.html");
-        assertThat(table.select("aside.sidebar .nav-item.index > a").attr("href"))
-                .isEqualTo("index.html");
-        assertThat(table.select("aside.sidebar .nav-item.table > a").attr("href"))
-                .isEqualTo("leap-year-rules.html");
-        assertThat(table.select("aside.sidebar a[aria-current=page]").text())
-                .isEqualTo("Leap Year Rules with Single Example");
+        assertThat(page.select(SIDEBAR_ENTRIES).eachText()).isEqualTo(sidebarEntries);
+        assertThat(page.select(SIDEBAR_ENTRIES).eachAttr("href")).isEqualTo(theirLinks);
+        assertThat(page.select("aside.sidebar a[aria-current=page]").text()).isEqualTo(currentEntry);
     }
 
-    @Test
-    void root_index_shows_the_tree_relative_to_root_with_home_current() throws IOException {
-        Path outDir = generateReport();
-
-        Document root = HtmlValidator.parse(Files.readString(outDir.resolve("index.html")));
-
-        assertThat(root.select("aside.sidebar a.sidebar-home[aria-current=page]")
-                        .attr("href"))
-                .isEqualTo("index.html");
-        assertThat(root.select("aside.sidebar .nav-item.index > a").attr("href"))
-                .isEqualTo("calendar-calculations/index.html");
-        assertThat(root.select("aside.sidebar .nav-item.table > a").attr("href"))
-                .isEqualTo("calendar-calculations/leap-year-rules.html");
-    }
+    private static final String SIDEBAR_ENTRIES = "aside.sidebar a.sidebar-home, aside.sidebar .nav-item > a";
 
     @Test
-    void a_menu_button_controls_the_off_canvas_drawer() throws IOException {
-        Path outDir = generateReport();
-
-        Document page = HtmlValidator.parse(
-                Files.readString(outDir.resolve("calendar-calculations").resolve("leap-year-rules.html")));
+    void a_menu_button_controls_the_off_canvas_drawer() {
+        Document page = pageAt("/order-test/items");
 
         assertThat(page.select("button#nav-toggle").attr("aria-controls")).isEqualTo("site-nav");
         assertThat(page.select("aside#site-nav.sidebar")).isNotEmpty();
         assertThat(page.select(".nav-backdrop")).isNotEmpty();
     }
 
-    private Path generateReport() throws IOException {
-        Path inDir = Files.createDirectories(tempDir.resolve("in"));
-        Path classDir = Files.createDirectories(inDir.resolve("org.example.CalendarCalculations"));
-        Files.writeString(classDir.resolve("TABLETEST-calendar-calculations.yaml"), """
-            "className": "org.example.CalendarCalculations"
-            "slug": "calendar-calculations"
-            "title": "Calendar"
-            "tableTests":
-              - "path": "leapYear(int)/TABLETEST-leap-year-rules.yaml"
-                "methodName": "leapYear"
-                "slug": "leap-year-rules"
-            """);
-        Path methodDir = Files.createDirectories(classDir.resolve("leapYear(int)"));
-        Files.writeString(methodDir.resolve("TABLETEST-leap-year-rules.yaml"), """
-            "title": "Leap Year Rules with Single Example"
-            "headers":
-              - "value": "Year"
-              - "value": "Is Leap Year?"
-            "rows":
-              - - "value": "2004"
-                - "value": "Yes"
-            """);
-
-        Path outDir = Files.createDirectory(tempDir.resolve("out"));
-        new TableTestReporter().report(HTML, inDir, outDir);
-        return outDir;
+    private Document pageAt(String url) {
+        return PublishedReport.pageAt(url, PUBLISHED_TABLES, workingDir);
     }
 }

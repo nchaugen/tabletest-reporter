@@ -1,87 +1,64 @@
 package org.tabletest.reporter.rendering;
 
 import org.jsoup.nodes.Document;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.io.TempDir;
-import org.tabletest.reporter.TableTestReporter;
+import org.tabletest.junit.Description;
+import org.tabletest.junit.TableTest;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.tabletest.reporter.BuiltInFormat.HTML;
 
 /**
- * Verifies that HTML pages carry a breadcrumb trail of their ancestors, with each link
- * relative to the page's own directory and the current page marked, over a three-level
- * tree (root package → class index → table).
+ * The breadcrumb rules, over a report of one class with one table. {@link PublishedReport}
+ * generates it, so a row names the page by the URL a reader would be at.
  */
+@DisplayName("Breadcrumbs")
+@Description("""
+        Every page but the root opens with the trail of pages above it, so a reader who arrived
+        from a search result can see where they are and climb out. The rules below are read off a
+        report built from one test class, com.example.orders.OrderTest, whose only table is
+        items — three pages deep: the package orders, the class page order-test, and the table
+        page items.
+        """)
 class BreadcrumbRenderingTest {
 
+    /** The report every rule below is read off. */
+    private static final List<String> PUBLISHED_TABLES = List.of("com.example.orders.OrderTest#items");
+
     @TempDir
-    Path tempDir;
+    Path workingDir;
 
-    @Test
-    void table_page_links_every_ancestor_relative_to_itself() throws IOException {
-        Path outDir = generateReport();
+    @DisplayName("A page names every page above it, and itself last")
+    @Description("""
+            Each page above is a link, relative to the directory the page itself sits in, and the
+            page itself closes the trail as text rather than a link. The root page has nothing
+            above it, so it carries no trail at all.
+            """)
+    @TableTest("""
+        Scenario      | Page URL          | Pages above?             | Their links?                    | This page?
+        A table page  | /order-test/items | ['orders', 'order-test'] | ['../index.html', 'index.html'] | items
+        A class page  | /order-test       | ['orders']               | ['../index.html']               | order-test
+        The root page | /                 | []                       | []                              |
+        """)
+    void namesEveryPageAboveAndItselfLast(
+            String pageUrl, List<String> pagesAbove, List<String> theirLinks, String thisPage) {
+        Document page = pageAt(pageUrl);
 
-        Document table = HtmlValidator.parse(
-                Files.readString(outDir.resolve("calendar-calculations").resolve("leap-year-rules.html")));
-
-        assertThat(table.select("nav.breadcrumbs a").eachAttr("href")).containsExactly("../index.html", "index.html");
-        assertThat(table.select("nav.breadcrumbs a").eachText()).containsExactly("example", "Calendar");
-        assertThat(table.select("nav.breadcrumbs [aria-current=page]").text())
-                .isEqualTo("Leap Year Rules with Single Example");
+        assertThat(page.select("nav.breadcrumbs a").eachText()).isEqualTo(pagesAbove);
+        assertThat(page.select("nav.breadcrumbs a").eachAttr("href")).isEqualTo(theirLinks);
+        assertThat(currentPageOf(page)).isEqualTo(thisPage);
     }
 
-    @Test
-    void class_index_links_up_to_the_root_and_marks_itself_current() throws IOException {
-        Path outDir = generateReport();
-
-        Document index = HtmlValidator.parse(
-                Files.readString(outDir.resolve("calendar-calculations").resolve("index.html")));
-
-        assertThat(index.select("nav.breadcrumbs a").eachAttr("href")).containsExactly("../index.html");
-        assertThat(index.select("nav.breadcrumbs a").eachText()).containsExactly("example");
-        assertThat(index.select("nav.breadcrumbs [aria-current=page]").text()).isEqualTo("Calendar");
+    private Document pageAt(String url) {
+        return PublishedReport.pageAt(url, PUBLISHED_TABLES, workingDir);
     }
 
-    @Test
-    void root_index_has_no_breadcrumbs() throws IOException {
-        Path outDir = generateReport();
-
-        Document root = HtmlValidator.parse(Files.readString(outDir.resolve("index.html")));
-
-        assertThat(root.select("nav.breadcrumbs")).isEmpty();
-    }
-
-    private Path generateReport() throws IOException {
-        Path inDir = Files.createDirectories(tempDir.resolve("in"));
-        Path classDir = Files.createDirectories(inDir.resolve("org.example.CalendarCalculations"));
-        Files.writeString(classDir.resolve("TABLETEST-calendar-calculations.yaml"), """
-            "className": "org.example.CalendarCalculations"
-            "slug": "calendar-calculations"
-            "title": "Calendar"
-            "description": "Various rules for calendar calculations."
-            "tableTests":
-              - "path": "leapYear(int)/TABLETEST-leap-year-rules.yaml"
-                "methodName": "leapYear"
-                "slug": "leap-year-rules"
-            """);
-        Path methodDir = Files.createDirectories(classDir.resolve("leapYear(int)"));
-        Files.writeString(methodDir.resolve("TABLETEST-leap-year-rules.yaml"), """
-            "title": "Leap Year Rules with Single Example"
-            "headers":
-              - "value": "Year"
-              - "value": "Is Leap Year?"
-            "rows":
-              - - "value": "2004"
-                - "value": "Yes"
-            """);
-
-        Path outDir = Files.createDirectory(tempDir.resolve("out"));
-        new TableTestReporter().report(HTML, inDir, outDir);
-        return outDir;
+    /** The page the breadcrumbs mark as current, or null where there is no trail. */
+    private static String currentPageOf(Document page) {
+        var current = page.select("nav.breadcrumbs [aria-current=page]");
+        return current.isEmpty() ? null : current.text();
     }
 }
