@@ -37,6 +37,28 @@ final class PublishedReport {
     }
 
     /**
+     * The one table page of a report generated from output the extension itself published — see
+     * {@code SampleRun}. Rules about what a real run records read off this page.
+     */
+    static Document tablePageOf(Path publishedRunOutput, Path workingDir) {
+        Path outputDirectory = createTempDirectory(workingDir);
+        new TableTestReporter().report(HTML, publishedRunOutput, outputDirectory);
+        return HtmlValidator.parse(read(onlyTablePageIn(outputDirectory)));
+    }
+
+    private static Path onlyTablePageIn(Path outputDirectory) {
+        try (var paths = Files.walk(outputDirectory)) {
+            return paths.filter(Files::isRegularFile)
+                    .filter(file -> file.getFileName().toString().endsWith(HTML.extension()))
+                    .filter(file -> !file.getFileName().toString().equals("index" + HTML.extension()))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError("The report has no table page"));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
      * The output directory of a report generated in the named format, so a rule can state what
      * was written rather than what one page says.
      */

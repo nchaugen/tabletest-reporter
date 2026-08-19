@@ -1,12 +1,8 @@
 package org.tabletest.reporter;
 
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.platform.engine.OutputDirectoryCreator;
-import org.junit.platform.engine.TestDescriptor;
-import org.junit.platform.testkit.engine.EngineTestKit;
 import org.tabletest.junit.TableTest;
 import org.tabletest.reporter.junit.TableTestPublisher;
 
@@ -14,7 +10,6 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 /**
  * Pins {@link ReportStructure} against production: the pages the helper builds for a named test
@@ -31,47 +26,21 @@ class ReportStructureFidelityTest {
             StructureSampleTest.class.getName() + "#orderItems", StructureSampleTest.class.getName() + "#orderTotals");
 
     @TempDir
-    Path realRunDir;
-
-    @TempDir
-    Path helperDir;
+    Path workingDir;
 
     @Test
     void helperBuildsTheSamePagesARealRunDoes() {
-        List<String> fromRealRun = ReportStructure.pagesOf(ReportTree.process(runSampleTest()));
+        List<String> fromRealRun =
+                ReportStructure.pagesOf(ReportTree.process(SampleRun.outputFor(StructureSampleTest.class, workingDir)));
 
-        List<String> fromHelper = ReportStructure.pagesFor(SAME_TABLES, helperDir);
+        List<String> fromHelper = ReportStructure.pagesFor(SAME_TABLES, workingDir);
 
         assertThat(fromHelper).isEqualTo(fromRealRun);
     }
 
-    /** Runs the sample test through the JUnit extension and returns the directory it published to. */
-    private Path runSampleTest() {
-        EngineTestKit.engine("junit-jupiter")
-                .selectors(selectClass(StructureSampleTest.class))
-                .enableImplicitConfigurationParameters(true)
-                .outputDirectoryCreator(intoRealRunDir())
-                .execute();
-        return realRunDir;
-    }
-
-    private @NonNull OutputDirectoryCreator intoRealRunDir() {
-        return new OutputDirectoryCreator() {
-            @Override
-            public Path getRootDirectory() {
-                return realRunDir;
-            }
-
-            @Override
-            public Path createOutputDirectory(TestDescriptor testDescriptor) {
-                return realRunDir;
-            }
-        };
-    }
-
     /**
-     * Run only by the fidelity test above, through EngineTestKit — a static nested class is not
-     * picked up by the surrounding test run, so it publishes no page of its own.
+     * Run only through {@link SampleRun} — a static nested class is not picked up by the
+     * surrounding test run, so it publishes no page of its own.
      */
     @ExtendWith(TableTestPublisher.class)
     static class StructureSampleTest {
