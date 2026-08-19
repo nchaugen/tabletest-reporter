@@ -23,6 +23,9 @@ features:
     description: >
       The shape of the published report: which pages exist, where the tree is rooted, and how
       deep the indexes go. The same in every format.
+    features:                # the tree first, then how much of it gets an index page
+      - name: the-page-tree
+      - name: the-indexdepth-option
   - name: pages
     title: "Page contents"
     description: >
