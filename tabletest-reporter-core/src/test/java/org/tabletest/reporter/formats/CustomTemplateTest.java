@@ -34,7 +34,7 @@ class CustomTemplateTest {
     @TempDir
     Path workingDir;
 
-    @DisplayName("Uses a template of your own when it is named for the page it renders")
+    @DisplayName("Uses your template when it is named for the page it renders")
     @Description("""
             The name says which page a template renders: table or index, then the format. A file
             with exactly that name replaces the built-in one; a file whose name ends in it is used
@@ -61,7 +61,7 @@ class CustomTemplateTest {
         assertThat(tablePageWith(templates, "markdown")).isEqualTo(page);
     }
 
-    @DisplayName("Lets a template of your own extend a built-in one and fill its blocks")
+    @DisplayName("Lets your template extend a built-in one and fill its blocks")
     @Description("""
             Replacing a template means rewriting the page. Extending one means naming the built-in
             template and filling only the blocks it leaves open — frontMatter above the page, title

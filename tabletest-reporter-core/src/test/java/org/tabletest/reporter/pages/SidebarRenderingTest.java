@@ -32,7 +32,7 @@ class SidebarRenderingTest {
     @TempDir
     Path workingDir;
 
-    @DisplayName("Carries the whole report on every page, with the page's own entry marked")
+    @DisplayName("Carries the whole report on every page, marking where you are")
     @Description("""
             The entries are the same wherever the reader is standing; what moves is which one is
             marked as the page they are on, and where the links point — each is relative to the

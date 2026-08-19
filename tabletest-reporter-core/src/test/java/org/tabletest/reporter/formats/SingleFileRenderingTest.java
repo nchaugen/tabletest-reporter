@@ -39,7 +39,7 @@ class SingleFileRenderingTest {
     @TempDir
     Path workingDir;
 
-    @DisplayName("Writes one file in single-file mode where the default writes a tree")
+    @DisplayName("Writes one file where the default writes a tree")
     @Description("""
             The default report writes a page per index and per table, plus the search index as a
             script beside them. Single-file mode writes index.html and nothing else — the same
@@ -97,7 +97,7 @@ class SingleFileRenderingTest {
                 .contains(link);
     }
 
-    @DisplayName("Heads each section at its depth in the report, and no deeper than six")
+    @DisplayName("Heads each section at its depth, and no deeper than six")
     @Description("""
             The one file has to carry the outline the tree carried, so a section is headed one
             level below the section it sits in. HTML stops at h6, so a report deep enough to need

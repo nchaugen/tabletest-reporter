@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         """)
 class IndexDepthTest {
 
-    @DisplayName("Reads indexDepth as the number of levels given their own index page")
+    @DisplayName("Reads indexDepth as a count of index levels")
     @Description("""
             The number counts the levels indexed before the rest of the tree is flattened onto
             one page, so a depth of one indexes the top level only.
@@ -34,7 +34,7 @@ class IndexDepthTest {
         assertThat(IndexDepth.parse(optionValue).value()).isEqualTo(indexDepth);
     }
 
-    @DisplayName("Reads the infinite keyword, and an option left unset, as unlimited depth")
+    @DisplayName("Treats the keyword, and an unset option, as unlimited depth")
     @Description("""
             The keyword is case-insensitive, and an option that was never set — absent, empty,
             or blank — means the same as the keyword: every feature level gets its own index
@@ -100,7 +100,7 @@ class IndexDepthTest {
         }
     }
 
-    @DisplayName("Refuses an indexDepth value that is neither a number nor the keyword")
+    @DisplayName("Refuses a value that is neither a number nor the keyword")
     @Description("""
             The message repeats the value it could not read and names what it would have
             accepted. A value that does read as a number but is out of range is the shallowest

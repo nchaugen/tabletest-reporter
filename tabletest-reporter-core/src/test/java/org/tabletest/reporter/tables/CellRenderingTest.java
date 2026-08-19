@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         """)
 public class CellRenderingTest {
 
-    @DisplayName("Publishes a markdown cell in the notation the value was written in")
+    @DisplayName("Publishes a markdown cell in the notation you wrote it in")
     @Description("""
             Markdown writes a collection back in the notation a table uses — square brackets for
             a list, braces for a set, key: value pairs for a map, nested to any depth — so a

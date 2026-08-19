@@ -36,7 +36,7 @@ class RolesAndResultsTest {
     @TempDir
     Path workingDir;
 
-    @DisplayName("Marks the column naming the scenario and the column holding the expectation")
+    @DisplayName("Marks a column by where it sits and how its header ends")
     @Description("""
             A table with more columns than the test method has parameters spends its first column
             on the scenario name, so that column is marked as the scenario and never passed to the
@@ -56,7 +56,7 @@ class RolesAndResultsTest {
         assertThat(headerCellOf(LeapYearSample.class, "html", column)).isEqualTo(inHtml);
     }
 
-    @DisplayName("Marks the column of a parameter annotated @Scenario, wherever it sits")
+    @DisplayName("Follows a @Scenario annotation to the column it names")
     @Description("""
             Spending the first column is a convention, not a requirement. A test that takes every
             column as a parameter can still name one of them the scenario by annotating it with
@@ -77,30 +77,33 @@ class RolesAndResultsTest {
         assertThat(headerCellOf(AnnotatedScenarioSample.class, "html", column)).isEqualTo(inHtml);
     }
 
-    @DisplayName("Marks a column as the expectation when its header matches the expectation pattern")
+    @DisplayName("Chooses the expectation column by the header pattern")
     @Description("""
             The question mark is only the default. The pattern is the JUnit configuration
             parameter tabletest.reporter.expectation.pattern, matched against the whole header, so
             a project that words its expectations differently can say so once. Setting it replaces
-            the default rather than adding to it. Which column gets the mark is decided before any
-            format renders it, so this rule is read off the HTML page alone; where each format then
-            puts the mark is the rule above. Read off ExpectationPatternSample:
-        Scenario | Year | Leap? | Expected note.
+            the default rather than adding to it — under a pattern of your own, a header ending in
+            a question mark is an ordinary column again. Read off ExpectationPatternSample:
+            Scenario | Year | Leap? | Expected note.
             """)
     @TableTest("""
-        Scenario              | Expectation pattern | Column        | Holds the expectation?
-        The default pattern   |                     | Leap?         | true
-        The default pattern   |                     | Expected note | false
-        A pattern of your own | '^Expected.*'       | Leap?         | false
-        A pattern of your own | '^Expected.*'       | Expected note | true
+        Scenario                           | Expectation pattern | Column        | In markdown?  | In AsciiDoc?                        | In HTML?
+        A query header, by default         |                     | Leap?         | Leap?         | '[.expectation]#++Leap?++#'         | '<th class="cell expectation"><span class="literal">Leap?</span></th>'
+        A wordy header, by default         |                     | Expected note | Expected note | '++Expected note++'                 | '<th class="cell"><span class="literal">Expected note</span></th>'
+        A query header, under your pattern | '^Expected.*'       | Leap?         | Leap?         | '++Leap?++'                         | '<th class="cell"><span class="literal">Leap?</span></th>'
+        A wordy header, under your pattern | '^Expected.*'       | Expected note | Expected note | '[.expectation]#++Expected note++#' | '<th class="cell expectation"><span class="literal">Expected note</span></th>'
         """)
-    void marksTheColumnMatchingTheExpectationPattern(String expectationPattern, String column, boolean holds) {
-        PublishedTable published = publishedTableOfRunWith(ExpectationPatternSample.class, expectationPattern);
-
-        assertThat("expectation".equals(published.markOf(column))).isEqualTo(holds);
+    void marksTheColumnMatchingTheExpectationPattern(
+            String expectationPattern, String column, String inMarkdown, String inAsciiDoc, String inHtml) {
+        assertThat(headerCellOfRunWith(ExpectationPatternSample.class, expectationPattern, "markdown", column))
+                .isEqualTo(inMarkdown);
+        assertThat(headerCellOfRunWith(ExpectationPatternSample.class, expectationPattern, "asciidoc", column))
+                .isEqualTo(inAsciiDoc);
+        assertThat(headerCellOfRunWith(ExpectationPatternSample.class, expectationPattern, "html", column))
+                .isEqualTo(inHtml);
     }
 
-    @DisplayName("Marks every cell of a row with the verdict the row ran to")
+    @DisplayName("Records a row's verdict on every cell of it")
     @Description("""
             The report is generated from a test run, so it publishes what happened, not only what
             was written: every cell of a row carries that row's verdict, which is what lets a
@@ -162,12 +165,13 @@ class RolesAndResultsTest {
         return PublishedTable.of(SampleRun.outputFor(sampleClass, workingDir), format, workingDir);
     }
 
-    /** The HTML page of a run configured with an expectation pattern of the project's own. */
-    private PublishedTable publishedTableOfRunWith(Class<?> sampleClass, String expectationPattern) {
+    /** The published header of a run configured with an expectation pattern of the project's own. */
+    private String headerCellOfRunWith(Class<?> sampleClass, String expectationPattern, String format, String column) {
         Map<String, String> configuration = expectationPattern == null
                 ? Map.of()
                 : Map.of("tabletest.reporter.expectation.pattern", expectationPattern);
-        return PublishedTable.of(SampleRun.outputFor(sampleClass, configuration, workingDir), "html", workingDir);
+        return PublishedTable.of(SampleRun.outputFor(sampleClass, configuration, workingDir), format, workingDir)
+                .headerCellOf(column);
     }
 
     /**
