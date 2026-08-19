@@ -11,7 +11,7 @@
 # ("reporter") and each group page by its lowercase package name. The groups are listed in the
 # order the reporter works in — the report, then a page of it, then a table on that page, then
 # the format it is all written in — rather than alphabetically.
-title: "TableTest Reporter — Specification"
+title: "TableTest Reporter"
 intro: >
   How TableTest results become a published specification: what each page contains, how a table
   and its results are rendered, and what the reporter's options do. Every rule below is
