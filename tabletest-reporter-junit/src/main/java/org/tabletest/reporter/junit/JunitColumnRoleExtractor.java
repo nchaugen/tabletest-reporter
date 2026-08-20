@@ -16,6 +16,7 @@
 package org.tabletest.reporter.junit;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.tabletest.junit.ParameterType;
 import org.tabletest.junit.Scenario;
 import org.tabletest.parser.Table;
 
@@ -39,6 +40,21 @@ final class JunitColumnRoleExtractor {
 
     static ColumnRoles extract(ExtensionContext context, Table table) {
         return new ColumnRoles(findScenarioIndex(context, table), findExpectationIndices(context, table));
+    }
+
+    /**
+     * Collects the columns whose set value expands the row. A column expands when the parameter
+     * bound to it is not itself a set.
+     */
+    static ExpandingColumns extractExpanding(ExtensionContext context, Table table) {
+        Parameter[] parameters = context.getRequiredTestMethod().getParameters();
+        int unboundColumns = Math.max(0, table.columnCount() - parameters.length);
+
+        return new ExpandingColumns(IntStream.range(0, parameters.length)
+                .filter(index -> !ParameterType.of(parameters[index]).isSet())
+                .map(index -> index + unboundColumns)
+                .boxed()
+                .collect(Collectors.toSet()));
     }
 
     /**

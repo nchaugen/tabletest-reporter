@@ -33,52 +33,123 @@ public record TableMetadata(
         String description,
         ColumnRoles columnRoles,
         DeclaredColumnRoles declaredColumnRoles,
+        ExpandingColumns expandingColumns,
         RowRoles rowRoles,
         List<RowResult> rowResults) {
     public TableMetadata {
         columnRoles = columnRoles != null ? columnRoles : ColumnRoles.NO_ROLES;
         declaredColumnRoles = declaredColumnRoles != null ? declaredColumnRoles : DeclaredColumnRoles.NONE;
+        expandingColumns = expandingColumns != null ? expandingColumns : ExpandingColumns.NONE;
         rowRoles = rowRoles != null ? rowRoles : RowRoles.NO_ROLES;
         rowResults = rowResults != null ? rowResults : List.of();
     }
 
     public TableMetadata() {
-        this(null, null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null, null);
     }
 
     public TableMetadata withMethodName(String methodName) {
         return new TableMetadata(
-                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
+                methodName,
+                slug,
+                title,
+                description,
+                columnRoles,
+                declaredColumnRoles,
+                expandingColumns,
+                rowRoles,
+                rowResults);
     }
 
     public TableMetadata withSlug(String slug) {
         return new TableMetadata(
-                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
+                methodName,
+                slug,
+                title,
+                description,
+                columnRoles,
+                declaredColumnRoles,
+                expandingColumns,
+                rowRoles,
+                rowResults);
     }
 
     public TableMetadata withTitle(String title) {
         return new TableMetadata(
-                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
+                methodName,
+                slug,
+                title,
+                description,
+                columnRoles,
+                declaredColumnRoles,
+                expandingColumns,
+                rowRoles,
+                rowResults);
     }
 
     public TableMetadata withDescription(String description) {
         return new TableMetadata(
-                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
+                methodName,
+                slug,
+                title,
+                description,
+                columnRoles,
+                declaredColumnRoles,
+                expandingColumns,
+                rowRoles,
+                rowResults);
+    }
+
+    public TableMetadata withExpandingColumns(ExpandingColumns expandingColumns) {
+        return new TableMetadata(
+                methodName,
+                slug,
+                title,
+                description,
+                columnRoles,
+                declaredColumnRoles,
+                expandingColumns,
+                rowRoles,
+                rowResults);
     }
 
     public TableMetadata withDeclaredColumnRoles(DeclaredColumnRoles declaredColumnRoles) {
         return new TableMetadata(
-                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
+                methodName,
+                slug,
+                title,
+                description,
+                columnRoles,
+                declaredColumnRoles,
+                expandingColumns,
+                rowRoles,
+                rowResults);
     }
 
     public TableMetadata withColumnRoles(ColumnRoles columnRoles) {
         return new TableMetadata(
-                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
+                methodName,
+                slug,
+                title,
+                description,
+                columnRoles,
+                declaredColumnRoles,
+                expandingColumns,
+                rowRoles,
+                rowResults);
     }
 
     public TableMetadata withRowResults(List<RowResult> rowResults) {
         return new TableMetadata(
-                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
+                methodName,
+                slug,
+                title,
+                description,
+                columnRoles,
+                declaredColumnRoles,
+                expandingColumns,
+                rowRoles,
+                rowResults);
     }
 
     /**
@@ -92,8 +163,7 @@ public record TableMetadata(
         List<Row> rows = table.rows();
         List<RowData> rowData = range(0, rows.size())
                 .mapToObj(rowIndex -> new RowData(range(0, table.columnCount())
-                        .mapToObj(colIndex ->
-                                new CellData(rows.get(rowIndex).value(colIndex), combineRoles(colIndex, rowIndex)))
+                        .mapToObj(colIndex -> cellOf(rows.get(rowIndex).value(colIndex), colIndex, rowIndex))
                         .toList()))
                 .toList();
 
@@ -113,11 +183,26 @@ public record TableMetadata(
      * Combines column roles and row roles into a single set for the given indices. Maintains order: column roles first
      * (expectation, scenario), then row roles (passed, failed).
      */
-    private Set<String> combineRoles(int colIndex, int rowIndex) {
+    private CellData cellOf(Object value, int colIndex, int rowIndex) {
+        return new CellData(value, combineRoles(colIndex, rowIndex, value));
+    }
+
+    /**
+     * @return true if this cell's set value expands the row into one run per value, rather than
+     * reaching the test as a set.
+     */
+    private boolean isValueSet(Object value, int colIndex) {
+        return value instanceof Set && expandingColumns.expands(colIndex);
+    }
+
+    private Set<String> combineRoles(int colIndex, int rowIndex, Object value) {
         Set<String> combined = new LinkedHashSet<>();
         combined.addAll(tokensOf(columnRoles.roleFor(colIndex)));
         combined.addAll(tokensOf(rowRoles.roleFor(rowIndex)));
         combined.addAll(declaredColumnRoles.rolesFor(colIndex));
+        if (isValueSet(value, colIndex)) {
+            combined.add(CellRole.VALUE_SET.token());
+        }
         return unmodifiableSet(combined);
     }
 

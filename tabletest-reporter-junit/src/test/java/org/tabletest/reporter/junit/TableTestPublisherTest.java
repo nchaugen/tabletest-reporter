@@ -297,6 +297,7 @@ class TableTestPublisherTest {
                       "3": !!null "null"
                     "roles":
                     - "failed"
+                    - "value-set"
                   - "value": "5"
                     "roles":
                     - "expectation"
@@ -368,6 +369,8 @@ class TableTestPublisherTest {
                   - "value": !!set
                       "2": !!null "null"
                       "3": !!null "null"
+                    "roles":
+                    - "value-set"
                   - "value": "5"
                     "roles":
                     - "expectation"

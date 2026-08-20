@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Added
+- A cell whose set expands its row is now marked `value-set` in the published report. A published
+  table shows no parameters, so `{a, b}` reads the same whether it expands the row into one run per
+  value or is a `Set` the test receives whole. The reporter tells them apart the way the runtime
+  does — a set value against a parameter that is not a set expands — and the built-in HTML
+  stylesheet labels the cell "any of". Markdown carries no roles, so the two stay alike there.
 - `@Lines` marks a column whose cells hold the lines of one block of text. The parameter receives
   the lines joined by newlines (or the lines themselves, for a `List` parameter), and the HTML
   report renders the cell as a stacked monospace block rather than a bulleted list, so text whose

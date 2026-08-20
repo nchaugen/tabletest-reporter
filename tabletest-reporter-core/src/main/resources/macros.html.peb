@@ -502,6 +502,13 @@ td.failed.expectation { background: var(--fail-wash); }
 .coll.map > dt::after { content: ":"; color: var(--marker); }
 .coll.map > dd { margin: 0; }
 
+/* A value set expands its row into one run per value, rather than reaching the test as a
+   set. A reader cannot tell the two apart from the cell alone, so the cell says which it is. */
+td.cell.value-set .coll.set::before {
+    content: "any of"; display: block; font-size: 0.75em; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--ink-soft); margin-bottom: 0.15rem;
+}
+
 /* A `lines` column holds the lines of one block of text, so its cells stack as written:
    no list markers, no gaps, monospaced, and whitespace preserved rather than collapsed.
    Body cells only — the header carries the role so a stylesheet can select the column,

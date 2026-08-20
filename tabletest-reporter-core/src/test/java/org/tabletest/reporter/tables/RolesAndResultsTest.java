@@ -14,6 +14,7 @@ import org.tabletest.reporter.support.SampleRun;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -141,6 +142,33 @@ class RolesAndResultsTest {
         assertThat(verdictOf(LeapYearSample.class, "markdown", row)).isNull();
     }
 
+    @DisplayName("Marks a set that expands the row into one run per value")
+    @Description("""
+            A set in a cell means one of two things. Where the parameter is not a set, the row runs
+            once per value. Where the parameter is a set, the test receives the whole set as one
+            argument.
+
+            The published table shows no parameters, so the two cells read alike. The reporter
+            marks the expanding one, which is the only thing that tells a reader them apart.
+            Markdown carries no marks at all, so there the two stay indistinguishable.
+
+            The AsciiDoc column holds the attribute line alone, because AsciiDoc opens a bulleted
+            block below the cell for a collection, and only that line carries the marks.
+
+            Read off ValueSetSample: Any year | Known leap years, over a method taking an int and a
+            Set.
+            """)
+    @TableTest("""
+        Scenario                   | Column           | In markdown?   | In AsciiDoc?          | In HTML?
+        A set that expands the row | Any year         | '{2004, 2008}' | '[.passed.value-set]' | '<td class="cell passed value-set"><ul class="coll set"><li><span class="literal">2004</span></li><li><span class="literal">2008</span></li></ul></td>'
+        A set the test receives    | Known leap years | '{2000, 2004}' | '[.passed]'           | '<td class="cell passed"><ul class="coll set"><li><span class="literal">2000</span></li><li><span class="literal">2004</span></li></ul></td>'
+        """)
+    void marksASetThatExpandsTheRow(String column, String inMarkdown, String inAsciiDoc, String inHtml) {
+        assertThat(columnCellOf(ValueSetSample.class, "markdown", column)).isEqualTo(inMarkdown);
+        assertThat(columnCellOf(ValueSetSample.class, "asciidoc", column)).isEqualTo(inAsciiDoc);
+        assertThat(columnCellOf(ValueSetSample.class, "html", column)).isEqualTo(inHtml);
+    }
+
     @DisplayName("Publishes a broken row's message below the table")
     @Description("""
             A row that broke is listed again below the table, with the message it failed on. A reader
@@ -171,6 +199,11 @@ class RolesAndResultsTest {
     /** The Year cell of the named row — one cell standing for a row whose cells all agree. */
     private String cellOf(Class<?> sampleClass, String format, String row) {
         return publishedTableOf(sampleClass, format).cellOf(row, "Year");
+    }
+
+    /** The named column's cell in the sample's only row. */
+    private String columnCellOf(Class<?> sampleClass, String format, String column) {
+        return publishedTableOf(sampleClass, format).cellOf("Years that leap", column);
     }
 
     private String verdictOf(Class<?> sampleClass, String format, String row) {
@@ -238,5 +271,19 @@ class RolesAndResultsTest {
 
     private static boolean isLeap(int year) {
         return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    }
+
+    /** One column expands its set into runs; the other is a Set the test receives whole. */
+    @ExtendWith(TableTestPublisher.class)
+    static class ValueSetSample {
+
+        @TableTest("""
+            Scenario        | Any year     | Known leap years | Leap?
+            Years that leap | {2004, 2008} | {2000, 2004}     | Yes
+            """)
+        void leapYears(int year, Set<Integer> knownLeapYears, String leap) {
+            assertThat(knownLeapYears.contains(year) || isLeap(year) ? "Yes" : "No")
+                    .isEqualTo(leap);
+        }
     }
 }

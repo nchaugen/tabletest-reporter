@@ -19,7 +19,8 @@ public enum CellRole {
     EXPECTATION,
     SCENARIO,
     PASSED,
-    FAILED;
+    FAILED,
+    VALUE_SET;
 
     /**
      * @return the token this role is published as, one of the four names the reporter derives
@@ -27,6 +28,6 @@ public enum CellRole {
      * is carried as a token alongside these rather than as an enum constant.
      */
     public String token() {
-        return name().toLowerCase(java.util.Locale.ROOT);
+        return name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');
     }
 }

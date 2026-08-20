@@ -29,6 +29,7 @@ final class TableTestDataFactory {
             TableTestIdentity identity,
             ColumnRoles columnRoles,
             DeclaredColumnRoles declaredColumnRoles,
+            ExpandingColumns expandingColumns,
             List<RowResult> rowResults) {
         ColumnRoles resolvedColumnRoles = columnRoles != null ? columnRoles : ColumnRoles.NO_ROLES;
         List<RowResult> resolvedResults = rowResults != null ? rowResults : List.of();
@@ -46,6 +47,7 @@ final class TableTestDataFactory {
                         description,
                         resolvedColumnRoles,
                         declaredColumnRoles,
+                        expandingColumns,
                         rowRoles,
                         resolvedResults)
                 .toTableTestData(table);
