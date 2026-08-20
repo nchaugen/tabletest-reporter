@@ -9,6 +9,7 @@ import org.tabletest.reporter.support.SampleRun;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,10 +32,10 @@ class ReportStructureFidelityTest {
 
     @Test
     void helperBuildsTheSamePagesARealRunDoes() {
-        List<String> fromRealRun =
-                ReportStructure.pagesOf(ReportTree.process(SampleRun.outputFor(StructureSampleTest.class, workingDir)));
+        Map<String, Object> fromRealRun = ReportStructure.pageTreeOf(
+                ReportTree.process(SampleRun.outputFor(StructureSampleTest.class, workingDir)));
 
-        List<String> fromHelper = ReportStructure.pagesFor(SAME_TABLES, workingDir);
+        Map<String, Object> fromHelper = ReportStructure.pageTreeFor(SAME_TABLES, workingDir);
 
         assertThat(fromHelper).isEqualTo(fromRealRun);
     }

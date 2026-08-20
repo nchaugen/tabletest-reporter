@@ -24,11 +24,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Custom templates")
 @Description("""
-        A report is rendered by Pebble templates, and a project can supply its own: point the
-        reporter at a template directory and the files in it are used in place of, or on top of,
-        the built-in ones. The rules below are read off a report of one test class titled Calendar
-        with one table titled Leap years — Year | Leap? over one row, 2004 | Yes — so a page is
-        short enough to state whole.
+        Pebble templates render a report. A project can supply its own: point the reporter at a
+        template directory, and the reporter uses the files in it in place of, or on top of, the
+        built-in templates.
+
+        The rules below are read off a report of one test class named Calendar. That class holds
+        one table named Leap years, with the columns Year and Leap? and one row, 2004 and Yes. A
+        report that small lets a rule state a whole page.
         """)
 class CustomTemplateTest {
 
@@ -37,29 +39,32 @@ class CustomTemplateTest {
 
     @DisplayName("Uses your template when it is named for the page it renders")
     @Description("""
-            The name says which page a template renders: table or index, then the format. A file
-            with exactly that name replaces the built-in one; a file whose name ends in it is used
-            just the same, which is the form to reach for when the template extends the built-in,
-            since a template cannot extend itself. A name for a different page is left for that
-            page. Every template of your own below holds the same two lines:
+            The file name says which page a template renders: table or index, then the format. A
+            file with exactly that name replaces the built-in template. A file whose name ends in
+            a hyphen and that name replaces it too.
 
-                # {{ title }}
+            Reach for the second form when your template extends the built-in one, because a
+            template cannot extend itself.
 
-                Written by hand.
+            The reporter fills each slot on its own, so a template named for one page leaves the
+            other page to the built-in template.
             """)
     @TableTest("""
-        Scenario                   | Template file   | Page?
-        No template of your own    |                 | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |']
-        Named for the page         | table.md.peb    | ['# Leap years', 'Written by hand.']
-        Named ending in the page   | my-table.md.peb | ['# Leap years', 'Written by hand.']
-        Named for a different page | index.md.peb    | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |']
+        Scenario                      | Template file   | Template holds                            | Table page?                                                                  | Index page?
+        No template of your own       |                 |                                           | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', '', '* [Leap years](./leap-years.md)']
+        Named for the table page      | table.md.peb    | ['# {{ title }}', '', 'Written by hand.'] | ['# Leap years', 'Written by hand.']                                         | ['# Calendar', '', '* [Leap years](./leap-years.md)']
+        Name ending in the table page | my-table.md.peb | ['# {{ title }}', '', 'Written by hand.'] | ['# Leap years', 'Written by hand.']                                         | ['# Calendar', '', '* [Leap years](./leap-years.md)']
+        Named for the index page      | index.md.peb    | ['# {{ title }}', '', 'Written by hand.'] | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', 'Written by hand.']
         """)
-    void usesATemplateNamedForThePageItRenders(String templateFile, @Lines List<String> page) {
-        Path templates = templateFile == null
-                ? null
-                : templateDirectoryHolding(templateFile, "# {{ title }}\n\nWritten by hand.\n");
+    void usesATemplateNamedForThePageItRenders(
+            String templateFile,
+            @Lines String templateHolds,
+            @Lines List<String> tablePage,
+            @Lines List<String> indexPage) {
+        Path templates = templateDirectoryHolding(templateFile, templateHolds);
 
-        assertThat(tablePageWith(templates, "markdown")).isEqualTo(page);
+        assertThat(tablePageWith(templates, "markdown")).isEqualTo(tablePage);
+        assertThat(indexPageWith(templates, "markdown")).isEqualTo(indexPage);
     }
 
     @DisplayName("Lets your template extend a built-in one and fill its blocks")
@@ -144,7 +149,11 @@ class CustomTemplateTest {
             """.formatted(blockName, filledWith);
     }
 
+    /** The directory holding one template file, or no directory at all when no file is named. */
     private Path templateDirectoryHolding(String fileName, String content) {
+        if (fileName == null) {
+            return null;
+        }
         try {
             Path directory = Files.createTempDirectory(workingDir, "templates");
             Files.writeString(directory.resolve(fileName), content);
@@ -156,6 +165,10 @@ class CustomTemplateTest {
 
     private List<String> tablePageWith(Path templates, String format) {
         return pageWith(templates, format, false);
+    }
+
+    private List<String> indexPageWith(Path templates, String format) {
+        return pageWith(templates, format, true);
     }
 
     private List<String> pageWith(Path templates, String format, boolean index) {
