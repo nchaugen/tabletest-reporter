@@ -32,40 +32,53 @@ public record TableMetadata(
         String title,
         String description,
         ColumnRoles columnRoles,
+        DeclaredColumnRoles declaredColumnRoles,
         RowRoles rowRoles,
         List<RowResult> rowResults) {
     public TableMetadata {
         columnRoles = columnRoles != null ? columnRoles : ColumnRoles.NO_ROLES;
+        declaredColumnRoles = declaredColumnRoles != null ? declaredColumnRoles : DeclaredColumnRoles.NONE;
         rowRoles = rowRoles != null ? rowRoles : RowRoles.NO_ROLES;
         rowResults = rowResults != null ? rowResults : List.of();
     }
 
     public TableMetadata() {
-        this(null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null);
     }
 
     public TableMetadata withMethodName(String methodName) {
-        return new TableMetadata(methodName, slug, title, description, columnRoles, rowRoles, rowResults);
+        return new TableMetadata(
+                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
     }
 
     public TableMetadata withSlug(String slug) {
-        return new TableMetadata(methodName, slug, title, description, columnRoles, rowRoles, rowResults);
+        return new TableMetadata(
+                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
     }
 
     public TableMetadata withTitle(String title) {
-        return new TableMetadata(methodName, slug, title, description, columnRoles, rowRoles, rowResults);
+        return new TableMetadata(
+                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
     }
 
     public TableMetadata withDescription(String description) {
-        return new TableMetadata(methodName, slug, title, description, columnRoles, rowRoles, rowResults);
+        return new TableMetadata(
+                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
+    }
+
+    public TableMetadata withDeclaredColumnRoles(DeclaredColumnRoles declaredColumnRoles) {
+        return new TableMetadata(
+                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
     }
 
     public TableMetadata withColumnRoles(ColumnRoles columnRoles) {
-        return new TableMetadata(methodName, slug, title, description, columnRoles, rowRoles, rowResults);
+        return new TableMetadata(
+                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
     }
 
     public TableMetadata withRowResults(List<RowResult> rowResults) {
-        return new TableMetadata(methodName, slug, title, description, columnRoles, rowRoles, rowResults);
+        return new TableMetadata(
+                methodName, slug, title, description, columnRoles, declaredColumnRoles, rowRoles, rowResults);
     }
 
     /**
@@ -91,7 +104,9 @@ public record TableMetadata(
     }
 
     private Set<String> columnRolesFor(int colIndex) {
-        return tokensOf(columnRoles.roleFor(colIndex));
+        Set<String> combined = new LinkedHashSet<>(tokensOf(columnRoles.roleFor(colIndex)));
+        combined.addAll(declaredColumnRoles.rolesFor(colIndex));
+        return unmodifiableSet(combined);
     }
 
     /**
@@ -102,6 +117,7 @@ public record TableMetadata(
         Set<String> combined = new LinkedHashSet<>();
         combined.addAll(tokensOf(columnRoles.roleFor(colIndex)));
         combined.addAll(tokensOf(rowRoles.roleFor(rowIndex)));
+        combined.addAll(declaredColumnRoles.rolesFor(colIndex));
         return unmodifiableSet(combined);
     }
 

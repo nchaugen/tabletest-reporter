@@ -25,7 +25,11 @@ import java.util.List;
 final class TableTestDataFactory {
 
     static TableTestData create(
-            Table table, TableTestIdentity identity, ColumnRoles columnRoles, List<RowResult> rowResults) {
+            Table table,
+            TableTestIdentity identity,
+            ColumnRoles columnRoles,
+            DeclaredColumnRoles declaredColumnRoles,
+            List<RowResult> rowResults) {
         ColumnRoles resolvedColumnRoles = columnRoles != null ? columnRoles : ColumnRoles.NO_ROLES;
         List<RowResult> resolvedResults = rowResults != null ? rowResults : List.of();
         RowRoles rowRoles = new RowRoles(table, resolvedResults, resolvedColumnRoles);
@@ -35,7 +39,15 @@ final class TableTestDataFactory {
         String title = identity != null ? identity.title() : null;
         String description = identity != null ? identity.description() : null;
 
-        return new TableMetadata(methodName, slug, title, description, resolvedColumnRoles, rowRoles, resolvedResults)
+        return new TableMetadata(
+                        methodName,
+                        slug,
+                        title,
+                        description,
+                        resolvedColumnRoles,
+                        declaredColumnRoles,
+                        rowRoles,
+                        resolvedResults)
                 .toTableTestData(table);
     }
 }

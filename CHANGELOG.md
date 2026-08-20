@@ -3,6 +3,13 @@
 ## [Unreleased]
 
 ### Added
+- A test parameter can now declare a role for its column, and the reporter publishes it on every
+  cell of that column. Annotate an annotation of your own with `@ColumnRole` and put it on the
+  parameter; the role is published as the annotation's simple name in kebab case, or as the token
+  `@ColumnRole("...")` names. Published roles reach the HTML report as CSS classes and the AsciiDoc
+  report as element roles, so a stylesheet of yours can style a column the reporter knows nothing
+  about. `scenario`, `expectation`, `passed` and `failed` are still derived by the reporter itself;
+  a declared role is published alongside them without being treated as one.
 - A table wide enough to scroll sideways now says so: the scroll box keeps a visible slim
   scrollbar, and a shaded edge appears on whichever side has more table beyond it. Previously the
   box scrolled silently — on a platform with overlay scrollbars a reader had no way to tell the

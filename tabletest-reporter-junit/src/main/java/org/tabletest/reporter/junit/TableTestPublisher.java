@@ -175,6 +175,7 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
                 table,
                 new TableTestIdentity(identity.methodName(), uniqueSlug, identity.title(), identity.description()),
                 JunitColumnRoleExtractor.extract(methodContext, table),
+                JunitColumnRoleExtractor.extractDeclared(methodContext, table),
                 rowResults);
     }
 

@@ -28,6 +28,10 @@ import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
 
 import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -409,6 +413,79 @@ class TableTestPublisherTest {
         }
     }
 
+    @Test
+    void shouldPublishRolesDeclaredByParameterAnnotations() throws IOException {
+        var results = EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(DeclaredColumnRolesTest.class))
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
+
+        results.testEvents()
+                .assertStatistics(stats -> stats.started(2).succeeded(2).failed(0));
+
+        Path yamlFile = findExpectedYamlFile(tempDir, "Declared column roles");
+        assertEquals("""
+                "methodName": "declaredColumnRoles"
+                "slug": "declared-column-roles"
+                "title": "Declared column roles"
+                "description": "Verifying published roles declared by the parameter annotations."
+                "headers":
+                - "value": "Scenario"
+                  "roles":
+                  - "scenario"
+                - "value": "Ingredient"
+                  "roles":
+                  - "ingredient"
+                - "value": "Note"
+                  "roles":
+                  - "expectation"
+                - "value": "Portions?"
+                  "roles":
+                  - "expectation"
+                "rows":
+                - - "value": "One apple"
+                    "roles":
+                    - "scenario"
+                    - "passed"
+                  - "value": "apple"
+                    "roles":
+                    - "passed"
+                    - "ingredient"
+                  - "value": "in a basket"
+                    "roles":
+                    - "passed"
+                    - "expectation"
+                  - "value": "1"
+                    "roles":
+                    - "expectation"
+                    - "passed"
+                - - "value": "Two apples"
+                    "roles":
+                    - "scenario"
+                    - "passed"
+                  - "value": "apple"
+                    "roles":
+                    - "passed"
+                    - "ingredient"
+                  - "value": "on a plate"
+                    "roles":
+                    - "passed"
+                    - "expectation"
+                  - "value": "2"
+                    "roles":
+                    - "expectation"
+                    - "passed"
+                "rowResults":
+                - "rowIndex": !!int "1"
+                  "passed": !!bool "true"
+                  "displayName": "[1] One apple"
+                - "rowIndex": !!int "2"
+                  "passed": !!bool "true"
+                  "displayName": "[2] Two apples"
+                """, Files.readString(yamlFile));
+    }
+
     private Path findExpectedYamlFile(Path baseDir, String name) throws IOException {
         String expectedFilename = "TABLETEST-" + Slugger.slugify(name) + ".yaml";
         try (var paths = Files.walk(baseDir)) {
@@ -565,6 +642,36 @@ class TableTestPublisherTest {
             """)
         public void collidingName(int a, int b, @Scenario int sum) {
             assertEquals(sum, a + b);
+        }
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.PARAMETER)
+    @ColumnRole
+    public @interface Ingredient {}
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.PARAMETER)
+    @ColumnRole("expectation")
+    public @interface Verdict {}
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.PARAMETER)
+    @ColumnRole("Not A Token")
+    public @interface Unpublishable {}
+
+    @ExtendWith(TableTestPublisher.class)
+    public static class DeclaredColumnRolesTest {
+        @DisplayName("Declared column roles")
+        @Description("Verifying published roles declared by the parameter annotations.")
+        @TableTest("""
+            Scenario   | Ingredient | Note        | Portions?
+            One apple  | apple      | in a basket | 1
+            Two apples | apple      | on a plate  | 2
+            """)
+        public void declaredColumnRoles(
+                @Ingredient String ingredient, @Verdict String note, @Unpublishable int portions) {
+            assertTrue(portions > 0, ingredient + " " + note);
         }
     }
 }
