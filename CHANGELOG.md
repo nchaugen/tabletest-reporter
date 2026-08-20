@@ -31,6 +31,11 @@
   of features had to be repeated on every rule beneath it.
 
 ### Fixed
+- A description with more than one paragraph now renders as more than one paragraph in HTML. HTML
+  collapses a blank line, so every paragraph of a `@Description` ran together into one block. The
+  Markdown and AsciiDoc reports were already correct. Line breaks inside a paragraph are still
+  dropped, so the text flows to the width of the page rather than to the width of the text block it
+  was written in.
 - Declaring a custom format with no name is now refused with `Format name cannot be missing`
   instead of a message reading only `name`. The blank-name and leading-dot refusals are
   unchanged.

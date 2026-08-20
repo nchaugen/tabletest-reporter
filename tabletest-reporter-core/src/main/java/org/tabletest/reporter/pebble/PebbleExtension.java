@@ -32,7 +32,8 @@ public class PebbleExtension extends AbstractExtension {
                 FilterReplicate.NAME, new FilterReplicate(),
                 FilterReplaceAll.NAME, new FilterReplaceAll(),
                 FilterReplaceInMatch.NAME, new FilterReplaceInMatch(),
-                FilterMarkWhitespace.NAME, new FilterMarkWhitespace());
+                FilterMarkWhitespace.NAME, new FilterMarkWhitespace(),
+                FilterParagraphs.NAME, new FilterParagraphs());
     }
 
     @Override

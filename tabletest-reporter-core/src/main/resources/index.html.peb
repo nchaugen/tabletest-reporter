@@ -17,7 +17,7 @@
                 <p class="verdict pass">All <span class="count">{{ status.total }}</span> scenario{{ status.total == 1 ? '' : 's' }} passing</p>
             {%- endif -%}
         {%- endif -%}
-        {% if description %}<p class="description">{{ description | escape }}</p>{% endif %}
+        {% for paragraph in description | paragraphs %}<p class="description">{{ paragraph | escape }}</p>{% endfor %}
     </header>
 
     <ul class="nav-tree">

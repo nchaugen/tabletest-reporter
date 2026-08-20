@@ -10,7 +10,7 @@
     <header class="masthead" id="top">
         {{ mastheadBar(null, nav, "Specification report") }}
         <h1>{{ title | escape }}</h1>
-        {% if description %}<p class="description">{{ description | escape }}</p>{% endif %}
+        {% for paragraph in description | paragraphs %}<p class="description">{{ paragraph | escape }}</p>{% endfor %}
     </header>
 
     {%- for section in sections -%}
@@ -18,11 +18,11 @@
         <h{{ section.level }} class="section-title">{{ section.title | escape }}</h{{ section.level }}>
         {%- if section.type == 'table' -%}
             {{ tableVerdict(section.rowResults) }}
-            {% if section.description %}<p class="description">{{ section.description | escape }}</p>{% endif %}
+            {% for paragraph in section.description | paragraphs %}<p class="description">{{ paragraph | escape }}</p>{% endfor %}
             {{ tableGrid(section.headers, section.rows) }}
             {{ tableFailures(section.rowResults, section.level < 6 ? section.level + 1 : 6) }}
         {%- else -%}
-            {% if section.description %}<p class="description">{{ section.description | escape }}</p>{% endif %}
+            {% for paragraph in section.description | paragraphs %}<p class="description">{{ paragraph | escape }}</p>{% endfor %}
         {%- endif -%}
     </section>
     {%- endfor -%}

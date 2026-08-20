@@ -13,7 +13,7 @@
         {{ mastheadBar(breadcrumbs, nav, "Specification") }}
         <h1>{{ title | escape }}</h1>
         {{ tableVerdict(rowResults) }}
-        {% if description %}<p class="description">{{ description | escape }}</p>{% endif %}
+        {% for paragraph in description | paragraphs %}<p class="description">{{ paragraph | escape }}</p>{% endfor %}
     </header>
 
     <div class="controls">
