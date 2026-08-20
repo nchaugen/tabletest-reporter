@@ -29,7 +29,7 @@ class CustomFormatTest {
             any other here; which templates it finds is a separate rule.
             """)
     @TableTest("""
-        Scenario                    | Custom format | File extension
+        Scenario                    | Custom format | File extension?
         A name of its own           | report        | .report
         A name a built-in also uses | html          | .html
         """)
@@ -44,7 +44,7 @@ class CustomFormatTest {
             wrong. No report is ever written under a name that could not name its files.
             """)
     @TableTest("""
-        Scenario                      | Format name | Error message
+        Scenario                      | Format name | Error message?
         No name at all                |             | Format name cannot be missing
         A blank name                  | ''          | Format name cannot be blank
         A name that starts with a dot | .html       | Format name cannot start with a dot: .html
