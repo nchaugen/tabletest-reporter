@@ -5,6 +5,8 @@
 <html lang="en">
 <head>
 {{ head(title) }}
+{# Style a column role of your own here; the built-in stylesheet above stays in place. #}
+<style>{% block extra_stylesheet %}{% endblock %}</style>
 </head>
 <body>
 {{ renderSidebar(nav, assetRoot) }}

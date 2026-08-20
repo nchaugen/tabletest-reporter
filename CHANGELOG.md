@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Added
+- An HTML template of your own can add to the built-in stylesheet through a new `extra_stylesheet`
+  block, without replacing it. A report carries its stylesheet inside the file, so until now a role
+  declared with `@ColumnRole` had nowhere to be styled from: the only way to reach the CSS was to
+  rewrite the whole sheet. The block is left by `table.html.peb`, `index.html.peb` and
+  `single.html.peb` alike.
 - `@Tree` marks a column whose cells hold a tree, written as a nested collection. The built-in HTML
   report then opens each level below its parent rather than beside it, with a guide line down the
   level and a connector on each entry. The default map rendering puts a key beside its value, which

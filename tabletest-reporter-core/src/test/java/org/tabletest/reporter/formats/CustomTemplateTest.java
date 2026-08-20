@@ -124,6 +124,36 @@ class CustomTemplateTest {
         assertThat(lines.getLast()).isEqualTo(endsWith);
     }
 
+    @DisplayName("Lets your template add to the built-in stylesheet")
+    @Description("""
+            The HTML report carries its stylesheet inside the file, so a role a test declares has
+            nowhere to be styled from. The extra_stylesheet block is that place: what it holds is
+            written after the built-in stylesheet, which stays where it is.
+
+            Read off a report of BinSample, whose Bins column is a list.
+            """)
+    @TableTest("""
+        Scenario                | Extra stylesheet        | Your rule in the page? | Built-in stylesheet kept?
+        No template of your own |                         | false                  | true
+        A rule of your own      | '.cell { color: red; }' | true                   | true
+        """)
+    void addsToTheBuiltInStylesheet(String extraStylesheet, boolean yourRuleInThePage, boolean builtInKept) {
+        List<String> page = htmlPageWith(extraStylesheet);
+
+        assertThat(page.stream().anyMatch(line -> line.contains("color: red"))).isEqualTo(yourRuleInThePage);
+        assertThat(page.stream().anyMatch(line -> line.contains("--font-mono"))).isEqualTo(builtInKept);
+    }
+
+    /** The HTML table page of BinSample, rendered with the extra_stylesheet block filled. */
+    private List<String> htmlPageWith(String extraStylesheet) {
+        Path templates = extraStylesheet == null
+                ? null
+                : templateDirectoryHolding(
+                        "my-table.html.peb", extending("table.html.peb", "extra_stylesheet", extraStylesheet));
+        return PublishedReport.pageLinesOf(
+                SampleRun.outputFor(BinSample.class, workingDir), "html", templates, false, workingDir);
+    }
+
     private static String extensionOf(String format) {
         return format.equals("markdown") ? "md" : "adoc";
     }
@@ -195,6 +225,21 @@ class CustomTemplateTest {
             """)
         void leapYears(int year, String leap) {
             assertThat(year % 4 == 0 ? "Yes" : "No").isEqualTo(leap);
+        }
+    }
+
+    /** A table with a list cell and a cell whose whitespace is significant. */
+    @DisplayName("Bins")
+    @ExtendWith(TableTestPublisher.class)
+    static class BinSample {
+
+        @DisplayName("Bins by waste")
+        @TableTest("""
+            Waste  | Bins?
+            'a  b' | [paper, glass]
+            """)
+        void bins(String waste, List<String> bins) {
+            assertThat(bins).hasSize(2);
         }
     }
 }

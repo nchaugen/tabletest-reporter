@@ -115,7 +115,8 @@
     {%- endif -%}
 {% endmacro %}
 
-{# to be overridable #}
+{# NOT overridable: a block inside an imported macro is unreachable from a template that
+   extends the page template. See products/reporter/gotchas/. #}
 {% macro listBullet(bulletDepth) %}
     {%- block list_bullet %} {{- '*' -}} {%- endblock %}
 {% endmacro %}
