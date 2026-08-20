@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Added
+- `@Tree` marks a column whose cells hold a tree, written as a nested collection. The built-in HTML
+  report then opens each level below its parent rather than beside it, with a guide line down the
+  level and a connector on each entry. The default map rendering puts a key beside its value, which
+  walks a deep tree sideways across the page. The cell value is unchanged, so a reader still meets
+  the notation they would write.
 - A cell whose set expands its row is now marked `value-set` in the published report. A published
   table shows no parameters, so `{a, b}` reads the same whether it expands the row into one run per
   value or is a `Set` the test receives whole. The reporter tells them apart the way the runtime

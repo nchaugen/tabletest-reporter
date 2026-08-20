@@ -5,6 +5,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 import org.tabletest.reporter.ReportStructure;
+import org.tabletest.reporter.junit.Tree;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -40,7 +41,7 @@ class ReportStructureTest {
         Two classes in sibling packages | ['pkg.orders.OrderTest#items', 'pkg.products.ProductTest#price'] | [pkg: [[orders: [[order-test: [items]]]], [products: [[product-test: [price]]]]]]
         A nested test class             | ['pkg.OrderTest$WhenEmpty#items']                                | [OrderTest: [[when-empty: [items]]]]
         """)
-    void mirrorsThePackageHierarchy(List<String> publishedTables, Map<String, Object> pageTree) {
+    void mirrorsThePackageHierarchy(List<String> publishedTables, @Tree Map<String, Object> pageTree) {
         assertThat(ReportStructure.pageTreeFor(publishedTables, workingDir)).isEqualTo(pageTree);
     }
 
@@ -55,7 +56,7 @@ class ReportStructureTest {
         A class in a sibling package      | ['com.example.orders.OrderTest#items', 'com.example.products.ProductTest#price'] | [example: [[orders: [[order-test: [items]]]], [products: [[product-test: [price]]]]]]
         Classes sharing no package at all | ['com.a.FooTest#foo', 'org.b.BarTest#bar']                                       | ['(root)': [[com: [[a: [[foo-test: [foo]]]]]], [org: [[b: [[bar-test: [bar]]]]]]]]
         """)
-    void rootsTheReportAtTheDeepestSharedPackage(List<String> publishedTables, Map<String, Object> pageTree) {
+    void rootsTheReportAtTheDeepestSharedPackage(List<String> publishedTables, @Tree Map<String, Object> pageTree) {
         assertThat(ReportStructure.pageTreeFor(publishedTables, workingDir)).isEqualTo(pageTree);
     }
 }
