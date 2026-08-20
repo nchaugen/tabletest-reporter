@@ -11,7 +11,8 @@
 - A space run at the end of a line now carries a `trailing` class alongside `sp`, so a stylesheet can
   tell the one run a whitespace-preserving layout cannot show from the ones it can. The built-in HTML
   stylesheet uses it to drop the markers from alignment padding inside a `lines` column while keeping
-  a trailing run marked. Only the class is new — the marked runs and the characters in them are
+  a trailing run marked, and to leave a blank line in such a column unmarked — it is already visible
+  as a line of the block. Only the class is new — the marked runs and the characters in them are
   unchanged.
 - A test parameter can now declare a role for its column, and the reporter publishes it on every
   cell of that column. Annotate an annotation of your own with `@ColumnRole` and put it on the

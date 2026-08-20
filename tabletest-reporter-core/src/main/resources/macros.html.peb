@@ -513,6 +513,8 @@ td.cell.lines .literal { font-family: var(--font-mono); font-size: 0.85em; white
 /* The layout already shows alignment padding, so its markers are noise here; a run at the end
    of a line is the one it cannot show, and keeps its marker. */
 td.cell.lines .literal.ws .sp:not(.trailing) { background: none; }
+/* A blank line is already visible as a line of the block, so it needs no empty-string mark. */
+td.cell.lines .literal.empty-string { visibility: hidden; }
 
 /* Failures — reads like a test log */
 .failures { margin-top: 2rem; }
