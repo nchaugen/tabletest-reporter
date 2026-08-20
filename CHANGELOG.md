@@ -8,6 +8,11 @@
   report renders the cell as a stacked monospace block rather than a bulleted list, so text whose
   alignment is the point reads as it was written. AsciiDoc publishes the role and keeps its bulleted
   list; Markdown is unchanged.
+- A space run at the end of a line now carries a `trailing` class alongside `sp`, so a stylesheet can
+  tell the one run a whitespace-preserving layout cannot show from the ones it can. The built-in HTML
+  stylesheet uses it to drop the markers from alignment padding inside a `lines` column while keeping
+  a trailing run marked. Only the class is new — the marked runs and the characters in them are
+  unchanged.
 - A test parameter can now declare a role for its column, and the reporter publishes it on every
   cell of that column. Annotate an annotation of your own with `@ColumnRole` and put it on the
   parameter; the role is published as the annotation's simple name in kebab case, or as the token
