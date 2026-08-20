@@ -14,26 +14,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Cell rendering")
 @Description("""
-        The reporter publishes the value a row actually ran with, not the text of the cell, so
-        every value has to be written back out — and each format writes it back the way that
-        format can. Where they differ the rules below show all three side by side, markdown and
-        AsciiDoc first because they are plain text and answer most questions alike, HTML last
-        because its answer is markup and always the longest.
+        The reporter publishes the value a row actually ran with, not the text of the cell. Every
+        value therefore has to be written back out, and each format writes it back the way that
+        format can.
 
-        The one thing that does not fit that shape is a collection. Only markdown can put a whole
-        collection inside a table cell: AsciiDoc opens a bulleted or description-list block below
-        the cell and HTML nests list markup inside it, neither of which is a cell a table can
-        hold. The notation rule is therefore markdown's alone until the Lines value type lands.
+        Where the formats differ, the rules below show all three side by side. Markdown and
+        AsciiDoc come first, because they are plain text and answer most questions alike. HTML
+        comes last, because its answer is markup and always the longest.
+
+        A collection does not fit that shape. Only markdown can put a whole collection inside a
+        table cell. AsciiDoc opens a bulleted or description-list block below the cell, and HTML
+        nests list markup inside it. Neither is a cell a table can hold, so the notation rule is
+        markdown's alone.
         """)
 public class CellRenderingTest {
 
     @DisplayName("Publishes a markdown cell in the notation you wrote it in")
     @Description("""
-            Markdown writes a collection back in the notation a table uses — square brackets for
-            a list, braces for a set, key: value pairs for a map, nested to any depth — so a
-            reader of the published spec sees the value spelled the way they would spell it
-            themselves. Below, Cell is what a table row holds and Published cell is what the
-            markdown report shows for it.
+            Markdown writes a collection back in the notation a table uses: square brackets for a
+            list, braces for a set, key: value pairs for a map, nested to any depth. A reader of the
+            published spec therefore sees the value spelled the way they would spell it themselves.
+
+            Below, Cell is what a table row holds. Published cell is what the markdown report shows
+            for it.
             """)
     @TableTest("""
         Scenario             | Cell                  | Published cell?
@@ -55,11 +58,13 @@ public class CellRenderingTest {
 
     @DisplayName("Escapes a pipe where the format would end the cell at it")
     @Description("""
-            Markdown and AsciiDoc both end a cell at a pipe, so a value holding one would split
-            the row and the table would lose a column from that point on. Both escape every pipe
-            the value contains, wherever it sits — in a plain value, in a sentence, or inside a
-            collection. HTML has no cell delimiter to protect and leaves the character alone; it
-            still counts a pipe as whitespace-significant, which is the ws class in its column.
+            Markdown and AsciiDoc both end a cell at a pipe. A value holding one would split the row,
+            and the table would lose a column from that point on. Both formats therefore escape every
+            pipe the value contains, wherever it sits: in a plain value, in a sentence, or inside a
+            collection.
+
+            HTML has no cell delimiter to protect, so it leaves the character alone. It still counts a
+            pipe as whitespace-significant, which is the ws class in its column.
             """)
     @TableTest("""
         Scenario                  | Cell                   | In markdown?           | In AsciiDoc?                   | In HTML?
@@ -76,17 +81,19 @@ public class CellRenderingTest {
 
     @DisplayName("Renders significant whitespace so a reader can count it")
     @Description("""
-            Significant means whitespace at either edge of the value, a run of two or more spaces,
-            or a tab; a single space between words is left alone, and so is a value with no
-            whitespace at all. Markdown and AsciiDoc are plain text with no styling to reach for,
-            so they substitute a glyph into the value itself: an open box for a space, an arrow
-            for a tab. AsciiDoc wraps every literal in ++ pass-through markers whatever its
-            whitespace, which is why they appear throughout its column. HTML keeps the real
-            characters and marks them instead — a sp span per run of spaces, a tab span per tab,
-            with the stylesheet drawing the dot and the arrow over them — so a value copied off
+            Significant means whitespace at either edge of the value, a run of two or more spaces, or
+            a tab. A single space between words is left alone, and so is a value with no whitespace at
+            all.
+
+            Markdown and AsciiDoc are plain text with no styling to reach for, so they substitute a
+            glyph into the value itself: an open box for a space, an arrow for a tab. AsciiDoc wraps
+            every literal in ++ pass-through markers whatever its whitespace, which is why they appear
+            throughout its column.
+
+            HTML keeps the real characters and marks them instead: a sp span per run of spaces, a tab
+            span per tab. The stylesheet draws the dot and the arrow over them, so a value copied off
             the page is still the value the row ran with. A run at the end of the line is marked
-            trailing as well, since that is the one a layout cannot show even when it preserves
-            whitespace.
+            trailing as well, since a layout cannot show that one even when it preserves whitespace.
             """)
     @TableTest("""
         Scenario              | Cell        | In markdown?                 | In AsciiDoc?                         | In HTML?

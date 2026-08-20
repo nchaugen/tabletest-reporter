@@ -16,10 +16,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Relative links")
 @Description("""
-        Every link in a report is relative — never root-absolute — so a generated report
-        works from any directory: a local folder, a web server root, or a subpath like
-        GitHub project Pages. The example pages are a feature "boolean-logic" holding
-        tables "and-op" and "or-op".
+        Every link in a report is relative, never root-absolute. A generated report therefore
+        works from any directory: a local folder, a web server root, or a subpath such as GitHub
+        project Pages.
+
+        The example pages are a feature "boolean-logic" holding the tables "and-op" and "or-op".
         """)
 class NavLinksTest {
 

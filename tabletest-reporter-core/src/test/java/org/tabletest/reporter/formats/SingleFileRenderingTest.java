@@ -26,9 +26,11 @@ import static org.tabletest.reporter.BuiltInFormat.HTML;
 @DisplayName("Single-file mode")
 @Description("""
         A report is normally a directory of pages. Single-file mode collapses it into one
-        self-contained HTML file that can be mailed, attached to a build, or opened from a memory
-        stick with nothing beside it. The rules below are read off a report built from one test
-        class, org.example.CalendarTest, with two tables — leapYear and monthLength.
+        self-contained HTML file. That file can be mailed, attached to a build, or opened from a
+        memory stick with nothing beside it.
+
+        The rules below are read off a report built from one test class,
+        org.example.CalendarTest, with two tables: leapYear and monthLength.
         """)
 class SingleFileRenderingTest {
 
@@ -58,10 +60,9 @@ class SingleFileRenderingTest {
 
     @DisplayName("Inlines everything the one file would otherwise reach for")
     @Description("""
-            Everything the report needs is in the file: no stylesheet or script is linked, no
-            address is fetched, and the search index that is a sibling script in the default
-            report is inlined instead. This is what makes the file work offline and survive being
-            moved on its own.
+            Everything the report needs is in the file. No stylesheet or script is linked. No address
+            is fetched. The search index, a sibling script in the default report, is inlined instead.
+            This is what makes the file work offline and survive being moved on its own.
             """)
     @TableTest("""
         Scenario                           | Text                          | Found in the file?
@@ -78,8 +79,8 @@ class SingleFileRenderingTest {
     @DisplayName("Turns every table into a section the report's own links point at")
     @Description("""
             A table that was a page of its own becomes a section of the one file, named after the
-            path it had. The sidebar and the search results point at that name as an in-page
-            anchor, so navigation that crossed files in the default report scrolls within this one.
+            path it had. The sidebar and the search results point at that name as an in-page anchor.
+            Navigation that crossed files in the default report therefore scrolls within this one.
             """)
     @TableTest("""
         Scenario         | Page URL                    | Section holding the table?  | Link to it from the sidebar?
@@ -99,11 +100,13 @@ class SingleFileRenderingTest {
 
     @DisplayName("Heads each section at its depth, and no deeper than six")
     @Description("""
-            The one file has to carry the outline the tree carried, so a section is headed one
-            level below the section it sits in. HTML stops at h6, so a report deep enough to need
-            an h7 keeps its deepest sections at h6 rather than emitting a heading no browser
-            knows. The second class below keeps the report's root shallow, so the packages named
-            in each row are levels the reader walks down.
+            The one file has to carry the outline the tree carried, so a section is headed one level
+            below the section it sits in. HTML stops at h6. A report deep enough to need an h7
+            therefore keeps its deepest sections at h6, rather than emitting a heading no browser
+            knows.
+
+            The second class below keeps the report's root shallow, so the packages named in each row
+            are levels the reader walks down.
             """)
     @TableTest("""
         Scenario                      | Published tables                                                                | Section heading?
@@ -119,10 +122,10 @@ class SingleFileRenderingTest {
 
     @DisplayName("Offers single-file mode for HTML only")
     @Description("""
-            The other formats have no way to be self-contained — an AsciiDoc or markdown page
-            carries its structure in files and links, not in one document — so asking for a single
-            file in either is refused rather than quietly ignored, and the message names the
-            format that was asked for.
+            The other formats have no way to be self-contained. An AsciiDoc or markdown page carries
+            its structure in files and links, not in one document. Asking for a single file in either
+            is therefore refused rather than quietly ignored, and the message names the format that
+            was asked for.
             """)
     @TableTest("""
         Scenario         | Format   | Error message?

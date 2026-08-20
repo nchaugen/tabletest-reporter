@@ -86,10 +86,11 @@ class SearchIndexTest {
 
     @DisplayName("Finds pages whose title or text contains the query")
     @Description("""
-            The searched report holds one table, "Leap Year Rules" (description "Gregorian
-            leap year determination", column headers Year and Is Leap Year?, one row:
-            2004 / Yes), inside a feature titled "Calendar". Matching is case-insensitive
-            substring matching.
+            The searched report holds one table, "Leap Year Rules", inside a feature titled
+            "Calendar". Its description is "Gregorian leap year determination". Its column headers
+            are Year and Is Leap Year?, over one row: 2004 and Yes.
+
+            Matching is case-insensitive substring matching.
             """)
     @TableTest("""
         Scenario                         | Query     | Matching pages?

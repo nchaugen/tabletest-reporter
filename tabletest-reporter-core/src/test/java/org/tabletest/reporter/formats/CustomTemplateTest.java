@@ -24,9 +24,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Custom templates")
 @Description("""
-        Pebble templates render a report. A project can supply its own: point the reporter at a
-        template directory, and the reporter uses the files in it in place of, or on top of, the
-        built-in templates.
+        Pebble templates render a report, and a project can supply its own. Point the reporter at
+        a template directory, and the reporter uses the files in it in place of, or on top of,
+        the built-in templates.
 
         The rules below are read off a report of one test class named Calendar. That class holds
         one table named Leap years, with the columns Year and Leap? and one row, 2004 and Yes. A
@@ -68,14 +68,18 @@ class CustomTemplateTest {
     @DisplayName("Lets your template extend a built-in one and fill its blocks")
     @Description("""
             Replacing a template means rewriting the page. Extending one means naming the built-in
-            template and filling only the blocks it leaves open — frontMatter above the page, title
-            in place of the generated heading, footer below it — so the table itself keeps being
-            rendered by the reporter. A template that fills one block reads:
+            template and filling only the blocks it leaves open. The reporter then keeps rendering
+            the table itself.
 
-                {% extends "table.md.peb" %}
-                {% block frontMatter %}
-                …
-                {% endblock %}
+            There are three such blocks: frontMatter above the page, title in place of the generated
+            heading, and footer below it.
+
+            A template that fills one block reads:
+
+            {% extends "table.md.peb" %}
+            {% block frontMatter %}
+            …
+            {% endblock %}
             """)
     @TableTest("""
         Scenario                    | Block       | Filled with                      | Page?
@@ -93,11 +97,12 @@ class CustomTemplateTest {
 
     @DisplayName("Leaves the same three blocks in every built-in template")
     @Description("""
-            The blocks are not a property of one template: a table and an index leave the same
-            three, in every format the reporter generates. The one template below is written once
-            per format and page, filling all three, and lands in the same places each time. Its
-            title block holds {{ title }} of note with no markup of its own, so the same line can
-            be looked for whichever format the page is written in.
+            The blocks are not a property of one template. A table page and an index page leave the
+            same three, in every format the reporter generates.
+
+            The one template below is written once per format and page, filling all three, and lands
+            in the same places each time. Its title block holds {{ title }} of note, with no markup of
+            its own, so the same line can be looked for whichever format the page is written in.
             """)
     @TableTest("""
         Scenario             | Format   | Page  | Opens with?                      | Titled?            | Ends with?

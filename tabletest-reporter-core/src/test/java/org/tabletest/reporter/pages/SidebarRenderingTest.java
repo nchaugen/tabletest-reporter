@@ -19,10 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Sidebar navigation")
 @Description("""
-        Every page carries the whole report as a link tree, so a reader can reach any rule from
-        any page without going back to an index first. The rules below are read off a report
-        built from one test class, com.example.orders.OrderTest, whose only table is items —
-        three pages deep: the package orders, the class page order-test, and the table page items.
+        Every page carries the whole report as a link tree. A reader can therefore reach any rule
+        from any page, without going back to an index first.
+
+        The rules below are read off a report built from one test class,
+        com.example.orders.OrderTest, whose only table is items. That report is three pages deep:
+        the package orders, the class page order-test, and the table page items.
         """)
 class SidebarRenderingTest {
 
@@ -34,8 +36,8 @@ class SidebarRenderingTest {
 
     @DisplayName("Carries the whole report on every page, marking where you are")
     @Description("""
-            The entries are the same wherever the reader is standing; what moves is which one is
-            marked as the page they are on, and where the links point — each is relative to the
+            The entries are the same wherever the reader is standing. Two things move: which entry is
+            marked as the page they are on, and where the links point. Each link is relative to the
             directory that page sits in, so the report can be served from any location.
             """)
     @TableTest("""

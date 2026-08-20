@@ -23,13 +23,16 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Roles and results")
 @Description("""
-        A published table is not just its text: the reporter marks which column names the scenario
-        and which holds the expectation, and records how each row fared when it ran. A mark needs
-        somewhere to live, and the three formats have quite different places to put one — a class
-        on the cell in HTML, a role prefix on the value in AsciiDoc, nowhere at all in markdown.
-        The rules below therefore print the cell each format published, rather than naming the
-        mark, so the difference is visible rather than asserted. Each rule names the sample test
-        class it is read off, and its rows are the columns or the rows of that class's table.
+        A published table is not just its text. The reporter marks which column names the scenario
+        and which holds the expectation. It also records how each row fared when it ran.
+
+        A mark needs somewhere to live, and the three formats have quite different places to put
+        one: a class on the cell in HTML, a role prefix on the value in AsciiDoc, nowhere at all
+        in markdown. The rules below therefore print the cell each format published, rather than
+        naming the mark, so the difference is visible rather than asserted.
+
+        Each rule names the sample test class it is read off. Its rows are the columns or the rows
+        of that class's table.
         """)
 class RolesAndResultsTest {
 
@@ -38,11 +41,13 @@ class RolesAndResultsTest {
 
     @DisplayName("Marks a column by where it sits and how its header ends")
     @Description("""
-            A table with more columns than the test method has parameters spends its first column
-            on the scenario name, so that column is marked as the scenario and never passed to the
-            test. A column whose header ends in a question mark holds what the row expected. Every
-            other column is an input and carries no mark. Read off LeapYearSample:
-        Scenario | Year | Leap?, over a method taking year and leap.
+            A table with more columns than the test method has parameters spends its first column on
+            the scenario name. That column is marked as the scenario and never passed to the test.
+
+            A column whose header ends in a question mark holds what the row expected. Every other
+            column is an input and carries no mark.
+
+            Read off LeapYearSample: Scenario | Year | Leap?, over a method taking year and leap.
             """)
     @TableTest("""
         Scenario                     | Column   | In markdown? | In AsciiDoc?                | In HTML?
@@ -59,9 +64,11 @@ class RolesAndResultsTest {
     @DisplayName("Follows a @Scenario annotation to the column it names")
     @Description("""
             Spending the first column is a convention, not a requirement. A test that takes every
-            column as a parameter can still name one of them the scenario by annotating it with
-            @Scenario, and the mark follows the annotation rather than the position. Read off
-            AnnotatedScenarioSample: Year | Case | Leap?, whose second parameter is annotated.
+            column as a parameter can still name one of them the scenario, by annotating it with
+            @Scenario. The mark then follows the annotation rather than the position.
+
+            Read off AnnotatedScenarioSample: Year | Case | Leap?, whose second parameter is
+            annotated.
             """)
     @TableTest("""
         Scenario                          | Column | In markdown? | In AsciiDoc?                | In HTML?
@@ -79,12 +86,14 @@ class RolesAndResultsTest {
 
     @DisplayName("Chooses the expectation column by the header pattern")
     @Description("""
-            The question mark is only the default. The pattern is the JUnit configuration
-            parameter tabletest.reporter.expectation.pattern, matched against the whole header, so
-            a project that words its expectations differently can say so once. Setting it replaces
-            the default rather than adding to it — under a pattern of your own, a header ending in
-            a question mark is an ordinary column again. Read off ExpectationPatternSample:
-            Scenario | Year | Leap? | Expected note.
+            The question mark is only the default. The pattern is the JUnit configuration parameter
+            tabletest.reporter.expectation.pattern, matched against the whole header. A project that
+            words its expectations differently can therefore say so once.
+
+            Setting it replaces the default rather than adding to it. Under a pattern of your own, a
+            header ending in a question mark is an ordinary column again.
+
+            Read off ExpectationPatternSample: Scenario | Year | Leap? | Expected note.
             """)
     @TableTest("""
         Scenario                           | Expectation pattern | Column        | In markdown?  | In AsciiDoc?                        | In HTML?
@@ -105,11 +114,14 @@ class RolesAndResultsTest {
 
     @DisplayName("Records a row's verdict on every cell of it")
     @Description("""
-            The report is generated from a test run, so it publishes what happened, not only what
-            was written: every cell of a row carries that row's verdict, which is what lets a
-            reader see at a glance whether the spec still holds. The Year cell stands for the row
-            below — the rule asserts that every cell of the row agrees. Read off LeapYearSample,
-            whose century row claims the wrong answer on purpose.
+            The report is generated from a test run, so it publishes what happened, not only what was
+            written. Every cell of a row carries that row's verdict, which lets a reader see at a
+            glance whether the spec still holds.
+
+            The Year cell stands for the row below: the rule asserts that every cell of the row
+            agrees.
+
+            Read off LeapYearSample, whose century row claims the wrong answer on purpose.
             """)
     @TableTest("""
         Scenario         | Row                      | In markdown? | In AsciiDoc?          | In HTML?
@@ -129,11 +141,13 @@ class RolesAndResultsTest {
 
     @DisplayName("Publishes a broken row's message below the table")
     @Description("""
-            A row that broke is listed again below the table with the message it failed on, so a
-            reader of the spec sees what the code did instead of what the row claimed. Every
-            format publishes it, each below a heading of its own and fenced its own way, and the
-            message inside is the same text — which is why one column serves for all three. Read
-            off LeapYearSample.
+            A row that broke is listed again below the table, with the message it failed on. A reader
+            of the spec therefore sees what the code did, instead of what the row claimed.
+
+            Every format publishes it, each below a heading of its own and fenced its own way. The
+            message inside is the same text, which is why one column serves for all three.
+
+            Read off LeapYearSample.
             """)
     @TableTest("""
         Scenario         | Row                      | Message below the table?

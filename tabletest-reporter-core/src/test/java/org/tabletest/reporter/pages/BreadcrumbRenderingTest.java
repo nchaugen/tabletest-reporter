@@ -18,11 +18,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Breadcrumbs")
 @Description("""
-        Every page but the root opens with the trail of pages above it, so a reader who arrived
-        from a search result can see where they are and climb out. The rules below are read off a
-        report built from one test class, com.example.orders.OrderTest, whose only table is
-        items — three pages deep: the package orders, the class page order-test, and the table
-        page items.
+        Every page but the root opens with the trail of pages above it. A reader who arrived from
+        a search result can then see where they are and climb out.
+
+        The rules below are read off a report built from one test class,
+        com.example.orders.OrderTest, whose only table is items. That report is three pages deep:
+        the package orders, the class page order-test, and the table page items.
         """)
 class BreadcrumbRenderingTest {
 
@@ -34,9 +35,9 @@ class BreadcrumbRenderingTest {
 
     @DisplayName("Heads a page with every page above it, and the page itself last")
     @Description("""
-            Each page above is a link, relative to the directory the page itself sits in, and the
-            page itself closes the trail as text rather than a link. The root page has nothing
-            above it, so it carries no trail at all.
+            Each page above is a link, relative to the directory the page itself sits in. The page
+            itself closes the trail as text rather than a link. The root page has nothing above it,
+            so it carries no trail at all.
             """)
     @TableTest("""
         Scenario      | Page URL          | Pages above?             | Their links?                    | This page?

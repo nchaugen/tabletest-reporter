@@ -14,10 +14,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Custom formats")
 @Description("""
         Beyond the three built-in formats, a report can be generated in a format of the project's
-        own, defined by nothing more than a pair of templates named after it. The name is the whole
-        definition: it identifies the format and it is the extension every file of the report gets,
-        so a name that could not be an extension is refused when the format is declared rather than
-        when the first file is written.
+        own. A pair of templates named after the format is the whole definition.
+
+        The name identifies the format, and it is the extension every file of the report gets. A
+        name that could not be an extension is therefore refused when the format is declared,
+        rather than when the first file is written.
         """)
 class CustomFormatTest {
 
@@ -38,9 +39,9 @@ class CustomFormatTest {
 
     @DisplayName("Refuses a format name that could not be an extension")
     @Description("""
-            A name that is absent, blank, or already starts with a dot cannot be turned into an
+            A name that is absent, blank, or already starting with a dot cannot be turned into an
             extension. Each is refused as the format is declared, with a message naming what is
-            wrong, so no report is ever written under a name that could not name its files.
+            wrong. No report is ever written under a name that could not name its files.
             """)
     @TableTest("""
         Scenario                      | Format name | Error message

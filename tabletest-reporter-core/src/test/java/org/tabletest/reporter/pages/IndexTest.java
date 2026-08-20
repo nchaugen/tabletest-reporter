@@ -22,9 +22,11 @@ import static org.tabletest.reporter.support.MarkdownValidator.assertValidMarkdo
 @DisplayName("Index pages")
 @Description("""
         Every level of the report has an index page listing what is under it, and the report opens
-        on the root one. The rule below is read off a report built from two test classes in one
-        package, com.example.orders.OrderTest and com.example.orders.ProductTest, with one table
-        each — so the root index sits above two class pages, and each class page above one table.
+        on the root one.
+
+        The rule below is read off a report built from two test classes in one package,
+        com.example.orders.OrderTest and com.example.orders.ProductTest, with one table each. The
+        root index therefore sits above two class pages, and each class page above one table.
         """)
 public class IndexTest {
 
@@ -55,10 +57,12 @@ public class IndexTest {
 
     @DisplayName("Links an index page to every page beneath it, nested as they are")
     @Description("""
-            The whole subtree is listed, not just the level below, and one nesting level of the
-            list is one level of the report. Each link is written in the syntax of the format
-            being generated and points at the file that format writes, so a report reads the same
-            whichever of them it is published in.
+            The whole subtree is listed, not just the level below. One nesting level of the list is
+            one level of the report.
+
+            Each link is written in the syntax of the format being generated, and points at the file
+            that format writes. A report therefore reads the same whichever of them it is published
+            in.
             """)
     @TableTest("""
         Scenario            | Format   | Page URL    | Page content?

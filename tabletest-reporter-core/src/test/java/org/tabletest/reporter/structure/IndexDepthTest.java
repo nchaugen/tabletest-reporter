@@ -22,8 +22,8 @@ class IndexDepthTest {
 
     @DisplayName("Reads indexDepth as a count of index levels")
     @Description("""
-            The number counts the levels indexed before the rest of the tree is flattened onto
-            one page, so a depth of one indexes the top level only.
+            The number counts the levels indexed before the rest of the tree is flattened onto one
+            page. A depth of one therefore indexes the top level only.
             """)
     @TableTest("""
         Scenario                | Option value | Index depth?
@@ -36,9 +36,9 @@ class IndexDepthTest {
 
     @DisplayName("Treats the keyword, and an unset option, as unlimited depth")
     @Description("""
-            The keyword is case-insensitive, and an option that was never set — absent, empty,
-            or blank — means the same as the keyword: every feature level gets its own index
-            page. A depth of its own limits the index; nothing else does.
+            The keyword is case-insensitive. An option that was never set means the same as the
+            keyword: every feature level gets its own index page. Absent, empty, and blank all count
+            as never set. Only a depth limits the index.
             """)
     @TableTest("""
         Scenario                 | Option value                   | Unlimited?

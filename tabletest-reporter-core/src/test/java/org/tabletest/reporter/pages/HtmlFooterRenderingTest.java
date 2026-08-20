@@ -25,10 +25,12 @@ public class HtmlFooterRenderingTest {
 
     @DisplayName("Records on every page when the report was generated")
     @Description("""
-        The run timestamp is what tells a reader whether the published spec still tracks the
-        code it was generated from, so every page kind carries it — the per-table page, the
-        index page, and the single-file report alike. The readable label is paired with a
-        machine-readable attribute so tooling can compare it against the source revision.
+        The run timestamp tells a reader whether the published spec still tracks the code it was
+        generated from. Every page kind therefore carries it: the per-table page, the index page,
+        and the single-file report alike.
+
+        The readable label is paired with a machine-readable attribute, so tooling can compare it
+        against the source revision.
         """)
     @TableTest("""
         Scenario              | Page kind                   | Footer?                                                 | Timestamp attribute?
@@ -43,8 +45,9 @@ public class HtmlFooterRenderingTest {
 
     @DisplayName("Falls back to plain attribution without a timestamp")
     @Description("""
-        A context assembled without a timestamp — a custom renderer driving the templates
-        directly — still gets the attribution rather than a footer with a dangling separator.
+        A context assembled without a timestamp still gets the attribution. It does not get a
+        footer with a dangling separator. A custom renderer driving the templates directly is
+        such a context.
         """)
     @TableTest("""
         Scenario                | Page kind                   | Footer?
