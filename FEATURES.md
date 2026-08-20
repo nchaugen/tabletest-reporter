@@ -109,16 +109,45 @@ the suite was tagged or run — re-curating a spec needs no new test run.
 Point elsewhere with Maven `<configFile>` / `-Dtabletest.report.configFile`, Gradle
 `configFile`, or the CLI `--config` / `-c`.
 
-## Styling and Visual Indicators
+## Column Roles
 
-Generated documents include roles for styling:
-- `.scenario` - Scenario column cells
-- `.expectation` - Expectation column cells
-- `.passed` - Rows that passed
-- `.failed` - Rows that failed
+Every published cell carries the roles of its column. The reporter derives four itself:
 
-These roles become CSS classes when AsciiDoc is rendered to HTML. The built-in HTML format
-applies them itself.
+- `scenario` – the column naming each row
+- `expectation` – a column holding what the row expected
+- `passed` / `failed` – the verdict of the row the cell sits in
+- `value-set` – a cell whose set expands the row into one run per value, rather than reaching
+  the test as a set. Published on the cell, so a reader can tell the two apart without seeing
+  the test's parameters.
+
+**Roles a test declares.** Annotate an annotation of your own with `@ColumnRole` and put it on
+a test parameter. The role is published as the annotation's simple name in kebab case, or as
+the token `@ColumnRole("...")` names.
+
+Two are built in, both rendered by the HTML format:
+
+- `@Lines` – the cell holds the lines of one block of text, written as a list of lines because
+  a table keeps every row on one line. Renders as a stacked monospace block rather than a
+  bulleted list, so text whose alignment is the point reads as written. The parameter receives
+  the lines joined by newlines, or the lines themselves for a `List` parameter.
+- `@Tree` – the cell holds a tree, written as a nested collection. Each level opens below its
+  parent rather than beside it, with a guide line down the level.
+
+A role reaches the HTML report as a CSS class on the cell, and the AsciiDoc report as an
+element role — which becomes a class when AsciiDoc is rendered to HTML. Markdown carries no
+roles.
+
+**Styling a role of your own.** The HTML report keeps its stylesheet inside the file. Add to it
+from a template that extends a built-in one and fills the `extra_stylesheet` block; the
+built-in stylesheet stays in place.
+
+## Visual Indicators
+
+The built-in HTML format also marks what a reader could not otherwise see:
+- IDE-style whitespace markers — a dot per significant space, an arrow per tab — with the real
+  characters left in the DOM, so a value copied off the page is the value the row ran with. A
+  space run at the end of a line also carries `trailing`, the one run a layout cannot show.
+- a shaded edge and a visible scrollbar on a table wide enough to scroll sideways
 
 ## Integration Options
 
