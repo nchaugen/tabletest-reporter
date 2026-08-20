@@ -31,8 +31,9 @@ import java.util.stream.IntStream;
  * run wrapped in marker spans ({@code sp} around space runs, {@code tab} around each tab)
  * for the stylesheet to draw per-character markers on. A run is significant when it
  * contains a tab, spans two or more characters, or touches a line boundary; single spaces
- * between words stay unmarked so ordinary prose renders clean. The real characters remain
- * in the DOM for copy and search.
+ * between words stay unmarked so ordinary prose renders clean. A space run at the end of a
+ * line also carries {@code trailing}, since a layout preserving whitespace still cannot show
+ * that one. The real characters remain in the DOM for copy and search.
  */
 public class FilterMarkWhitespace implements Filter {
 
@@ -40,6 +41,7 @@ public class FilterMarkWhitespace implements Filter {
 
     private static final String WHITESPACE_RUN = "[ \\t]+";
     private static final String SPACE_RUN_MARKUP = "<span class=\"sp\">%s</span>";
+    private static final String TRAILING_SPACE_RUN_MARKUP = "<span class=\"sp trailing\">%s</span>";
     private static final String TAB_MARKUP = "<span class=\"tab\">\t</span>";
 
     @Override
@@ -55,7 +57,9 @@ public class FilterMarkWhitespace implements Filter {
         String[] segments = line.splitWithDelimiters(WHITESPACE_RUN, -1);
         return IntStream.range(0, segments.length)
                 .mapToObj(index -> isWhitespaceRun(index)
-                        ? (isSignificant(segments, index) ? markedRun(segments[index]) : segments[index])
+                        ? (isSignificant(segments, index)
+                                ? markedRun(segments[index], touchesLineEnd(segments, index))
+                                : segments[index])
                         : escapeHtml(segments[index]))
                 .collect(Collectors.joining());
     }
@@ -67,14 +71,18 @@ public class FilterMarkWhitespace implements Filter {
     private static boolean isSignificant(String[] segments, int index) {
         String run = segments[index];
         boolean touchesLineStart = index == 1 && segments[0].isEmpty();
-        boolean touchesLineEnd = index == segments.length - 2 && segments[segments.length - 1].isEmpty();
-        return run.contains("\t") || run.length() >= 2 || touchesLineStart || touchesLineEnd;
+        return run.contains("\t") || run.length() >= 2 || touchesLineStart || touchesLineEnd(segments, index);
     }
 
-    private static String markedRun(String run) {
+    private static boolean touchesLineEnd(String[] segments, int index) {
+        return index == segments.length - 2 && segments[segments.length - 1].isEmpty();
+    }
+
+    private static String markedRun(String run, boolean atLineEnd) {
+        String spaceMarkup = atLineEnd ? TRAILING_SPACE_RUN_MARKUP : SPACE_RUN_MARKUP;
         return Arrays.stream(run.splitWithDelimiters("\\t", -1))
                 .filter(part -> !part.isEmpty())
-                .map(part -> part.startsWith("\t") ? TAB_MARKUP : SPACE_RUN_MARKUP.formatted(part))
+                .map(part -> part.startsWith("\t") ? TAB_MARKUP : spaceMarkup.formatted(part))
                 .collect(Collectors.joining());
     }
 

@@ -84,20 +84,22 @@ public class CellRenderingTest {
             whitespace, which is why they appear throughout its column. HTML keeps the real
             characters and marks them instead — a sp span per run of spaces, a tab span per tab,
             with the stylesheet drawing the dot and the arrow over them — so a value copied off
-            the page is still the value the row ran with.
+            the page is still the value the row ran with. A run at the end of the line is marked
+            trailing as well, since that is the one a layout cannot show even when it preserves
+            whitespace.
             """)
     @TableTest("""
         Scenario              | Cell        | In markdown?                 | In AsciiDoc?                         | In HTML?
         Plain word            | Alice       | Alice                        | '++Alice++'                          | '<span class="literal">Alice</span>'
         Single internal space | Alice Smith | Alice Smith                  | '++Alice Smith++'                    | '<span class="literal">Alice Smith</span>'
         Leading space         | "' x'"      | '&#x2423;x'                  | '&#x2423;++x++'                      | '<span class="literal ws"><span class="sp"> </span>x</span>'
-        Trailing space        | "'x '"      | 'x&#x2423;'                  | '++x++&#x2423;'                      | '<span class="literal ws">x<span class="sp"> </span></span>'
+        Trailing space        | "'x '"      | 'x&#x2423;'                  | '++x++&#x2423;'                      | '<span class="literal ws">x<span class="sp trailing"> </span></span>'
         Run of two spaces     | "'a  b'"    | 'a&#x2423;&#x2423;b'         | '++a++&#x2423;&#x2423;++b++'         | '<span class="literal ws">a<span class="sp">  </span>b</span>'
         Tab between words     | "'a	b'"      | 'a&#x21E5;b'                 | '++a++&#x21E5;++b++'                 | '<span class="literal ws">a<span class="tab">	</span>b</span>'
         Run of two tabs       | "'		'"        | '&#x21E5;&#x21E5;'           | '&#x21E5;&#x21E5;'                   | '<span class="literal ws"><span class="tab">	</span><span class="tab">	</span></span>'
-        Tab then space        | "'	 '"       | '&#x21E5;&#x2423;'           | '&#x21E5;&#x2423;'                   | '<span class="literal ws"><span class="tab">	</span><span class="sp"> </span></span>'
+        Tab then space        | "'	 '"       | '&#x21E5;&#x2423;'           | '&#x21E5;&#x2423;'                   | '<span class="literal ws"><span class="tab">	</span><span class="sp trailing"> </span></span>'
         Spaces around a tab   | "'a 	 b'"    | 'a&#x2423;&#x21E5;&#x2423;b' | '++a++&#x2423;&#x21E5;&#x2423;++b++' | '<span class="literal ws">a<span class="sp"> </span><span class="tab">	</span><span class="sp"> </span>b</span>'
-        Whitespace-only value | "'   '"     | '&#x2423;&#x2423;&#x2423;'   | '&#x2423;&#x2423;&#x2423;'           | '<span class="literal ws"><span class="sp">   </span></span>'
+        Whitespace-only value | "'   '"     | '&#x2423;&#x2423;&#x2423;'   | '&#x2423;&#x2423;&#x2423;'           | '<span class="literal ws"><span class="sp trailing">   </span></span>'
         An empty value        | "''"        | '""'                         | '+""+'                               | '<span class="literal empty-string">“”</span>'
         """)
     void rendersSignificantWhitespace(String cell, String inMarkdown, String inAsciiDoc, String inHtml) {
@@ -126,7 +128,7 @@ public class CellRenderingTest {
     @Test
     void marksEachLineOfAMultiLineValueSeparately() {
         assertThat(new FilterMarkWhitespace().apply("ab \n cd", Map.of(), null, null, 0))
-                .isEqualTo("ab<span class=\"sp\"> </span>\n<span class=\"sp\"> </span>cd");
+                .isEqualTo("ab<span class=\"sp trailing\"> </span>\n<span class=\"sp\"> </span>cd");
     }
 
     @Test

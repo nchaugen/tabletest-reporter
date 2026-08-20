@@ -199,8 +199,9 @@ public class HtmlTableRenderingTest {
         String rendered = templateEngine.renderTable(HTML, whitespace);
 
         assertThat(rendered)
-                .contains("<span class=\"literal ws\"><span class=\"sp\">  </span></span>")
-                .contains("<span class=\"literal ws\"><span class=\"tab\">\t</span><span class=\"sp\">  </span></span>")
+                .contains("<span class=\"literal ws\"><span class=\"sp trailing\">  </span></span>")
+                .contains(
+                        "<span class=\"literal ws\"><span class=\"tab\">\t</span><span class=\"sp trailing\">  </span></span>")
                 .contains("<span class=\"literal ws\">Alice | 30</span>")
                 .contains("<span class=\"literal\">two spaces</span>")
                 .contains(".literal.ws .sp")

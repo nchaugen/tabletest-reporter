@@ -510,6 +510,9 @@ td.cell.lines .coll.list { gap: 0; }
 td.cell.lines .coll.list > li { padding-left: 0; }
 td.cell.lines .coll.list > li::before { content: none; }
 td.cell.lines .literal { font-family: var(--font-mono); font-size: 0.85em; white-space: pre; }
+/* The layout already shows alignment padding, so its markers are noise here; a run at the end
+   of a line is the one it cannot show, and keeps its marker. */
+td.cell.lines .literal.ws .sp:not(.trailing) { background: none; }
 
 /* Failures — reads like a test log */
 .failures { margin-top: 2rem; }
