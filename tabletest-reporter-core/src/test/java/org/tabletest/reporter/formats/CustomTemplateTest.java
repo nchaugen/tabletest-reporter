@@ -37,24 +37,22 @@ class CustomTemplateTest {
     @TempDir
     Path workingDir;
 
-    @DisplayName("Uses your template when it is named for the page it renders")
+    @DisplayName("Uses your template when its file name matches the page")
     @Description("""
-            The file name says which page a template renders: table or index, then the format. A
-            file with exactly that name replaces the built-in template. A file whose name ends in
-            a hyphen and that name replaces it too.
+            One template renders one page in one format. The reporter has seven slots for them:
+            a table and an index page in markdown, in asciidoc and in html, and the single-file
+            html page. The rows below use the markdown slots.
 
-            Reach for the second form when your template extends the built-in one, because a
+            Reach for the hyphen form when your template extends the built-in one, because a
             template cannot extend itself.
-
-            The reporter fills each slot on its own, so a template named for one page leaves the
-            other page to the built-in template.
             """)
     @TableTest("""
-        Scenario                      | Template file   | Template holds                            | Table page?                                                                  | Index page?
-        No template of your own       |                 |                                           | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', '', '* [Leap years](./leap-years.md)']
-        Named for the table page      | table.md.peb    | ['# {{ title }}', '', 'Written by hand.'] | ['# Leap years', 'Written by hand.']                                         | ['# Calendar', '', '* [Leap years](./leap-years.md)']
-        Name ending in the table page | my-table.md.peb | ['# {{ title }}', '', 'Written by hand.'] | ['# Leap years', 'Written by hand.']                                         | ['# Calendar', '', '* [Leap years](./leap-years.md)']
-        Named for the index page      | index.md.peb    | ['# {{ title }}', '', 'Written by hand.'] | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', 'Written by hand.']
+        Scenario                     | Template file   | Template holds                            | Table page?                                                                  | Index page?
+        No template of your own      |                 |                                           | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', '', '* [Leap years](./leap-years.md)']
+        The name of the table page   | table.md.peb    | ['# {{ title }}', '', 'Written by hand.'] | ['# Leap years', 'Written by hand.']                                         | ['# Calendar', '', '* [Leap years](./leap-years.md)']
+        A hyphen before that name    | my-table.md.peb | ['# {{ title }}', '', 'Written by hand.'] | ['# Leap years', 'Written by hand.']                                         | ['# Calendar', '', '* [Leap years](./leap-years.md)']
+        That name without the hyphen | mytable.md.peb  | ['# {{ title }}', '', 'Written by hand.'] | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', '', '* [Leap years](./leap-years.md)']
+        The name of the index page   | index.md.peb    | ['# {{ title }}', '', 'Written by hand.'] | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', 'Written by hand.']
         """)
     void usesATemplateNamedForThePageItRenders(
             String templateFile,

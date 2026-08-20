@@ -19,32 +19,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("The page tree")
 @Description("""
-        A report is a tree of pages, and nobody chooses its shape. The shape is the package
-        hierarchy of the test classes that published, with one page for each class and one page
-        for each table.
+        Nobody chooses the shape of a report. It follows the packages of the test classes that
+        published. Below, a published table is written as the class that ran it and the method that
+        holds it.
 
-        In the tables below, a published table is written as the class that ran it and the method
-        that holds it. A page that holds other pages is written as a name with its contents. A page
-        that holds none is written as a name on its own. This is the tree the sidebar and the index
-        pages show.
-
-        The indexDepth option decides how much of that tree gets an index page of its own. It has
-        its own feature, alongside this one.
+        The indexDepth option decides how much of the tree gets an index page. It has its own
+        feature, alongside this one.
         """)
 class ReportStructureTest {
 
     @TempDir
     Path workingDir;
 
-    @DisplayName("Mirrors the package hierarchy of the classes that published")
-    @Description("""
-            Each package becomes an index page. Each test class becomes a page inside its package.
-            Each table becomes a page inside its class.
-
-            The reporter names a page after the class or the method it came from, and writes the
-            name in the kebab case a URL can carry. Pages sit in alphabetical order. A nested test
-            class becomes a page inside the page for the class that encloses it.
-            """)
+    @DisplayName("Makes one page for each package, class, and table")
     @TableTest("""
         Scenario                        | Published tables                                                 | Page tree?
         One class with one table        | ['pkg.OrderTest#items']                                          | [pkg: [[order-test: [items]]]]
@@ -57,15 +44,10 @@ class ReportStructureTest {
         assertThat(ReportStructure.pageTreeFor(publishedTables, workingDir)).isEqualTo(pageTree);
     }
 
-    @DisplayName("Roots the report at the deepest shared package")
+    @DisplayName("Opens the report at the deepest shared package")
     @Description("""
-            The packages above the root are the same for every page. A reader walks through them
-            and never makes a choice there, so the reporter leaves them out. The report opens on
-            the first page where the classes differ.
-
-            A class in another package therefore raises the root rather than deepening the tree.
-            Classes that share no package at all have a root page with no name of its own, written
-            below as (root).
+            A package above the root is the same for every page, so a reader would walk through it
+            and never make a choice there.
             """)
     @TableTest("""
         Scenario                          | Published tables                                                                 | Page tree?
