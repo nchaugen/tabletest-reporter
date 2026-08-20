@@ -503,11 +503,13 @@ td.failed.expectation { background: var(--fail-wash); }
 .coll.map > dd { margin: 0; }
 
 /* A `lines` column holds the lines of one block of text, so its cells stack as written:
-   no list markers, no gaps, monospaced, and whitespace preserved rather than collapsed. */
-.cell.lines .coll.list { gap: 0; }
-.cell.lines .coll.list > li { padding-left: 0; }
-.cell.lines .coll.list > li::before { content: none; }
-.cell.lines .literal { font-family: var(--font-mono); font-size: 0.85em; white-space: pre; }
+   no list markers, no gaps, monospaced, and whitespace preserved rather than collapsed.
+   Body cells only — the header carries the role so a stylesheet can select the column,
+   but it holds the column's name rather than source text. */
+td.cell.lines .coll.list { gap: 0; }
+td.cell.lines .coll.list > li { padding-left: 0; }
+td.cell.lines .coll.list > li::before { content: none; }
+td.cell.lines .literal { font-family: var(--font-mono); font-size: 0.85em; white-space: pre; }
 
 /* Failures — reads like a test log */
 .failures { margin-top: 2rem; }
