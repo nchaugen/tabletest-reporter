@@ -101,8 +101,9 @@ class CustomTemplateTest {
             same three, in every format the reporter generates.
 
             The one template below is written once per format and page, filling all three, and lands
-            in the same places each time. Its title block holds {{ title }} of note, with no markup of
-            its own, so the same line can be looked for whichever format the page is written in.
+            in the same places each time. Its title block holds {{ title }} of note, with no markup
+            of its own. The same line can therefore be looked for whichever format the page is
+            written in.
             """)
     @TableTest("""
         Scenario             | Format   | Page  | Opens with?                      | Titled?            | Ends with?

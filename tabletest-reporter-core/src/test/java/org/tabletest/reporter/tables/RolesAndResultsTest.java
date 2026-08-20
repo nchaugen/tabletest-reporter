@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.Scenario;
 import org.tabletest.junit.TableTest;
+import org.tabletest.reporter.junit.Lines;
 import org.tabletest.reporter.junit.TableTestPublisher;
 import org.tabletest.reporter.support.PublishedTable;
 import org.tabletest.reporter.support.SampleRun;
@@ -23,16 +24,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Roles and results")
 @Description("""
-        A published table is not just its text. The reporter marks which column names the scenario
-        and which holds the expectation. It also records how each row fared when it ran.
+        A published table is not just its text. The reporter marks which column names the
+        scenario and which holds the expectation. It also records how each row fared when it
+        ran.
 
         A mark needs somewhere to live, and the three formats have quite different places to put
-        one: a class on the cell in HTML, a role prefix on the value in AsciiDoc, nowhere at all
-        in markdown. The rules below therefore print the cell each format published, rather than
-        naming the mark, so the difference is visible rather than asserted.
+        one. HTML sets a class on the cell. AsciiDoc puts a role prefix on the value. Markdown
+        has nowhere at all. The rules below therefore print the cell each format published,
+        rather than naming the mark, so the difference is visible rather than asserted.
 
-        Each rule names the sample test class it is read off. Its rows are the columns or the rows
-        of that class's table.
+        Each rule names the sample test class it is read off. Its rows are the columns or the
+        rows of that class's table.
         """)
 class RolesAndResultsTest {
 
@@ -154,7 +156,7 @@ class RolesAndResultsTest {
         A row that held  | A year divisible by four |
         A row that broke | A century year           | ['expected: "Yes"', ' but was: "No"']
         """)
-    void publishesABrokenRowsMessageBelowTheTable(String row, List<String> messageBelowTheTable) {
+    void publishesABrokenRowsMessageBelowTheTable(String row, @Lines List<String> messageBelowTheTable) {
         for (String format : List.of("markdown", "asciidoc", "html")) {
             assertThat(publishedTableOf(LeapYearSample.class, format).failureMessageOf(row))
                     .describedAs("the message published in %s", format)

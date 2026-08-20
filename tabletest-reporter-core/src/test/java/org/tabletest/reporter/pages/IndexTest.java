@@ -7,6 +7,7 @@ import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 import org.tabletest.reporter.ContextLoader;
 import org.tabletest.reporter.TemplateEngine;
+import org.tabletest.reporter.junit.Lines;
 import org.tabletest.reporter.support.PublishedReport;
 
 import java.nio.file.Path;
@@ -71,7 +72,7 @@ public class IndexTest {
         A class index page  | asciidoc | /order-test | ['= ++order-test++', '', '* xref:./items.adoc[++items++]']
         A class index page  | markdown | /order-test | ['# order-test', '', '* [items](./items.md)']
         """)
-    void linksToEveryPageBeneathIt(String format, String pageUrl, List<String> pageContent) {
+    void linksToEveryPageBeneathIt(String format, String pageUrl, @Lines List<String> pageContent) {
         assertThat(PublishedReport.linesAt(pageUrl, format, PUBLISHED_TABLES, workingDir))
                 .isEqualTo(pageContent);
     }

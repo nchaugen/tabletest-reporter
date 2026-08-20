@@ -31,9 +31,10 @@ public class CellRenderingTest {
 
     @DisplayName("Publishes a markdown cell in the notation you wrote it in")
     @Description("""
-            Markdown writes a collection back in the notation a table uses: square brackets for a
-            list, braces for a set, key: value pairs for a map, nested to any depth. A reader of the
-            published spec therefore sees the value spelled the way they would spell it themselves.
+            Markdown writes a collection back in the notation a table uses, nested to any depth.
+            That is square brackets for a list, braces for a set, and key: value pairs for a map. A
+            reader of the published spec therefore sees the value spelled the way they would spell
+            it themselves.
 
             Below, Cell is what a table row holds. Published cell is what the markdown report shows
             for it.
@@ -81,19 +82,20 @@ public class CellRenderingTest {
 
     @DisplayName("Renders significant whitespace so a reader can count it")
     @Description("""
-            Significant means whitespace at either edge of the value, a run of two or more spaces, or
-            a tab. A single space between words is left alone, and so is a value with no whitespace at
-            all.
+            Significant means whitespace at either edge of the value, a run of two or more spaces,
+            or a tab. A single space between words is left alone, and so is a value with no
+            whitespace at all.
 
             Markdown and AsciiDoc are plain text with no styling to reach for, so they substitute a
-            glyph into the value itself: an open box for a space, an arrow for a tab. AsciiDoc wraps
-            every literal in ++ pass-through markers whatever its whitespace, which is why they appear
-            throughout its column.
+            glyph into the value itself. A space becomes an open box, and a tab becomes an arrow.
+            AsciiDoc wraps every literal in ++ pass-through markers whatever its whitespace, which
+            is why they appear throughout its column.
 
-            HTML keeps the real characters and marks them instead: a sp span per run of spaces, a tab
-            span per tab. The stylesheet draws the dot and the arrow over them, so a value copied off
-            the page is still the value the row ran with. A run at the end of the line is marked
-            trailing as well, since a layout cannot show that one even when it preserves whitespace.
+            HTML keeps the real characters and marks them instead: a sp span per run of spaces, a
+            tab span per tab. The stylesheet draws the dot and the arrow over them, so a value
+            copied off the page is still the value the row ran with. A run at the end of the line is
+            marked trailing as well, since a layout cannot show that one even when it preserves
+            whitespace.
             """)
     @TableTest("""
         Scenario              | Cell        | In markdown?                 | In AsciiDoc?                         | In HTML?
