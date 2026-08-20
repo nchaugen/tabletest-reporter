@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-08-20
+
 ### Added
 - An HTML template of your own can add to the built-in stylesheet through a new `extra_stylesheet`
   block, without replacing it. A report carries its stylesheet inside the file, so until now a role
@@ -268,7 +270,8 @@
 - Slugified output directories and filenames
 
 
-[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.3.0...HEAD
+[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.4.0...HEAD
+[1.4.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.3.0...tabletest-reporter-1.4.0
 [1.3.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.2.0...tabletest-reporter-1.3.0
 [1.2.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.1.0...tabletest-reporter-1.2.0
 [1.1.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.0.1...tabletest-reporter-1.1.0
