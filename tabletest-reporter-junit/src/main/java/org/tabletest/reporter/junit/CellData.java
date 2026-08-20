@@ -16,6 +16,7 @@
 package org.tabletest.reporter.junit;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,9 +24,9 @@ import java.util.Set;
  * Represents a table cell with its value and associated roles.
  *
  * @param value The cell value
- * @param roles The roles associated with this cell
+ * @param roles The role tokens associated with this cell, in publishing order
  */
-public record CellData(Object value, Set<CellRole> roles) {
+public record CellData(Object value, Set<String> roles) {
 
     /**
      * Converts this cell to a map suitable for YAML serialisation.
@@ -34,9 +35,7 @@ public record CellData(Object value, Set<CellRole> roles) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("value", value);
         if (!roles.isEmpty()) {
-            map.put(
-                    "roles",
-                    roles.stream().map(role -> role.name().toLowerCase()).toList());
+            map.put("roles", List.copyOf(roles));
         }
         return map;
     }

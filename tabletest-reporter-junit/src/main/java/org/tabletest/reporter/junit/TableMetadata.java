@@ -18,10 +18,12 @@ package org.tabletest.reporter.junit;
 import org.tabletest.parser.Row;
 import org.tabletest.parser.Table;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.IntStream.range;
 
 public record TableMetadata(
@@ -88,18 +90,22 @@ public record TableMetadata(
         return new TableTestData(methodName, slug, title, description, headers, rowData, rowResultData);
     }
 
-    private Set<CellRole> columnRolesFor(int colIndex) {
-        return columnRoles.roleFor(colIndex);
+    private Set<String> columnRolesFor(int colIndex) {
+        return tokensOf(columnRoles.roleFor(colIndex));
     }
 
     /**
      * Combines column roles and row roles into a single set for the given indices. Maintains order: column roles first
      * (expectation, scenario), then row roles (passed, failed).
      */
-    private Set<CellRole> combineRoles(int colIndex, int rowIndex) {
-        Set<CellRole> combined = new java.util.LinkedHashSet<>();
-        combined.addAll(columnRoles.roleFor(colIndex));
-        combined.addAll(rowRoles.roleFor(rowIndex));
+    private Set<String> combineRoles(int colIndex, int rowIndex) {
+        Set<String> combined = new LinkedHashSet<>();
+        combined.addAll(tokensOf(columnRoles.roleFor(colIndex)));
+        combined.addAll(tokensOf(rowRoles.roleFor(rowIndex)));
         return unmodifiableSet(combined);
+    }
+
+    private static Set<String> tokensOf(Set<CellRole> roles) {
+        return roles.stream().map(CellRole::token).collect(toCollection(LinkedHashSet::new));
     }
 }
