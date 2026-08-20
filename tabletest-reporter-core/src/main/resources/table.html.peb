@@ -15,6 +15,7 @@
         {{ mastheadBar(breadcrumbs, nav, "Specification") }}
         <h1>{{ title | escape }}</h1>
         {{ tableVerdict(rowResults) }}
+        {% for paragraph in featureDescription | paragraphs %}<p class="description feature-description">{{ paragraph | escape }}</p>{% endfor %}
         {% for paragraph in description | paragraphs %}<p class="description">{{ paragraph | escape }}</p>{% endfor %}
     </header>
 

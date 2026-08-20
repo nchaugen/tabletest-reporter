@@ -194,7 +194,22 @@ public class TableTestReporter {
         context.put("nav", buildNav(root, table));
         context.put("assetRoot", NavLinks.rootPrefix(table, root));
         context.put("generatedAt", generatedAt.toMap());
+        context.put("featureDescription", descriptionOf(ancestors));
         return context;
+    }
+
+    /**
+     * The description of the page a rule sits under. A rule page shows it above the rule's own
+     * description, because the class or feature description is where the notation a rule's columns
+     * use is explained, and a reader arriving from the sidebar or a search result never passes the
+     * index page that would otherwise carry it.
+     *
+     * @return the nearest ancestor's description, or null when it has none
+     */
+    private static Object descriptionOf(List<ReportNode> ancestors) {
+        return ancestors.isEmpty()
+                ? null
+                : ancestors.get(ancestors.size() - 1).resource().get("description");
     }
 
     private List<Map<String, Object>> buildBreadcrumbs(List<ReportNode> ancestors, ReportNode current) {

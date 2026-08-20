@@ -46,6 +46,10 @@
   of features had to be repeated on every rule beneath it.
 
 ### Fixed
+- A rule page now shows the description of the page it sits under, above its own. The class or
+  feature description is where the notation a rule's columns use is explained, and it rendered only
+  on the index page — but the sidebar links to rule pages and search returns rule pages, so a reader
+  met the columns without the explanation. All three formats show it.
 - A description with more than one paragraph now renders as more than one paragraph in HTML. HTML
   collapses a blank line, so every paragraph of a `@Description` ran together into one block. The
   Markdown and AsciiDoc reports were already correct. Line breaks inside a paragraph are still

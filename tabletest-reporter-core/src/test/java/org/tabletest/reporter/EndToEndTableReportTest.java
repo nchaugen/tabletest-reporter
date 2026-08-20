@@ -70,6 +70,8 @@ public class EndToEndTableReportTest {
                 .containsExactly(
                         "== ++Leap Year Rules with Single Example++",
                         "",
+                        "Various rules for calendar calculations.",
+                        "",
                         "The leap year rules should be well-known.",
                         "",
                         "[%header%autowidth,cols=\"1,1,1\"]",
@@ -115,6 +117,8 @@ public class EndToEndTableReportTest {
         assertThat(Files.readAllLines(outDir.resolve("calendar-calculations").resolve("leap-year-rules.md")))
                 .containsExactly(
                         "## Leap Year Rules with Single Example",
+                        "",
+                        "Various rules for calendar calculations.",
                         "",
                         "The leap year rules should be well-known.",
                         "",

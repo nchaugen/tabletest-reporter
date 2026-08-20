@@ -5,6 +5,11 @@
 {% endblock %}
 
 {% block description %}
+{% if featureDescription %}
+{{ featureDescription }}
+
+
+{% endif %}
 {% if description %}
 {{ description }}
 
