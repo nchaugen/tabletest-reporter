@@ -502,6 +502,13 @@ td.failed.expectation { background: var(--fail-wash); }
 .coll.map > dt::after { content: ":"; color: var(--marker); }
 .coll.map > dd { margin: 0; }
 
+/* A `lines` column holds the lines of one block of text, so its cells stack as written:
+   no list markers, no gaps, monospaced, and whitespace preserved rather than collapsed. */
+.cell.lines .coll.list { gap: 0; }
+.cell.lines .coll.list > li { padding-left: 0; }
+.cell.lines .coll.list > li::before { content: none; }
+.cell.lines .literal { font-family: var(--font-mono); font-size: 0.85em; white-space: pre; }
+
 /* Failures — reads like a test log */
 .failures { margin-top: 2rem; }
 .failures h2 { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fail); margin: 0 0 0.75rem; }

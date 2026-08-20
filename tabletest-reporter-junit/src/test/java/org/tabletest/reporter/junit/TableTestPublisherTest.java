@@ -486,6 +486,71 @@ class TableTestPublisherTest {
                 """, Files.readString(yamlFile));
     }
 
+    @Test
+    void shouldPublishLinesRoleAndJoinCellLinesIntoText() throws IOException {
+        var results = EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(LinesColumnTest.class))
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
+
+        results.testEvents()
+                .assertStatistics(stats -> stats.started(2).succeeded(2).failed(0));
+
+        Path yamlFile = findExpectedYamlFile(tempDir, "Lines column");
+        assertEquals("""
+                "methodName": "linesColumn"
+                "slug": "lines-column"
+                "title": "Lines column"
+                "description": "Verifying what a @Lines column publishes and what its parameter receives."
+                "headers":
+                - "value": "Scenario"
+                  "roles":
+                  - "scenario"
+                - "value": "Source"
+                  "roles":
+                  - "lines"
+                - "value": "Line Count?"
+                  "roles":
+                  - "expectation"
+                "rows":
+                - - "value": "One line"
+                    "roles":
+                    - "scenario"
+                    - "passed"
+                  - "value":
+                    - "alpha"
+                    "roles":
+                    - "passed"
+                    - "lines"
+                  - "value": "1"
+                    "roles":
+                    - "expectation"
+                    - "passed"
+                - - "value": "Two lines"
+                    "roles":
+                    - "scenario"
+                    - "passed"
+                  - "value":
+                    - "alpha"
+                    - "beta"
+                    "roles":
+                    - "passed"
+                    - "lines"
+                  - "value": "2"
+                    "roles":
+                    - "expectation"
+                    - "passed"
+                "rowResults":
+                - "rowIndex": !!int "1"
+                  "passed": !!bool "true"
+                  "displayName": "[1] One line"
+                - "rowIndex": !!int "2"
+                  "passed": !!bool "true"
+                  "displayName": "[2] Two lines"
+                """, Files.readString(yamlFile));
+    }
+
     private Path findExpectedYamlFile(Path baseDir, String name) throws IOException {
         String expectedFilename = "TABLETEST-" + Slugger.slugify(name) + ".yaml";
         try (var paths = Files.walk(baseDir)) {
@@ -672,6 +737,20 @@ class TableTestPublisherTest {
         public void declaredColumnRoles(
                 @Ingredient String ingredient, @Verdict String note, @Unpublishable int portions) {
             assertTrue(portions > 0, ingredient + " " + note);
+        }
+    }
+
+    @ExtendWith(TableTestPublisher.class)
+    public static class LinesColumnTest {
+        @DisplayName("Lines column")
+        @Description("Verifying what a @Lines column publishes and what its parameter receives.")
+        @TableTest("""
+            Scenario  | Source        | Line Count?
+            One line  | [alpha]       | 1
+            Two lines | [alpha, beta] | 2
+            """)
+        public void linesColumn(@Lines String source, int lineCount) {
+            assertEquals(lineCount, source.split("\n", -1).length);
         }
     }
 }

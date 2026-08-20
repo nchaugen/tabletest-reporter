@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Added
+- `@Lines` marks a column whose cells hold the lines of one block of text. The parameter receives
+  the lines joined by newlines (or the lines themselves, for a `List` parameter), and the HTML
+  report renders the cell as a stacked monospace block rather than a bulleted list, so text whose
+  alignment is the point reads as it was written. AsciiDoc publishes the role and keeps its bulleted
+  list; Markdown is unchanged.
 - A test parameter can now declare a role for its column, and the reporter publishes it on every
   cell of that column. Annotate an annotation of your own with `@ColumnRole` and put it on the
   parameter; the role is published as the annotation's simple name in kebab case, or as the token

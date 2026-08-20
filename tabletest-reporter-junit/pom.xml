@@ -46,6 +46,13 @@
             <artifactId>tabletest-junit</artifactId>
             <version>${version.tabletest-junit}</version>
         </dependency>
+        <!-- @ConvertWith, behind the @Lines column-role annotation; always present with @TableTest -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${version.junit}</version>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- YAML writing -->
         <dependency>

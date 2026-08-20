@@ -199,6 +199,47 @@ Without a scenario column, pass/fail roles cannot be reliably applied due to par
 
 The scenario column can have any name (`Scenario`, `Test Case`, `Description`, etc.) and contain any unique string value to identify each test case.
 
+### Column Roles
+
+Every published cell carries the roles of its column. The reporter derives four itself — `scenario`,
+`expectation`, `passed` and `failed` — and a test can declare more.
+
+**A column of source text: `@Lines`.** A table keeps every row on one line, so a multi-line value is
+written as a list of lines. Mark the column with `@Lines` and the parameter receives the lines joined
+by newlines, while the HTML report renders the cell as a stacked monospace block instead of a
+bulleted list:
+
+```java
+@TableTest("""
+    Scenario   | Source                             | Table Count?
+    One table  | ["a | b", "1 | 2"]                 | 1
+    Two tables | ["a | b", "1 | 2", "", "c", "3"]   | 2
+    """)
+void countsTables(@Lines String source, int tableCount) {
+    assertEquals(tableCount, parser.parse(source).size());
+}
+```
+
+Declare the parameter as a `List<String>` instead to receive the lines themselves. The published
+cell is unchanged either way — the reporter publishes the value the row ran with, so the cell is
+still the list of lines as it was written.
+
+**A role of your own.** Annotate an annotation with `@ColumnRole` and put it on a parameter:
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PARAMETER)
+@ColumnRole
+public @interface Ingredient {}
+```
+
+The role is published as the annotation's simple name in kebab case — `@SourceLines` publishes
+`source-lines` — or as the token `@ColumnRole("...")` names. It reaches the HTML report as a CSS
+class on the cell and the AsciiDoc report as an element role, so your own stylesheet can style the
+column; Markdown carries no roles. A role must be lower-case words joined by single hyphens, and one
+naming a role the reporter derives is published anyway — the column is then styled as that role
+without being treated as one.
+
 ## Step 3: Run Your Tests
 
 Run your tests normally. The extension automatically generates YAML files in `<buildDir>/junit-jupiter/`:
