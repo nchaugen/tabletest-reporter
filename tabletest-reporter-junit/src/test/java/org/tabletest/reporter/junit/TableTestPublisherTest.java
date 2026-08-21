@@ -668,6 +668,37 @@ class TableTestPublisherTest {
         }
     }
 
+    @Test
+    void shouldTitleAndSlugAPageAfterTheTestWhenNeitherIsNamed() throws IOException {
+        var results = EngineTestKit.engine("junit-jupiter")
+                .selectors(selectClass(UnnamedTest.class))
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(createOutputDirectoryCreator())
+                .execute();
+
+        results.testEvents()
+                .assertStatistics(stats -> stats.started(1).succeeded(1).failed(0));
+
+        String tableYaml = Files.readString(findExpectedYamlFile(tempDir, "parse-html-document"));
+        assertTrue(tableYaml.contains("\"title\": \"Parse HTML Document\""), "Method name should become the title");
+        assertTrue(tableYaml.contains("\"slug\": \"parse-html-document\""), "Method name should become the slug");
+
+        String classYaml = Files.readString(findExpectedYamlFile(tempDir, "unnamed-test"));
+        assertTrue(classYaml.contains("\"title\": \"Unnamed Test\""), "Class name should become the title");
+    }
+
+    /** Neither the class nor the method is named, so both titles are derived from the code. */
+    @ExtendWith(TableTestPublisher.class)
+    public static class UnnamedTest {
+        @TableTest("""
+            a | b | sum?
+            1 | 1 | 2
+            """)
+        public void parseHTMLDocument(int a, int b, @Scenario int sum) {
+            assertEquals(sum, a + b);
+        }
+    }
+
     @ExtendWith(TableTestPublisher.class)
     public static class NoTableTestMethodsTest {
         @Test

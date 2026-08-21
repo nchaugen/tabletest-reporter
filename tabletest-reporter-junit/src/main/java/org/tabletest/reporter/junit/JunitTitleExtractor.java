@@ -29,8 +29,6 @@ class JunitTitleExtractor {
     /**
      * Extracts title for a test method.
      * Uses @DisplayName if present, otherwise transforms method name to title.
-     * Method names with parameter types (e.g., "method(java.lang.String)") are
-     * stripped before transformation.
      */
     static String extractMethodTitle(ExtensionContext context) {
         return context.getTestMethod()
@@ -38,12 +36,7 @@ class JunitTitleExtractor {
                     if (testMethod.isAnnotationPresent(DisplayName.class)) {
                         return context.getDisplayName();
                     } else {
-                        String methodName = testMethod.getName();
-                        int paramStart = methodName.indexOf('(');
-                        if (paramStart > 0) {
-                            methodName = methodName.substring(0, paramStart);
-                        }
-                        return TitleTransformer.toTitle(methodName);
+                        return TitleTransformer.toTitle(testMethod.getName());
                     }
                 })
                 .orElse(context.getDisplayName());
