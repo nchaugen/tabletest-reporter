@@ -21,10 +21,11 @@ features:
   - name: structure
     title: "Report structure"
     description: >
-      The shape of the published report: which pages exist, where the tree is rooted, and how
-      deep the indexes go. The same in every format.
-    features:                # the tree first, then how much of it gets an index page
-      - name: the-page-tree
+      The shape of the published report: which pages exist, what each one is called, where the
+      tree is rooted, and how deep the indexes go. The same in every format.
+    features:                # the tree, then what its pages are called, then how much of it
+      - name: the-page-tree  # gets an index page of its own
+      - name: page-names
       - name: the-indexdepth-option
   - name: pages
     title: "Page contents"
@@ -57,3 +58,11 @@ publish:
     - publish-selection-apply-test       # applying the exclude/include tree transform
     - spec-metadata-apply-test           # applying title/intro/order onto the tree
     - pebble                             # Pebble template filter internals (whole subtree)
+
+    # --- From tabletest-reporter-junit, merged in by <inputDirectories> ---
+    # The extension's own test package, held back whole: the two slug tiers below Slugger, the
+    # role-token rules, the @Lines converter and the row-result matcher. Each is either an
+    # internal mechanism or a rule on a package-private class, which cannot leave this package
+    # and so could not join a subject group. A rule that belongs in the spec moves out of the
+    # package instead — as the naming rules did, into structure/page-names.
+    - junit

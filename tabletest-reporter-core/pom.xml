@@ -134,6 +134,16 @@
                         <version>${project.version}</version>
                         <configuration>
                             <format>html</format>
+                            <!-- The spec spans two modules: this one, and the naming rules the
+                                 JUnit extension owns. Both directories are listed explicitly
+                                 because the reactor-walking aggregate goal cannot be used here
+                                 (self-hosting-reactor-cycle). Run the JUnit module's tests under
+                                 -Preport first, or its directory is skipped with a warning and
+                                 the spec publishes without those rules. -->
+                            <inputDirectories>
+                                <inputDirectory>${project.build.directory}/junit-jupiter</inputDirectory>
+                                <inputDirectory>${project.basedir}/../tabletest-reporter-junit/target/junit-jupiter</inputDirectory>
+                            </inputDirectories>
                         </configuration>
                     </plugin>
                 </plugins>

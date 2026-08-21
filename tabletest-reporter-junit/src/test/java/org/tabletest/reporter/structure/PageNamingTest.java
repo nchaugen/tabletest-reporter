@@ -1,16 +1,62 @@
-package org.tabletest.reporter.junit;
+package org.tabletest.reporter.structure;
 
+import org.junit.jupiter.api.DisplayName;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
+import org.tabletest.reporter.junit.Slugger;
+import org.tabletest.reporter.junit.TitleTransformer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests for the Slugger which converts test class and method names
- * to web-friendly kebab-case filenames.
+ * The naming rules, read against the public API the extension names a page with. Lives in the
+ * report-structure test package rather than beside {@link Slugger} in the extension's own, so
+ * these rules join the structure group of the published spec instead of forming a group of their
+ * own. Both classes under test are public, so the package is free to choose.
  */
-class SluggerTest {
+@DisplayName("Page names")
+@Description("""
+        A page needs two names: the title a reader sees, and the file name the URL ends in. Both
+        come from the test that produced the page. A class or method that carries a @DisplayName
+        supplies its own title, and the rules below are what happens when it does not.
+        """)
+class PageNamingTest {
 
+    @DisplayName("Titles a page after the test that made it")
+    @Description("""
+            The name is read as words and written back with a space between them. A run of capital
+            letters is one word, so an acronym survives. A trailing capital run that ends the name
+            joins the word before it, which is why getHTTPSURL reads as it does.
+
+            An underscore separates words the same way, and a name already written with spaces is
+            left alone.
+            """)
+    @TableTest("""
+        Name              | Title?
+        LeapYearRules     | Leap Year Rules
+        XMLParser         | XML Parser
+        parseHTMLDocument | Parse HTML Document
+        HTTPSConnection   | HTTPS Connection
+        simpleTest        | Simple Test
+        A                 | A
+        AB                | AB
+        ABC               | ABC
+        AbcDef            | Abc Def
+        ABCDef            | ABC Def
+        MyHTTPServer      | My HTTP Server
+        getHTTPSURL       | Get HTTPSURL
+        IOError           | IO Error
+        SimpleClassName   | Simple Class Name
+        snake_name        | Snake name
+        name with spaces  | name with spaces
+        ""                | ""
+                          |
+        """)
+    void titlesAPageAfterTheTestThatMadeIt(String name, String title) {
+        assertThat(TitleTransformer.toTitle(name)).isEqualTo(title);
+    }
+
+    @DisplayName("Turns a name into the URL of its page")
     @Description("""
         A name that keeps a letter through the ASCII fold slugs exactly as it always has.
         A name that does not — one written in a script the fold has no answer for — keeps
@@ -19,7 +65,7 @@ class SluggerTest {
         still get two filenames.
         """)
     @TableTest("""
-        Scenario                     | Input                   | Result?
+        Scenario                     | Name                    | URL?
         CamelCase PascalCase         | LeapYearRules           | leap-year-rules
         CamelCase multi-word         | TestClassName           | test-class-name
         CamelCase starting lowercase | simpleTest              | simple-test
@@ -63,7 +109,7 @@ class SluggerTest {
         Cyrillic camelCase           | проверкаИмени           | проверка-имени
         No letters or digits         | '!!!'                   | unnamed-00008001
         """)
-    void shouldSlugifyNames(String input, String expected) {
-        assertThat(Slugger.slugify(input)).isEqualTo(expected);
+    void turnsANameIntoTheUrlOfItsPage(String name, String url) {
+        assertThat(Slugger.slugify(name)).isEqualTo(url);
     }
 }
