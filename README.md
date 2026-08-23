@@ -18,25 +18,26 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
 - [Formats](#formats)
   - [Choosing a format](#choosing-a-format)
   - [Listing available formats](#listing-available-formats)
-  - [What the HTML report gives you](#what-the-html-report-gives-you)
+  - [The HTML format](#the-html-format)
+  - [The AsciiDoc format](#the-asciidoc-format)
+  - [The Markdown format](#the-markdown-format)
+- [Custom Templates](#custom-templates)
+  - [Convention-based discovery](#convention-based-discovery)
+  - [Configuring a custom template directory](#configuring-a-custom-template-directory)
+  - [Template extension example](#template-extension-example)
+  - [Template replacement example](#template-replacement-example)
+  - [The template context](#the-template-context)
+  - [What an extension template can reach](#what-an-extension-template-can-reach)
+  - [Defining a format of your own](#defining-a-format-of-your-own)
+- [Column Roles](#column-roles)
+  - [Styling an AsciiDoc report by its roles](#styling-an-asciidoc-report-by-its-roles)
+  - [Building a rendering of your own](#building-a-rendering-of-your-own)
 - [Output Structure](#output-structure)
   - [How names become filenames](#how-names-become-filenames)
 - [Publishing Your Documentation](#publishing-your-documentation)
   - [GitHub Pages via Actions](#github-pages-via-actions)
   - [Other hosting options](#other-hosting-options)
   - [Publishing into an existing site](#publishing-into-an-existing-site)
-  - [Styling an AsciiDoc report once it is HTML](#styling-an-asciidoc-report-once-it-is-html)
-- [Custom Templates](#custom-templates)
-  - [Convention-based discovery](#convention-based-discovery)
-  - [Configuring a custom template directory](#configuring-a-custom-template-directory)
-  - [Template extension example](#template-extension-example)
-  - [Recording when the report was generated](#recording-when-the-report-was-generated)
-  - [Template replacement example](#template-replacement-example)
-  - [The template context](#the-template-context)
-  - [What an extension template can reach](#what-an-extension-template-can-reach)
-  - [Defining a format of your own](#defining-a-format-of-your-own)
-- [Column Roles](#column-roles)
-  - [Building a rendering of your own](#building-a-rendering-of-your-own)
 - [For Plugin Developers](#for-plugin-developers)
 
 ## Quick Start
@@ -668,7 +669,7 @@ markdown
 
 When using custom templates with additional formats, those will also appear in the list.
 
-### What the HTML report gives you
+### The HTML format
 
 The `html` format renders self-contained living documentation, and needs no Asciidoctor step.
 Each page is a standalone `.html` file, with its CSS and JavaScript inside it and no external
@@ -754,6 +755,503 @@ currently applies to the `html` format only.
 To customise the markup, drop your own `table.html.peb` / `index.html.peb` into a template
 directory — an exact filename match overrides the built-in template, as
 [Custom Templates](#custom-templates) describes.
+
+### The AsciiDoc format
+
+The `asciidoc` format is source for an Asciidoctor or Antora pipeline, not a finished page. It
+carries the data of a report and leaves the presentation to the renderer you run over it.
+
+- A collection opens as a bulleted block, or a description list, **below** the cell. A table cell
+  cannot hold one in AsciiDoc.
+- Every literal is wrapped in `++` pass-through markers, so the value reaches the renderer as you
+  wrote it. A pipe inside a value is escaped, because a pipe ends a cell.
+- Whitespace you would otherwise have to count is written with glyphs: an open box for a space, an
+  arrow for a tab.
+- A column role reaches the value as an element role — `[.lines]`, `[.value-set]` — for your
+  stylesheet to act on. [Styling an AsciiDoc report by its roles](#styling-an-asciidoc-report-by-its-roles)
+  shows how.
+- `frontMatter` is written as document attributes above the page.
+
+Presentation the HTML report draws itself — the block layout of `@Lines`, the connectors of
+`@Tree` — does not reach AsciiDoc today. The role is published, so a stylesheet can act on it.
+
+### The Markdown format
+
+The `markdown` format is interchange. It renders anywhere a reader is likely to open it: GitHub,
+Docusaurus, MkDocs.
+
+- A collection stays **inside** the cell, in the notation you wrote it in — square brackets for a
+  list, braces for a set, `key: value` pairs for a map, nested to any depth. Markdown is the only
+  format that can do this, so a reader meets the value spelled the way they would spell it.
+- A pipe inside a value is escaped, because a pipe ends a cell.
+- Whitespace is written with the same glyphs AsciiDoc uses.
+- **No roles at all.** Markdown has nowhere to put a mark, so a scenario column, an expectation
+  column and a value set are indistinguishable from any other column.
+- `frontMatter` is written as a fenced YAML block above the page.
+
+## Custom Templates
+
+TableTest Reporter uses [Pebble templates](https://pebbletemplates.io/) to generate documentation. You can customise the output by providing your own templates.
+
+**Two approaches:**
+
+1. **Template Extension** - Override specific parts (e.g., add front matter for Jekyll/Hugo)
+2. **Template Replacement** - Completely replace the built-in templates
+
+### Convention-based discovery
+
+Custom templates are discovered automatically by naming convention:
+
+- `*-table.adoc.peb` or `*-table.md.peb` - Custom table templates
+- `*-index.adoc.peb` or `*-index.md.peb` - Custom index templates
+
+The reporter picks up `custom-table.adoc.peb` or `jekyll-table.md.peb` by itself, for example.
+
+**Precedence:**
+1. Exact match (e.g., `table.adoc.peb`) - complete replacement
+2. Pattern match (e.g., `custom-table.adoc.peb`) - extension template
+3. Built-in template - default
+
+### Configuring a custom template directory
+
+**Maven Plugin:**
+```xml
+<configuration>
+  <templateDirectory>${project.basedir}/templates</templateDirectory>
+</configuration>
+```
+
+**Gradle Plugin:**
+```kotlin
+tableTestReporter {
+  templateDir.set(file("templates"))
+}
+```
+
+**CLI:**
+```bash
+java -jar tabletest-reporter-cli.jar \
+  --template-dir templates \
+  -f markdown \
+  -i target/junit-jupiter \
+  -o target/generated-docs/tabletest
+```
+
+### Template extension example
+
+Extend built-in templates by overriding specific blocks. Create `jekyll-table.md.peb`:
+
+```pebble
+{% extends "table.md.peb" %}
+{% block frontMatter %}---
+layout: default
+title: {{ title }}
+---
+
+{% endblock %}
+```
+
+Available blocks for tables:
+- `frontMatter` - Content before the document (e.g., Jekyll/Hugo front matter)
+- `title` - Table title
+- `description` - Table description
+- `table` - Entire table
+  - `tableHeaders` - Table header row
+  - `tableRows` - Table body rows
+- `failures` - Failed row details section
+- `footer` - Content after the document
+
+Available blocks for indexes:
+- `frontMatter` - Content before the document
+- `title` - Index title
+- `description` - Index description
+- `contents` - List of child pages
+- `footer` - Content after the document
+
+### Template replacement example
+
+Completely replace the built-in template. Create `table.adoc.peb`:
+
+```asciidoc
+= {{ title }}
+
+Custom header content here.
+
+[cols="{{ '1' | replicate(headers.size) | join(',') }}"]
+|===
+{% for header in headers %}
+|{{ header.value }}
+{% endfor %}
+
+{% for row in rows %}
+{% for cell in row %}
+|{{ cell.value }}
+{% endfor %}
+
+{% endfor %}
+|===
+
+Generated on {{ generatedAt.label }}
+```
+
+### The template context
+
+Every key below is available to a replacement template, and to a block you override in an
+extension template.
+
+**On every page, in every format:**
+
+| Key | Holds |
+|---|---|
+| `title` | the page's display name |
+| `description` | the page's description, where it has one |
+| `name` | the page's own name, as it appears in the URL |
+| `breadcrumbs` | the ancestor trail, each entry `label`, `href`, `current`; the page itself is last and has no `href` |
+| `nav` | the whole report: `nav.home` (`label`, `href`, `current`) and `nav.tree` of nested entries |
+| `assetRoot` | the relative prefix from this page back to the report root, e.g. `../../` |
+| `generatedAt` | `datetime` (ISO 8601) and `label` (readable) for the run, or null |
+| `site` | `label` and `url` of the hosting site, or null when no `site` is declared |
+
+**A table page adds:**
+
+| Key | Holds |
+|---|---|
+| `headers` | header cells, each with `value` and `roles` |
+| `rows` | rows of cells, each with `value` and `roles` |
+| `rowResults` | one entry per scenario, with `displayName`, `passed` and `errorMessage` |
+| `featureDescription` | the description of the page this rule sits under, where it has one |
+
+**An index page adds:**
+
+| Key | Holds |
+|---|---|
+| `contents` | child pages, nested: `name`, `title`, `path`, `type` (`index` or `table`), `status`, and `contents` for its own children |
+| `status` | the rollup below this page: `state` (`passed`, `failed` or `neutral`), `total`, `passed`, `broken` |
+
+**A single-file report** has `title`, `description`, `nav`, `assetRoot`, `generatedAt`, `site`,
+`searchData`, and `sections` — one entry per page, with `anchor`, `title`, `type`, `status`,
+`level`, `description`, and `headers` / `rows` / `rowResults` for a table. It has **no**
+`breadcrumbs`.
+
+### What an extension template can reach
+
+A template that extends a built-in one reads every context key above, inside the block it
+overrides. It can also import the built-in macros and call them:
+
+```pebble
+{% extends "index.html.peb" %}
+{% import "macros.html.peb" %}
+{% block footer %}
+  <p>Reviewed quarterly.</p>
+  {{ docFooter(generatedAt, site) }}
+{% endblock %}
+```
+
+Three things to know about the blocks themselves:
+
+- **The three text-format blocks are not in the HTML templates.** The AsciiDoc and Markdown
+  templates leave `frontMatter`, `title`, `description`, `table`, `failures` and `contents`. The
+  HTML templates leave `extra_stylesheet` and `footer`.
+- **A block must sit at the top level of the page template to be overridable.** A block written
+inside a macro renders its default and ignores the override, without a word. A macro reaches the
+page through `{% import %}`, which is not inheritance.
+- **Quote a value that ends in an expression.** Pebble trims the newline straight after a `}}`, so
+  a line ending in one joins the line below it. An unquoted
+  `generated: {{ generatedAt.datetime }}` therefore puts the closing `---` on the value line, and
+  the front matter stops parsing. Any character after the braces prevents it, and quotes are valid
+  YAML for a timestamp.
+
+#### Composing a value from several context keys
+
+Most projects want [the `frontMatter` config section](#front-matter-for-a-site-generator-frontmatter)
+instead — it needs no template at all. Write the block yourself when you need more than keys and
+values, such as a value composed from several context keys:
+
+```pebble
+{% extends "table.md.peb" %}
+{% block frontMatter %}---
+title: "{{ title }}"
+generated: "{{ generatedAt.datetime }}"
+---
+
+{% endblock %}
+```
+
+For AsciiDoc the same block carries document attributes instead:
+
+```pebble
+{% extends "table.adoc.peb" %}
+{% block frontMatter %}:generated: {{ generatedAt.datetime }}
+{% endblock %}
+```
+
+### Defining a format of your own
+
+A format is a pair of templates. Name the pair after a format that exists and you replace it, as
+above. Name it after one that does not, and you have defined a format. Put the templates in your
+template directory, and the reporter can write XML, JSON, or whatever else you template.
+
+**Requirements:**
+- Both `table.{format}.peb` and `index.{format}.peb` must be present
+- Format name becomes the file extension (e.g., "xml" → ".xml")
+
+**Example: XML Format**
+
+Create `table.xml.peb`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<table title="{{ title }}">
+    {% if description %}<description>{{ description }}</description>{% endif %}
+    <headers>
+    {% for header in headers %}
+        <header>{{ header.value }}</header>
+    {% endfor %}
+    </headers>
+    <rows>
+    {% for row in rows %}
+        <row>
+        {% for cell in row %}
+            <cell>{{ cell.value }}</cell>
+        {% endfor %}
+        </row>
+    {% endfor %}
+    </rows>
+</table>
+```
+
+Create `index.xml.peb`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<index name="{{ title ? title : name }}">
+    {% if description %}<description>{{ description }}</description>{% endif %}
+    {% for item in contents %}
+    <item path="{{ item.path }}">{{ item.title }}</item>
+    {% endfor %}
+</index>
+```
+
+**Usage:**
+
+Specify the custom format when running the reporter:
+
+**Maven:**
+```xml
+<configuration>
+  <format>xml</format>
+  <templateDirectory>${project.basedir}/templates</templateDirectory>
+</configuration>
+```
+
+**Gradle:**
+```kotlin
+tableTestReporter {
+  format.set("xml")
+  templateDir.set(file("templates"))
+}
+```
+
+**CLI:**
+```bash
+java -jar tabletest-reporter-cli.jar \
+  --template-dir templates \
+  -f xml \
+  -i target/junit-jupiter \
+  -o target/generated-docs/tabletest
+```
+
+If an unknown format is specified, you'll get a helpful error message listing all available formats (both built-in and discovered custom formats).
+
+## Column Roles
+
+Every published cell carries the roles of its column. The reporter derives four itself — `scenario`,
+`expectation`, `passed` and `failed` — and a test can declare more.
+
+**A column of source text: `@Lines`.** A table keeps every row on one line, so you write a
+multi-line value as a list of lines. Mark the column with `@Lines`. The parameter then takes the
+lines joined by newlines. The HTML report draws the cell as a stacked
+monospace block, and not as a bulleted list:
+
+```java
+@TableTest("""
+    Scenario   | Source                             | Table Count?
+    One table  | ["a | b", "1 | 2"]                 | 1
+    Two tables | ["a | b", "1 | 2", "", "c", "3"]   | 2
+    """)
+void countsTables(@Lines String source, int tableCount) {
+    assertEquals(tableCount, parser.parse(source).size());
+}
+```
+
+Declare the parameter as a `List<String>` instead, and it takes the lines themselves. The published
+cell does not change either way. The reporter publishes the value the row ran with, so the cell is
+still the list of lines you wrote.
+
+**Several named blocks: `@NamedLines`.** One cell can hold more than one block of text, each under
+a name. Write it as a map from name to lines. A file and its contents is the case it serves, so the cell reads as a small directory. The HTML report draws each name as a caption over its own
+block:
+
+```java
+@TableTest("""
+    Scenario                   | Your template directory                                       | Table page?
+    The name of the table page | [table.md.peb: ['# {{ title }} of note', 'Written by hand.']] | ['# Leap years of note', 'Written by hand.']
+    Two names that both match  | [b-table.md.peb: ['# From B'], a-table.md.peb: ['# From A']]  | ['# From A']
+    """)
+void rendersWithYourTemplate(
+        @NamedLines Map<String, List<String>> yourTemplateDirectory, @Lines List<String> tablePage) { ... }
+```
+
+The parameter is a plain `Map<String, List<String>>`, and there is no converter. Note that **a map
+key is never converted**. Declaring `Map<Path, …>` therefore compiles, and then fails at the first
+read. Resolve the name yourself where you write the files out.
+
+**Numbered lines: `@Numbered`.** Numbering is a role of its own, and not part of the two above. Ask
+for it beside either: `@Lines @Numbered` or `@NamedLines @Numbered`. It earns its place on a block
+long enough that a reader needs to point at a line. On two or three lines the digits are as wide as
+the text beside them, which is why it is off unless you ask.
+
+**A role of your own.** Annotate an annotation with `@ColumnRole` and put it on a parameter:
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PARAMETER)
+@ColumnRole
+public @interface Ingredient {}
+```
+
+The reporter publishes the role as the annotation's simple name in kebab case, so `@SourceLines`
+publishes `source-lines`. Name the token yourself with `@ColumnRole("...")` instead.
+
+The role reaches the HTML report as a CSS class on the cell, and the AsciiDoc report as an element
+role. A stylesheet of your own can therefore style the column. Markdown carries no roles.
+
+A role must be lower-case words joined by single hyphens. A role that names one the reporter derives
+publishes anyway: the column takes that role's styling, and the reporter never treats it as one.
+
+### Styling an AsciiDoc report by its roles
+
+A role reaches an AsciiDoc report too, as an element role on the value, so you can style an
+AsciiDoc report by the same roles. The route differs: this one styles the HTML **Asciidoctor**
+produces, through a stylesheet you give Asciidoctor, and it applies once you have converted the
+report. The built-in `html` format is styled through `extra_stylesheet` instead — the section
+below covers that one.
+
+**Understanding CSS Class Placement**
+
+TableTest Reporter generates AsciiDoc with custom roles (`.scenario`, `.expectation`, `.passed`, `.failed`) that become CSS classes in HTML output. The reporter puts these classes on **an inline element inside a table cell**, such as a `span`, a `ul` or an `ol`. It does not put them on the `th` or the `td`.
+
+To style cells based on their content's roles, use the CSS `:has()` selector:
+
+```css
+/* Scenario column - light yellow background */
+:is(th, td):has(.scenario) {
+    background-color: #fffacd;
+    font-style: italic;
+}
+
+/* Expectation columns - light blue background */
+:is(th, td):has(.expectation) {
+    background-color: #add8e6;
+}
+
+/* Passed rows - light green background */
+:is(th, td):has(.passed) {
+    background-color: #90ee90;
+}
+
+/* Failed rows - light red background */
+:is(th, td):has(.failed) {
+    background-color: #ffcccb;
+}
+
+/* Expectation cells in passed rows - bold green */
+:is(th, td):has(.expectation.passed) {
+    background-color: #32cd32;
+    font-weight: bold;
+}
+
+/* Expectation cells in failed rows - bold red */
+:is(th, td):has(.expectation.failed) {
+    background-color: #ff6347;
+    font-weight: bold;
+}
+```
+
+**Note:** use `:has(.classname)` and name no element type. A role can land on a different element,
+depending on what the cell holds.
+
+**Asciidoctor Maven Plugin Configuration**
+
+Configure the [asciidoctor-maven-plugin](https://docs.asciidoctor.org/maven-tools/latest/) to use your custom stylesheet:
+
+```xml
+<plugin>
+    <groupId>org.asciidoctor</groupId>
+    <artifactId>asciidoctor-maven-plugin</artifactId>
+    <version>3.2.0</version>
+    <configuration>
+        <sourceDirectory>${project.build.directory}/generated-docs/tabletest</sourceDirectory>
+        <outputDirectory>${project.build.directory}/generated-html/tabletest</outputDirectory>
+        <backend>html5</backend>
+        <preserveDirectories>true</preserveDirectories>
+        <attributes>
+            <stylesheet>tabletest.css</stylesheet>
+            <stylesdir>${project.basedir}/src/main/resources</stylesdir>
+            <copycss>true</copycss>
+        </attributes>
+    </configuration>
+</plugin>
+```
+
+Key attributes:
+- `stylesheet` - Name of your CSS file
+- `stylesdir` - Directory containing your CSS file
+- `copycss` - Embeds CSS in each HTML file (set to `false` and use `linkcss` for external stylesheet)
+
+See the [Asciidoctor stylesheet documentation](https://docs.asciidoctor.org/asciidoc/latest/docinfo/stylesheet/) for more options.
+
+**Working Example**
+
+A complete working example is available in the project's compatibility tests: [`compatibility-tests/junit-6-maven/`](compatibility-tests/junit-6-maven/)
+
+### Building a rendering of your own
+
+A role of your own reaches the report exactly as a built-in one does, because the built-in roles
+have no privileged path. The reporter draws a value from its shape — a list, a set, a map or a
+literal — and puts the column's roles on the cell as CSS classes. Every built-in role is a rule in
+the stylesheet against that class, and nothing more. `@Numbered`, in full, is:
+
+```css
+td.cell.numbered .coll.list { counter-reset: line; }
+td.cell.numbered .coll.list > li { counter-increment: line; }
+```
+
+So `@Lines`, `@Tree`, `@NamedLines` and `@Numbered` are each an annotation plus a stylesheet rule,
+and you can write the same thing. Declare the annotation:
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PARAMETER)
+@ColumnRole
+public @interface Ingredient {}
+```
+
+Then add your rules through the `extra_stylesheet` block, in a template that extends the built-in
+one. Name it with the hyphen form, because a template cannot extend itself:
+
+```pebble
+{# my-table.html.peb #}
+{% extends "table.html.peb" %}
+{% block extra_stylesheet %}
+td.cell.ingredient .literal { font-variant: small-caps; letter-spacing: 0.04em; }
+{% endblock %}
+```
+
+Point the reporter at that template directory, and every cell of an `@Ingredient` column is drawn
+your way. The built-in stylesheet stays where it is, so you add to it rather than replace it.
+
+The limit is worth knowing. Your CSS restyles the markup the reporter emits for the value's shape.
+It cannot make the reporter emit different markup — for that, replace the page template, which
+[Custom Templates](#custom-templates) covers.
 
 ## Output Structure
 
@@ -966,471 +1464,6 @@ report. For the same reason neither text format carries breadcrumbs or a footer 
 [Choosing a Format](#choosing-a-format).
 
 ---
-
-### Styling an AsciiDoc report once it is HTML
-
-This section is for the `asciidoc` format, once you have run Asciidoctor over it. The built-in
-`html` format is not styled this way — it carries its stylesheet inside each page, and you add to
-it through the `extra_stylesheet` block, which [Column Roles](#column-roles) shows.
-
-When you generate HTML from an AsciiDoc report, you can style it by the roles TableTest Reporter
-emits.
-
-**Understanding CSS Class Placement**
-
-TableTest Reporter generates AsciiDoc with custom roles (`.scenario`, `.expectation`, `.passed`, `.failed`) that become CSS classes in HTML output. The reporter puts these classes on **an inline element inside a table cell**, such as a `span`, a `ul` or an `ol`. It does not put them on the `th` or the `td`.
-
-To style cells based on their content's roles, use the CSS `:has()` selector:
-
-```css
-/* Scenario column - light yellow background */
-:is(th, td):has(.scenario) {
-    background-color: #fffacd;
-    font-style: italic;
-}
-
-/* Expectation columns - light blue background */
-:is(th, td):has(.expectation) {
-    background-color: #add8e6;
-}
-
-/* Passed rows - light green background */
-:is(th, td):has(.passed) {
-    background-color: #90ee90;
-}
-
-/* Failed rows - light red background */
-:is(th, td):has(.failed) {
-    background-color: #ffcccb;
-}
-
-/* Expectation cells in passed rows - bold green */
-:is(th, td):has(.expectation.passed) {
-    background-color: #32cd32;
-    font-weight: bold;
-}
-
-/* Expectation cells in failed rows - bold red */
-:is(th, td):has(.expectation.failed) {
-    background-color: #ff6347;
-    font-weight: bold;
-}
-```
-
-**Note:** use `:has(.classname)` and name no element type. A role can land on a different element,
-depending on what the cell holds.
-
-**Asciidoctor Maven Plugin Configuration**
-
-Configure the [asciidoctor-maven-plugin](https://docs.asciidoctor.org/maven-tools/latest/) to use your custom stylesheet:
-
-```xml
-<plugin>
-    <groupId>org.asciidoctor</groupId>
-    <artifactId>asciidoctor-maven-plugin</artifactId>
-    <version>3.2.0</version>
-    <configuration>
-        <sourceDirectory>${project.build.directory}/generated-docs/tabletest</sourceDirectory>
-        <outputDirectory>${project.build.directory}/generated-html/tabletest</outputDirectory>
-        <backend>html5</backend>
-        <preserveDirectories>true</preserveDirectories>
-        <attributes>
-            <stylesheet>tabletest.css</stylesheet>
-            <stylesdir>${project.basedir}/src/main/resources</stylesdir>
-            <copycss>true</copycss>
-        </attributes>
-    </configuration>
-</plugin>
-```
-
-Key attributes:
-- `stylesheet` - Name of your CSS file
-- `stylesdir` - Directory containing your CSS file
-- `copycss` - Embeds CSS in each HTML file (set to `false` and use `linkcss` for external stylesheet)
-
-See the [Asciidoctor stylesheet documentation](https://docs.asciidoctor.org/asciidoc/latest/docinfo/stylesheet/) for more options.
-
-**Working Example**
-
-A complete working example is available in the project's compatibility tests: [`compatibility-tests/junit-6-maven/`](compatibility-tests/junit-6-maven/)
-
-## Custom Templates
-
-TableTest Reporter uses [Pebble templates](https://pebbletemplates.io/) to generate documentation. You can customise the output by providing your own templates.
-
-**Two approaches:**
-
-1. **Template Extension** - Override specific parts (e.g., add front matter for Jekyll/Hugo)
-2. **Template Replacement** - Completely replace the built-in templates
-
-### Convention-based discovery
-
-Custom templates are discovered automatically by naming convention:
-
-- `*-table.adoc.peb` or `*-table.md.peb` - Custom table templates
-- `*-index.adoc.peb` or `*-index.md.peb` - Custom index templates
-
-The reporter picks up `custom-table.adoc.peb` or `jekyll-table.md.peb` by itself, for example.
-
-**Precedence:**
-1. Exact match (e.g., `table.adoc.peb`) - complete replacement
-2. Pattern match (e.g., `custom-table.adoc.peb`) - extension template
-3. Built-in template - default
-
-### Configuring a custom template directory
-
-**Maven Plugin:**
-```xml
-<configuration>
-  <templateDirectory>${project.basedir}/templates</templateDirectory>
-</configuration>
-```
-
-**Gradle Plugin:**
-```kotlin
-tableTestReporter {
-  templateDir.set(file("templates"))
-}
-```
-
-**CLI:**
-```bash
-java -jar tabletest-reporter-cli.jar \
-  --template-dir templates \
-  -f markdown \
-  -i target/junit-jupiter \
-  -o target/generated-docs/tabletest
-```
-
-### Template extension example
-
-Extend built-in templates by overriding specific blocks. Create `jekyll-table.md.peb`:
-
-```pebble
-{% extends "table.md.peb" %}
-{% block frontMatter %}---
-layout: default
-title: {{ title }}
----
-
-{% endblock %}
-```
-
-Available blocks for tables:
-- `frontMatter` - Content before the document (e.g., Jekyll/Hugo front matter)
-- `title` - Table title
-- `description` - Table description
-- `table` - Entire table
-  - `tableHeaders` - Table header row
-  - `tableRows` - Table body rows
-- `failures` - Failed row details section
-- `footer` - Content after the document
-
-Available blocks for indexes:
-- `frontMatter` - Content before the document
-- `title` - Index title
-- `description` - Index description
-- `contents` - List of child pages
-- `footer` - Content after the document
-
-### Recording when the report was generated
-
-Most projects want [the `frontMatter` config section](#front-matter-for-a-site-generator-frontmatter)
-instead — it needs no template at all. Write the block yourself when you need more than keys and
-values, such as a value composed from several context keys:
-
-```pebble
-{% extends "table.md.peb" %}
-{% block frontMatter %}---
-title: "{{ title }}"
-generated: "{{ generatedAt.datetime }}"
----
-
-{% endblock %}
-```
-
-**Quote the value.** Pebble trims the newline straight after a `}}` expression, so a line ending
-in one joins the line below it. An unquoted `generated: {{ generatedAt.datetime }}` therefore puts
-the closing `---` on the value line, and the front matter stops parsing. Any character after the braces
-prevents it, and quotes are valid YAML for a timestamp.
-
-For AsciiDoc the same block carries document attributes instead:
-
-```pebble
-{% extends "table.adoc.peb" %}
-{% block frontMatter %}:generated: {{ generatedAt.datetime }}
-{% endblock %}
-```
-
-### Template replacement example
-
-Completely replace the built-in template. Create `table.adoc.peb`:
-
-```asciidoc
-= {{ title }}
-
-Custom header content here.
-
-[cols="{{ '1' | replicate(headers.size) | join(',') }}"]
-|===
-{% for header in headers %}
-|{{ header.value }}
-{% endfor %}
-
-{% for row in rows %}
-{% for cell in row %}
-|{{ cell.value }}
-{% endfor %}
-
-{% endfor %}
-|===
-
-Generated on {{ generatedAt.label }}
-```
-
-### The template context
-
-Every key below is available to a replacement template, and to a block you override in an
-extension template.
-
-**On every page, in every format:**
-
-| Key | Holds |
-|---|---|
-| `title` | the page's display name |
-| `description` | the page's description, where it has one |
-| `name` | the page's own name, as it appears in the URL |
-| `breadcrumbs` | the ancestor trail, each entry `label`, `href`, `current`; the page itself is last and has no `href` |
-| `nav` | the whole report: `nav.home` (`label`, `href`, `current`) and `nav.tree` of nested entries |
-| `assetRoot` | the relative prefix from this page back to the report root, e.g. `../../` |
-| `generatedAt` | `datetime` (ISO 8601) and `label` (readable) for the run, or null |
-| `site` | `label` and `url` of the hosting site, or null when no `site` is declared |
-
-**A table page adds:**
-
-| Key | Holds |
-|---|---|
-| `headers` | header cells, each with `value` and `roles` |
-| `rows` | rows of cells, each with `value` and `roles` |
-| `rowResults` | one entry per scenario, with `displayName`, `passed` and `errorMessage` |
-| `featureDescription` | the description of the page this rule sits under, where it has one |
-
-**An index page adds:**
-
-| Key | Holds |
-|---|---|
-| `contents` | child pages, nested: `name`, `title`, `path`, `type` (`index` or `table`), `status`, and `contents` for its own children |
-| `status` | the rollup below this page: `state` (`passed`, `failed` or `neutral`), `total`, `passed`, `broken` |
-
-**A single-file report** has `title`, `description`, `nav`, `assetRoot`, `generatedAt`, `site`,
-`searchData`, and `sections` — one entry per page, with `anchor`, `title`, `type`, `status`,
-`level`, `description`, and `headers` / `rows` / `rowResults` for a table. It has **no**
-`breadcrumbs`.
-
-### What an extension template can reach
-
-A template that extends a built-in one reads every context key above, inside the block it
-overrides. It can also import the built-in macros and call them:
-
-```pebble
-{% extends "index.html.peb" %}
-{% import "macros.html.peb" %}
-{% block footer %}
-  <p>Reviewed quarterly.</p>
-  {{ docFooter(generatedAt, site) }}
-{% endblock %}
-```
-
-Two things to know about the blocks themselves:
-
-- **The three text-format blocks are not in the HTML templates.** The AsciiDoc and Markdown
-  templates leave `frontMatter`, `title`, `description`, `table`, `failures` and `contents`. The
-  HTML templates leave `extra_stylesheet` and `footer`.
-- **A block must sit at the top level of the page template to be overridable.** A block written
-inside a macro renders its default and ignores the override, without a word. A macro reaches the
-page through `{% import %}`, which is not inheritance.
-
-### Defining a format of your own
-
-A format is a pair of templates. Name the pair after a format that exists and you replace it, as
-above. Name it after one that does not, and you have defined a format. Put the templates in your
-template directory, and the reporter can write XML, JSON, or whatever else you template.
-
-**Requirements:**
-- Both `table.{format}.peb` and `index.{format}.peb` must be present
-- Format name becomes the file extension (e.g., "xml" → ".xml")
-
-**Example: XML Format**
-
-Create `table.xml.peb`:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<table title="{{ title }}">
-    {% if description %}<description>{{ description }}</description>{% endif %}
-    <headers>
-    {% for header in headers %}
-        <header>{{ header.value }}</header>
-    {% endfor %}
-    </headers>
-    <rows>
-    {% for row in rows %}
-        <row>
-        {% for cell in row %}
-            <cell>{{ cell.value }}</cell>
-        {% endfor %}
-        </row>
-    {% endfor %}
-    </rows>
-</table>
-```
-
-Create `index.xml.peb`:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<index name="{{ title ? title : name }}">
-    {% if description %}<description>{{ description }}</description>{% endif %}
-    {% for item in contents %}
-    <item path="{{ item.path }}">{{ item.title }}</item>
-    {% endfor %}
-</index>
-```
-
-**Usage:**
-
-Specify the custom format when running the reporter:
-
-**Maven:**
-```xml
-<configuration>
-  <format>xml</format>
-  <templateDirectory>${project.basedir}/templates</templateDirectory>
-</configuration>
-```
-
-**Gradle:**
-```kotlin
-tableTestReporter {
-  format.set("xml")
-  templateDir.set(file("templates"))
-}
-```
-
-**CLI:**
-```bash
-java -jar tabletest-reporter-cli.jar \
-  --template-dir templates \
-  -f xml \
-  -i target/junit-jupiter \
-  -o target/generated-docs/tabletest
-```
-
-If an unknown format is specified, you'll get a helpful error message listing all available formats (both built-in and discovered custom formats).
-
-## Column Roles
-
-Every published cell carries the roles of its column. The reporter derives four itself — `scenario`,
-`expectation`, `passed` and `failed` — and a test can declare more.
-
-**A column of source text: `@Lines`.** A table keeps every row on one line, so you write a
-multi-line value as a list of lines. Mark the column with `@Lines`. The parameter then takes the
-lines joined by newlines. The HTML report draws the cell as a stacked
-monospace block, and not as a bulleted list:
-
-```java
-@TableTest("""
-    Scenario   | Source                             | Table Count?
-    One table  | ["a | b", "1 | 2"]                 | 1
-    Two tables | ["a | b", "1 | 2", "", "c", "3"]   | 2
-    """)
-void countsTables(@Lines String source, int tableCount) {
-    assertEquals(tableCount, parser.parse(source).size());
-}
-```
-
-Declare the parameter as a `List<String>` instead, and it takes the lines themselves. The published
-cell does not change either way. The reporter publishes the value the row ran with, so the cell is
-still the list of lines you wrote.
-
-**Several named blocks: `@NamedLines`.** One cell can hold more than one block of text, each under
-a name. Write it as a map from name to lines. A file and its contents is the case it serves, so the cell reads as a small directory. The HTML report draws each name as a caption over its own
-block:
-
-```java
-@TableTest("""
-    Scenario                   | Your template directory                                       | Table page?
-    The name of the table page | [table.md.peb: ['# {{ title }} of note', 'Written by hand.']] | ['# Leap years of note', 'Written by hand.']
-    Two names that both match  | [b-table.md.peb: ['# From B'], a-table.md.peb: ['# From A']]  | ['# From A']
-    """)
-void rendersWithYourTemplate(
-        @NamedLines Map<String, List<String>> yourTemplateDirectory, @Lines List<String> tablePage) { ... }
-```
-
-The parameter is a plain `Map<String, List<String>>`, and there is no converter. Note that **a map
-key is never converted**. Declaring `Map<Path, …>` therefore compiles, and then fails at the first
-read. Resolve the name yourself where you write the files out.
-
-**Numbered lines: `@Numbered`.** Numbering is a role of its own, and not part of the two above. Ask
-for it beside either: `@Lines @Numbered` or `@NamedLines @Numbered`. It earns its place on a block
-long enough that a reader needs to point at a line. On two or three lines the digits are as wide as
-the text beside them, which is why it is off unless you ask.
-
-**A role of your own.** Annotate an annotation with `@ColumnRole` and put it on a parameter:
-
-```java
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-@ColumnRole
-public @interface Ingredient {}
-```
-
-The reporter publishes the role as the annotation's simple name in kebab case, so `@SourceLines`
-publishes `source-lines`. Name the token yourself with `@ColumnRole("...")` instead.
-
-The role reaches the HTML report as a CSS class on the cell, and the AsciiDoc report as an element
-role. A stylesheet of your own can therefore style the column. Markdown carries no roles.
-
-A role must be lower-case words joined by single hyphens. A role that names one the reporter derives
-publishes anyway: the column takes that role's styling, and the reporter never treats it as one.
-
-### Building a rendering of your own
-
-A role of your own reaches the report exactly as a built-in one does, because the built-in roles
-have no privileged path. The reporter draws a value from its shape — a list, a set, a map or a
-literal — and puts the column's roles on the cell as CSS classes. Every built-in role is a rule in
-the stylesheet against that class, and nothing more. `@Numbered`, in full, is:
-
-```css
-td.cell.numbered .coll.list { counter-reset: line; }
-td.cell.numbered .coll.list > li { counter-increment: line; }
-```
-
-So `@Lines`, `@Tree`, `@NamedLines` and `@Numbered` are each an annotation plus a stylesheet rule,
-and you can write the same thing. Declare the annotation:
-
-```java
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-@ColumnRole
-public @interface Ingredient {}
-```
-
-Then add your rules through the `extra_stylesheet` block, in a template that extends the built-in
-one. Name it with the hyphen form, because a template cannot extend itself:
-
-```pebble
-{# my-table.html.peb #}
-{% extends "table.html.peb" %}
-{% block extra_stylesheet %}
-td.cell.ingredient .literal { font-variant: small-caps; letter-spacing: 0.04em; }
-{% endblock %}
-```
-
-Point the reporter at that template directory, and every cell of an `@Ingredient` column is drawn
-your way. The built-in stylesheet stays where it is, so you add to it rather than replace it.
-
-The limit is worth knowing. Your CSS restyles the markup the reporter emits for the value's shape.
-It cannot make the reporter emit different markup — for that, replace the page template, which
-[Custom Templates](#custom-templates) covers.
 
 ## For Plugin Developers
 

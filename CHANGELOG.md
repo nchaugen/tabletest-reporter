@@ -70,6 +70,10 @@
   ones. They sat inside the Maven section, folded away, although they cover Maven, Gradle and the
   CLI alike — a Gradle reader following the Gradle instructions never met the Gradle option they
   hold.
+- Each built-in format has a section of the README to itself. AsciiDoc and Markdown are slim beside
+  HTML, which is the honest picture — the format tiering gives presentation to HTML alone — and
+  each now says what its own format carries: where a collection goes, how a pipe and significant
+  whitespace are written, what a column role becomes, and how front matter reaches the page.
 - The README's Formats section is regrouped. Choosing a format and listing the available ones sit
   together, because both answer "which format?". Defining a format of your own moved in with the
   templates, because a format *is* a pair of templates — name the pair after a format that exists
