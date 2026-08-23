@@ -30,15 +30,17 @@ import java.util.Map;
  * @param specMetadata the spec title, intro and feature ordering declared in the file
  * @param publishSelection the pages held back or re-admitted by the file's publish section
  * @param siteLink the link back to the hosting site declared by the file's site section
+ * @param frontMatter the front matter written above every AsciiDoc and Markdown page
  */
-public record ReportConfigFile(SpecMetadata specMetadata, PublishSelection publishSelection, SiteLink siteLink) {
+public record ReportConfigFile(
+        SpecMetadata specMetadata, PublishSelection publishSelection, SiteLink siteLink, FrontMatter frontMatter) {
 
     /** The conventional sidecar file name, looked for in the project directory by default. */
     public static final String DEFAULT_FILE_NAME = "tabletest-reporter.yaml";
 
     /** The absent case: the settings a project with no sidecar file reports under. */
     public static final ReportConfigFile EMPTY =
-            new ReportConfigFile(SpecMetadata.EMPTY, PublishSelection.EMPTY, SiteLink.NONE);
+            new ReportConfigFile(SpecMetadata.EMPTY, PublishSelection.EMPTY, SiteLink.NONE, FrontMatter.NONE);
 
     private static final ContextLoader LOADER = new ContextLoader();
 
@@ -60,6 +62,7 @@ public record ReportConfigFile(SpecMetadata specMetadata, PublishSelection publi
         if (yaml == null || yaml.isEmpty()) {
             return EMPTY;
         }
-        return new ReportConfigFile(SpecMetadata.parse(yaml), PublishSelection.parse(yaml), SiteLink.parse(yaml));
+        return new ReportConfigFile(
+                SpecMetadata.parse(yaml), PublishSelection.parse(yaml), SiteLink.parse(yaml), FrontMatter.parse(yaml));
     }
 }

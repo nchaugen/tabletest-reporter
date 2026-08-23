@@ -33,6 +33,7 @@ import java.nio.file.Path;
  *     every page
  * @param siteLink the link back to the site hosting the report, or {@link SiteLink#NONE} when the
  *     report links nowhere
+ * @param frontMatter the front matter for the text formats, or {@link FrontMatter#NONE} when none
  */
 public record ReportConfiguration(
         Format format,
@@ -41,4 +42,5 @@ public record ReportConfiguration(
         boolean singleFile,
         SpecMetadata specMetadata,
         PublishSelection publishSelection,
-        SiteLink siteLink) {}
+        SiteLink siteLink,
+        FrontMatter frontMatter) {}
