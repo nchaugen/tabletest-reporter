@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class TableTestReporter {
 
@@ -118,11 +119,11 @@ public class TableTestReporter {
         ReportNode tree =
                 config.specMetadata().applyTo(config.publishSelection().applyTo(built));
         GeneratedAt generatedAt = GeneratedAt.now();
-        RenderRun run = new RenderRun(format, generatedAt, config.siteLink(), outDir);
+        RenderRun run = new RenderRun(format, generatedAt, config.siteLink(), config.frontMatter(), outDir);
         if (config.singleFile()) {
             return reportSingleFile(tree, run);
         }
-        int count = report(tree, tree, List.of(), run);
+        int count = report(tree, tree, List.of(), null, run);
         if (format == BuiltInFormat.HTML) {
             writeContent(
                     outDir.resolve(SearchIndex.ASSET_NAME), SearchIndex.of(tree).asJavaScript());
@@ -145,14 +146,15 @@ public class TableTestReporter {
      * timestamp, the link back to the hosting site, and where the files go. Passing one value keeps
      * the recursive walk readable as the render options grow.
      */
-    private record RenderRun(Format format, GeneratedAt generatedAt, SiteLink siteLink, Path outDir) {}
+    private record RenderRun(
+            Format format, GeneratedAt generatedAt, SiteLink siteLink, FrontMatter frontMatter, Path outDir) {}
 
-    private int report(ReportNode node, ReportNode root, List<ReportNode> ancestors, RenderRun run) {
+    private int report(ReportNode node, ReportNode root, List<ReportNode> ancestors, Integer weight, RenderRun run) {
         Path relativeOutPath = Path.of("./" + node.outPath());
 
         return switch (node) {
             case IndexNode index -> {
-                Map<String, Object> context = createIndexContext(index, relativeOutPath, root, ancestors, run);
+                Map<String, Object> context = createIndexContext(index, relativeOutPath, root, ancestors, weight, run);
 
                 Path outPath = run.outDir()
                         .resolve(relativeOutPath)
@@ -161,13 +163,14 @@ public class TableTestReporter {
                 writeContent(outPath, content);
 
                 List<ReportNode> childAncestors = append(ancestors, index);
-                int childCount = index.contents().stream()
-                        .mapToInt(child -> report(child, root, childAncestors, run))
+                List<ReportNode> children = index.contents();
+                int childCount = IntStream.range(0, children.size())
+                        .map(position -> report(children.get(position), root, childAncestors, position + 1, run))
                         .sum();
                 yield 1 + childCount;
             }
             case TableNode table -> {
-                Map<String, Object> context = createTableContext(table, root, ancestors, run);
+                Map<String, Object> context = createTableContext(table, root, ancestors, weight, run);
 
                 Path outPath =
                         run.outDir().resolve(relativeOutPath + run.format().extension());
@@ -179,7 +182,12 @@ public class TableTestReporter {
     }
 
     private Map<String, Object> createIndexContext(
-            IndexNode index, Path relativeOutPath, ReportNode root, List<ReportNode> ancestors, RenderRun run) {
+            IndexNode index,
+            Path relativeOutPath,
+            ReportNode root,
+            List<ReportNode> ancestors,
+            Integer weight,
+            RenderRun run) {
         Map<String, Object> context = copyContext(index.resource());
         context.put("name", index.name());
         context.put("contents", buildContentsForTemplate(index.contents(), relativeOutPath, 1));
@@ -189,11 +197,12 @@ public class TableTestReporter {
         context.put("assetRoot", NavLinks.rootPrefix(index, root));
         context.put("generatedAt", run.generatedAt().toMap());
         context.put("site", run.siteLink().toMap());
+        context.put("frontMatter", frontMatterFor(index, weight, run));
         return context;
     }
 
     private Map<String, Object> createTableContext(
-            TableNode table, ReportNode root, List<ReportNode> ancestors, RenderRun run) {
+            TableNode table, ReportNode root, List<ReportNode> ancestors, Integer weight, RenderRun run) {
         Map<String, Object> context = copyContext(table.resource());
         context.put("name", table.name());
         context.put("breadcrumbs", buildBreadcrumbs(ancestors, table));
@@ -202,7 +211,24 @@ public class TableTestReporter {
         context.put("generatedAt", run.generatedAt().toMap());
         context.put("site", run.siteLink().toMap());
         context.put("featureDescription", descriptionOf(ancestors));
+        context.put("frontMatter", frontMatterFor(table, weight, run));
         return context;
+    }
+
+    /**
+     * The front-matter entries for one page. The page's own title and its position among its
+     * siblings are what the reporter can fill that a site generator cannot work out for itself: the
+     * position carries the declared reading order into a generator that would otherwise sort the
+     * pages alphabetically.
+     *
+     * @return the entries a text template writes, or null when no front matter is declared
+     */
+    private static List<Map<String, Object>> frontMatterFor(ReportNode node, Integer weight, RenderRun run) {
+        if (!run.frontMatter().isPresent()) {
+            return null;
+        }
+        return run.frontMatter()
+                .entriesFor(NavModel.label(node), weight, run.generatedAt().datetime());
     }
 
     /**

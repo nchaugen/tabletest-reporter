@@ -78,6 +78,31 @@ class FrontMatterParseTest {
     }
 
     @Test
+    void aPlainStringIsWrittenAsItStands() {
+        FrontMatter frontMatter = parse("""
+                frontMatter:
+                  layout: report
+                """);
+
+        assertThat(frontMatter.entriesFor("Leap years", 1, null).get(0).get("yaml"))
+                .isEqualTo("report");
+    }
+
+    @Test
+    void aValueYamlWouldMisreadIsQuoted() {
+        FrontMatter frontMatter = parse("""
+                frontMatter:
+                  layout: "report: the spec"
+                  version: "2.0"
+                  flag: "true"
+                """);
+
+        assertThat(frontMatter.entriesFor("Leap years", 1, null))
+                .extracting(entry -> entry.get("yaml"))
+                .containsExactly("\"report: the spec\"", "\"2.0\"", "\"true\"");
+    }
+
+    @Test
     void aStringIsQuotedForYamlAndLeftBareForAsciidoc() {
         FrontMatter frontMatter = parse("""
                 frontMatter:
@@ -105,13 +130,24 @@ class FrontMatterParseTest {
     }
 
     @Test
-    void aQuoteInAValueIsEscapedForYaml() {
+    void aQuoteInsideAValueNeedsNoQuoting() {
         FrontMatter frontMatter = parse("""
                 frontMatter:
-                  layout: "the \\"spec\\" report"
+                  layout: 'the "spec" report'
                 """);
 
         assertThat(frontMatter.entriesFor("Leap years", 1, null).get(0).get("yaml"))
-                .isEqualTo("\"the \\\"spec\\\" report\"");
+                .isEqualTo("the \"spec\" report");
+    }
+
+    @Test
+    void aValueOpeningWithAQuoteIsQuotedAndEscaped() {
+        FrontMatter frontMatter = parse("""
+                frontMatter:
+                  layout: '"spec" report'
+                """);
+
+        assertThat(frontMatter.entriesFor("Leap years", 1, null).get(0).get("yaml"))
+                .isEqualTo("\"\\\"spec\\\" report\"");
     }
 }

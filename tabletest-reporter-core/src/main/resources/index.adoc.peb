@@ -1,4 +1,6 @@
-{% block frontMatter %}{% endblock %}
+{% block frontMatter %}{% if frontMatter is not empty %}{% for entry in frontMatter %}:{{ entry.key }}: {{ entry.value }}
+
+{% endfor %}{% endif %}{% endblock %}
 {% import "macros.adoc.peb" %}
 {% block title %}
 = ++{{ title ? title : name }}++

@@ -14,6 +14,16 @@
   footer without rewriting the page. The site link also has a `siteLink(site)` macro of its own,
   which such a template can call to place the same link elsewhere.
 
+- Front matter is now a config section, not only a template block. Declare `frontMatter:` in
+  `tabletest-reporter.yaml` and every AsciiDoc and Markdown page is written with it above the page —
+  a fenced YAML block for Markdown, document attributes for AsciiDoc, and nothing for HTML, which is
+  a finished page rather than source for a site generator. Keys keep their declared order, and a
+  value is quoted only where YAML would otherwise misread it. Three keys are filled by the reporter
+  when declared as `true`: `title`, `weight` and `generated`. `weight` is the page's position in the
+  reading order the `features:` section declares, so a site generator ordering pages by weight lists
+  them as the project curated them instead of alphabetically. The `frontMatter` template block still
+  works and still wins, for anyone who wants full control.
+
 ### Fixed
 - The page footer now prints legibly. Its screen colour is a pale grey that falls to a 2.2:1
   contrast ratio against white paper, so the attribution and the run timestamp read as nothing in a

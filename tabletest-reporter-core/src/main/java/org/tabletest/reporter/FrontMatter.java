@@ -1,3 +1,18 @@
+/*
+ * Copyright 2025-present Nils Christian Haugen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.tabletest.reporter;
 
 import java.util.ArrayList;
@@ -5,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * The front matter a project declares in the {@code frontMatter:} section of its
@@ -27,6 +43,13 @@ public record FrontMatter(Map<String, Object> entries) {
 
     /** The keys the reporter fills itself, when they are declared as {@code true}. */
     private static final Set<String> DERIVABLE = Set.of("title", "weight", "generated");
+
+    /** A character that starts a YAML construct, or a separator that ends a plain scalar early. */
+    private static final Pattern INDICATOR = Pattern.compile("^[-?:,\\[\\]{}#&*!|>'\"%@`]|: | #|[\\n\\t]");
+
+    /** A plain value YAML would read back as a number, a boolean or a null rather than as text. */
+    private static final Pattern SCALAR_LOOKALIKE =
+            Pattern.compile("(?i)true|false|yes|no|on|off|null|~|[+-]?\\d+(\\.\\d+)?([eE][+-]?\\d+)?");
 
     /** The absent case: no front matter is written, and both text formats report as before. */
     public static final FrontMatter NONE = new FrontMatter(Map.of());
@@ -101,13 +124,26 @@ public record FrontMatter(Map<String, Object> entries) {
     }
 
     /**
-     * A YAML scalar for the value. Numbers and booleans are written bare; everything else is quoted,
-     * so a colon, a hash or a leading digit in a title cannot end the value early.
+     * A YAML scalar for the value. A value is written as it stands wherever YAML reads it back as
+     * the same string, and quoted where it would not — an empty value, one carrying a structural
+     * character, or one a reader would take for a number or a boolean.
      */
     private static String yamlScalar(Object value) {
         if (value instanceof Number || value instanceof Boolean) {
             return String.valueOf(value);
         }
-        return "\"" + String.valueOf(value).replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+        String text = String.valueOf(value);
+        return needsQuoting(text) ? quoted(text) : text;
+    }
+
+    private static boolean needsQuoting(String text) {
+        return text.isEmpty()
+                || !text.equals(text.strip())
+                || INDICATOR.matcher(text).find()
+                || SCALAR_LOOKALIKE.matcher(text).matches();
+    }
+
+    private static String quoted(String text) {
+        return "\"" + text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\"";
     }
 }

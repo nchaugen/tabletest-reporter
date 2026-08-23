@@ -40,7 +40,7 @@ record GeneratedAt(Instant instant) {
         return Map.of("datetime", datetime(), "label", label());
     }
 
-    private String datetime() {
+    String datetime() {
         return DateTimeFormatter.ISO_INSTANT.format(instant.truncatedTo(ChronoUnit.SECONDS));
     }
 

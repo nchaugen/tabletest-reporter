@@ -3,6 +3,9 @@ package org.tabletest.reporter.support;
 import org.jsoup.nodes.Document;
 import org.tabletest.reporter.BuiltInFormat;
 import org.tabletest.reporter.Format;
+import org.tabletest.reporter.ReportConfiguration;
+import org.tabletest.reporter.ReportConfigurationResolver;
+import org.tabletest.reporter.ReportOptions;
 import org.tabletest.reporter.TableTestReporter;
 
 import java.io.IOException;
@@ -103,6 +106,30 @@ public final class PublishedReport {
     /** The text of a file in a report's output directory. */
     public static String textOf(Path file) {
         return read(file);
+    }
+
+    /**
+     * The lines of the page at the given report URL, in a report generated with the given
+     * {@code tabletest-reporter.yaml} sidecar content — so a rule can show the section it declares
+     * and the page that section produces.
+     */
+    public static List<String> linesAt(
+            String url, String formatName, String sidecar, List<String> publishedTables, Path workingDir) {
+        Format format = formatNamed(formatName);
+        Path inputDirectory = PublishedRun.outputFor(publishedTables, workingDir);
+        Path outputDirectory = createTempDirectory(workingDir);
+        new TableTestReporter(configuredBy(sidecar, formatName, workingDir)).report(inputDirectory, outputDirectory);
+        return read(fileAt(url, format, outputDirectory)).lines().toList();
+    }
+
+    private static ReportConfiguration configuredBy(String sidecar, String formatName, Path workingDir) {
+        try {
+            Path configFile = createTempDirectory(workingDir).resolve("tabletest-reporter.yaml");
+            Files.writeString(configFile, sidecar == null ? "" : sidecar);
+            return ReportConfigurationResolver.resolve(new ReportOptions(formatName, null, null, false, configFile));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private static Format formatNamed(String formatName) {

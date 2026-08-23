@@ -1,4 +1,8 @@
-{% block frontMatter %}{% endblock %}
+{% block frontMatter %}{% if frontMatter is not empty %}---
+{% for entry in frontMatter %}{{ entry.key }}: {{ entry.yaml }}
+
+{% endfor %}---
+{% endif %}{% endblock %}
 {% import "macros.md.peb" %}
 {% block title %}
 # {{ title ? title : name }}
