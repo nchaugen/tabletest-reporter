@@ -66,6 +66,10 @@
   lines the digits are as wide as the text beside them.
 
 ### Changed
+- The README's manual setup instructions are a section of their own, beside the Gradle and Maven
+  ones. They sat inside the Maven section, folded away, although they cover Maven, Gradle and the
+  CLI alike — a Gradle reader following the Gradle instructions never met the Gradle option they
+  hold.
 - The README is reorganised. The numbered walkthrough used to dissolve at "Step 4", which had
   absorbed ten subsections of configuration reference and no fifth step. Getting started is now
   four steps and stops there. The four sections of `tabletest-reporter.yaml` sit together under

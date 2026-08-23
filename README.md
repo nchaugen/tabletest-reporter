@@ -119,11 +119,13 @@ Add the dependency and plugin to your `pom.xml`, and enable JUnit extension auto
 
 The `report` goal generates documentation from the collected test data.
 
-<details>
-<summary><b>Manual Setup (Advanced)</b></summary>
+#### Manual setup (advanced)
 
 You may want manual control over the JUnit extension setup, for the CLI runner or for a
-configuration of your own. Add the dependency and configure autodetection yourself:
+configuration of your own. This applies to Maven, to Gradle and to the CLI alike.
+
+<details>
+<summary><b>Add the dependency and configure autodetection yourself</b></summary>
 
 **Add Dependency:**
 
