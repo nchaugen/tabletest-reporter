@@ -425,6 +425,29 @@ feature page left with nothing published under it disappears too. `include` wins
 `exclude`, so a single rule table can still publish from an otherwise internal class. A
 path matching no page is logged and skipped, like a mistyped feature name.
 
+### Choosing a Format
+
+The three built-in formats are not interchangeable, and picking one is picking a publishing
+route. One rule decides which features a format gets: a feature that changes the **data** a page
+carries reaches every format that can express it, and a feature that changes how a page **looks**
+reaches HTML alone.
+
+| Format | What it is for | What it carries |
+|---|---|---|
+| `html` | the publishable destination — put it on a web server as it stands | self-contained pages, inline CSS and JavaScript, sidebar, search, breadcrumbs, footer, whitespace markers, every column role |
+| `asciidoc` | source for an Asciidoctor or Antora pipeline | the table, the titles, the descriptions, and roles (`[.lines]`, `[.value-set]`) for the downstream renderer to style |
+| `markdown` | interchange that renders anywhere — GitHub, Docusaurus, MkDocs | the table, the titles, the descriptions; plain, with no roles |
+
+**Neither text format carries breadcrumbs, navigation or a footer.** That is deliberate rather
+than missing. A site generator builds those from its own page tree, and it decides where your
+spec is nested — so a trail the reporter wrote would name different ancestors than the site's,
+and both would render. Where you want a fact the generator cannot know, such as when the report
+was generated, put it in the `frontMatter` block of an extension template; see
+[Custom Templates](#custom-templates).
+
+**The default is `asciidoc`** when no format is given, in every entry point. If you intend to
+publish the result directly, set `html` explicitly.
+
 ### Listing Available Formats
 
 You can list all available output formats (built-in and custom) using the following commands:
@@ -767,6 +790,35 @@ Available blocks for indexes:
 - `contents` - List of child pages
 - `footer` - Content after the document
 
+#### Recording When the Report Was Generated
+
+A site generator knows where your page sits and how to style it. The one thing it cannot know is
+when the report was generated — the fact that tells a reader whether the spec still tracks the
+code. Hand it over in the front matter and let the site render it:
+
+```pebble
+{% extends "table.md.peb" %}
+{% block frontMatter %}---
+title: "{{ title }}"
+generated: "{{ generatedAt.datetime }}"
+---
+
+{% endblock %}
+```
+
+**Quote the value.** Pebble trims the newline immediately after a `}}` expression, so a line ending
+in one joins the line below it — an unquoted `generated: {{ generatedAt.datetime }}` puts the
+closing `---` on the value line and the front matter stops parsing. Any character after the braces
+prevents it, and quotes are valid YAML for a timestamp.
+
+For AsciiDoc the same block carries document attributes instead:
+
+```pebble
+{% extends "table.adoc.peb" %}
+{% block frontMatter %}:generated: {{ generatedAt.datetime }}
+{% endblock %}
+```
+
 #### Template Replacement Example
 
 Completely replace the built-in template. Create `table.adoc.peb`:
@@ -790,15 +842,70 @@ Custom header content here.
 {% endfor %}
 |===
 
-Generated on {{ "now" | date("yyyy-MM-dd") }}
+Generated on {{ generatedAt.label }}
 ```
 
-Template context includes:
-- `title` - Test display name
-- `description` - Test description
-- `headers` - List of header cells with `value` and `roles`
-- `rows` - List of rows, each containing cells with `value` and `roles`
-- `rowResults` - Test results with `displayName`, `passed`, and `errorMessage`
+#### The Template Context
+
+Every key below is available to a replacement template, and to a block you override in an
+extension template.
+
+**On every page, in every format:**
+
+| Key | Holds |
+|---|---|
+| `title` | the page's display name |
+| `description` | the page's description, where it has one |
+| `name` | the page's own name, as it appears in the URL |
+| `breadcrumbs` | the ancestor trail, each entry `label`, `href`, `current`; the page itself is last and has no `href` |
+| `nav` | the whole report: `nav.home` (`label`, `href`, `current`) and `nav.tree` of nested entries |
+| `assetRoot` | the relative prefix from this page back to the report root, e.g. `../../` |
+| `generatedAt` | `datetime` (ISO 8601) and `label` (readable) for the run, or null |
+| `site` | `label` and `url` of the hosting site, or null when no `site` is declared |
+
+**A table page adds:**
+
+| Key | Holds |
+|---|---|
+| `headers` | header cells, each with `value` and `roles` |
+| `rows` | rows of cells, each with `value` and `roles` |
+| `rowResults` | one entry per scenario, with `displayName`, `passed` and `errorMessage` |
+| `featureDescription` | the description of the page this rule sits under, where it has one |
+
+**An index page adds:**
+
+| Key | Holds |
+|---|---|
+| `contents` | child pages, nested: `name`, `title`, `path`, `type` (`index` or `table`), `status`, and `contents` for its own children |
+| `status` | the rollup below this page: `state` (`passed`, `failed` or `neutral`), `total`, `passed`, `broken` |
+
+**A single-file report** has `title`, `description`, `nav`, `assetRoot`, `generatedAt`, `site`,
+`searchData`, and `sections` — one entry per page, with `anchor`, `title`, `type`, `status`,
+`level`, `description`, and `headers` / `rows` / `rowResults` for a table. It has **no**
+`breadcrumbs`.
+
+#### What an Extension Template Can Reach
+
+A template that extends a built-in one reads every context key above inside the block it
+overrides, and it can import the built-in macros to call them:
+
+```pebble
+{% extends "index.html.peb" %}
+{% import "macros.html.peb" %}
+{% block footer %}
+  <p>Reviewed quarterly.</p>
+  {{ docFooter(generatedAt, site) }}
+{% endblock %}
+```
+
+Two things to know about the blocks themselves:
+
+- **The three text-format blocks are not in the HTML templates.** `frontMatter`, `title`,
+  `description`, `table`, `failures` and `contents` are left by the AsciiDoc and Markdown
+  templates. The HTML templates leave `extra_stylesheet` and `footer`.
+- **A block must be at the top level of the page template to be overridable.** A block written
+  inside a macro renders its default and ignores the override silently, because a macro reaches the
+  page through `{% import %}`, which is not inheritance.
 
 ### Built-in HTML Format
 

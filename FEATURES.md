@@ -17,10 +17,24 @@ This document describes the end-user features provided by TableTest Reporter.
 
 ## Output Formats
 
-**Built-in formats:**
-- HTML (`.html`) – self-contained living documentation, ready to publish
-- AsciiDoc (`.adoc`)
-- Markdown (`.md`)
+The three built-in formats are not interchangeable. Each has a job, and that decides which
+features reach it: a feature that changes the **data** a page carries reaches every format that
+can express it, and a feature that changes how a page **looks** reaches HTML alone.
+
+- **HTML** (`.html`) – **the publishable destination.** Self-contained pages with inline CSS and
+  JavaScript, a sidebar, search, breadcrumbs and a footer. Every rendering feature lands here
+  first, and some land here only. Publish this directly.
+- **AsciiDoc** (`.adoc`) – **source for an Asciidoctor or Antora pipeline.** Carries meaning
+  downstream as element roles (`[.lines]`, `[.value-set]`) for the renderer to style. The reporter
+  writes no presentation into it.
+- **Markdown** (`.md`) – **lowest-common-denominator interchange.** GitHub, Docusaurus, MkDocs.
+  Plain tables that render anywhere. Roles and styling are a declared non-goal, not an omission.
+
+Neither text format carries breadcrumbs, navigation or a footer, and that is deliberate: a site
+generator builds those from its own page tree, and a second trail beside the site's would disagree
+about where the page sits.
+
+The default format is `asciidoc` when none is given.
 
 **Custom formats:**
 Provide `table.{format}.peb` and `index.{format}.peb` templates to add new formats
