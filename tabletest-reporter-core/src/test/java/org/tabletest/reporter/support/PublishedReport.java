@@ -118,6 +118,13 @@ public final class PublishedReport {
         return generate(formatNamed(formatName), singleFile, publishedTables, workingDir);
     }
 
+    /** The output directory of a report of the output a real run published. */
+    public static Path outputOfRun(Path publishedRunOutput, Path workingDir) {
+        Path outputDirectory = createTempDirectory(workingDir);
+        new TableTestReporter().report(HTML, publishedRunOutput, outputDirectory);
+        return outputDirectory;
+    }
+
     /** The files a report wrote, as paths relative to its output directory, in sorted order. */
     public static List<String> filesIn(Path outputDirectory) {
         try (var paths = Files.walk(outputDirectory)) {

@@ -64,8 +64,12 @@ final class SearchIndex {
     /**
      * The pages matching a query: a case-insensitive substring match of the trimmed query against
      * each entry's title and searchable text. A blank query matches nothing (the drawer shows the
-     * navigation tree instead of results). This is the search contract; the inline
-     * {@code searchScript()} client mirrors it in the browser (adding only a display cap).
+     * navigation tree instead of results).
+     *
+     * <p>Nothing in the reporter calls this. The search a reader runs is the inline
+     * {@code searchScript()} client in {@code macros.html.peb}, which mirrors this method in the
+     * browser (adding only a display cap). This is where that contract is stated and tested —
+     * keep the two in step.
      */
     List<Map<String, Object>> search(String query) {
         String needle = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);

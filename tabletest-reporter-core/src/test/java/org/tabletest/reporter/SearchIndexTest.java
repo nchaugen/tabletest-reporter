@@ -12,18 +12,16 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Verifies the shared, whole-report search index: a flat list of one entry per page, each
- * carrying the page's root-relative path, display title, roll-up status, and a searchable text
- * blob flattened from the page's own title, description, headers, and cell values. The index is
- * emitted once to the output root and searched client-side from every page.
+ * The builder behind the shared, whole-report search index, and the matching contract the inline
+ * browser script mirrors.
+ *
+ * <p>Conformance rather than a rule. The published rules are in {@code pages/WholeReportSearchTest},
+ * where they are read off the {@code tabletest-search-index.js} a report actually writes. The
+ * matching below cannot join them: {@link SearchIndex#search} has no caller in the reporter, and
+ * the search a reader runs is the script in {@code macros.html.peb}. Publishing these rows would
+ * claim the reporter had run code it never runs. They stay here to pin the contract that script
+ * implements — keep the two in step.
  */
-@DisplayName("Whole-report search")
-@Description("""
-        Every report carries a search index with one entry per page. A table page is
-        searchable by its title, description, column headers, and cell values; an index
-        page only by its title. The index is built once at the output root and searched
-        client-side from every page.
-        """)
 class SearchIndexTest {
 
     private final TableNode leapYear = new TableNode(

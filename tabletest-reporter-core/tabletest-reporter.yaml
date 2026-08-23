@@ -62,6 +62,7 @@ publish:
     - report-configuration-resolver-test # merging config from file, options and defaults
     - target-path-resolver-test          # mapping a page to its on-disk output path
     - status-rollup-test                 # the counting behind a page's verdict
+    - search-index-test                  # building the search index, and the matching the browser mirrors
     - publish-pattern-match-test         # glob matching behind this very exclude list
     - publish-selection-apply-test       # applying the exclude/include tree transform
     - spec-metadata-apply-test           # applying title/intro/order onto the tree
