@@ -325,15 +325,18 @@
         --rule: #272b33; --rule-strong: #3a3f49;
         --accent: #38c6be; --accent-wash: #12201f;
         --pass: #5fbe86; --fail: #e0736a; --fail-wash: #241a1b;
-        --marker: #565c67; --shade: rgba(0, 0, 0, 0.6); --shade: rgba(0, 0, 0, 0.6);
+        --marker: #565c67; --shade: rgba(0, 0, 0, 0.6);
     }
 }
+/* The same palette as the media query above, for a reader who picks dark explicitly.
+   CSS cannot share one set of values between a media query and a plain selector, so these
+   two blocks are kept identical by StylesheetPaletteTest rather than by hand. */
 :root[data-theme="dark"] {
     --paper: #14161b; --raised: #1b1e25; --ink: #e6e9ef; --ink-soft: #969caa;
     --rule: #272b33; --rule-strong: #3a3f49;
     --accent: #38c6be; --accent-wash: #12201f;
     --pass: #5fbe86; --fail: #e0736a; --fail-wash: #241a1b;
-    --marker: #565c67;
+    --marker: #565c67; --shade: rgba(0, 0, 0, 0.6);
 }
 * { box-sizing: border-box; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
@@ -605,6 +608,23 @@ td.cell.lines .literal.empty-string { visibility: hidden; }
 .hidden { display: none !important; }
 
 @media print {
+    /* Paper is one palette, whichever scheme the reader is viewing in: printing drops a dark
+       background but keeps the text colours, so a dark-mode reader would otherwise print pale
+       grey on white. Every screen palette above is replaced here.
+
+       All four selectors are needed, and none is redundant. A palette above wins on
+       specificity unless the rule that replaces it matches it: :root:not([data-theme="light"])
+       is what beats the media query for a reader who has chosen no theme at all. */
+    :root,
+    :root:not([data-theme="light"]),
+    :root[data-theme="dark"],
+    :root[data-theme="light"] {
+        --paper: #ffffff; --raised: #ffffff; --ink: #111318; --ink-soft: #33373f;
+        --rule: #cfd2d6; --rule-strong: #9aa0a6;
+        --accent: #0e6e6b; --accent-wash: #ffffff;
+        --pass: #1f5c3d; --fail: #a5342a; --fail-wash: #ffffff;
+        --marker: #44474f; --shade: transparent;
+    }
     body { padding: 0; }
     .sidebar, .nav-backdrop, .nav-toggle, .controls, .theme-toggle { display: none; }
     .table-wrap { overflow: visible; border: none; }
@@ -612,9 +632,9 @@ td.cell.lines .literal.empty-string { visibility: hidden; }
     .failures details { break-inside: avoid; }
     /* On paper a reader cannot follow a link, so the address is spelled out */
     .doc-footer .site-link::after { content: " (" attr(href) ")"; }
-    /* The footer's screen grey is a 2.2:1 contrast on paper, which reads as nothing.
-       Print the whole line as ink, so the attribution and the timestamp survive. */
-    .doc-footer, .doc-footer .site-link { color: #44474f; }
+    /* A dot carries its verdict in a background colour, which a browser drops when printing
+       unless it is asked to keep it. Without this a printed index tree states nothing. */
+    .status-dot { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
 </style>
 {% endmacro %}

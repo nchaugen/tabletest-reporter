@@ -28,10 +28,19 @@
   still wins, for anyone who wants full control.
 
 ### Fixed
-- The page footer now prints legibly. Its screen colour is a pale grey that falls to a 2.2:1
-  contrast ratio against white paper, so the attribution and the run timestamp read as nothing in a
-  printed page or a PDF. The footer now prints as ink, in a colour of its own rather than a themed
-  one, so it survives whichever colour scheme the reader views the report in.
+- A report now prints the same whichever colour scheme it is viewed in. Printing drops a dark
+  background but keeps the text colours, so a reader in dark mode printed pale grey on white — every
+  cell, description and breadcrumb, not only the footer. The print stylesheet now replaces the whole
+  palette with one meant for paper. This also fixes the page footer, whose screen grey was a 2.2:1
+  contrast against white paper even in light mode, so the attribution and the run timestamp read as
+  nothing on a printed page.
+- A verdict dot now prints. It carries its colour as a background, which a browser drops when
+  printing unless asked to keep it, so a printed index tree showed no verdicts at all.
+- Choosing dark explicitly now sets every colour. The theme toggle's palette left out `--shade`, so
+  a page switched to dark on a light-scheme system kept the light shadow that cues a table can be
+  scrolled sideways. The four palettes in the built-in stylesheet are now held to the same set of
+  colours by a test, because CSS cannot share one set of values between a media query and a
+  selector.
 
 ## [1.4.0] - 2026-08-20
 
