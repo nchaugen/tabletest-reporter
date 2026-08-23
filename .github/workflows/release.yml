@@ -84,8 +84,6 @@ jobs:
 
       - name: Update version references
         run: |
-          # README.md — coordinates banner
-          sed -i "s|org\.tabletest:tabletest-reporter-\*:[0-9]\+\.[0-9]\+\.[0-9]\+|org.tabletest:tabletest-reporter-*:$VERSION|" README.md
           # README.md — Gradle plugin version
           sed -i "s|id(\"org.tabletest.reporter\") version \"[0-9]\+\.[0-9]\+\.[0-9]\+\"|id(\"org.tabletest.reporter\") version \"$VERSION\"|" README.md
           # README.md — Maven dependency versions

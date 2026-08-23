@@ -66,6 +66,9 @@
   lines the digits are as wide as the text beside them.
 
 ### Changed
+- The README no longer opens with the notice about the move to `org.tabletest` coordinates. The
+  move shipped in 1.0.0, five releases back, and the relocation POMs on Maven Central still point
+  anyone on the old coordinates at the new ones.
 - An HTML index page and the sidebar now fold. The page still holds every level below it, but only
   the top level is open. An entry that holds pages carries a chevron, and the reader opens the part
   they want. You no longer choose one depth for every reader.

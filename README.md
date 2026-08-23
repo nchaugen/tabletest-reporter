@@ -1,11 +1,6 @@
-> [!IMPORTANT]
-> TableTest Reporter has new Maven coordinates: `org.tabletest:tabletest-reporter-*:1.4.0`
->
-> Please update your dependencies to keep receiving updates.
-
 # TableTest Reporter
 
-TableTest Reporter generates documentation from your [TableTest](https://github.com/nchaugen/tabletest) tests. It turns your test tables into readable AsciiDoc or Markdown documentation that you can publish alongside your project docs.
+TableTest Reporter generates documentation from your [TableTest](https://github.com/nchaugen/tabletest) tests. It turns your test tables into a readable specification you can publish beside your project docs, as a self-contained HTML site or as AsciiDoc or Markdown for a site generator you already run.
 
 ## Quick Start
 
