@@ -13,20 +13,20 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Custom formats")
 @Description("""
-        Beyond the three built-in formats, a report can be generated in a format of the project's
-        own. A pair of templates named after the format is the whole definition.
+        A project can generate a report in a format of its own, beside the three built-in ones.
+        A pair of templates named after the format is the whole definition.
 
-        The name identifies the format, and it is the extension every file of the report gets. A
-        name that could not be an extension is therefore refused when the format is declared,
-        rather than when the first file is written.
+        The name identifies the format, and every file of the report takes that name as its
+        extension. The reporter therefore refuses a name that cannot be an extension when the
+        project declares the format, and not when it writes the first file.
         """)
 class CustomFormatTest {
 
     @DisplayName("Turns a custom format's name into the extension its files get")
     @Description("""
-            The name arrives without the dot and the extension is the name with one, so a format
-            named html writes .html files. A name a built-in format already uses is a name like
-            any other here; which templates it finds is a separate rule.
+            The name arrives without the dot, and the extension is the name with one. A format named
+            html therefore writes .html files. A name that a built-in format already uses is a name
+            like any other here. A separate rule says which templates that name finds.
             """)
     @TableTest("""
         Scenario                    | Custom format | File extension?
@@ -39,9 +39,10 @@ class CustomFormatTest {
 
     @DisplayName("Refuses a format name that could not be an extension")
     @Description("""
-            A name that is absent, blank, or already starting with a dot cannot be turned into an
-            extension. Each is refused as the format is declared, with a message naming what is
-            wrong. No report is ever written under a name that could not name its files.
+            Three names cannot become an extension: an absent name, a blank name, and a name that
+            already starts with a dot. The reporter refuses each one as the project declares the
+            format, and the message names what is wrong. The reporter writes no report under a name
+            that cannot name its files.
             """)
     @TableTest("""
         Scenario                      | Format name | Error message?

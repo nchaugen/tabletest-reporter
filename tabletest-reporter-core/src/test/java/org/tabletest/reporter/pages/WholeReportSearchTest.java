@@ -22,12 +22,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Whole-report search")
 @Description("""
-        A report carries a search box on every page, and it searches the whole report rather than
-        the page it sits on. The report writes one index beside its pages,
-        tabletest-search-index.js at the output root, and every page loads it. Typing in the box
-        replaces the navigation tree with the pages whose title or text holds what was typed,
-        ignoring case and matching anywhere in a word. The matching runs in the reader's browser,
-        so the rules below state what the index describes rather than what a query returns.
+        Every page carries a search box, and that box searches the whole report. The report
+        writes one index beside its pages, tabletest-search-index.js at the output root, and
+        every page loads it. Type in the box and the navigation tree gives way to the pages
+        that match. A page matches when its title or its text holds what you typed. The match
+        ignores case, and it can start anywhere in a word.
+
+        The browser does the matching. The rules below therefore state what the index holds,
+        and not what a query gives back.
         """)
 class WholeReportSearchTest {
 
@@ -36,12 +38,13 @@ class WholeReportSearchTest {
 
     @DisplayName("Describes every page of the report in one index")
     @Description("""
-            One entry per page, whatever the page is: the root index, a feature index below it, and
-            a table page below that. Each entry names its page by the path from the output root, so
-            a page found from anywhere in the report is reachable from anywhere in the report.
+            The index holds one entry for every page. Three kinds of page reach it: the root
+            index, a feature index below the root, and a table page below that. Each entry names
+            its page by the path from the output root. A reader who finds a page from anywhere in
+            the report can therefore reach it from anywhere in the report.
 
-            These rows are read off a report of one class, com.example.orders.OrderTest, whose only
-            table is items. The report root is the package orders.
+            These rows read a report of one class, com.example.orders.OrderTest, whose only table
+            is items. The report root is the package orders.
             """)
     @TableTest("""
         Scenario       | Page title | Its path?             | Its type?
@@ -58,15 +61,15 @@ class WholeReportSearchTest {
 
     @DisplayName("Fills a page's search text from that page alone")
     @Description("""
-            A table page is searchable by everything a reader can see on it: its title, its
-            description, its column headers and its cell values. An index page is searchable by its
-            own title and nothing else, so a feature is not found by a word that appears only in a
-            rule below it — the rule's own page is what the reader wants.
+            A search finds a table page by everything a reader can see on it: its title, its
+            description, its column headers and its cell values. A search finds an index page by
+            its own title alone. A word that appears only in a rule below a feature therefore does
+            not find the feature. It finds the rule, which is the page the reader wants.
 
-            These rows are read off a report of one class, Calendar rules, whose table is Leap year
-            rules. That table is described as "Gregorian leap year determination.", its columns are
-            Scenario, Year and Is leap year?, and its one row reads: A year divisible by four,
-            2004, Yes.
+            These rows read a report of one class, Calendar rules. Its table is Leap year rules,
+            described as "Gregorian leap year determination.". The columns of that table are
+            Scenario, Year and Is leap year?. Its one row reads: A year divisible by four, 2004,
+            Yes.
             """)
     @TableTest("""
         Scenario                       | Page                                | Word                | In its search text?

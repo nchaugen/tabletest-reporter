@@ -20,12 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Relative links")
 @Description("""
-        A report is a tree of files that link to each other. Every one of those links is relative
-        to the page holding it, so the report works from a local folder, from a web server root,
-        and from a subpath such as a project's GitHub Pages — without being generated again for
-        each.
+        A report is a tree of files that link to each other. Every one of those links is
+        relative to the page that holds it. One report therefore works from three places: a
+        local folder, the root of a web server, and a subpath such as a project's GitHub Pages.
+        You do not generate it again for each.
 
-        The rules below are read off a report of two test classes in one package,
+        The rules below read a report of two test classes in one package,
         com.example.orders.OrderTest and com.example.orders.ProductTest, with one table each. The
         report root is the package orders, above the two class pages order-test and product-test,
         each above its one table, items and price.
@@ -41,10 +41,10 @@ class RelativeLinksTest {
 
     @DisplayName("Writes an index page's links relative to that page")
     @Description("""
-            The same link is written three times over, once in the syntax of each format and once
-            per file extension that format writes. What does not change is where it starts: the
-            directory the page holding it sits in, never the root of the report and never the root
-            of a server.
+            The reporter writes the same link three times over. Each format uses its own syntax,
+            and each format writes its own file extension. One thing does not change: where the
+            link starts. A link starts in the directory of the page that holds it. It never starts
+            at the root of the report, and never at the root of a server.
             """)
     @TableTest("""
         Scenario                       | Page URL    | Links to   | In HTML?                | In markdown?          | In asciidoc?
@@ -60,12 +60,12 @@ class RelativeLinksTest {
 
     @DisplayName("Reaches a shared asset by climbing to the output root")
     @Description("""
-            The stylesheet and the search index are written once, at the root of the report, and
-            every page reaches them from where it sits. A page therefore carries as many steps up
-            as it lies deep, which is what lets the whole tree be moved as one.
+            The reporter writes the stylesheet and the search index once, at the root of the
+            report. Every page reaches them from where it sits. A page therefore climbs as many
+            steps as it lies deep. You can then move the whole tree as one.
 
-            The asset below is the search index. HTML alone carries it: the text formats have no
-            page chrome to load it from.
+            The asset below is the search index. HTML alone carries it, because a text format has
+            no page chrome to load it from.
             """)
     @TableTest("""
         Scenario              | Page URL          | Path to the search index?
@@ -81,13 +81,14 @@ class RelativeLinksTest {
 
     @DisplayName("Writes every link relative, whatever the format")
     @Description("""
-            One root-absolute link is enough to break a report served from a subpath, and it breaks
-            it only there — which is the kind of fault that reaches a reader before it reaches the
-            build. Every file of a whole report is therefore read back, in each format, and the
-            links it holds are collected.
+            One link that starts at a server root breaks a report served from a subpath. It breaks
+            that report nowhere else, so the build stays green and a reader meets the fault first.
+            This rule therefore reads back every file of a whole report, in each format, and
+            collects the links those files hold.
 
-            The one address a report may state whole is the link back to the hosting site, which is
-            declared rather than generated. The reports below declare none.
+            A report may state one address in full: the link back to the site that hosts it. A
+            project declares that link, and the reporter never generates it. The reports below
+            declare none.
             """)
     @TableTest("""
         Scenario               | Format                     | Links starting at a server root?

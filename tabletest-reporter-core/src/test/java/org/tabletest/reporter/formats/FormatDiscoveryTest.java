@@ -24,9 +24,9 @@ class FormatDiscoveryTest {
 
     @DisplayName("Discovers a custom format only when both its templates are present")
     @Description("""
-            A directory contributes an output format when it holds both a
-            table.<format>.peb and an index.<format>.peb template. A lone table or
-            index template, other files, and subdirectories are all ignored.
+            A directory gives the reporter an output format when it holds two templates:
+            table.<format>.peb and index.<format>.peb. The reporter ignores a lone table template, a
+            lone index template, any other file, and every subdirectory.
             """)
     @TableTest("""
         Scenario                   | Template Files                                                                                 | Discovered Formats?

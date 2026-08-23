@@ -36,9 +36,9 @@ class SidebarRenderingTest {
 
     @DisplayName("Carries the whole report on every page, marking where you are")
     @Description("""
-            The entries are the same wherever the reader is standing. Two things move: which entry is
-            marked as the page they are on, and where the links point. Each link is relative to the
-            directory that page sits in, so the report can be served from any location.
+            The entries are the same wherever the reader stands. Two things move. The mark moves to
+            the page the reader is on, and the links point at new targets. Each link is relative to
+            the directory of that page, so a report serves from any location.
             """)
     @TableTest("""
         Scenario      | Page URL          | Sidebar entries?                  | Their links?                                                     | Current entry?
@@ -63,11 +63,11 @@ class SidebarRenderingTest {
 
     @DisplayName("Marks the whole trail down to the page you are on")
     @Description("""
-            A page deep in the report is one entry in a long tree. Marking that entry alone
-            highlights a single leaf, and the reader is left to work out which feature holds it.
-            Every entry above the page is therefore marked as well.
+            A page deep in the report is one entry in a long tree. A mark on that entry alone
+            highlights a single leaf, and leaves the reader to work out which feature holds it.
+            The sidebar therefore marks every entry above the page as well.
 
-            These rows are read off a second, deeper report, built from two test classes:
+            These rows read a second, deeper report, of two test classes:
             com.example.orders.OrderTest, whose table is items, and
             com.example.orders.pricing.PricingTest, whose table is discounts. The report root is
             the package orders, so the entries below it are order-test and pricing.
@@ -88,14 +88,14 @@ class SidebarRenderingTest {
 
     @DisplayName("Arrives with the branch holding your page unfolded")
     @Description("""
-            An entry that holds pages is a fold, so the sidebar of a large spec is a short list
-            rather than every rule at once. A reader who follows a link into the middle of a
-            report would then have to unfold their way back to where they already are, so the
-            branches on the trail to their page are written open.
+            An entry that holds pages is a fold. The sidebar of a large spec is therefore a short
+            list, and not every rule at once. A reader who follows a link into the middle of a
+            report would then have to unfold a path back to where they already are. The sidebar
+            writes the folds on the trail to their page open.
 
-            These rows are read off the deeper report described above. A fold is named by the
-            entry that carries it, and only an entry with pages under it can be one: order-test
-            and pricing sit below the root, pricing-test sits below pricing.
+            These rows read the deeper report described above. Each fold takes the name of the
+            entry that carries it. Only an entry with pages under it is a fold: order-test and
+            pricing sit below the root, and pricing-test sits below pricing.
             """)
     @TableTest("""
         Scenario                | Page URL                        | Unfolded branches?

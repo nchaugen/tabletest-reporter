@@ -25,17 +25,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Roles and results")
 @Description("""
-        A published table is not just its text. The reporter marks which column names the
-        scenario and which holds the expectation. It also records how each row fared when it
-        ran.
+        A published table carries more than its text. The reporter marks which column names the
+        scenario, and which column holds the expectation. It also records how each row fared when
+        it ran.
 
-        A mark needs somewhere to live, and the three formats have quite different places to put
-        one. HTML sets a class on the cell. AsciiDoc puts a role prefix on the value. Markdown
-        has nowhere at all. The rules below therefore print the cell each format published,
-        rather than naming the mark, so the difference is visible rather than asserted.
+        A mark needs somewhere to live, and the three formats put one in different places. HTML
+        sets a class on the cell. AsciiDoc puts a role prefix on the value. Markdown has nowhere
+        at all. The rules below therefore print the cell each format published, and never name the
+        mark. A reader can then see the difference.
 
-        Each rule names the sample test class it is read off. Its rows are the columns or the
-        rows of that class's table.
+        Each rule names the sample test class it reads. Its rows are the columns, or the rows, of
+        that class's table.
         """)
 class RolesAndResultsTest {
 
@@ -44,13 +44,15 @@ class RolesAndResultsTest {
 
     @DisplayName("Marks a column by where it sits and how its header ends")
     @Description("""
-            A table with more columns than the test method has parameters spends its first column on
-            the scenario name. That column is marked as the scenario and never passed to the test.
+            A table can hold more columns than the test method has parameters. Its first column then
+            holds the scenario name. The reporter marks that column as the scenario, and never passes
+            it to the test.
 
             A column whose header ends in a question mark holds what the row expected. Every other
-            column is an input and carries no mark.
+            column is an input, and carries no mark.
 
-            Read off LeapYearSample: Scenario | Year | Leap?, over a method taking year and leap.
+            These rows read LeapYearSample: Scenario | Year | Leap?, over a method taking year and
+            leap.
             """)
     @TableTest("""
         Scenario                     | Column   | In markdown? | In AsciiDoc?                | In HTML?
@@ -66,12 +68,12 @@ class RolesAndResultsTest {
 
     @DisplayName("Follows a @Scenario annotation to the column it names")
     @Description("""
-            Spending the first column is a convention, not a requirement. A test that takes every
-            column as a parameter can still name one of them the scenario, by annotating it with
-            @Scenario. The mark then follows the annotation rather than the position.
+            The first column holds the scenario by convention, not by requirement. A test can take
+            every column as a parameter and still name one of them the scenario. Annotate that
+            parameter with @Scenario. The mark then follows the annotation, and not the position.
 
-            Read off AnnotatedScenarioSample: Year | Case | Leap?, whose second parameter is
-            annotated.
+            These rows read AnnotatedScenarioSample: Year | Case | Leap?, whose second parameter
+            carries the annotation.
             """)
     @TableTest("""
         Scenario                          | Column | In markdown? | In AsciiDoc?                | In HTML?
@@ -89,14 +91,15 @@ class RolesAndResultsTest {
 
     @DisplayName("Chooses the expectation column by the header pattern")
     @Description("""
-            The question mark is only the default. The pattern is the JUnit configuration parameter
-            tabletest.reporter.expectation.pattern, matched against the whole header. A project that
-            words its expectations differently can therefore say so once.
+            The question mark is the default alone. The JUnit configuration parameter
+            tabletest.reporter.expectation.pattern holds the pattern, and the reporter matches it
+            against the whole header. A project that words its expectations differently therefore says
+            so once.
 
-            Setting it replaces the default rather than adding to it. Under a pattern of your own, a
-            header ending in a question mark is an ordinary column again.
+            A pattern you set replaces the default, and does not add to it. Under a pattern of your
+            own, a header ending in a question mark is an ordinary column again.
 
-            Read off ExpectationPatternSample: Scenario | Year | Leap? | Expected note.
+            These rows read ExpectationPatternSample: Scenario | Year | Leap? | Expected note.
             """)
     @TableTest("""
         Scenario                           | Expectation pattern | Column        | In markdown?  | In AsciiDoc?                        | In HTML?
@@ -117,14 +120,14 @@ class RolesAndResultsTest {
 
     @DisplayName("Records a row's verdict on every cell of it")
     @Description("""
-            The report is generated from a test run, so it publishes what happened, not only what was
-            written. Every cell of a row carries that row's verdict, which lets a reader see at a
-            glance whether the spec still holds.
+            The reporter generates the report from a test run, so the report states what happened, and
+            not only what somebody wrote. Every cell of a row carries that row's verdict. A reader can
+            then see whether the spec still holds.
 
-            The Year cell stands for the row below: the rule asserts that every cell of the row
-            agrees.
+            The Year cell stands for the whole row. The rule asserts that every cell of the row agrees
+            with it.
 
-            Read off LeapYearSample, whose century row claims the wrong answer on purpose.
+            These rows read LeapYearSample, whose century row claims the wrong answer on purpose.
             """)
     @TableTest("""
         Scenario         | Row                      | In markdown? | In AsciiDoc?          | In HTML?
@@ -145,18 +148,18 @@ class RolesAndResultsTest {
     @DisplayName("Marks a set that expands the row into one run per value")
     @Description("""
             A set in a cell means one of two things. Where the parameter is not a set, the row runs
-            once per value. Where the parameter is a set, the test receives the whole set as one
+            once for each value. Where the parameter is a set, the test takes the whole set as one
             argument.
 
-            The published table shows no parameters, so the two cells read alike. The reporter
-            marks the expanding one, which is the only thing that tells a reader them apart.
-            Markdown carries no marks at all, so there the two stay indistinguishable.
+            The published table shows no parameters, so the two cells read alike. The reporter marks
+            the cell that expands, and that mark is the one thing telling a reader the two apart.
+            Markdown carries no marks at all, so a markdown reader cannot tell them apart.
 
-            The AsciiDoc column holds the attribute line alone, because AsciiDoc opens a bulleted
-            block below the cell for a collection, and only that line carries the marks.
+            The AsciiDoc column holds the attribute line alone. AsciiDoc opens a bulleted block below
+            a cell that holds a collection, and that line carries the marks.
 
-            Read off ValueSetSample: Any year | Known leap years, over a method taking an int and a
-            Set.
+            These rows read ValueSetSample: Any year | Known leap years, over a method taking an int
+            and a Set.
             """)
     @TableTest("""
         Scenario                   | Column           | In markdown?   | In AsciiDoc?          | In HTML?
@@ -171,13 +174,13 @@ class RolesAndResultsTest {
 
     @DisplayName("Publishes a broken row's message below the table")
     @Description("""
-            A row that broke is listed again below the table, with the message it failed on. A reader
-            of the spec therefore sees what the code did, instead of what the row claimed.
+            The report lists a broken row again below the table, with the message that row failed on.
+            A reader of the spec therefore meets what the code did, and not what the row claimed.
 
-            Every format publishes it, each below a heading of its own and fenced its own way. The
-            message inside is the same text, which is why one column serves for all three.
+            Every format publishes that list, each below a heading of its own and fenced its own way.
+            The message inside is the same text in all three, so one column serves for all three.
 
-            Read off LeapYearSample.
+            These rows read LeapYearSample.
             """)
     @TableTest("""
         Scenario         | Row                      | Message below the table?

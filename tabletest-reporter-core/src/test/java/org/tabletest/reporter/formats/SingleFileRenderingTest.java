@@ -25,9 +25,9 @@ import static org.tabletest.reporter.BuiltInFormat.HTML;
  */
 @DisplayName("Single-file mode")
 @Description("""
-        A report is normally a directory of pages. Single-file mode collapses it into one
-        self-contained HTML file. That file can be mailed, attached to a build, or opened from a
-        memory stick with nothing beside it.
+        A report is normally a directory of pages. Single-file mode writes it as one
+        self-contained HTML file instead. You can mail that file, attach it to a build, or open it
+        from a memory stick with nothing beside it.
 
         The rules below are read off a report built from one test class,
         org.example.CalendarTest, with two tables: leapYear and monthLength.
@@ -43,9 +43,9 @@ class SingleFileRenderingTest {
 
     @DisplayName("Writes one file where the default writes a tree")
     @Description("""
-            The default report writes a page per index and per table, plus the search index as a
-            script beside them. Single-file mode writes index.html and nothing else — the same
-            report, with every page and the search index folded into it.
+            The default report writes one page per index and one per table. It writes the search index
+            as a script beside them. Single-file mode writes index.html and nothing else. That one file
+            holds the same report, with every page and the search index inside it.
             """)
     @TableTest("""
         Scenario           | Single file | Files written?
@@ -60,9 +60,10 @@ class SingleFileRenderingTest {
 
     @DisplayName("Inlines everything the one file would otherwise reach for")
     @Description("""
-            Everything the report needs is in the file. No stylesheet or script is linked. No address
-            is fetched. The search index, a sibling script in the default report, is inlined instead.
-            This is what makes the file work offline and survive being moved on its own.
+            The file holds everything the report needs. It links no stylesheet and no script. It
+            fetches no address. The default report writes the search index as a script beside the
+            pages; this file holds that index inside it. The file therefore works offline, and it
+            survives a move on its own.
             """)
     @TableTest("""
         Scenario                           | Text                          | Found in the file?
@@ -78,9 +79,10 @@ class SingleFileRenderingTest {
 
     @DisplayName("Turns every table into a section the report's own links point at")
     @Description("""
-            A table that was a page of its own becomes a section of the one file, named after the
-            path it had. The sidebar and the search results point at that name as an in-page anchor.
-            Navigation that crossed files in the default report therefore scrolls within this one.
+            Each table has a page of its own in the default report. Here it becomes a section of the
+            one file, named after the path it had. The sidebar and the search results point at that
+            name as an anchor in the page. Navigation that crossed files in the default report
+            therefore scrolls inside this one.
             """)
     @TableTest("""
         Scenario         | Page URL                    | Section holding the table?  | Link to it from the sidebar?
@@ -100,13 +102,13 @@ class SingleFileRenderingTest {
 
     @DisplayName("Heads each section at its depth, and no deeper than six")
     @Description("""
-            The one file has to carry the outline the tree carried, so a section is headed one level
-            below the section it sits in. HTML stops at h6. A report deep enough to need an h7
-            therefore keeps its deepest sections at h6, rather than emitting a heading no browser
-            knows.
+            The one file carries the outline that the tree carried, so each section takes a heading one
+            level below the section it sits in. HTML stops at h6. A report deep enough to need an h7
+            therefore holds its deepest sections at h6. The reporter writes no heading a browser does
+            not know.
 
-            The second class below keeps the report's root shallow, so the packages named in each row
-            are levels the reader walks down.
+            The second class below holds the report's root shallow. The packages named in each row are
+            then levels the reader walks down.
             """)
     @TableTest("""
         Scenario                      | Published tables                                                                | Section heading?
@@ -122,10 +124,10 @@ class SingleFileRenderingTest {
 
     @DisplayName("Offers single-file mode for HTML only")
     @Description("""
-            The other formats have no way to be self-contained. An AsciiDoc or markdown page carries
-            its structure in files and links, not in one document. Asking for a single file in either
-            is therefore refused rather than quietly ignored, and the message names the format that
-            was asked for.
+            The other two formats cannot be self-contained. An AsciiDoc or markdown page carries its
+            structure in files and links, and not in one document. The reporter therefore refuses a
+            request for a single file in either, and never ignores that request quietly. The message
+            names the format the request asked for.
             """)
     @TableTest("""
         Scenario         | Format   | Error message?

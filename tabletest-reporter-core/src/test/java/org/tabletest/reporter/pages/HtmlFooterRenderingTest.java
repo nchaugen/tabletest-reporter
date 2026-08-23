@@ -40,14 +40,14 @@ public class HtmlFooterRenderingTest {
 
     @DisplayName("States the run timestamp in UTC, whatever zone it ran in")
     @Description("""
-        A report generated in CI reads the same for every reader, so the timestamp is stated in
-        UTC wherever the build ran. The label a reader sees drops the sub-second precision they
-        have no use for; the attribute beside it keeps whole seconds, so tooling can compare the
-        report against the revision it came from.
+        A report states the timestamp in UTC, whatever zone the build ran in. A report generated
+        in CI then reads the same for every reader. The label a reader sees drops the sub-second
+        precision nobody needs. The attribute beside it holds whole seconds, so a tool can compare
+        the report against the revision it came from.
 
-        A report reads the clock unless the build pins an instant. Pinning one is what makes the
-        same tests produce the same bytes, which is what a build comparing two runs needs, so the
-        rows below are read off reports the build pinned.
+        A report reads the clock unless the build pins an instant. A build that pins one gets the
+        same bytes from the same tests, which is what a build comparing two runs needs. The rows
+        below read reports the build pinned.
         """)
     @TableTest("""
         Scenario             | Instant the build pinned      | Timestamp attribute?   | Footer label?
@@ -74,12 +74,12 @@ public class HtmlFooterRenderingTest {
 
     @DisplayName("Records on every page when the report was generated")
     @Description("""
-        The run timestamp tells a reader whether the published spec still tracks the code it was
-        generated from. Every page kind therefore carries it: the per-table page, the index page,
-        and the single-file report alike.
+        The run timestamp tells a reader whether the published spec still tracks its code. Every
+        kind of page therefore carries the timestamp: the table page, the index page, and the
+        single-file report alike.
 
-        The readable label is paired with a machine-readable attribute, so tooling can compare it
-        against the source revision.
+        Each page carries the readable label beside a machine-readable attribute, so a tool can
+        compare the report against the source revision.
         """)
     @TableTest("""
         Scenario              | Page kind                   | Footer?                                                 | Timestamp attribute?
@@ -94,8 +94,8 @@ public class HtmlFooterRenderingTest {
 
     @DisplayName("Falls back to plain attribution without a timestamp")
     @Description("""
-        A context assembled without a timestamp still gets the attribution. It does not get a
-        footer with a dangling separator. A custom renderer driving the templates directly is
+        A context without a timestamp still carries the attribution. Its footer holds no separator
+        with nothing after it. A renderer of your own that drives the templates directly builds
         such a context.
         """)
     @TableTest("""
@@ -110,13 +110,13 @@ public class HtmlFooterRenderingTest {
 
     @DisplayName("Links back to the site that hosts the report")
     @Description("""
-        Every other link a report holds is relative within its own tree. A reader who arrives from a
-        site therefore has no way back once inside, which the link below is there to fix. It is
-        declared in the site section of the tabletest-reporter.yaml sidecar file, and the report
-        links nowhere until it is.
+        Every other link a report holds stays inside the report's own tree. A reader who arrives
+        from a site therefore has no way back once inside. The link below is what fixes that.
+        Declare it in the site section of the tabletest-reporter.yaml sidecar file. Until you do,
+        the report links nowhere.
 
-        The address reaches the page as it was written, so a report published under a path of the
-        hosting site is reachable by a root-relative address as well as an absolute one.
+        The address reaches the page as you wrote it. A site that hosts the report below one of
+        its own paths can therefore use a root-relative address as well as an absolute one.
 
         The footer is a block of its own in each of the three page templates. A template of yours
         can override that block and call the siteLink macro to place the same link elsewhere.

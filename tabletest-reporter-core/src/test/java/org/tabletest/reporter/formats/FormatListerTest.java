@@ -23,9 +23,9 @@ class FormatListerTest {
 
     @DisplayName("Lists the built-in formats plus any of your own, sorted")
     @Description("""
-            asciidoc, html, and markdown are always available; any custom formats
-            discovered in the template directory are merged in and the whole list is
-            sorted alphabetically.
+            Three formats are always available: asciidoc, html and markdown. The reporter finds any
+            custom format in the template directory and adds it to those three. It then sorts the
+            whole list alphabetically.
             """)
     @TableTest("""
         Scenario                      | Template Files                                                             | Available Formats?

@@ -14,16 +14,16 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("The indexDepth option")
 @Description("""
-        The indexDepth option controls how many levels of nested features get their own
-        index pages before the remaining tree is flattened onto one page. It is set on
-        the CLI, Maven, or Gradle surface as a number or the keyword "infinite".
+        The indexDepth option says how many levels of nested features get an index page of their
+        own. The reporter writes the rest of the tree onto one page. Set the option on the CLI,
+        Maven or Gradle surface, as a number or as the keyword "infinite".
         """)
 class IndexDepthTest {
 
     @DisplayName("Reads indexDepth as a count of index levels")
     @Description("""
-            The number counts the levels indexed before the rest of the tree is flattened onto one
-            page. A depth of one therefore indexes the top level only.
+            The number counts the levels that get an index page. The reporter writes the rest of the
+            tree onto one page. A depth of one therefore indexes the top level alone.
             """)
     @TableTest("""
         Scenario                | Option value | Index depth?
@@ -36,9 +36,9 @@ class IndexDepthTest {
 
     @DisplayName("Treats the keyword, and an unset option, as unlimited depth")
     @Description("""
-            The keyword is case-insensitive. An option that was never set means the same as the
-            keyword: every feature level gets its own index page. Absent, empty, and blank all count
-            as never set. Only a depth limits the index.
+            The keyword ignores case. An option you never set means the same as the keyword: every
+            level of features gets an index page of its own. Three values count as never set: absent,
+            empty and blank. A depth alone limits the index.
             """)
     @TableTest("""
         Scenario                 | Option value                   | Unlimited?
@@ -76,9 +76,9 @@ class IndexDepthTest {
 
     @DisplayName("Refuses an index depth below one level")
     @Description("""
-            A depth of one indexes the top level only. There is nothing shallower, so anything
-            below one is rejected rather than clamped, and the message names the depth it was
-            given.
+            A depth of one indexes the top level alone. Nothing is shallower. The reporter therefore
+            refuses a depth below one, and never raises it to one quietly. The message names the depth
+            you gave.
             """)
     @TableTest("""
         Scenario                 | Depth | Error message?
@@ -102,9 +102,9 @@ class IndexDepthTest {
 
     @DisplayName("Refuses a value that is neither a number nor the keyword")
     @Description("""
-            The message repeats the value it could not read and names what it would have
-            accepted. A value that does read as a number but is out of range is the shallowest
-            depth rule above, not this one.
+            The message repeats the value the reporter could not read, and names what it accepts. A
+            value that does read as a number, but lies out of range, belongs to the rule above about
+            the shallowest depth.
             """)
     @TableTest("""
         Scenario               | Input | Error message?

@@ -27,12 +27,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Custom templates")
 @Description("""
         Pebble templates render a report, and a project can supply its own. Point the reporter at
-        a template directory, and the reporter uses the files in it in place of, or on top of,
-        the built-in templates.
+        a template directory. The reporter then uses the files in that directory in place of the
+        built-in templates, or on top of them.
 
-        The rules below are read off a report of one test class named Calendar. That class holds
-        one table named Leap years, with the columns Year and Leap? and one row, 2004 and Yes. A
-        report that small lets a rule state a whole page.
+        The rules below read a report of one test class named Calendar. That class holds one table
+        named Leap years, with the columns Year and Leap? and one row, 2004 and Yes. A report that
+        small lets a rule state a whole page.
         """)
 class CustomTemplateTest {
 
@@ -68,13 +68,13 @@ class CustomTemplateTest {
 
     @DisplayName("Picks one template when several could render the page")
     @Description("""
-            A directory can hold more than one candidate for the same page. The reporter has to
-            settle on one, and it does so the same way every run, so a report never changes because
-            a file was added beside another.
+            A directory can hold more than one candidate for the same page. The reporter settles on
+            one, and it settles the same way every run. A report therefore never changes because
+            somebody added a file beside another.
 
-            The alphabetical part carries no meaning of its own — it is there to make the choice
-            deterministic, not to give an ordering you should design around. A directory holding two
-            templates for one page is usually a mistake rather than a decision.
+            The alphabetical part carries no meaning of its own. It makes the choice the same every
+            time. Do not design around that order. A directory that holds two templates for one page
+            is usually a mistake, and not a decision.
             """)
     @TableTest("""
         Scenario                           | Your template directory                                      | Table page?
@@ -121,12 +121,12 @@ class CustomTemplateTest {
     @DisplayName("Leaves the same three blocks in every built-in template")
     @Description("""
             The blocks are not a property of one template. A table page and an index page leave the
-            same three, in every format the reporter generates.
+            same three blocks, in every format the reporter generates.
 
-            The one template below is written once per format and page, filling all three, and lands
-            in the same places each time. Its title block holds {{ title }} of note, with no markup
-            of its own. The same line can therefore be looked for whichever format the page is
-            written in.
+            The rows below use one template, written once per format and page. It fills all three
+            blocks, and each block lands in the same place every time. Its title block holds
+            {{ title }} of note, and no markup of its own. A rule can therefore look for the same line
+            in every format.
             """)
     @TableTest("""
         Scenario             | Format   | Page  | Opens with?                      | Titled?            | Ends with?
@@ -149,11 +149,11 @@ class CustomTemplateTest {
 
     @DisplayName("Lets your template add to the built-in stylesheet")
     @Description("""
-            The HTML report carries its stylesheet inside the file, so a role a test declares has
-            nowhere to be styled from. The extra_stylesheet block is that place: what it holds is
-            written after the built-in stylesheet, which stays where it is.
+            The HTML report carries its stylesheet inside the file, so a role that a test declares has
+            nowhere to take a style from. The extra_stylesheet block is that place. The reporter writes
+            what the block holds after the built-in stylesheet, and the built-in stylesheet stays.
 
-            Read off a report of BinSample, whose Bins column is a list.
+            These rows read a report of BinSample, whose Bins column holds a list.
             """)
     @TableTest("""
         Scenario                | Extra stylesheet        | Your rule in the page? | Built-in stylesheet kept?

@@ -60,12 +60,11 @@ public class IndexTest {
 
     @DisplayName("Links an index page to every page beneath it, nested as they are")
     @Description("""
-            The whole subtree is listed, not just the level below. One nesting level of the list is
-            one level of the report.
+            The list holds the whole subtree, and not the level below alone. One nesting level of
+            the list is one level of the report.
 
-            Each link is written in the syntax of the format being generated, and points at the file
-            that format writes. A report therefore reads the same whichever of them it is published
-            in.
+            Each link takes the syntax of the format the reporter generates, and points at the file
+            that format writes. A report therefore reads the same in every format.
             """)
     @TableTest("""
         Scenario            | Format   | Page URL    | Page content?
@@ -85,13 +84,13 @@ public class IndexTest {
 
     @DisplayName("Folds an HTML index page below its top level")
     @Description("""
-            Every page under an index is written into it, however deep. Only the top level is
-            open: an entry that holds pages is a fold, and the reader opens the part they want
-            rather than the publisher choosing one depth for every reader. A folded page is
-            still on the page, so a browser search and a printed copy both reach it.
+            An index page holds every page under it, however deep. The top level alone is open.
+            An entry that holds pages is a fold, so the reader opens the part they want. The
+            publisher no longer chooses one depth for every reader. A folded entry stays in the
+            page, so a browser search and a printed copy both reach it.
 
-            These rows are read off the root index of a second, deeper report, built from two
-            test classes: com.example.orders.OrderTest, whose table is items, and
+            These rows read the root index of a second, deeper report. That report holds two test
+            classes: com.example.orders.OrderTest, whose table is items, and
             com.example.orders.pricing.PricingTest, whose table is discounts. The report root is
             the package orders, so its top level is order-test and pricing.
             """)

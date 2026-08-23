@@ -14,13 +14,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Front matter")
 @Description("""
-        An AsciiDoc or Markdown page is read by a site generator, which decides how the page looks
-        and where it sits. Front matter is how a project tells that generator what it needs to know.
-        It is declared once, in the frontMatter section of the tabletest-reporter.yaml sidecar, and
-        written above every page of a text report. HTML gets none — it is a finished page, not
-        source for a generator.
+        A site generator reads an AsciiDoc or Markdown page. The generator decides how that page
+        looks and where it sits in the site. Front matter is what a project tells the generator.
+        Declare it once, in the frontMatter section of the tabletest-reporter.yaml sidecar. The
+        reporter then writes it above every page of a text report. An HTML page carries none,
+        because it is a finished page and not source for a generator.
 
-        Both rules below are read off a report built from two test classes in one package,
+        Both rules below read a report of two test classes in one package,
         com.example.orders.OrderTest and com.example.orders.ProductTest, with one table each.
         """)
 public class FrontMatterTest {
@@ -34,13 +34,13 @@ public class FrontMatterTest {
 
     @DisplayName("Writes the declared front matter above a text page")
     @Description("""
-            Each format is given the shape its own tooling reads: Markdown fences a YAML block,
-            AsciiDoc writes document attributes. The keys keep the order they were declared in, so
-            the block reads as it was written.
+            Each format takes the shape its own tooling reads. Markdown fences a YAML block.
+            AsciiDoc writes document attributes. The keys hold the order you declared them in, so
+            a reader meets the block as you wrote it.
 
-            A value is written as it stands wherever YAML reads it back as the same text, and quoted
-            where it would not be — a value carrying a colon, or one a reader would take for a
-            number or a boolean.
+            The reporter writes a value as it stands, where YAML reads that value back as the same
+            text. It quotes a value where YAML would not. Two values need the quotes: a value that
+            holds a colon, and a value a reader takes for a number or a boolean.
             """)
     @TableTest("""
         Scenario                   | Format   | Declared                           | Page opens with?
@@ -58,17 +58,18 @@ public class FrontMatterTest {
 
     @DisplayName("Fills a value asked for by token, under whatever key you name")
     @Description("""
-            Three values the reporter knows and a site generator cannot work out are asked for by
-            token: $title, $position and $timestamp. The token sits in the value, never in the key,
-            because generators do not agree on what to call these — a position is weight to Hugo,
-            sidebar_position to Docusaurus, nav_order to a Jekyll theme, and page-weight to Antora,
-            which exposes a custom attribute under no other prefix.
+            The reporter knows three values a site generator cannot work out. Ask for one by its
+            token: $title, $position or $timestamp. Write the token as the value, never as the key.
+            Generators do not agree on what to call a position. Hugo calls it weight, Docusaurus
+            sidebar_position, a Jekyll theme nav_order, and Antora page-weight. Antora exposes a
+            custom attribute under no other prefix.
 
-            The position is the one the spec metadata declares, so a generator ordering pages by it
-            lists them in the reading order the project chose rather than alphabetically.
+            A page's position is the place the spec metadata declares. A generator that orders
+            pages by that value lists them in the reading order the project chose, and not
+            alphabetically.
 
-            The rows below are Markdown; the values are the same whichever text format writes them.
-            $timestamp carries the run timestamp and so has no fixed value to show here.
+            The rows below are Markdown. Every text format writes the same values. $timestamp
+            carries the run timestamp, which has no fixed value to show here.
             """)
     @TableTest("""
         Scenario                            | Declared                                | Page URL      | Page opens with?

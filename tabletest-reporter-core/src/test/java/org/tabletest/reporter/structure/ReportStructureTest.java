@@ -20,12 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("The page tree")
 @Description("""
-        Nobody chooses the shape of a report. It follows the packages of the test classes that
-        published. Below, a published table is written as the class that ran it and the method that
-        holds it.
+        Nobody chooses the shape of a report. The shape follows the packages of the test classes
+        that published. Each row below writes a published table as the class that ran it and the
+        method that holds it.
 
-        The indexDepth option decides how much of the tree gets an index page. It has its own
-        feature, alongside this one.
+        The indexDepth option says how much of the tree gets an index page. That option has a
+        feature of its own, beside this one.
         """)
 class ReportStructureTest {
 
@@ -47,8 +47,8 @@ class ReportStructureTest {
 
     @DisplayName("Opens the report at the deepest shared package")
     @Description("""
-            A package above the root is the same for every page, so a reader would walk through it
-            and never make a choice there.
+            Every page shares the packages above the root, so a reader walking through them never
+            makes a choice there.
             """)
     @TableTest("""
         Scenario                          | Published tables                                                                 | Page tree?

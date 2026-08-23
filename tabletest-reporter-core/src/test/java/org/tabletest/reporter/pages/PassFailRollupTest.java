@@ -21,14 +21,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Pass/fail rollup")
 @Description("""
-        Every HTML page states how many of its scenarios pass, so a reader arriving at a spec
-        can see whether the code still does what the page says. A table page counts its own
-        rows; an index page sums the pages below it.
+        Every HTML page states how many of its scenarios pass. A reader arriving at a spec can
+        then see whether the code still does what the page says. A table page counts its own
+        rows. An index page adds up the pages below it.
 
-        The rules below are read off a report of a run of two test classes. AdditionSample
-        publishes the table sums, whose two rows both pass. SubtractionSample publishes the
-        table differences, whose two rows include one that claims the wrong answer. The report
-        root is the index above the two class pages.
+        The rules below read a report of a run of two test classes. AdditionSample publishes
+        the table sums, whose two rows both pass. SubtractionSample publishes the table
+        differences. One of those two rows claims the wrong answer. The report root is the
+        index above the two class pages.
         """)
 class PassFailRollupTest {
 
@@ -37,11 +37,11 @@ class PassFailRollupTest {
 
     @DisplayName("States on an HTML page how many of its scenarios pass")
     @Description("""
-            A page with a broken scenario leads with the count of what is broken, because that is
-            what a reader needs first. A page where everything passes says so in one line.
+            A page with a broken scenario states the count of what is broken first, because a
+            reader needs that count first. A page where every scenario passes says so in one line.
 
-            An index page never counts a scenario twice and never counts one that is not below it,
-            so the root's numbers are the two class pages added together.
+            An index page counts no scenario twice, and counts no scenario that is not below it.
+            The root's numbers are therefore the two class pages added together.
             """)
     @TableTest("""
         Scenario                       | Page URL                        | Verdict?
@@ -58,12 +58,12 @@ class PassFailRollupTest {
 
     @DisplayName("Says nothing about a page where no scenario ran")
     @Description("""
-            A verdict comes from rows that ran. A page built from a table that carries no row
-            results — output the reporter was handed rather than a run it saw — therefore states
-            nothing at all, instead of claiming every scenario holds.
+            A verdict comes from rows that ran. Some tables carry no row results, because the
+            reporter took the output from a file and never saw the run. A page built from such a
+            table states nothing at all. It does not claim that every scenario holds.
 
-            These two rows are read off a second report, of one class, com.example.orders.OrderTest,
-            whose table items was published without results.
+            These two rows read a second report, of one class, com.example.orders.OrderTest. Its
+            table items carries no results.
             """)
     @TableTest("""
         Scenario                     | Page URL          | Verdict?
