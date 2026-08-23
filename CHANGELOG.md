@@ -3,104 +3,115 @@
 ## [Unreleased]
 
 ### Added
-- An HTML report can be read from the keyboard. Tab, Enter and Space already reached and operated
-  every row of the navigation, and still do with no script running. On top of that, the arrow keys
-  move between the rows you can see and open or close a feature, `/` jumps to the search box, `m`
-  opens or closes the navigation drawer, `Esc` leaves either, and `?` lists the keys on the page.
-  The arrows act only on a row that already has focus, so they still scroll a page everywhere
-  else. Focus is drawn clearly, because the keys move it.
-- A build can pin the instant a report states it was generated at, with `generatedAt` on the Maven
-  plugin (`-Dtabletest.report.generatedAt`) and the Gradle extension, or `--generated-at` on the
-  CLI. Left unset the reporter reads the clock, as before, so two runs of the same tests write two
-  different pages and a build that diffs its output sees a change every time. Pinning the instant
-  is what makes the same tests produce the same bytes. The value is an ISO-8601 instant and
-  anything else fails the build. The reporter does not read `SOURCE_DATE_EPOCH` itself — output
-  that depends on the environment it ran in is the thing being fixed — so a reproducible build
-  passes its own value in.
-- A report can link back to the site that hosts it. Every other link a report holds is relative
-  within its own tree, so a reader who arrives from a site has no way back once inside. Declare a
-  `site` section with a `label` and a `url` in `tabletest-reporter.yaml` and the link renders at the
-  start of the footer of every HTML page — the table page, the index page and the single-file report
-  alike. The address is used exactly as written and is never resolved against the report's own tree,
-  so a root-relative address works for a site that hosts the spec below it. A `url` declared without
-  a `label` labels itself with the address. Without a `site` section the footer is unchanged.
+- You can now read an HTML report from the keyboard. Tab reaches every row of the navigation,
+  Enter follows one, and Space opens or closes a feature. The browser does all of that, and no
+  script runs. These keys are new on top of it:
+  - <kbd>↓</kbd> <kbd>↑</kbd> move between the rows you can see
+  - <kbd>→</kbd> opens a feature, then steps into it
+  - <kbd>←</kbd> closes a feature, or steps out to the one above
+  - <kbd>/</kbd> opens the drawer and jumps to the search box
+  - <kbd>m</kbd> opens or closes the navigation drawer
+  - <kbd>Esc</kbd> leaves the search box, or closes the drawer
+  - <kbd>?</kbd> lists the keys on the page
+
+  The arrow keys act only on a row that already holds focus. They still scroll a long page
+  everywhere else.
+- Your build can now pin the instant a report states it was generated at. Set `generatedAt` on the
+  Maven plugin (`-Dtabletest.report.generatedAt`) or the Gradle extension, or pass `--generated-at`
+  on the CLI. The value is an ISO-8601 instant, and any other value fails the build.
+
+  Leave it unset and the reporter reads the clock, as before. Two runs of the same tests then write
+  two different pages, and a build that compares its own output sees a change every time. A pinned
+  instant gives you the same bytes from the same tests. The reporter does not read
+  `SOURCE_DATE_EPOCH` itself, because a report that changes with its environment is the fault being
+  fixed. Convert that value in your build and pass it in.
+- A report can now link back to the site that hosts it. Every other link a report holds stays
+  inside the report's own tree, so a reader who arrives from a site has no way back. Declare a
+  `site` section with a `label` and a `url` in `tabletest-reporter.yaml`. The link then opens the
+  footer of every HTML page: the table page, the index page and the single-file report alike.
+
+  The reporter uses the address exactly as you wrote it, and never resolves it against the
+  report's own tree. A root-relative address therefore works for a site that hosts the spec below
+  one of its own paths. A `url` without a `label` labels itself with the address. Without a `site`
+  section the footer does not change.
 - The three HTML page templates now leave a `footer` block, so a template of yours can replace the
   footer without rewriting the page. The site link also has a `siteLink(site)` macro of its own,
   which such a template can call to place the same link elsewhere.
+- Front matter is now a config section, and not only a template block. Declare `frontMatter:` in
+  `tabletest-reporter.yaml`. The reporter then writes it above every AsciiDoc and Markdown page: a
+  fenced YAML block for Markdown, and document attributes for AsciiDoc. An HTML page carries none,
+  because it is a finished page and not source for a site generator.
 
-- Front matter is now a config section, not only a template block. Declare `frontMatter:` in
-  `tabletest-reporter.yaml` and every AsciiDoc and Markdown page is written with it above the page —
-  a fenced YAML block for Markdown, document attributes for AsciiDoc, and nothing for HTML, which is
-  a finished page rather than source for a site generator. Keys keep their declared order, and a
-  value is quoted only where YAML would otherwise misread it. Three values the reporter knows are
-  asked for by a token in the value rather than by the key's name — `$title`, `$position` and
-  `$timestamp` — because site generators do not agree on what to call them: a page's position is
-  `weight` to Hugo, `sidebar_position` to Docusaurus, `nav_order` to a Jekyll theme and
-  `page-weight` to Antora, which exposes a custom attribute under no other prefix. `$position` is
-  the place the `features:` section declares, so a generator ordering pages by it lists them as the
-  project curated them instead of alphabetically. The `frontMatter` template block still works and
-  still wins, for anyone who wants full control.
+  Keys keep the order you declared them in. The reporter quotes a value only where YAML would
+  otherwise read it back as something else.
 
-- `@NamedLines` marks a column whose cells hold several blocks of text, each under a name, written
-  as a map from name to lines — a file and its contents is the case it was built for, so a cell
-  reads as a small directory. The HTML report renders each name as a caption over its own block,
-  indented behind a margin rule; the blocks are styled exactly as a `@Lines` cell, because that is
-  what they are. There is no converter: the parameter is a plain `Map<String, List<String>>`. Note
-  that a map key is never converted, so `Map<Path, List<String>>` compiles and then fails on first
-  read — resolve the name where the files are written.
-- `@Numbered` numbers the lines of a block in the HTML report. It is a role of its own, so it is
-  asked for beside `@Lines` or `@NamedLines` rather than being built into either, and it is off
-  unless asked for: on a block of two or three lines the digits are as wide as the text beside them.
+  Ask for one of three values by writing a token as the **value**, never as the key: `$title`,
+  `$position` or `$timestamp`. Site generators do not agree on what to call a page's position.
+  Hugo calls it `weight`, Docusaurus `sidebar_position`, a Jekyll theme `nav_order`, and Antora
+  `page-weight`. `$position` is the place the `features:` section declares, so a generator that
+  orders pages by it lists them as you curated them, and not alphabetically.
+
+  The `frontMatter` template block still works, and still wins, for anyone who wants full control.
+- `@NamedLines` marks a column whose cells hold several blocks of text, each under a name. Write
+  the cell as a map from name to lines. A file and its contents is the case it was built for, so
+  such a cell reads as a small directory. The HTML report draws each name as a caption over its own
+  block, indented behind a margin rule. It styles the blocks exactly as a `@Lines` cell, because
+  that is what they are.
+
+  There is no converter: the parameter is a plain `Map<String, List<String>>`. Note that TableTest
+  never converts a map key, so `Map<Path, List<String>>` compiles and then fails on first read.
+  Resolve the name where you write the files.
+- `@Numbered` numbers the lines of a block in the HTML report. It is a role of its own, so ask for
+  it beside `@Lines` or `@NamedLines`. It is off unless you ask for it: on a block of two or three
+  lines the digits are as wide as the text beside them.
 
 ### Changed
+- An HTML index page and the sidebar now fold. The page still holds every level below it, but only
+  the top level is open. An entry that holds pages carries a chevron, and the reader opens the part
+  they want. You no longer choose one depth for every reader.
+
+  The fold is a plain `<details>`, so it needs no script. A folded entry stays in the page: a
+  browser search finds it, and a printed copy shows every level open. In the sidebar, the branches
+  on the trail to the page you are on arrive open. A reader following a deep link therefore sees
+  where they are.
+
+  `indexDepth` does not change. It stays the coarse override for writing fewer levels at all, which
+  a Markdown or AsciiDoc index still needs.
+- A row of a link tree now reads as one thing. The chevron is grey, and the verdict dot beside it
+  keeps its colour. You can therefore tell the control you operate from the verdict next to it. The `–`
+  before a rule is gone, because the empty chevron column already tells a rule from a feature. The
+  dot now sits on a row's first line; a wrapped title used to leave it centred between two.
+- The sidebar now marks the whole trail down to the page you are on, and not the page alone. A rule
+  deep in a spec highlighted one leaf, and nothing said which feature held it. Every entry above the
+  page now reads at full ink, and an accent line runs beside its children.
 - An index page states a passing verdict in the same words a table page does: "All 4 scenarios
-  hold", where it used to say "passing". A reader moving from an index to a table page read the
-  same fact stated two ways.
-- An HTML index page and the sidebar now fold. Every page below is still written out, but only
-  the top level is open: an entry that holds pages is a fold the reader opens, with a chevron
-  beside its link. A spec of forty rules therefore opens on a list of its features instead of
-  every rule at once, and the publisher no longer chooses one depth for every reader. The fold is
-  a plain `<details>`, so it needs no script, and a folded entry stays in the page — a browser
-  search finds it, and a printed copy shows every level open. In the sidebar the branches on the
-  trail to the page you are on are written open, so a reader arriving on a deep link sees where
-  they are. `indexDepth` is unchanged and stays the coarse override for writing fewer levels at
-  all, which is what a Markdown or AsciiDoc index still needs.
-- A row of a link tree now reads as one thing. The chevron is grey and the verdict dot beside it
-  keeps its colour, so the control a reader operates is told apart from the verdict it sits next
-  to; the `–` before a rule is gone, since the empty chevron column already tells a rule from a
-  feature; and the dot sits on a row's first line rather than being centred between two, which is
-  where a wrapped title used to leave it.
-- The sidebar now marks the whole trail down to the page you are on, not the page alone. A rule
-  deep in a spec highlighted one leaf, and nothing said which feature held it. Every entry above
-  the current page now reads at full ink, and the rule line beside its children is drawn in the
-  accent colour.
-- A `@Tree` column now draws one connected tree rather than two overlapping ones. The nesting was
-  drawn twice: the container below a key carried a full-height rule, and each entry carried a
-  box-drawing glyph a shade darker and a little to its right, so every level showed two competing
-  verticals and no corner met the line it belonged to. The entry now owns the whole structure — a
-  stem running the height of what is nested under it, a tick meeting its own text, and a stem that
-  stops at the tick on the last entry, which is what makes the corner. The lines are drawn rather
-  than typed, so they connect exactly and scale with the font.
+  hold", where it used to say "passing". A reader moving from an index to a table page met the same
+  fact stated two ways.
+- A `@Tree` column now draws one connected tree, and not two overlapping ones. Every level used to
+  show two competing verticals, and no corner met the line it belonged to. Each entry now owns the
+  whole structure. It draws a stem the height of what sits under it, and a tick meeting its own
+  text. On the last entry the stem stops at the tick, which makes the corner. The reporter draws the
+  lines rather than typing them, so they connect exactly and scale with the font.
 
 ### Fixed
-- A closed navigation drawer is no longer in the tab order. It sits off-screen but was still
-  focusable, so a reader tabbing through a page walked the whole hidden menu — six stops on the
-  reporter's own spec — before reaching anything they could see. The drawer is `inert` until it
-  opens; opening it moves focus into it and closing it hands focus back to the menu button. While
-  it is open the page behind it is inert in turn, so focus stays where the backdrop says it is.
-- A report now prints the same whichever colour scheme it is viewed in. Printing drops a dark
-  background but keeps the text colours, so a reader in dark mode printed pale grey on white — every
-  cell, description and breadcrumb, not only the footer. The print stylesheet now replaces the whole
-  palette with one meant for paper. This also fixes the page footer, whose screen grey was a 2.2:1
-  contrast against white paper even in light mode, so the attribution and the run timestamp read as
-  nothing on a printed page.
-- A verdict dot now prints. It carries its colour as a background, which a browser drops when
-  printing unless asked to keep it, so a printed index tree showed no verdicts at all.
-- Choosing dark explicitly now sets every colour. The theme toggle's palette left out `--shade`, so
-  a page switched to dark on a light-scheme system kept the light shadow that cues a table can be
-  scrolled sideways. The four palettes in the built-in stylesheet are now held to the same set of
-  colours by a test, because CSS cannot share one set of values between a media query and a
-  selector.
+- A closed navigation drawer is no longer in the tab order. The drawer sits off-screen, but a
+  reader tabbing through a page still walked the whole hidden menu first. That took six stops on
+  the reporter's own spec, before anything they could see. The drawer is now `inert` until it opens.
+  Opening it moves focus into it, and closing it hands focus back to the menu button. While the
+  drawer is open, the page behind it is inert in turn.
+- A report now prints the same whichever colour scheme you view it in. Printing drops a dark
+  background but keeps the text colours, so a reader in dark mode printed pale grey on white. That
+  hit every cell, description and breadcrumb, and not only the footer. The print stylesheet now
+  replaces the whole palette with one meant for paper.
+
+  This also fixes the page footer. Its screen grey held a 2.2:1 contrast against white paper even
+  in light mode, so the attribution and the run timestamp printed as almost nothing.
+- A verdict dot now prints. A dot carries its colour as a background, and a browser drops that
+  colour when printing unless you ask it to keep it. A printed index tree therefore showed no
+  verdicts at all.
+- Choosing dark explicitly now sets every colour. The toggle's palette left one colour out. A page
+  switched to dark on a light-scheme system therefore kept the light shadow, which is what shows
+  that a table can scroll sideways.
 
 ## [1.4.0] - 2026-08-20
 
