@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-08-23
+
 ### Added
 - You can now read an HTML report from the keyboard. Tab reaches every row of the navigation,
   Enter follows one, and Space opens or closes a feature. The browser does all of that, and no
@@ -455,7 +457,8 @@
 - Slugified output directories and filenames
 
 
-[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.4.0...HEAD
+[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.5.0...HEAD
+[1.5.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.4.0...tabletest-reporter-1.5.0
 [1.4.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.3.0...tabletest-reporter-1.4.0
 [1.3.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.2.0...tabletest-reporter-1.3.0
 [1.2.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.1.0...tabletest-reporter-1.2.0

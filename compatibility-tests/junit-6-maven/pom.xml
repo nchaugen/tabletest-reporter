@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.junit>6.1.3</version.junit>
         <version.tabletest>1.2.2</version.tabletest>
-        <version.tabletest-reporter>1.4.1-SNAPSHOT</version.tabletest-reporter>
+        <version.tabletest-reporter>1.5.0</version.tabletest-reporter>
         <version.plugin.surefire>3.5.2</version.plugin.surefire>
         <version.jsoup>1.23.1</version.jsoup>
         <version.asciidoctor>3.2.0</version.asciidoctor>

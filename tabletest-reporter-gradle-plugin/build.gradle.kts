@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "org.tabletest"
-version = "1.4.1-SNAPSHOT"
+version = "1.5.0"
 
 java {
     toolchain {
