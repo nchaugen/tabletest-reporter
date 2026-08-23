@@ -23,9 +23,9 @@ public enum CellRole {
     VALUE_SET;
 
     /**
-     * @return the token this role is published as, one of the four names the reporter derives
-     * itself. Published roles are an open vocabulary of such tokens, so a role a test declares
-     * is carried as a token alongside these rather than as an enum constant.
+     * @return the token this role is published as, one of the names the reporter derives itself.
+     * Published roles are an open vocabulary of such tokens, so a role a test declares is carried
+     * as a token alongside these rather than as an enum constant.
      */
     public String token() {
         return name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');

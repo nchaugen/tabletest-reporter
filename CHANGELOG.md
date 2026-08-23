@@ -70,6 +70,11 @@
   ones. They sat inside the Maven section, folded away, although they cover Maven, Gradle and the
   CLI alike — a Gradle reader following the Gradle instructions never met the Gradle option they
   hold.
+- The roles the reporter derives for itself are documented, in a table saying what each one marks
+  and where it comes from: `scenario`, `expectation`, `passed`, `failed` and `value-set`. There are
+  five of them, not the four the README and the `CellRole` javadoc both claimed — `value-set`
+  joined in 1.4.0 and neither count was updated. They are published exactly as a declared role is,
+  so the two styling routes apply to them without any difference.
 - The README's Column Roles section is now Styling Columns, and it is about styling. It opens with
   a table saying what a role becomes in each format — a CSS class, an element role, or nothing —
   and then splits into the roles a test can declare, a role of your own, and one subsection per
@@ -102,6 +107,9 @@
   on the cell as CSS classes, so `@Lines`, `@Tree`, `@NamedLines` and `@Numbered` are each an
   annotation plus a stylesheet rule. A worked example declares an annotation and styles it through
   the `extra_stylesheet` block, which the README mentioned but never showed in use.
+- Configuring the report sits beside publishing it. Front matter, the site link and the publish
+  selection are all preparation for publishing, so the section that holds them now leads into the
+  one that uses them, instead of interrupting the walkthrough.
 - The README is reorganised. The numbered walkthrough used to dissolve at "Step 4", which had
   absorbed ten subsections of configuration reference and no fifth step. Getting started is now
   four steps and stops there. The four sections of `tabletest-reporter.yaml` sit together under

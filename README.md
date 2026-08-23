@@ -11,10 +11,6 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
   - [Write your tests](#write-your-tests)
   - [Run your tests](#run-your-tests)
   - [Generate the documentation](#generate-the-documentation)
-- [Configuring the Report](#configuring-the-report)
-  - [The sidecar file (`tabletest-reporter.yaml`)](#the-sidecar-file-tabletest-reporteryaml)
-  - [Build options](#build-options)
-  - [Test-side options (JUnit configuration parameters)](#test-side-options-junit-configuration-parameters)
 - [Formats](#formats)
   - [Choosing a format](#choosing-a-format)
   - [Listing available formats](#listing-available-formats)
@@ -22,6 +18,7 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
   - [The AsciiDoc format](#the-asciidoc-format)
   - [The Markdown format](#the-markdown-format)
 - [Styling Columns](#styling-columns)
+  - [The roles the reporter derives](#the-roles-the-reporter-derives)
   - [The roles a test can declare](#the-roles-a-test-can-declare)
   - [A role of your own](#a-role-of-your-own)
   - [Styling an HTML report by its roles](#styling-an-html-report-by-its-roles)
@@ -36,6 +33,10 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
   - [Defining a format of your own](#defining-a-format-of-your-own)
 - [Output Structure](#output-structure)
   - [How names become filenames](#how-names-become-filenames)
+- [Configuring the Report](#configuring-the-report)
+  - [The sidecar file (`tabletest-reporter.yaml`)](#the-sidecar-file-tabletest-reporteryaml)
+  - [Build options](#build-options)
+  - [Test-side options (JUnit configuration parameters)](#test-side-options-junit-configuration-parameters)
 - [Publishing Your Documentation](#publishing-your-documentation)
   - [GitHub Pages via Actions](#github-pages-via-actions)
   - [Other hosting options](#other-hosting-options)
@@ -328,294 +329,6 @@ tableTestReporter {
 }
 ```
 
-## Configuring the Report
-
-Four of the report's settings live together in one optional sidecar file. The rest are options of
-the build that runs the reporter.
-
-### The sidecar file (`tabletest-reporter.yaml`)
-
-Put `tabletest-reporter.yaml` in the project directory, or point at it with Maven `<configFile>`,
-Gradle `configFile`, or the CLI `--config`. It holds four independent sections, and every one of
-them is optional. The reporter reads the file when it generates the report, so changing any of
-them needs no new test run. A project with no such file reports exactly as it did before.
-
-#### Spec metadata
-
-Without a sidecar file, the root index of a spec takes its title from the deepest common package
-segment, such as "junit" or "example". An intermediate index page shows a lowercase package name.
-
-Drop an optional `tabletest-reporter.yaml` in the project directory. It gives the spec a real
-title and intro, retitles an intermediate page, and sets an explicit reading order for the
-features:
-
-```yaml
-title: "TableTest Core — Specification"
-intro: >
-  Generated from the executable TableTest suite. Every scenario below runs in CI;
-  a broken row means the documented behaviour regressed.
-features:
-  - name: formatter          # matches an index page by its path segment / slug
-    title: "Table Formatter"
-    description: >           # a paragraph introducing the feature on its own index page
-      How a table is laid out, in the order the formatter works in.
-    features:                # list order is the reading order (not alphabetical)
-      - { name: extraction,   title: "Value Extraction" }
-      - { name: displaywidth, title: "Display Width" }
-  - name: examples
-    title: "Worked Examples"
-```
-
-Everything is optional. A declared feature renders first, in the order you gave it. An undeclared
-sibling follows, alphabetically.
-
-The reporter draws a `description` under the feature's title on its index page, the way it draws a
-test class's `@Description`. Use it for what the whole group has in common. An individual rule
-then does not repeat it. A feature that matches no page is logged and skipped, so a
-typo never fails the report.
-
-#### Front matter for a site generator (`frontMatter`)
-
-A site generator reads an AsciiDoc or Markdown report. It decides how each page looks, and where
-that page sits in the site. Front matter is what you tell the generator. Declare it once:
-
-```yaml
-frontMatter:
-  layout: report          # any key you like, written as declared
-  type: docs
-  title: $title           # filled by the reporter: the page's own title
-  weight: $position       # filled by the reporter: its place in the reading order
-  generated: $timestamp   # filled by the reporter: when the run happened
-```
-
-Markdown pages open with a fenced block and AsciiDoc pages with document attributes:
-
-```markdown
----
-layout: report
-title: Leap years
-weight: 2
-generated: "2026-08-23T09:19:33Z"
----
-```
-
-```asciidoc
-:layout: report
-:title: Leap years
-:weight: 2
-:generated: 2026-08-23T09:19:33Z
-```
-
-**An HTML page carries none.** It is a finished page, and not source for a generator.
-
-**Write the token as the value, never as the key.** Generators do not agree on what to call a
-page's position. Hugo calls it `weight`, Docusaurus `sidebar_position`, a Jekyll theme `nav_order`,
-and Antora `page-weight`. Antora exposes a custom attribute under no other prefix. Name the key
-whatever your generator reads:
-
-```yaml
-frontMatter:
-  sidebar_position: $position    # Docusaurus
-  page-weight: $position         # Antora
-  nav_order: $position           # Jekyll
-```
-
-There are three tokens: `$title`, `$position` and `$timestamp`. The reporter writes everything else as you declared it. A value that only looks like a token stays as it stands, and the reporter warns. A typo therefore never fails a report. Write `$$` for a literal value that begins with a dollar sign.
-
-A derived value that does not apply to a page leaves its key out, rather than writing it empty. A
-position on the root index is such a value, because the root has no siblings. Keys keep the order
-you declared them in. A value is quoted only where YAML would otherwise read it back as something
-else.
-
-**`$position` is the one worth knowing about.** The `features:` section above declares the reading
-order of your spec. A site generator sorts the pages alphabetically without it, and loses your curation at the boundary. With it, the published site reads in the order you chose.
-
-The `frontMatter` template block still works and takes precedence — see
-[Custom Templates](#custom-templates) for when you need more than keys and values.
-
-#### Linking back to your site (`site`)
-
-Every link inside a generated report is relative within its own tree. A reader who reaches
-the spec from your site therefore has no way back to it. Add a `site` section to the same
-`tabletest-reporter.yaml` to put one link in the footer of every HTML page:
-
-```yaml
-site:
-  label: "TableTest"                 # the link text; defaults to the address itself
-  url: "https://tabletest.org/"      # used exactly as written
-```
-
-The reporter never resolves the address against the report's own tree. A root-relative `/` or
-`/docs/` therefore works for a site that hosts the spec below it, and an absolute URL works from
-anywhere. Without a `site` section the footer holds the attribution alone, as before.
-
-Each of the three HTML page templates leaves the footer as a `footer` block, and the link has a
-`siteLink(site)` macro of its own. A template of yours can override the block, or call the macro
-to place the same link elsewhere. See [Custom Templates](#custom-templates).
-
-#### Selecting what publishes (`publish`)
-
-By default every table that ran publishes. Add a `publish` section to the same
-`tabletest-reporter.yaml` to hold pages back. It applies at
-report time, so changing what publishes needs no new test run. No test-framework tag is involved:
-
-```yaml
-publish:
-  exclude:
-    - parsing                            # this feature page and everything below it
-    - converting/convert-with            # one table page
-    - "**/kotlin-*"                      # any page whose name starts with "kotlin-"
-  include:
-    - converting/convert-with/precedence # re-admitted, though its class is excluded
-```
-
-Paths name pages the way the report's URLs do: the page names from the root index down,
-separated by `/`. Within a name, `*` matches any part of it; a whole segment of `**`
-matches any number of levels. Excluding a page takes its whole subtree with it, and a
-feature page left with nothing published under it disappears too. `include` wins over
-`exclude`, so a single rule table can still publish from an otherwise internal class. A
-path matching no page is logged and skipped, like a mistyped feature name.
-
-### Build options
-
-These are options of the build that runs the reporter, and not of the sidecar file.
-
-#### Pinning the report's timestamp (`generatedAt`)
-
-Every page states when the report was generated. The reporter reads the clock, so two runs of
-the same tests write two different pages. A build that compares its own output then sees a change
-every time. Pin the instant, and the same tests give you the same bytes:
-
-```bash
-mvn tabletest-reporter:report -Dtabletest.report.generatedAt=2026-07-20T14:32:09Z
-./gradlew reportTableTests                      # generatedAt.set("2026-07-20T14:32:09Z")
-tabletest-reporter --generated-at 2026-07-20T14:32:09Z -i target/junit-jupiter
-```
-
-The value is an ISO-8601 instant. Any other value fails the build, and never falls back to the
-clock. The reporter does not read `SOURCE_DATE_EPOCH` itself, because a report that changes with
-its environment is the fault being fixed. A reproducible build passes its own value in:
-
-```bash
-mvn tabletest-reporter:report \
-  -Dtabletest.report.generatedAt="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y-%m-%dT%H:%M:%SZ)"
-```
-
-A report states the timestamp in UTC, whatever zone the build ran in. The label a reader sees
-drops the sub-second precision.
-
-#### Multi-module builds (one spec from several modules)
-
-A single spec can span the modules of a multi-module build. The report tree comes from the
-test class names inside the YAML, not from where the files sit, so modules merge into one
-package hierarchy. The reporter skips a listed directory that does not exist, and warns. A partial build therefore still publishes what it has.
-
-**Maven** — let the plugin walk the reactor:
-```bash
-mvn tabletest-reporter:aggregate
-```
-The `aggregate` goal runs on the aggregator project and writes one report to its output directory.
-It finds each module's TableTest output the way the `report` goal finds its own: the JUnit output
-directory a module configures, or that module's `target/junit-jupiter`.
-
-Name the directories yourself instead, which is the route to take where the goal cannot run inside
-the reactor. Use `<inputDirectories>` on the `report` goal, as the
-[Maven configuration options](#generating-with-maven) show, or:
-```bash
-mvn tabletest-reporter:report -Dtabletest.report.inputDirectories=target/junit-jupiter,../other/target/junit-jupiter
-```
-
-**Gradle** — list the subprojects' directories:
-```kotlin
-tableTestReporter {
-  inputDirs.from(
-    layout.buildDirectory.dir("junit-jupiter"),
-    project(":other-module").layout.buildDirectory.dir("junit-jupiter")
-  )
-}
-```
-
-**CLI** — repeat `-i`:
-```bash
-tabletest-reporter -i core/target/junit-jupiter -i junit/target/junit-jupiter
-```
-
-Where two modules published the same test class, the most recently written output wins —
-the same rule that settles repeated runs within one directory.
-
-#### Input directory resolution
-
-When you run the reporter, it needs to find the YAML files generated during your test run. In most cases, this is handled automatically.
-
-**Resolution order:**
-
-1. **Explicit configuration** — name an input directory, through plugin config or the CLI `-i`
-option, and the reporter uses it directly
-2. **Build tool detection** — The Maven and Gradle plugins read the JUnit output directory from your build configuration:
-   - **Maven:** From Surefire's `configurationParameters` (`junit.platform.reporting.output.dir` property)
-   - **Gradle:** From the test task's system properties or JVM argument providers
-3. **Properties file** — From `junit.platform.reporting.output.dir` in `src/test/resources/junit-platform.properties`
-4. **Convention fallback** — `<buildDir>/junit-jupiter` (e.g., `target/junit-jupiter` or `build/junit-jupiter`)
-
-At each step, the reporter checks whether the candidate directory contains `TABLETEST-*.yaml` files. The first directory with matching files is selected.
-
-**When auto-detection works (no configuration needed):**
-
-- Standard Maven projects using Surefire (output goes to `target/junit-jupiter/`)
-- Standard Gradle projects (output goes to `build/junit-jupiter/`)
-- Projects configuring `junit.platform.reporting.output.dir` via Surefire, Gradle test task properties, or `junit-platform.properties`
-- Gradle projects using custom output directories via `jvmArgumentProviders` or system properties (the Gradle plugin detects these automatically)
-
-**When you need to specify the input directory explicitly:**
-
-- **Non-standard engine IDs** — JUnit writes to `<buildDir>/<engine-id>/` by default. If your engine is not `junit-jupiter`, the convention fallback won't match
-- **IDE-specific output directories** — When running tests from an IDE, outputs may go to a different location than the build tool expects
-- **Custom `OutputDirectoryCreator` implementations** — If you've customised where JUnit writes report files
-- **CLI without a build directory** — The CLI falls back to `target/junit-jupiter` or `build/junit-jupiter`; if neither exists, you must specify `-i`
-
-**Configuring the input directory:**
-
-Maven:
-```bash
-mvn tabletest-reporter:report -Dtabletest.report.inputDirectory=/path/to/yaml/files
-```
-
-Gradle:
-```kotlin
-tableTestReporter {
-  inputDir.set(file("/path/to/yaml/files"))
-}
-```
-
-CLI:
-```bash
-java -jar tabletest-reporter-cli.jar -i /path/to/yaml/files
-```
-
-### Test-side options (JUnit configuration parameters)
-
-Configure TableTest Reporter through [JUnit Platform configuration
-parameters](https://docs.junit.org/current/running-tests/configuration-parameters.html).
-
-**`tabletest.reporter.expectation.pattern`**
-
-Defines a regular expression pattern to identify expectation columns in your test tables. By default, the reporter treats a column ending with `?` as an expectation.
-
-Default: `.*\?$` (columns ending with question mark)
-
-Example in `junit-platform.properties`:
-
-```properties
-# Prefix convention: "Expected Result", "Expected Value"
-tabletest.reporter.expectation.pattern=^Expected.*
-
-# Suffix convention: "resultExpected", "valueExpected"
-tabletest.reporter.expectation.pattern=.*[Ee]xpected$
-
-# Parenthetical notation: "value (expected)"
-tabletest.reporter.expectation.pattern=.*\\(expected\\)$
-```
-
 ## Formats
 
 ### Choosing a format
@@ -794,8 +507,8 @@ Docusaurus, MkDocs.
 ## Styling Columns
 
 Every published cell carries the roles of its column. A role is a label the reporter writes onto
-the cell, and a stylesheet decides what it looks like. The reporter derives four roles itself —
-`scenario`, `expectation`, `passed` and `failed` — and a test can declare more.
+the cell, and a stylesheet decides what it looks like. Some roles the reporter works out for
+itself; others a test declares.
 
 Where a role ends up depends on the format:
 
@@ -804,6 +517,22 @@ Where a role ends up depends on the format:
 | `html` | a CSS class on the cell | the `extra_stylesheet` block |
 | `asciidoc` | an element role on the value | a stylesheet you give Asciidoctor |
 | `markdown` | nothing — markdown has nowhere to put a mark | — |
+
+### The roles the reporter derives
+
+Five roles need no annotation from you. The reporter works each one out from the table, or from
+what happened when the row ran:
+
+| Role | Marks | Where it comes from |
+|---|---|---|
+| `scenario` | the column | the leading column your test does not declare, or the parameter you marked `@Scenario` |
+| `expectation` | the column | a header ending in `?`, or matching [a pattern of your own](#test-side-options-junit-configuration-parameters) |
+| `passed` | every cell of the row | the row passed when it ran |
+| `failed` | every cell of the row | the row broke when it ran |
+| `value-set` | the one cell | a set value met a parameter that is not a set, so the row ran once per value |
+
+These are published exactly as a declared role is, and you restyle them the same way — the two
+styling sections below apply to them without any difference.
 
 ### The roles a test can declare
 
@@ -1339,6 +1068,294 @@ paths. A name with no letter and no digit falls back to `unnamed-` plus a stable
 such names therefore still get two pages.
 
 Two tables in the same class that reduce to the same filename are disambiguated with a numeric suffix (`-1`, `-2`).
+
+## Configuring the Report
+
+Four of the report's settings live together in one optional sidecar file. The rest are options of
+the build that runs the reporter.
+
+### The sidecar file (`tabletest-reporter.yaml`)
+
+Put `tabletest-reporter.yaml` in the project directory, or point at it with Maven `<configFile>`,
+Gradle `configFile`, or the CLI `--config`. It holds four independent sections, and every one of
+them is optional. The reporter reads the file when it generates the report, so changing any of
+them needs no new test run. A project with no such file reports exactly as it did before.
+
+#### Spec metadata
+
+Without a sidecar file, the root index of a spec takes its title from the deepest common package
+segment, such as "junit" or "example". An intermediate index page shows a lowercase package name.
+
+Drop an optional `tabletest-reporter.yaml` in the project directory. It gives the spec a real
+title and intro, retitles an intermediate page, and sets an explicit reading order for the
+features:
+
+```yaml
+title: "TableTest Core — Specification"
+intro: >
+  Generated from the executable TableTest suite. Every scenario below runs in CI;
+  a broken row means the documented behaviour regressed.
+features:
+  - name: formatter          # matches an index page by its path segment / slug
+    title: "Table Formatter"
+    description: >           # a paragraph introducing the feature on its own index page
+      How a table is laid out, in the order the formatter works in.
+    features:                # list order is the reading order (not alphabetical)
+      - { name: extraction,   title: "Value Extraction" }
+      - { name: displaywidth, title: "Display Width" }
+  - name: examples
+    title: "Worked Examples"
+```
+
+Everything is optional. A declared feature renders first, in the order you gave it. An undeclared
+sibling follows, alphabetically.
+
+The reporter draws a `description` under the feature's title on its index page, the way it draws a
+test class's `@Description`. Use it for what the whole group has in common. An individual rule
+then does not repeat it. A feature that matches no page is logged and skipped, so a
+typo never fails the report.
+
+#### Front matter for a site generator (`frontMatter`)
+
+A site generator reads an AsciiDoc or Markdown report. It decides how each page looks, and where
+that page sits in the site. Front matter is what you tell the generator. Declare it once:
+
+```yaml
+frontMatter:
+  layout: report          # any key you like, written as declared
+  type: docs
+  title: $title           # filled by the reporter: the page's own title
+  weight: $position       # filled by the reporter: its place in the reading order
+  generated: $timestamp   # filled by the reporter: when the run happened
+```
+
+Markdown pages open with a fenced block and AsciiDoc pages with document attributes:
+
+```markdown
+---
+layout: report
+title: Leap years
+weight: 2
+generated: "2026-08-23T09:19:33Z"
+---
+```
+
+```asciidoc
+:layout: report
+:title: Leap years
+:weight: 2
+:generated: 2026-08-23T09:19:33Z
+```
+
+**An HTML page carries none.** It is a finished page, and not source for a generator.
+
+**Write the token as the value, never as the key.** Generators do not agree on what to call a
+page's position. Hugo calls it `weight`, Docusaurus `sidebar_position`, a Jekyll theme `nav_order`,
+and Antora `page-weight`. Antora exposes a custom attribute under no other prefix. Name the key
+whatever your generator reads:
+
+```yaml
+frontMatter:
+  sidebar_position: $position    # Docusaurus
+  page-weight: $position         # Antora
+  nav_order: $position           # Jekyll
+```
+
+There are three tokens: `$title`, `$position` and `$timestamp`. The reporter writes everything else as you declared it. A value that only looks like a token stays as it stands, and the reporter warns. A typo therefore never fails a report. Write `$$` for a literal value that begins with a dollar sign.
+
+A derived value that does not apply to a page leaves its key out, rather than writing it empty. A
+position on the root index is such a value, because the root has no siblings. Keys keep the order
+you declared them in. A value is quoted only where YAML would otherwise read it back as something
+else.
+
+**`$position` is the one worth knowing about.** The `features:` section above declares the reading
+order of your spec. A site generator sorts the pages alphabetically without it, and loses your curation at the boundary. With it, the published site reads in the order you chose.
+
+The `frontMatter` template block still works and takes precedence — see
+[Custom Templates](#custom-templates) for when you need more than keys and values.
+
+#### Linking back to your site (`site`)
+
+Every link inside a generated report is relative within its own tree. A reader who reaches
+the spec from your site therefore has no way back to it. Add a `site` section to the same
+`tabletest-reporter.yaml` to put one link in the footer of every HTML page:
+
+```yaml
+site:
+  label: "TableTest"                 # the link text; defaults to the address itself
+  url: "https://tabletest.org/"      # used exactly as written
+```
+
+The reporter never resolves the address against the report's own tree. A root-relative `/` or
+`/docs/` therefore works for a site that hosts the spec below it, and an absolute URL works from
+anywhere. Without a `site` section the footer holds the attribution alone, as before.
+
+Each of the three HTML page templates leaves the footer as a `footer` block, and the link has a
+`siteLink(site)` macro of its own. A template of yours can override the block, or call the macro
+to place the same link elsewhere. See [Custom Templates](#custom-templates).
+
+#### Selecting what publishes (`publish`)
+
+By default every table that ran publishes. Add a `publish` section to the same
+`tabletest-reporter.yaml` to hold pages back. It applies at
+report time, so changing what publishes needs no new test run. No test-framework tag is involved:
+
+```yaml
+publish:
+  exclude:
+    - parsing                            # this feature page and everything below it
+    - converting/convert-with            # one table page
+    - "**/kotlin-*"                      # any page whose name starts with "kotlin-"
+  include:
+    - converting/convert-with/precedence # re-admitted, though its class is excluded
+```
+
+Paths name pages the way the report's URLs do: the page names from the root index down,
+separated by `/`. Within a name, `*` matches any part of it; a whole segment of `**`
+matches any number of levels. Excluding a page takes its whole subtree with it, and a
+feature page left with nothing published under it disappears too. `include` wins over
+`exclude`, so a single rule table can still publish from an otherwise internal class. A
+path matching no page is logged and skipped, like a mistyped feature name.
+
+### Build options
+
+These are options of the build that runs the reporter, and not of the sidecar file.
+
+#### Pinning the report's timestamp (`generatedAt`)
+
+Every page states when the report was generated. The reporter reads the clock, so two runs of
+the same tests write two different pages. A build that compares its own output then sees a change
+every time. Pin the instant, and the same tests give you the same bytes:
+
+```bash
+mvn tabletest-reporter:report -Dtabletest.report.generatedAt=2026-07-20T14:32:09Z
+./gradlew reportTableTests                      # generatedAt.set("2026-07-20T14:32:09Z")
+tabletest-reporter --generated-at 2026-07-20T14:32:09Z -i target/junit-jupiter
+```
+
+The value is an ISO-8601 instant. Any other value fails the build, and never falls back to the
+clock. The reporter does not read `SOURCE_DATE_EPOCH` itself, because a report that changes with
+its environment is the fault being fixed. A reproducible build passes its own value in:
+
+```bash
+mvn tabletest-reporter:report \
+  -Dtabletest.report.generatedAt="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y-%m-%dT%H:%M:%SZ)"
+```
+
+A report states the timestamp in UTC, whatever zone the build ran in. The label a reader sees
+drops the sub-second precision.
+
+#### Multi-module builds (one spec from several modules)
+
+A single spec can span the modules of a multi-module build. The report tree comes from the
+test class names inside the YAML, not from where the files sit, so modules merge into one
+package hierarchy. The reporter skips a listed directory that does not exist, and warns. A partial build therefore still publishes what it has.
+
+**Maven** — let the plugin walk the reactor:
+```bash
+mvn tabletest-reporter:aggregate
+```
+The `aggregate` goal runs on the aggregator project and writes one report to its output directory.
+It finds each module's TableTest output the way the `report` goal finds its own: the JUnit output
+directory a module configures, or that module's `target/junit-jupiter`.
+
+Name the directories yourself instead, which is the route to take where the goal cannot run inside
+the reactor. Use `<inputDirectories>` on the `report` goal, as the
+[Maven configuration options](#generating-with-maven) show, or:
+```bash
+mvn tabletest-reporter:report -Dtabletest.report.inputDirectories=target/junit-jupiter,../other/target/junit-jupiter
+```
+
+**Gradle** — list the subprojects' directories:
+```kotlin
+tableTestReporter {
+  inputDirs.from(
+    layout.buildDirectory.dir("junit-jupiter"),
+    project(":other-module").layout.buildDirectory.dir("junit-jupiter")
+  )
+}
+```
+
+**CLI** — repeat `-i`:
+```bash
+tabletest-reporter -i core/target/junit-jupiter -i junit/target/junit-jupiter
+```
+
+Where two modules published the same test class, the most recently written output wins —
+the same rule that settles repeated runs within one directory.
+
+#### Input directory resolution
+
+When you run the reporter, it needs to find the YAML files generated during your test run. In most cases, this is handled automatically.
+
+**Resolution order:**
+
+1. **Explicit configuration** — name an input directory, through plugin config or the CLI `-i`
+option, and the reporter uses it directly
+2. **Build tool detection** — The Maven and Gradle plugins read the JUnit output directory from your build configuration:
+   - **Maven:** From Surefire's `configurationParameters` (`junit.platform.reporting.output.dir` property)
+   - **Gradle:** From the test task's system properties or JVM argument providers
+3. **Properties file** — From `junit.platform.reporting.output.dir` in `src/test/resources/junit-platform.properties`
+4. **Convention fallback** — `<buildDir>/junit-jupiter` (e.g., `target/junit-jupiter` or `build/junit-jupiter`)
+
+At each step, the reporter checks whether the candidate directory contains `TABLETEST-*.yaml` files. The first directory with matching files is selected.
+
+**When auto-detection works (no configuration needed):**
+
+- Standard Maven projects using Surefire (output goes to `target/junit-jupiter/`)
+- Standard Gradle projects (output goes to `build/junit-jupiter/`)
+- Projects configuring `junit.platform.reporting.output.dir` via Surefire, Gradle test task properties, or `junit-platform.properties`
+- Gradle projects using custom output directories via `jvmArgumentProviders` or system properties (the Gradle plugin detects these automatically)
+
+**When you need to specify the input directory explicitly:**
+
+- **Non-standard engine IDs** — JUnit writes to `<buildDir>/<engine-id>/` by default. If your engine is not `junit-jupiter`, the convention fallback won't match
+- **IDE-specific output directories** — When running tests from an IDE, outputs may go to a different location than the build tool expects
+- **Custom `OutputDirectoryCreator` implementations** — If you've customised where JUnit writes report files
+- **CLI without a build directory** — The CLI falls back to `target/junit-jupiter` or `build/junit-jupiter`; if neither exists, you must specify `-i`
+
+**Configuring the input directory:**
+
+Maven:
+```bash
+mvn tabletest-reporter:report -Dtabletest.report.inputDirectory=/path/to/yaml/files
+```
+
+Gradle:
+```kotlin
+tableTestReporter {
+  inputDir.set(file("/path/to/yaml/files"))
+}
+```
+
+CLI:
+```bash
+java -jar tabletest-reporter-cli.jar -i /path/to/yaml/files
+```
+
+### Test-side options (JUnit configuration parameters)
+
+Configure TableTest Reporter through [JUnit Platform configuration
+parameters](https://docs.junit.org/current/running-tests/configuration-parameters.html).
+
+**`tabletest.reporter.expectation.pattern`**
+
+Defines a regular expression pattern to identify expectation columns in your test tables. By default, the reporter treats a column ending with `?` as an expectation.
+
+Default: `.*\?$` (columns ending with question mark)
+
+Example in `junit-platform.properties`:
+
+```properties
+# Prefix convention: "Expected Result", "Expected Value"
+tabletest.reporter.expectation.pattern=^Expected.*
+
+# Suffix convention: "resultExpected", "valueExpected"
+tabletest.reporter.expectation.pattern=.*[Ee]xpected$
+
+# Parenthetical notation: "value (expected)"
+tabletest.reporter.expectation.pattern=.*\\(expected\\)$
+```
 
 ## Publishing Your Documentation
 
