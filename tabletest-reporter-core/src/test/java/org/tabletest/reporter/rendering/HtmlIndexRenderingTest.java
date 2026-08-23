@@ -65,6 +65,12 @@ public class HtmlIndexRenderingTest {
         assertThat(document.select("details.nav-branch > ul.nav-children > li.nav-item a.nav-row")
                         .eachText())
                 .contains("B Table");
+        assertThat(document.select("details.nav-branch > summary.nav-entry > .nav-twisty.branch"))
+                .as("the fold's control sits beside the link, never inside it")
+                .isNotEmpty();
+        assertThat(document.select("a.nav-row .nav-twisty"))
+                .as("nothing inside the link toggles the fold")
+                .isEmpty();
     }
 
     @Test

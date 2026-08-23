@@ -130,7 +130,7 @@
         {%- set label = (item.title ? item.title : item.name) -%}
         {%- if item.contents is not empty -%}
             <details class="nav-branch">
-                <summary>{{ navRow(href, label, item.type, item.status, true, false, false) }}</summary>
+                <summary class="nav-entry">{{ navTwisty(item.type, true) }}{{ navRow(href, label, item.type, item.status, false, false) }}</summary>
                 <ul class="nav-children">
                 {%- for nested in item.contents -%}
                     {{ renderIndexItem(nested) }}
@@ -138,15 +138,21 @@
                 </ul>
             </details>
         {%- else -%}
-            {{ navRow(href, label, item.type, item.status, false, false, false) }}
+            <span class="nav-entry">{{ navTwisty(item.type, false) }}{{ navRow(href, label, item.type, item.status, false, false) }}</span>
         {%- endif -%}
     </li>
 {% endmacro %}
 
+{# The fold's own control, and the column that keeps every row lined up whether it folds or not. #}
+{# It sits beside the link rather than inside it: drawn as part of the link, clicking the arrow  #}
+{# would follow the link, which is the one thing a reader does not expect an arrow to do.        #}
+{# A feature the index depth has cut off shows a diamond instead — it has pages, just not here.  #}
+{% macro navTwisty(type, branch) %}<span class="nav-twisty{{ branch ? ' branch' : (type == 'index' ? ' feature' : '') }}" aria-hidden="true"></span>{% endmacro %}
+
 {# One row of a link tree, in the index body and in the sidebar alike. The state a stylesheet  #}
 {# reads sits on the row itself rather than on the item around it, because a fold puts the row #}
 {# one level further down and a rule keyed on the item would then reach the rows nested under. #}
-{% macro navRow(href, label, type, status, branch, current, ancestor) %}<a class="nav-row {{ type }} {{ status }}{{ branch ? ' branch' : '' }}{{ current ? ' current' : '' }}{{ ancestor ? ' ancestor' : '' }}" href="{{ href }}"{{ current ? ' aria-current="page"' : '' }}><span class="status-dot" aria-hidden="true"></span>{{ label | escape }}</a>{% endmacro %}
+{% macro navRow(href, label, type, status, current, ancestor) %}<a class="nav-row {{ type }} {{ status }}{{ current ? ' current' : '' }}{{ ancestor ? ' ancestor' : '' }}" href="{{ href }}"{{ current ? ' aria-current="page"' : '' }}><span class="status-dot" aria-hidden="true"></span><span class="nav-label">{{ label | escape }}</span></a>{% endmacro %}
 
 {# ----- Breadcrumb trail: ancestor chain from the root to the current page ----- #}
 
@@ -219,7 +225,7 @@
 {% macro renderSidebar(nav, assetRoot) %}
     {%- if nav is not empty -%}
     <div class="nav-backdrop"></div>
-    <aside id="site-nav" class="sidebar" aria-label="Report navigation">
+    <aside id="site-nav" class="sidebar" aria-label="Report navigation" inert>
         <a class="sidebar-home{{ nav.home.current ? ' current' : '' }}" href="{{ nav.home.href }}"
             {{- nav.home.current ? ' aria-current="page"' : '' }}>{{ nav.home.label | escape }}</a>
         <div class="sidebar-search">
@@ -234,10 +240,14 @@
             {%- endfor -%}
             </ul>
         </nav>
+        <p class="key-hint">Arrows move, <kbd>/</kbd> searches, <kbd>?</kbd> lists the keys</p>
     </aside>
+    {{ keyHelp() }}
     {%- endif -%}
 {% endmacro %}
 
+{# The drawer is the one thing two scripts both operate, so it publishes the open/close it owns #}
+{# rather than letting the key handler reach into the same classes from the other side.          #}
 {% macro navScript() %}
 <script>
 (function () {
@@ -245,14 +255,30 @@
     var drawer = document.getElementById("site-nav");
     var backdrop = document.querySelector(".nav-backdrop");
     if (!toggle || !drawer) return;
+    /* A closed drawer is off-screen but was still in the tab order, so a reader tabbing through
+       the page walked the whole hidden menu before reaching anything they could see. It is inert
+       until it opens, which is also what the markup says before this script runs. */
     function setOpen(open) {
+        var was = drawer.classList.contains("open");
+        var page = document.querySelector("main");
         drawer.classList.toggle("open", open);
+        drawer.inert = !open;
+        drawer.setAttribute("aria-hidden", open ? "false" : "true");
+        /* The drawer draws a backdrop over the page, so it reads as modal; tabbing past its last
+           row onto the page behind would say otherwise. Whichever of the two is shown owns focus. */
+        if (page) page.inert = open;
         if (backdrop) backdrop.classList.toggle("open", open);
         toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        if (open === was) return;
+        var landing = open ? drawer.querySelector("a.sidebar-home, a.nav-row") : toggle;
+        if (landing) landing.focus({ preventScroll: true });
     }
     toggle.addEventListener("click", function () { setOpen(!drawer.classList.contains("open")); });
     if (backdrop) backdrop.addEventListener("click", function () { setOpen(false); });
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape") setOpen(false); });
+    window.TableTestNav = {
+        open: setOpen,
+        isOpen: function () { return drawer.classList.contains("open"); }
+    };
 })();
 </script>
 {% endmacro %}
@@ -310,7 +336,7 @@
     <li class="nav-item">
         {%- if item.contents is not empty -%}
             <details class="nav-branch{{ item.ancestor ? ' ancestor' : '' }}"{{ item.current or item.ancestor ? ' open' : '' }}>
-                <summary>{{ navRow(item.href, item.label, item.type, item.status, true, item.current, item.ancestor) }}</summary>
+                <summary class="nav-entry">{{ navTwisty(item.type, true) }}{{ navRow(item.href, item.label, item.type, item.status, item.current, item.ancestor) }}</summary>
                 <ul class="nav-children">
                 {%- for child in item.contents -%}
                     {{ renderNavItem(child) }}
@@ -318,9 +344,183 @@
                 </ul>
             </details>
         {%- else -%}
-            {{ navRow(item.href, item.label, item.type, item.status, false, item.current, item.ancestor) }}
+            <span class="nav-entry">{{ navTwisty(item.type, false) }}{{ navRow(item.href, item.label, item.type, item.status, item.current, item.ancestor) }}</span>
         {%- endif -%}
     </li>
+{% endmacro %}
+
+
+{# ----- Keyboard navigation: arrows through the tree, and two commands ----- #}
+
+{# Tab reaches every row already, but Safari does not tab to a link unless the reader has turned #}
+{# that on, so movement that works everywhere cannot be Tab. The arrows move focus between the   #}
+{# rows a reader can see, in the sidebar and in an index page's own tree alike. Focus lands on   #}
+{# the link, never on the summary, so Enter always means "go there" and folding is left/right.   #}
+{% macro navKeysScript() %}
+<script>
+(function () {
+    var ROW = "a.sidebar-home, a.nav-row, .search-results a";
+    var search = document.getElementById("report-search");
+    var results = document.getElementById("search-results");
+    var help = document.getElementById("key-help");
+    var nav = window.TableTestNav;
+
+    function drawerOpen() { return nav ? nav.isOpen() : false; }
+    function setDrawer(open) { if (nav) nav.open(open); }
+
+    /* A row inside a closed fold is not there for the reader — except the row that *is* its
+       summary, which is how a closed fold still shows its own name. */
+    function shown(row) {
+        var child = row;
+        for (var el = row.parentElement; el; el = el.parentElement) {
+            if (el.classList && el.classList.contains("hidden")) return false;
+            if (el.tagName === "DETAILS" && !el.open && child.tagName !== "SUMMARY") return false;
+            child = el;
+        }
+        return true;
+    }
+
+    function treeOf(el) {
+        if (!el || !el.closest) return null;
+        return el.closest("#site-nav") || el.closest("main");
+    }
+
+    function rowsOf(tree) {
+        return Array.prototype.filter.call(tree.querySelectorAll(ROW), shown);
+    }
+
+    function focusRow(row) {
+        if (!row) return;
+        row.focus();
+        if (row.scrollIntoView) row.scrollIntoView({ block: "nearest" });
+    }
+
+    /* A feature row is a summary holding a link, so Tab stops on both and focus can be sitting on
+       either when an arrow is pressed. The summary stands for the link inside it, or the arrows
+       would go dead every second Tab. */
+    function rowFor(el) {
+        if (!el || !el.closest) return null;
+        var row = el.closest(ROW);
+        if (row) return row;
+        var summary = el.closest("summary.nav-entry");
+        return summary ? summary.querySelector("a.nav-row") : null;
+    }
+
+    /* The arrows add to Tab rather than replace it, so they act only where focus already is: on a
+       row of a tree. Anywhere else they scroll the page, which is what a reader of a long rule
+       page presses them for. */
+    function rowInFocus() {
+        var here = rowFor(document.activeElement);
+        var tree = treeOf(here);
+        if (!tree) return null;
+        var rows = rowsOf(tree);
+        var at = rows.indexOf(here);
+        return at < 0 ? null : { rows: rows, at: at, row: here };
+    }
+
+    function step(here, offset) {
+        focusRow(here.rows[Math.min(Math.max(here.at + offset, 0), here.rows.length - 1)]);
+    }
+
+    function edge(here, last) {
+        focusRow(last ? here.rows[here.rows.length - 1] : here.rows[0]);
+    }
+
+    /** The fold this row is the summary of, or null where the row is a rule rather than a feature. */
+    function foldOf(row) {
+        var summary = row.closest ? row.closest("summary") : null;
+        return summary && summary.parentElement.tagName === "DETAILS" ? summary.parentElement : null;
+    }
+
+    function parentRow(row) {
+        var item = row.closest("li.nav-item");
+        var above = item && item.parentElement ? item.parentElement.closest("details") : null;
+        return above ? above.querySelector(":scope > summary a.nav-row") : null;
+    }
+
+    function unfold(row) {
+        var fold = foldOf(row);
+        if (!fold) return;
+        if (!fold.open) { fold.open = true; return; }
+        focusRow(fold.querySelector("ul.nav-children a.nav-row"));
+    }
+
+    function fold(row) {
+        var here = foldOf(row);
+        if (here && here.open) { here.open = false; return; }
+        focusRow(parentRow(row));
+    }
+
+    function focusSearch() {
+        if (!search) return;
+        setDrawer(true);
+        search.focus();
+        search.select();
+    }
+
+    function leaveSearch() {
+        search.value = "";
+        search.dispatchEvent(new Event("input", { bubbles: true }));
+        var sidebar = document.getElementById("site-nav");
+        if (sidebar) focusRow(rowsOf(sidebar)[0]);
+    }
+
+    function toggleHelp() {
+        if (!help) return;
+        if (help.open) { help.close(); } else if (help.showModal) { help.showModal(); }
+    }
+
+    document.addEventListener("keydown", function (e) {
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        var here = document.activeElement;
+        var typing = here && (here.tagName === "INPUT" || here.tagName === "TEXTAREA" || here.isContentEditable);
+        if (typing && here !== search) return;
+
+        if (here === search) {
+            if (e.key === "Escape") { leaveSearch(); e.preventDefault(); }
+            if (e.key === "ArrowDown" && results) { focusRow(rowsOf(results)[0]); e.preventDefault(); }
+            return;
+        }
+
+        if (e.key === "/") { focusSearch(); e.preventDefault(); return; }
+        if (e.key === "?") { toggleHelp(); e.preventDefault(); return; }
+        if (e.key === "m" || e.key === "M") { setDrawer(!drawerOpen()); e.preventDefault(); return; }
+        if (e.key === "Escape") { setDrawer(false); return; }
+
+        var row = rowInFocus();
+        if (!row) return;
+        switch (e.key) {
+            case "ArrowDown": step(row, 1); break;
+            case "ArrowUp": step(row, -1); break;
+            case "ArrowRight": unfold(row.row); break;
+            case "ArrowLeft": fold(row.row); break;
+            case "Home": edge(row, false); break;
+            case "End": edge(row, true); break;
+            default: return;
+        }
+        e.preventDefault();
+    });
+})();
+</script>
+{% endmacro %}
+
+{# The single-key commands would be invisible without this, so the drawer says the key that opens it. #}
+{% macro keyHelp() %}
+<dialog id="key-help" class="key-help" aria-label="Keyboard shortcuts">
+    <h2>Keyboard</h2>
+    <dl>
+        <dt>&#8595; &#8593;</dt><dd>move between the rows you can see</dd>
+        <dt>&#8594;</dt><dd>open a feature, then step into it</dd>
+        <dt>&#8592;</dt><dd>close a feature, or step out to the one above</dd>
+        <dt>Enter</dt><dd>go to the page in focus</dd>
+        <dt>Tab</dt><dd>the same rows, plus everything else on the page</dd>
+        <dt>/</dt><dd>search the whole report</dd>
+        <dt>m</dt><dd>open or close the navigation drawer</dd>
+        <dt>Esc</dt><dd>leave the search box, or close the drawer</dd>
+        <dt>?</dt><dd>this list</dd>
+    </dl>
+    <form method="dialog"><button>Close</button></form>
+</dialog>
 {% endmacro %}
 
 {# ----- Self-contained document head: meta + inline stylesheet ----- #}
@@ -400,6 +600,38 @@ a { color: var(--accent); text-underline-offset: 2px; }
 .sidebar-home:hover, .sidebar-home.current { color: var(--accent); }
 .site-nav { font-size: 0.85rem; }
 .site-nav .nav-row.current { color: var(--accent); font-weight: 700; }
+/* Focus has to be loud here: the arrow keys move it, and a reader who cannot see where it went
+   cannot use them. Safari does not tab to a link by default, which is why the arrows exist. */
+.nav-row:focus-visible, .sidebar-home:focus-visible, .search-results a:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px;
+}
+.nav-entry:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 3px; }
+.key-hint {
+    margin: 1.25rem 0 0; font-family: var(--font-mono); font-size: 0.68rem;
+    letter-spacing: 0.03em; color: var(--marker);
+}
+.key-hint kbd {
+    font-family: inherit; border: 1px solid var(--rule-strong); border-radius: 3px;
+    padding: 0 0.25rem; color: var(--ink-soft);
+}
+.key-help {
+    border: 1px solid var(--rule-strong); border-radius: 8px; padding: 1.25rem 1.5rem;
+    background: var(--raised); color: var(--ink); max-width: 26rem;
+}
+.key-help::backdrop { background: rgba(10, 12, 16, 0.45); }
+.key-help h2 {
+    margin: 0 0 0.75rem; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft);
+}
+.key-help dl { display: grid; grid-template-columns: auto 1fr; gap: 0.35rem 1rem; margin: 0; font-size: 0.85rem; }
+.key-help dt { font-family: var(--font-mono); color: var(--accent); white-space: nowrap; }
+.key-help dd { margin: 0; color: var(--ink-soft); }
+.key-help button {
+    margin-top: 1.25rem; font-family: var(--font-mono); font-size: 0.72rem;
+    padding: 0.3rem 0.7rem; border: 1px solid var(--rule-strong); border-radius: 6px;
+    background: var(--paper); color: var(--ink); cursor: pointer;
+}
+.key-help button:hover { border-color: var(--accent); color: var(--accent); }
 /* The trail to the page you are on. Marking the page alone highlights one leaf and leaves the
    reader to guess which branch holds it, so every entry above it is marked too: the label reads
    at full ink, and the rule line beside its children is drawn in accent. */
@@ -667,29 +899,45 @@ td.cell.numbered.named-lines .coll.map > dd { margin-left: 2.1rem; }
 .nav-tree { margin-top: 0.5rem; }
 .nav-children { margin-left: 0.6rem; padding-left: 1rem; border-left: 1px solid var(--rule); }
 .nav-item { padding: 0.15rem 0; }
-.nav-row { display: inline-flex; align-items: baseline; gap: 0.55rem; text-decoration: none; padding: 0.15rem 0; }
-.nav-row:hover { text-decoration: underline; }
-.nav-row::before { font-family: var(--font-mono); color: var(--marker); }
+/* One row: the fold's control, then the link. Two elements rather than one, because the control
+   must not be part of the link's hit area and the hover underline must not reach the control. */
+.nav-entry { display: flex; align-items: baseline; gap: 0.3rem; }
+.nav-row { display: inline-flex; align-items: baseline; gap: 0.5rem; text-decoration: none; padding: 0.15rem 0; }
+.nav-row:hover .nav-label { text-decoration: underline; }
 .nav-row.index { font-weight: 650; color: var(--ink); }
-.nav-row.index::before { content: "\25C6"; color: var(--accent); font-size: 0.7em; }
-.nav-row.table::before { content: "\2013"; }
-/* Status dot: colour marks failure; passing is calm, neutral (no run) is muted */
-.status-dot { flex: none; align-self: center; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--marker); }
+/* Status dot: colour marks failure; passing is calm, neutral (no run) is muted. It sits on the
+   first line rather than centred, so a label running to two lines does not push it between them. */
+.status-dot {
+    flex: none; align-self: baseline; width: 0.5rem; height: 0.5rem;
+    border-radius: 50%; background: var(--marker);
+}
 .nav-row.passed .status-dot { background: var(--pass); }
 .nav-row.failed .status-dot { background: var(--fail); }
 .nav-row.neutral .status-dot { background: transparent; border: 1px solid var(--marker); }
 
 /* A fold. The row of an entry that holds pages is the summary of a <details>, so the reader can
-   put a whole feature away; the pages themselves are always written, only folded. The row's own
-   marker is the fold's marker — a diamond says "a page below the top", a triangle says the same
-   and tells the reader which way it is turned, so the two would only compete. */
-.nav-branch > summary { list-style: none; cursor: pointer; }
-.nav-branch > summary::-webkit-details-marker { display: none; }
-.nav-row.branch::before {
-    content: "\25B8"; color: var(--accent); font-size: 0.85em;
-    display: inline-block; width: 0.7em; transition: transform 0.15s ease;
+   put a whole feature away; the pages themselves are always written, only folded.
+
+   The control column is grey and the dot beside it is coloured, on purpose: one is chrome the
+   reader operates, the other is the verdict, and colouring both made a green arrow sit beside a
+   green dot saying two different things. The column is there on every row, folding or not, so
+   nothing shifts sideways between a feature and a rule. */
+.nav-twisty {
+    flex: none; width: 0.8rem; position: relative; top: -0.08em;
+    font-family: var(--font-mono); color: var(--marker); line-height: inherit;
 }
-.nav-branch[open] > summary > .nav-row.branch::before { transform: rotate(90deg); }
+.nav-branch > .nav-entry { list-style: none; cursor: pointer; }
+.nav-branch > .nav-entry::-webkit-details-marker { display: none; }
+/* The chevron is two borders of a rotated box, not a character: it is then the same shape in
+   every font, sharp at any zoom, and turns about its own centre. */
+.nav-twisty.branch::before {
+    content: ""; display: inline-block; width: 0.34em; height: 0.34em;
+    border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg); transition: transform 0.15s ease;
+}
+.nav-branch[open] > .nav-entry > .nav-twisty.branch::before { transform: rotate(45deg); }
+/* A feature whose pages the index depth cut off does not fold, and is not a rule either. */
+.nav-twisty.feature::before { content: "\25C6"; font-size: 0.7em; }
 
 /* Footer */
 .doc-footer {
@@ -720,7 +968,7 @@ td.cell.numbered.named-lines .coll.map > dd { margin-left: 2.1rem; }
         --marker: #44474f; --shade: transparent;
     }
     body { padding: 0; }
-    .sidebar, .nav-backdrop, .nav-toggle, .controls, .theme-toggle { display: none; }
+    .sidebar, .nav-backdrop, .nav-toggle, .controls, .theme-toggle, .key-help { display: none; }
     .table-wrap { overflow: visible; border: none; }
     thead th, tbody td:first-child, tbody th:first-child { position: static; box-shadow: none; }
     .failures details { break-inside: avoid; }
@@ -733,7 +981,7 @@ td.cell.numbered.named-lines .coll.map > dd { margin-left: 2.1rem; }
        two rules are one each for the two ways a browser hides the closed part of a <details>. */
     .nav-branch:not([open]) > .nav-children { display: block; }
     .nav-branch::details-content { content-visibility: visible; }
-    .nav-row.branch::before { transform: rotate(90deg); }
+    .nav-twisty.branch::before { transform: rotate(45deg); }
 }
 </style>
 {% endmacro %}

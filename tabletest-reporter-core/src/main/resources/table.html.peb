@@ -39,6 +39,7 @@
 {{ themeScript() }}
 {{ tableScrollScript() }}
 {{ navScript() }}
+{{ navKeysScript() }}
 <script src="{{ assetRoot }}tabletest-search-index.js"></script>
 {{ searchScript() }}
 <script>

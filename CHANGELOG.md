@@ -3,6 +3,12 @@
 ## [Unreleased]
 
 ### Added
+- An HTML report can be read from the keyboard. Tab, Enter and Space already reached and operated
+  every row of the navigation, and still do with no script running. On top of that, the arrow keys
+  move between the rows you can see and open or close a feature, `/` jumps to the search box, `m`
+  opens or closes the navigation drawer, `Esc` leaves either, and `?` lists the keys on the page.
+  The arrows act only on a row that already has focus, so they still scroll a page everywhere
+  else. Focus is drawn clearly, because the keys move it.
 - A build can pin the instant a report states it was generated at, with `generatedAt` on the Maven
   plugin (`-Dtabletest.report.generatedAt`) and the Gradle extension, or `--generated-at` on the
   CLI. Left unset the reporter reads the clock, as before, so two runs of the same tests write two
@@ -51,14 +57,19 @@
   hold", where it used to say "passing". A reader moving from an index to a table page read the
   same fact stated two ways.
 - An HTML index page and the sidebar now fold. Every page below is still written out, but only
-  the top level is open: an entry that holds pages is a fold the reader opens. A spec of forty
-  rules therefore opens on a list of its features instead of every rule at once, and the
-  publisher no longer chooses one depth for every reader. The fold is a plain `<details>`, so it
-  needs no script, and a folded entry stays in the page — a browser search finds it, and a
-  printed copy shows every level open. In the sidebar the branches on the trail to the page you
-  are on are written open, so a reader arriving on a deep link sees where they are. `indexDepth`
-  is unchanged and stays the coarse override for writing fewer levels at all, which is what a
-  Markdown or AsciiDoc index still needs.
+  the top level is open: an entry that holds pages is a fold the reader opens, with a chevron
+  beside its link. A spec of forty rules therefore opens on a list of its features instead of
+  every rule at once, and the publisher no longer chooses one depth for every reader. The fold is
+  a plain `<details>`, so it needs no script, and a folded entry stays in the page — a browser
+  search finds it, and a printed copy shows every level open. In the sidebar the branches on the
+  trail to the page you are on are written open, so a reader arriving on a deep link sees where
+  they are. `indexDepth` is unchanged and stays the coarse override for writing fewer levels at
+  all, which is what a Markdown or AsciiDoc index still needs.
+- A row of a link tree now reads as one thing. The chevron is grey and the verdict dot beside it
+  keeps its colour, so the control a reader operates is told apart from the verdict it sits next
+  to; the `–` before a rule is gone, since the empty chevron column already tells a rule from a
+  feature; and the dot sits on a row's first line rather than being centred between two, which is
+  where a wrapped title used to leave it.
 - The sidebar now marks the whole trail down to the page you are on, not the page alone. A rule
   deep in a spec highlighted one leaf, and nothing said which feature held it. Every entry above
   the current page now reads at full ink, and the rule line beside its children is drawn in the
@@ -72,6 +83,11 @@
   than typed, so they connect exactly and scale with the font.
 
 ### Fixed
+- A closed navigation drawer is no longer in the tab order. It sits off-screen but was still
+  focusable, so a reader tabbing through a page walked the whole hidden menu — six stops on the
+  reporter's own spec — before reaching anything they could see. The drawer is `inert` until it
+  opens; opening it moves focus into it and closing it hands focus back to the menu button. While
+  it is open the page behind it is inert in turn, so focus stays where the backdrop says it is.
 - A report now prints the same whichever colour scheme it is viewed in. Printing drops a dark
   background but keeps the text colours, so a reader in dark mode printed pale grey on white — every
   cell, description and breadcrumb, not only the footer. The print stylesheet now replaces the whole

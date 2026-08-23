@@ -1085,12 +1085,40 @@ Each table page includes:
 - a light/dark theme toggle and a print stylesheet
 
 Each index page shows a link tree of its tables and sub-packages, with a status dot on every
-entry and a summary of the scenario pass rate ("N of M scenarios broken", or "All passing")
-rolled up from the tables beneath it. Every page also carries a breadcrumb trail of its
+entry and a summary of the scenario pass rate ("N of M scenarios broken", or "All N scenarios
+hold") rolled up from the tables beneath it. The tree writes out every page below it and folds
+all but the top level away, so a spec of forty rules opens on a list of its features rather
+than every rule at once; a folded entry is still in the page, so a browser search finds it and
+a printed copy shows every level open. Every page also carries a breadcrumb trail of its
 ancestors (root package → class → table) and a menu button that opens a navigation drawer
-with the whole-report tree — the current page highlighted, status dots throughout — so you
-can jump anywhere from any page. The drawer slides in over the content, keeping the full
-page width available for wide tables.
+with the whole-report tree — the branch holding the current page already open and marked,
+status dots throughout — so you can jump anywhere from any page. The drawer slides in over the
+content, keeping the full page width available for wide tables.
+
+#### Reading a report from the keyboard
+
+Tab reaches every row of both trees, Enter follows one, and Space opens or closes a feature —
+all of it the browser's own behaviour, with no script involved. On top of that:
+
+| Key | Does |
+|---|---|
+| <kbd>↓</kbd> <kbd>↑</kbd> | move between the rows you can see, in the drawer or an index page's own tree |
+| <kbd>→</kbd> | open a feature, then step into it |
+| <kbd>←</kbd> | close a feature, or step out to the one above |
+| <kbd>Home</kbd> <kbd>End</kbd> | the first or last row you can see |
+| <kbd>/</kbd> | open the drawer and jump to the search box |
+| <kbd>m</kbd> | open or close the drawer |
+| <kbd>Esc</kbd> | leave the search box, or close the drawer |
+| <kbd>?</kbd> | list these keys on the page |
+
+The arrows act only on a row that already has focus, so they still scroll a long rule page
+everywhere else. A closed drawer is `inert`, so it is not in the tab order until you open it,
+and an open one holds focus until you leave it.
+
+Note for Safari readers: Safari does not move focus to a link with Tab unless you turn that on
+in Settings → Advanced → "Press Tab to highlight each item on a webpage". Hold <kbd>Option</kbd>
+while pressing Tab to reach links without changing the setting. The arrow keys above are
+unaffected either way.
 
 The drawer also has a search box that searches the whole report — every page's title,
 description, headers, and cell values — and lists the matching pages (with status dots) to

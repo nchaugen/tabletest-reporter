@@ -34,6 +34,7 @@
 {{ themeScript() }}
 {{ tableScrollScript() }}
 {{ navScript() }}
+{{ navKeysScript() }}
 <script>{{ searchData }}</script>
 {{ searchScript() }}
 </body>
