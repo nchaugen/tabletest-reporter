@@ -77,6 +77,10 @@
 
   `indexDepth` does not change. It stays the coarse override for writing fewer levels at all, which
   a Markdown or AsciiDoc index still needs.
+- A row of a link tree carries its state on the link itself. The type, the verdict and the current
+  page used to sit on the list item around it, and a fold puts that link one level deeper. A
+  stylesheet of your own that targeted the navigation tree needs updating; the documented cell-role
+  classes — `.scenario`, `.expectation`, `.passed` and `.failed` — do not change.
 - A row of a link tree now reads as one thing. The chevron is grey, and the verdict dot beside it
   keeps its colour. You can therefore tell the control you operate from the verdict next to it. The `–`
   before a rule is gone, because the empty chevron column already tells a rule from a feature. The
