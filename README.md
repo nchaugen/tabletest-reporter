@@ -21,6 +21,11 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
   - [The HTML format](#the-html-format)
   - [The AsciiDoc format](#the-asciidoc-format)
   - [The Markdown format](#the-markdown-format)
+- [Styling Columns](#styling-columns)
+  - [The roles a test can declare](#the-roles-a-test-can-declare)
+  - [A role of your own](#a-role-of-your-own)
+  - [Styling an HTML report by its roles](#styling-an-html-report-by-its-roles)
+  - [Styling an AsciiDoc report by its roles](#styling-an-asciidoc-report-by-its-roles)
 - [Custom Templates](#custom-templates)
   - [Convention-based discovery](#convention-based-discovery)
   - [Configuring a custom template directory](#configuring-a-custom-template-directory)
@@ -29,9 +34,6 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
   - [The template context](#the-template-context)
   - [What an extension template can reach](#what-an-extension-template-can-reach)
   - [Defining a format of your own](#defining-a-format-of-your-own)
-- [Column Roles](#column-roles)
-  - [Styling an AsciiDoc report by its roles](#styling-an-asciidoc-report-by-its-roles)
-  - [Building a rendering of your own](#building-a-rendering-of-your-own)
 - [Output Structure](#output-structure)
   - [How names become filenames](#how-names-become-filenames)
 - [Publishing Your Documentation](#publishing-your-documentation)
@@ -246,7 +248,7 @@ documentation. Its rows carry no pass or fail indicator:
 The scenario column can have any name (`Scenario`, `Test Case`, `Description`, etc.) and contain any unique string value to identify each test case.
 
 A column can also carry a **role**, which changes how the HTML report draws it — a block of
-source text, a tree, a set of named files. See [Column Roles](#column-roles).
+source text, a tree, a set of named files. See [Styling Columns](#styling-columns).
 
 ### Run your tests
 
@@ -789,6 +791,214 @@ Docusaurus, MkDocs.
   column and a value set are indistinguishable from any other column.
 - `frontMatter` is written as a fenced YAML block above the page.
 
+## Styling Columns
+
+Every published cell carries the roles of its column. A role is a label the reporter writes onto
+the cell, and a stylesheet decides what it looks like. The reporter derives four roles itself —
+`scenario`, `expectation`, `passed` and `failed` — and a test can declare more.
+
+Where a role ends up depends on the format:
+
+| Format | A role becomes | You style it with |
+|---|---|---|
+| `html` | a CSS class on the cell | the `extra_stylesheet` block |
+| `asciidoc` | an element role on the value | a stylesheet you give Asciidoctor |
+| `markdown` | nothing — markdown has nowhere to put a mark | — |
+
+### The roles a test can declare
+
+**A column of source text: `@Lines`.** A table keeps every row on one line, so you write a
+multi-line value as a list of lines. Mark the column with `@Lines`. The parameter then takes the
+lines joined by newlines. The HTML report draws the cell as a stacked
+monospace block, and not as a bulleted list:
+
+```java
+@TableTest("""
+    Scenario   | Source                             | Table Count?
+    One table  | ["a | b", "1 | 2"]                 | 1
+    Two tables | ["a | b", "1 | 2", "", "c", "3"]   | 2
+    """)
+void countsTables(@Lines String source, int tableCount) {
+    assertEquals(tableCount, parser.parse(source).size());
+}
+```
+
+Declare the parameter as a `List<String>` instead, and it takes the lines themselves. The published
+cell does not change either way. The reporter publishes the value the row ran with, so the cell is
+still the list of lines you wrote.
+
+**A tree: `@Tree`.** Where a cell holds a tree, written as a nested collection, `@Tree` opens each
+level below its parent instead of beside it, with a guide line down the level and a tick on each
+entry. The default map rendering puts a key beside its value, which walks a deep tree sideways
+across the page.
+
+**Several named blocks: `@NamedLines`.** One cell can hold more than one block of text, each under
+a name. Write it as a map from name to lines. A file and its contents is the case it serves, so the cell reads as a small directory. The HTML report draws each name as a caption over its own
+block:
+
+```java
+@TableTest("""
+    Scenario                   | Your template directory                                       | Table page?
+    The name of the table page | [table.md.peb: ['# {{ title }} of note', 'Written by hand.']] | ['# Leap years of note', 'Written by hand.']
+    Two names that both match  | [b-table.md.peb: ['# From B'], a-table.md.peb: ['# From A']]  | ['# From A']
+    """)
+void rendersWithYourTemplate(
+        @NamedLines Map<String, List<String>> yourTemplateDirectory, @Lines List<String> tablePage) { ... }
+```
+
+The parameter is a plain `Map<String, List<String>>`, and there is no converter. Note that **a map
+key is never converted**. Declaring `Map<Path, …>` therefore compiles, and then fails at the first
+read. Resolve the name yourself where you write the files out.
+
+**Numbered lines: `@Numbered`.** Numbering is a role of its own, and not part of the two above. Ask
+for it beside either: `@Lines @Numbered` or `@NamedLines @Numbered`. It earns its place on a block
+long enough that a reader needs to point at a line. On two or three lines the digits are as wide as
+the text beside them, which is why it is off unless you ask.
+
+### A role of your own
+
+Annotate an annotation with `@ColumnRole` and put it on a parameter:
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PARAMETER)
+@ColumnRole
+public @interface Ingredient {}
+```
+
+The reporter publishes the role as the annotation's simple name in kebab case, so `@SourceLines`
+publishes `source-lines`. Name the token yourself with `@ColumnRole("...")` instead.
+
+A role must be lower-case words joined by single hyphens. A role that names one the reporter
+derives publishes anyway: the column takes that role's styling, and the reporter never treats it
+as one.
+
+### Styling an HTML report by its roles
+
+The built-in roles have no privileged path. The reporter draws a value from its shape — a list, a
+set, a map or a literal — and puts the column's roles on the cell as CSS classes. Every built-in
+role is then a rule in the stylesheet against that class, and nothing more. `@Numbered`, in full,
+is:
+
+```css
+td.cell.numbered .coll.list { counter-reset: line; }
+td.cell.numbered .coll.list > li { counter-increment: line; }
+```
+
+So `@Lines`, `@Tree`, `@NamedLines` and `@Numbered` are each an annotation plus a stylesheet rule,
+and you can write the same thing. Add your rules through the `extra_stylesheet` block, in a
+template that extends the built-in one. Name it with the hyphen form, because a template cannot
+extend itself:
+
+```pebble
+{# my-table.html.peb #}
+{% extends "table.html.peb" %}
+{% block extra_stylesheet %}
+td.cell.ingredient .literal { font-variant: small-caps; letter-spacing: 0.04em; }
+{% endblock %}
+```
+
+Point the reporter at that template directory, and every cell of an `@Ingredient` column is drawn
+your way.
+
+**To restyle a built-in role**, write its selector again in the same block. The reporter emits
+`extra_stylesheet` after the built-in stylesheet, so a rule of equal specificity that comes later
+wins:
+
+```css
+td.cell.numbered .coll.list > li::before { content: counter(line) ". "; color: #999; }
+```
+
+The limit is worth knowing. Your CSS restyles the markup the reporter emits for the value's shape.
+It cannot make the reporter emit different markup — for that, replace the page template, which
+[Custom Templates](#custom-templates) covers.
+
+### Styling an AsciiDoc report by its roles
+
+A role reaches an AsciiDoc report too, as an element role on the value, so you can style an
+AsciiDoc report by the same roles. The route differs: this one styles the HTML **Asciidoctor**
+produces, through a stylesheet you give Asciidoctor, and it applies once you have converted the
+report. The built-in `html` format is styled through `extra_stylesheet` instead — the section
+below covers that one.
+
+**Understanding CSS Class Placement**
+
+TableTest Reporter generates AsciiDoc with custom roles (`.scenario`, `.expectation`, `.passed`, `.failed`) that become CSS classes in HTML output. The reporter puts these classes on **an inline element inside a table cell**, such as a `span`, a `ul` or an `ol`. It does not put them on the `th` or the `td`.
+
+To style cells based on their content's roles, use the CSS `:has()` selector:
+
+```css
+/* Scenario column - light yellow background */
+:is(th, td):has(.scenario) {
+    background-color: #fffacd;
+    font-style: italic;
+}
+
+/* Expectation columns - light blue background */
+:is(th, td):has(.expectation) {
+    background-color: #add8e6;
+}
+
+/* Passed rows - light green background */
+:is(th, td):has(.passed) {
+    background-color: #90ee90;
+}
+
+/* Failed rows - light red background */
+:is(th, td):has(.failed) {
+    background-color: #ffcccb;
+}
+
+/* Expectation cells in passed rows - bold green */
+:is(th, td):has(.expectation.passed) {
+    background-color: #32cd32;
+    font-weight: bold;
+}
+
+/* Expectation cells in failed rows - bold red */
+:is(th, td):has(.expectation.failed) {
+    background-color: #ff6347;
+    font-weight: bold;
+}
+```
+
+**Note:** use `:has(.classname)` and name no element type. A role can land on a different element,
+depending on what the cell holds.
+
+**Asciidoctor Maven Plugin Configuration**
+
+Configure the [asciidoctor-maven-plugin](https://docs.asciidoctor.org/maven-tools/latest/) to use your custom stylesheet:
+
+```xml
+<plugin>
+    <groupId>org.asciidoctor</groupId>
+    <artifactId>asciidoctor-maven-plugin</artifactId>
+    <version>3.2.0</version>
+    <configuration>
+        <sourceDirectory>${project.build.directory}/generated-docs/tabletest</sourceDirectory>
+        <outputDirectory>${project.build.directory}/generated-html/tabletest</outputDirectory>
+        <backend>html5</backend>
+        <preserveDirectories>true</preserveDirectories>
+        <attributes>
+            <stylesheet>tabletest.css</stylesheet>
+            <stylesdir>${project.basedir}/src/main/resources</stylesdir>
+            <copycss>true</copycss>
+        </attributes>
+    </configuration>
+</plugin>
+```
+
+Key attributes:
+- `stylesheet` - Name of your CSS file
+- `stylesdir` - Directory containing your CSS file
+- `copycss` - Embeds CSS in each HTML file (set to `false` and use `linkcss` for external stylesheet)
+
+See the [Asciidoctor stylesheet documentation](https://docs.asciidoctor.org/asciidoc/latest/docinfo/stylesheet/) for more options.
+
+**Working Example**
+
+A complete working example is available in the project's compatibility tests: [`compatibility-tests/junit-6-maven/`](compatibility-tests/junit-6-maven/)
+
 ## Custom Templates
 
 TableTest Reporter uses [Pebble templates](https://pebbletemplates.io/) to generate documentation. You can customise the output by providing your own templates.
@@ -1060,198 +1270,6 @@ java -jar tabletest-reporter-cli.jar \
 ```
 
 If an unknown format is specified, you'll get a helpful error message listing all available formats (both built-in and discovered custom formats).
-
-## Column Roles
-
-Every published cell carries the roles of its column. The reporter derives four itself — `scenario`,
-`expectation`, `passed` and `failed` — and a test can declare more.
-
-**A column of source text: `@Lines`.** A table keeps every row on one line, so you write a
-multi-line value as a list of lines. Mark the column with `@Lines`. The parameter then takes the
-lines joined by newlines. The HTML report draws the cell as a stacked
-monospace block, and not as a bulleted list:
-
-```java
-@TableTest("""
-    Scenario   | Source                             | Table Count?
-    One table  | ["a | b", "1 | 2"]                 | 1
-    Two tables | ["a | b", "1 | 2", "", "c", "3"]   | 2
-    """)
-void countsTables(@Lines String source, int tableCount) {
-    assertEquals(tableCount, parser.parse(source).size());
-}
-```
-
-Declare the parameter as a `List<String>` instead, and it takes the lines themselves. The published
-cell does not change either way. The reporter publishes the value the row ran with, so the cell is
-still the list of lines you wrote.
-
-**Several named blocks: `@NamedLines`.** One cell can hold more than one block of text, each under
-a name. Write it as a map from name to lines. A file and its contents is the case it serves, so the cell reads as a small directory. The HTML report draws each name as a caption over its own
-block:
-
-```java
-@TableTest("""
-    Scenario                   | Your template directory                                       | Table page?
-    The name of the table page | [table.md.peb: ['# {{ title }} of note', 'Written by hand.']] | ['# Leap years of note', 'Written by hand.']
-    Two names that both match  | [b-table.md.peb: ['# From B'], a-table.md.peb: ['# From A']]  | ['# From A']
-    """)
-void rendersWithYourTemplate(
-        @NamedLines Map<String, List<String>> yourTemplateDirectory, @Lines List<String> tablePage) { ... }
-```
-
-The parameter is a plain `Map<String, List<String>>`, and there is no converter. Note that **a map
-key is never converted**. Declaring `Map<Path, …>` therefore compiles, and then fails at the first
-read. Resolve the name yourself where you write the files out.
-
-**Numbered lines: `@Numbered`.** Numbering is a role of its own, and not part of the two above. Ask
-for it beside either: `@Lines @Numbered` or `@NamedLines @Numbered`. It earns its place on a block
-long enough that a reader needs to point at a line. On two or three lines the digits are as wide as
-the text beside them, which is why it is off unless you ask.
-
-**A role of your own.** Annotate an annotation with `@ColumnRole` and put it on a parameter:
-
-```java
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-@ColumnRole
-public @interface Ingredient {}
-```
-
-The reporter publishes the role as the annotation's simple name in kebab case, so `@SourceLines`
-publishes `source-lines`. Name the token yourself with `@ColumnRole("...")` instead.
-
-The role reaches the HTML report as a CSS class on the cell, and the AsciiDoc report as an element
-role. A stylesheet of your own can therefore style the column. Markdown carries no roles.
-
-A role must be lower-case words joined by single hyphens. A role that names one the reporter derives
-publishes anyway: the column takes that role's styling, and the reporter never treats it as one.
-
-### Styling an AsciiDoc report by its roles
-
-A role reaches an AsciiDoc report too, as an element role on the value, so you can style an
-AsciiDoc report by the same roles. The route differs: this one styles the HTML **Asciidoctor**
-produces, through a stylesheet you give Asciidoctor, and it applies once you have converted the
-report. The built-in `html` format is styled through `extra_stylesheet` instead — the section
-below covers that one.
-
-**Understanding CSS Class Placement**
-
-TableTest Reporter generates AsciiDoc with custom roles (`.scenario`, `.expectation`, `.passed`, `.failed`) that become CSS classes in HTML output. The reporter puts these classes on **an inline element inside a table cell**, such as a `span`, a `ul` or an `ol`. It does not put them on the `th` or the `td`.
-
-To style cells based on their content's roles, use the CSS `:has()` selector:
-
-```css
-/* Scenario column - light yellow background */
-:is(th, td):has(.scenario) {
-    background-color: #fffacd;
-    font-style: italic;
-}
-
-/* Expectation columns - light blue background */
-:is(th, td):has(.expectation) {
-    background-color: #add8e6;
-}
-
-/* Passed rows - light green background */
-:is(th, td):has(.passed) {
-    background-color: #90ee90;
-}
-
-/* Failed rows - light red background */
-:is(th, td):has(.failed) {
-    background-color: #ffcccb;
-}
-
-/* Expectation cells in passed rows - bold green */
-:is(th, td):has(.expectation.passed) {
-    background-color: #32cd32;
-    font-weight: bold;
-}
-
-/* Expectation cells in failed rows - bold red */
-:is(th, td):has(.expectation.failed) {
-    background-color: #ff6347;
-    font-weight: bold;
-}
-```
-
-**Note:** use `:has(.classname)` and name no element type. A role can land on a different element,
-depending on what the cell holds.
-
-**Asciidoctor Maven Plugin Configuration**
-
-Configure the [asciidoctor-maven-plugin](https://docs.asciidoctor.org/maven-tools/latest/) to use your custom stylesheet:
-
-```xml
-<plugin>
-    <groupId>org.asciidoctor</groupId>
-    <artifactId>asciidoctor-maven-plugin</artifactId>
-    <version>3.2.0</version>
-    <configuration>
-        <sourceDirectory>${project.build.directory}/generated-docs/tabletest</sourceDirectory>
-        <outputDirectory>${project.build.directory}/generated-html/tabletest</outputDirectory>
-        <backend>html5</backend>
-        <preserveDirectories>true</preserveDirectories>
-        <attributes>
-            <stylesheet>tabletest.css</stylesheet>
-            <stylesdir>${project.basedir}/src/main/resources</stylesdir>
-            <copycss>true</copycss>
-        </attributes>
-    </configuration>
-</plugin>
-```
-
-Key attributes:
-- `stylesheet` - Name of your CSS file
-- `stylesdir` - Directory containing your CSS file
-- `copycss` - Embeds CSS in each HTML file (set to `false` and use `linkcss` for external stylesheet)
-
-See the [Asciidoctor stylesheet documentation](https://docs.asciidoctor.org/asciidoc/latest/docinfo/stylesheet/) for more options.
-
-**Working Example**
-
-A complete working example is available in the project's compatibility tests: [`compatibility-tests/junit-6-maven/`](compatibility-tests/junit-6-maven/)
-
-### Building a rendering of your own
-
-A role of your own reaches the report exactly as a built-in one does, because the built-in roles
-have no privileged path. The reporter draws a value from its shape — a list, a set, a map or a
-literal — and puts the column's roles on the cell as CSS classes. Every built-in role is a rule in
-the stylesheet against that class, and nothing more. `@Numbered`, in full, is:
-
-```css
-td.cell.numbered .coll.list { counter-reset: line; }
-td.cell.numbered .coll.list > li { counter-increment: line; }
-```
-
-So `@Lines`, `@Tree`, `@NamedLines` and `@Numbered` are each an annotation plus a stylesheet rule,
-and you can write the same thing. Declare the annotation:
-
-```java
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-@ColumnRole
-public @interface Ingredient {}
-```
-
-Then add your rules through the `extra_stylesheet` block, in a template that extends the built-in
-one. Name it with the hyphen form, because a template cannot extend itself:
-
-```pebble
-{# my-table.html.peb #}
-{% extends "table.html.peb" %}
-{% block extra_stylesheet %}
-td.cell.ingredient .literal { font-variant: small-caps; letter-spacing: 0.04em; }
-{% endblock %}
-```
-
-Point the reporter at that template directory, and every cell of an `@Ingredient` column is drawn
-your way. The built-in stylesheet stays where it is, so you add to it rather than replace it.
-
-The limit is worth knowing. Your CSS restyles the markup the reporter emits for the value's shape.
-It cannot make the reporter emit different markup — for that, replace the page template, which
-[Custom Templates](#custom-templates) covers.
 
 ## Output Structure
 

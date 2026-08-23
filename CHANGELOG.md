@@ -70,6 +70,15 @@
   ones. They sat inside the Maven section, folded away, although they cover Maven, Gradle and the
   CLI alike — a Gradle reader following the Gradle instructions never met the Gradle option they
   hold.
+- The README's Column Roles section is now Styling Columns, and it is about styling. It opens with
+  a table saying what a role becomes in each format — a CSS class, an element role, or nothing —
+  and then splits into the roles a test can declare, a role of your own, and one subsection per
+  styling route: HTML through `extra_stylesheet`, AsciiDoc through the stylesheet you give
+  Asciidoctor. It also says how to *restyle* a built-in role, which was not written down: the
+  reporter emits `extra_stylesheet` after its own stylesheet, so a rule of equal specificity that
+  comes later wins. `@Tree` gained an entry of its own; it had only two passing mentions, while
+  every other role a test can declare had one. The section sits above Custom Templates, because
+  tweaking a format is the commoner errand.
 - Each built-in format has a section of the README to itself. AsciiDoc and Markdown are slim beside
   HTML, which is the honest picture — the format tiering gives presentation to HTML alone — and
   each now says what its own format carries: where a collection goes, how a pipe and significant
