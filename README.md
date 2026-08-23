@@ -382,6 +382,53 @@ typo never fails the report. The file is read at report time — a project witho
 exactly as before. Override its location with the `configFile` option (Maven `<configFile>`,
 Gradle `configFile`, CLI `--config`).
 
+### Front matter for a site generator (`frontMatter`)
+
+An AsciiDoc or Markdown report is read by a site generator, which decides how each page looks and
+where it sits. Front matter is how you tell it what it needs. Declare it once:
+
+```yaml
+frontMatter:
+  layout: report       # any key you like, written as declared
+  type: docs
+  title: true          # filled by the reporter: the page's own title
+  weight: true         # filled by the reporter: its place in the reading order
+  generated: true      # filled by the reporter: when the run happened
+```
+
+Markdown pages open with a fenced block and AsciiDoc pages with document attributes:
+
+```markdown
+---
+layout: report
+title: Leap years
+weight: 2
+generated: "2026-08-23T09:19:33Z"
+---
+```
+
+```asciidoc
+:layout: report
+:title: Leap years
+:weight: 2
+:generated: 2026-08-23T09:19:33Z
+```
+
+**HTML gets none.** It is a finished page, not source for a generator.
+
+**`title`, `weight` and `generated` are the only keys the reporter fills**, and only when you
+declare them as `true`; give one a value of your own and it is written as declared, like any other
+key. A derived value that does not apply to a page — `weight` on the root index, which has no
+siblings — leaves its key out rather than writing it empty. Keys keep their declared order, and a
+value is quoted only where YAML would otherwise read it back as something else.
+
+**`weight` is the one worth knowing about.** The `features:` section above declares the reading
+order of your spec. Without a weight, a site generator sorts the pages alphabetically and that
+curation is lost at the boundary; with it, the published site reads in the order you chose.
+
+The `frontMatter` template block still works and takes precedence — see
+[Custom Templates](#custom-templates) for when you need more than keys and values.
+
 ### Linking back to your site (`site`)
 
 Every link inside a generated report is relative within its own tree. A reader who reaches
@@ -792,9 +839,9 @@ Available blocks for indexes:
 
 #### Recording When the Report Was Generated
 
-A site generator knows where your page sits and how to style it. The one thing it cannot know is
-when the report was generated — the fact that tells a reader whether the spec still tracks the
-code. Hand it over in the front matter and let the site render it:
+Most projects want [the `frontMatter` config section](#front-matter-for-a-site-generator-frontmatter)
+instead — it needs no template at all. Write the block yourself when you need more than keys and
+values, such as a value composed from several context keys:
 
 ```pebble
 {% extends "table.md.peb" %}
