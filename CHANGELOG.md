@@ -116,186 +116,199 @@
 ## [1.4.0] - 2026-08-20
 
 ### Added
-- An HTML template of your own can add to the built-in stylesheet through a new `extra_stylesheet`
-  block, without replacing it. A report carries its stylesheet inside the file, so until now a role
-  declared with `@ColumnRole` had nowhere to be styled from: the only way to reach the CSS was to
-  rewrite the whole sheet. The block is left by `table.html.peb`, `index.html.peb` and
-  `single.html.peb` alike.
+- An HTML template of your own can now add to the built-in stylesheet, through a new
+  `extra_stylesheet` block, and does not replace it. A report carries its stylesheet inside the
+  file. Until now a role declared with `@ColumnRole` had nowhere to take a style from, because the
+  only way to reach the CSS was to rewrite the whole sheet. `table.html.peb`, `index.html.peb` and
+  `single.html.peb` all leave the block.
 - `@Tree` marks a column whose cells hold a tree, written as a nested collection. The built-in HTML
-  report then opens each level below its parent rather than beside it, with a guide line down the
-  level and a connector on each entry. The default map rendering puts a key beside its value, which
-  walks a deep tree sideways across the page. The cell value is unchanged, so a reader still meets
-  the notation they would write.
-- A cell whose set expands its row is now marked `value-set` in the published report. A published
-  table shows no parameters, so `{a, b}` reads the same whether it expands the row into one run per
-  value or is a `Set` the test receives whole. The reporter tells them apart the way the runtime
-  does — a set value against a parameter that is not a set expands — and the built-in HTML
-  stylesheet labels the cell "any of". Markdown carries no roles, so the two stay alike there.
-- `@Lines` marks a column whose cells hold the lines of one block of text. The parameter receives
-  the lines joined by newlines (or the lines themselves, for a `List` parameter), and the HTML
-  report renders the cell as a stacked monospace block rather than a bulleted list, so text whose
-  alignment is the point reads as it was written. AsciiDoc publishes the role and keeps its bulleted
-  list; Markdown is unchanged.
-- A space run at the end of a line now carries a `trailing` class alongside `sp`, so a stylesheet can
-  tell the one run a whitespace-preserving layout cannot show from the ones it can. The built-in HTML
-  stylesheet uses it to drop the markers from alignment padding inside a `lines` column while keeping
-  a trailing run marked, and to leave a blank line in such a column unmarked — it is already visible
-  as a line of the block. Only the class is new — the marked runs and the characters in them are
-  unchanged.
-- A test parameter can now declare a role for its column, and the reporter publishes it on every
-  cell of that column. Annotate an annotation of your own with `@ColumnRole` and put it on the
-  parameter; the role is published as the annotation's simple name in kebab case, or as the token
-  `@ColumnRole("...")` names. Published roles reach the HTML report as CSS classes and the AsciiDoc
-  report as element roles, so a stylesheet of yours can style a column the reporter knows nothing
-  about. `scenario`, `expectation`, `passed` and `failed` are still derived by the reporter itself;
-  a declared role is published alongside them without being treated as one.
-- A table wide enough to scroll sideways now says so: the scroll box keeps a visible slim
-  scrollbar, and a shaded edge appears on whichever side has more table beyond it. Previously the
-  box scrolled silently — on a platform with overlay scrollbars a reader had no way to tell the
-  last column on screen was not the last column.
-- A feature in the `tabletest-reporter.yaml` `features:` tree can carry a `description`, rendered
-  under the feature's title on its own index page the way a test class's `@Description` is. An
-  intermediate index page could previously carry only a title, so anything true of a whole group
-  of features had to be repeated on every rule beneath it.
+  report then opens each level below its parent, and not beside it, with a guide line down the level
+  and a connector on each entry. The default map rendering puts a key beside its value, which walks
+  a deep tree sideways across the page. The cell value does not change, so a reader still meets the
+  notation they would write.
+- A cell whose set expands its row now carries the mark `value-set` in the published report. A
+  published table shows no parameters, so `{a, b}` reads the same two ways. It can expand the row
+  into one run per value, or it can be a `Set` the test takes whole. The reporter tells the two
+  apart the way the runtime does: a set value against a parameter that is not a set expands. The
+  built-in HTML stylesheet labels such a cell "any of". Markdown carries no roles, so the two stay
+  alike there.
+- `@Lines` marks a column whose cells hold the lines of one block of text. The parameter takes the
+  lines joined by newlines, or the lines themselves for a `List` parameter. The HTML report draws
+  the cell as a stacked monospace block, and not as a bulleted list, so text whose alignment is the
+  point reads as you wrote it. AsciiDoc publishes the role and keeps its bulleted list. Markdown
+  does not change.
+- A space run at the end of a line now carries a `trailing` class beside `sp`. A stylesheet can
+  then tell the one run a whitespace-preserving layout cannot show from the runs it can. The
+  built-in HTML stylesheet uses it two ways. It drops the markers from alignment padding inside a
+  `lines` column, but keeps a trailing run marked. It also leaves a blank line in such a column
+  unmarked, because that line already shows as a line of the block. Only the class is new. The
+  marked runs, and the characters in them, do not change.
+- A test parameter can now declare a role for its column, and the reporter publishes that role on
+  every cell of the column. Annotate an annotation of your own with `@ColumnRole` and put it on the
+  parameter. The reporter publishes the annotation's simple name in kebab case, or the token
+  `@ColumnRole("...")` names. A published role reaches the HTML report as a CSS class, and the
+  AsciiDoc report as an element role. A stylesheet of yours can therefore style a column the
+  reporter knows nothing about. The reporter still derives `scenario`, `expectation`, `passed` and `failed` itself.
+  It publishes a declared role beside them, and never treats one as derived.
+- A table wide enough to scroll sideways now says so. The scroll box keeps a visible slim scrollbar,
+  and a shaded edge appears on whichever side holds more table. The box used to scroll silently. On
+  a platform with overlay scrollbars, a reader had no way to tell that the last column on screen was
+  not the last column.
+- A feature in the `tabletest-reporter.yaml` `features:` tree can now carry a `description`. The
+  reporter draws it under the feature's title on its own index page, the way it draws a test class's
+  `@Description`. An intermediate index page could carry only a title before this, so anything true
+  of a whole group of features had to be repeated on every rule below it.
 
 ### Fixed
-- A rule page now shows the description of the page it sits under, above its own. The class or
-  feature description is where the notation a rule's columns use is explained, and it rendered only
-  on the index page — but the sidebar links to rule pages and search returns rule pages, so a reader
-  met the columns without the explanation. All three formats show it.
-- A description with more than one paragraph now renders as more than one paragraph in HTML. HTML
+- A rule page now shows the description of the page above it, over its own. That class or feature
+  description is where you explain the notation a rule's columns use, and it reached the index page
+  alone. The sidebar links to rule pages, and search returns rule pages, so a reader met the columns
+  without the explanation. All three formats show it.
+- A description of more than one paragraph now renders as more than one paragraph in HTML. HTML
   collapses a blank line, so every paragraph of a `@Description` ran together into one block. The
-  Markdown and AsciiDoc reports were already correct. Line breaks inside a paragraph are still
-  dropped, so the text flows to the width of the page rather than to the width of the text block it
-  was written in.
-- Declaring a custom format with no name is now refused with `Format name cannot be missing`
-  instead of a message reading only `name`. The blank-name and leading-dot refusals are
-  unchanged.
+  Markdown and AsciiDoc reports were already right. The reporter still drops the line breaks inside
+  a paragraph. The text therefore flows to the width of the page, and not to the width of the text
+  block you wrote it in.
+- Declaring a custom format with no name now fails with `Format name cannot be missing`. The message
+  used to read only `name`. The blank-name and leading-dot refusals do not change.
 
 ## [1.3.0] - 2026-07-23
 > [!IMPORTANT]
-> **Slug generation changed, and some published page names change with it.** A test or class
-> name containing a letter with no ASCII form (`ß æ ø ł þ ð œ đ`), a compatibility character
-> (`ﬁ`, fullwidth letters, `x²`, `Ⅻ`, `™`, `½`), or a non-Latin script now produces a different
-> filename and URL than earlier versions did — those characters used to be dropped, so `Grüße`
-> published as `grue` and now publishes as `grusse`. If you already publish your documentation,
-> the affected pages move and existing links to them break; regenerate the whole report rather
-> than an incremental subset, and expect to update any links you control. Names made only of
-> ASCII, and accented letters that already folded to a base letter (`ü ö ä é å ñ`), are
-> unaffected — their slugs are byte-for-byte what they were.
+> **Slug generation changed, and some published page names change with it.** Three kinds of name
+> now produce a different filename and URL: a test or class name holding a letter with no ASCII
+> form (`ß æ ø ł þ ð œ đ`), one holding a compatibility character (`ﬁ`, fullwidth letters, `x²`,
+> `Ⅻ`, `™`, `½`), and one written in a non-Latin script. Those characters used to be dropped, so
+> `Grüße` published as `grue` and now publishes as `grusse`.
+>
+> If you already publish your documentation, the affected pages move, and existing links to them
+> break. Regenerate the whole report rather than an incremental subset, and expect to update any
+> links you control. Two kinds of name are unaffected: a name made only of ASCII, and a name whose
+> accented letters already folded to a base letter (`ü ö ä é å ñ`). Their slugs are byte-for-byte
+> what they were.
 
 ### Fixed
-- A test named wholly in a non-Latin script no longer produces an empty filename: `Москва` now
-  publishes as `москва` rather than as nothing at all, and likewise for Greek, CJK, Devanagari
-  and every other script. Such a name keeps its own characters, which browsers percent-encode
-  and GitHub Pages serves as UTF-8; a name whose ASCII form is only a number it contained
-  (`Москва основана в 1147`) is treated the same way rather than published as `1147`. A name
-  with no letters or digits anywhere gets `unnamed-` plus a stable hash, so two of them still
-  get two files. Names that already produced a working slug are unaffected.
+- A test named wholly in a non-Latin script no longer produces an empty filename. `Москва` now
+  publishes as `москва`, and not as nothing at all. Greek, CJK, Devanagari and every other script
+  behave the same way. Such a name keeps its own characters. Browsers percent-encode them, and
+  GitHub Pages serves them as UTF-8.
+
+  A name whose ASCII form is only a number it held (`Москва основана в 1147`) takes the same route,
+  and no longer publishes as `1147`. A name with no letter and no digit anywhere gets `unnamed-`
+  plus a stable hash, so two such names still get two files. A name that already produced a working
+  slug does not change.
 
 ### Changed
-- Compatibility characters now reduce to the characters they stand for instead of being dropped
-  from filenames and URLs: `ﬁle ﬂow` becomes `file-flow`, fullwidth `Ｆｕｌｌｗｉｄｔｈ` becomes
-  `fullwidth`, `x² area` becomes `x2-area`, `Chapter Ⅻ` becomes `chapter-xii`. A precomposed
-  accented ligature (`Ǽgir`) no longer loses its letter either. Names written in a script of
-  their own are composed the same way, so halfwidth and fullwidth katakana spellings of one
-  name (`ﾃｽﾄ`, `テスト`) give one slug rather than two.
-- Latin letters with no ASCII form now appear in filenames and URLs instead of vanishing from
-  them: `Grüße` becomes `grusse` where it used to become `grue`, and `ÆØÅ` becomes `aeoa` where
-  it used to become `a`. One rule decides the spelling — ligatures expand to their component
-  letters (`ß`→`ss`, `æ`→`ae`, `œ`→`oe`), stroked letters fold to their base letter (`ø`→`o`,
-  `ł`→`l`, `đ`→`d`, `ð`→`d`), and `þ`→`th` because thorn has no Latin base letter. Letters that
-  already folded (`ü ö ä é å ñ`) are untouched, so a name built only from those keeps the exact
-  slug it had; a name containing one of the newly spelled-out letters gets a new one.
-- The JUnit extension no longer depends on the Slugify library: filename slug generation is
-  now built in. Slugify required Java 21, which forced every project documenting its tests to
-  run them on a 21+ runtime; the extension now targets Java 17, so a Java 17 project can use
-  it on its own test runtime. Slug output is unchanged — the replacement is pinned by the same
-  characterisation table, extended with non-ASCII cases, and reproduces the library exactly.
-  This also removes Slugify and its SLF4J transitive from the test classpath, so they can no
-  longer conflict with versions a project uses itself. The build still requires Java 21+.
+- A compatibility character now reduces to the characters it stands for, instead of dropping out of
+  the filename and the URL. `ﬁle ﬂow` becomes `file-flow`, fullwidth `Ｆｕｌｌｗｉｄｔｈ` becomes
+  `fullwidth`, `x² area` becomes `x2-area`, and `Chapter Ⅻ` becomes `chapter-xii`. A precomposed
+  accented ligature (`Ǽgir`) no longer loses its letter either. A name written in a script of its
+  own composes the same way. The halfwidth and fullwidth katakana spellings of one name (`ﾃｽﾄ`,
+  `テスト`) therefore give one slug, and not two.
+- A Latin letter with no ASCII form now appears in the filename and the URL, instead of vanishing
+  from it. `Grüße` becomes `grusse`, where it used to become `grue`. `ÆØÅ` becomes `aeoa`, where it
+  used to become `a`. One rule decides the spelling. A ligature expands to its component letters
+  (`ß`→`ss`, `æ`→`ae`, `œ`→`oe`). A stroked letter folds to its base letter (`ø`→`o`, `ł`→`l`,
+  `đ`→`d`, `ð`→`d`). `þ`→`th`, because thorn has no Latin base letter.
+
+  A letter that already folded (`ü ö ä é å ñ`) does not change. A name built only from those keeps
+  the exact slug it had. A name holding one of the newly spelled-out letters gets a new one.
+- The JUnit extension no longer depends on the Slugify library, and generates a filename slug
+  itself. Slugify required Java 21, which forced every project documenting its tests onto a 21+
+  runtime. The extension now targets Java 17, so a Java 17 project can use it on its own test
+  runtime. The build still requires Java 21+.
+
+  Slug output does not change. The same characterisation table pins the replacement, extended with
+  non-ASCII cases, and it reproduces the library exactly. This also takes Slugify and its SLF4J
+  transitive off the test classpath, where they could conflict with the versions a project uses
+  itself.
 
 ### Added
-- Multi-module reports: several directories of TableTest output now merge into a single
-  spec, so the modules of a multi-module build publish one set of documentation. Maven gains
-  a `tabletest-reporter:aggregate` goal that walks the reactor and finds each module's output
-  by itself, plus `<inputDirectories>` on the `report` goal for naming them explicitly;
-  Gradle gains `inputDirs`, and the CLI accepts a repeated `-i`/`--input`. The report tree
-  comes from the test class names, so modules land in one package hierarchy; where two
-  modules published the same class the most recent output wins. A listed directory that does
-  not exist is skipped with a warning, so a partial build still publishes what it has.
-- Report-time publish selection: a `publish` section in `tabletest-reporter.yaml` decides
-  which pages the report holds, with `exclude` paths holding a page (and its subtree) back
-  and `include` paths re-admitting one below an excluded page, so a single rule table still
-  publishes from an otherwise internal class. Paths name pages as the report's URLs do
-  (`converting/convert-with`), with `*` for any part of a page name and `**` for any number
-  of levels. Selection happens when the report is generated, so what publishes is no longer
-  tied to how the suite was tagged or run, and re-curating a spec needs no new test run. A
-  feature page left with nothing published under it drops with its pages; a path matching no
-  page is logged and skipped. Without the section every table publishes, as before.
-- Spec-level metadata via an optional `tabletest-reporter.yaml` in the project directory:
-  give the whole spec a real title and intro paragraph on its root index (instead of the
-  leaked lowercase package segment like "junit" or "example"), retitle intermediate index
-  pages, and set an explicit feature reading order for the top-level sections and their
-  children — declared features lead, undeclared siblings follow alphabetically. The file is
-  read at report time and applied on top of the generated tree, so a project without it is
-  unaffected. Point elsewhere with Maven `<configFile>` / `-Dtabletest.report.configFile`,
-  Gradle `configFile`, or the CLI `--config` / `-c` option.
-- Every HTML page footer states when the report was generated ("Generated by
-  tabletest-reporter · 20 Jul 2026 14:32 UTC"), so a reader can tell whether published
-  documentation still tracks the code it came from. The timestamp is stated in UTC and
-  carries a machine-readable `<time datetime>` attribute; every page of a run shares the
-  one timestamp.
+- Several directories of TableTest output now merge into a single spec, so the modules of a
+  multi-module build publish one set of documentation. Maven gains a `tabletest-reporter:aggregate`
+  goal, which walks the reactor and finds each module's output by itself, and `<inputDirectories>`
+  on the `report` goal for naming them explicitly. Gradle gains `inputDirs`. The CLI takes a
+  repeated `-i` / `--input`.
+
+  The report tree comes from the test class names, so modules land in one package hierarchy. Where
+  two modules published the same class, the most recent output wins. The reporter skips a listed
+  directory that does not exist, and warns, so a partial build still publishes what it has.
+- A `publish` section in `tabletest-reporter.yaml` now decides which pages the report holds. An
+  `exclude` path holds a page back, and its subtree with it. An `include` path re-admits one page
+  below an excluded page, so a single rule table still publishes from an otherwise internal class.
+  Paths name pages the way the report's URLs do (`converting/convert-with`), with `*` for any part
+  of a page name and `**` for any number of levels.
+
+  Selection happens when the report is generated. What publishes is therefore no longer tied to how
+  you tagged or ran the suite, and re-curating a spec needs no new test run. A feature page left
+  with nothing published under it drops with its pages. The reporter logs a path that matches no
+  page, and skips it. Without the section every table publishes, as before.
+- An optional `tabletest-reporter.yaml` in the project directory now carries spec-level metadata.
+  Give the whole spec a real title and an intro paragraph on its root index, in place of the
+  lowercase package segment that used to leak through ("junit", "example"). Retitle an intermediate
+  index page. Set an explicit reading order for the top-level features and their children:
+  declared features lead, and undeclared siblings follow alphabetically.
+
+  The reporter reads the file at report time and applies it on top of the generated tree, so a
+  project without one is unaffected. Point elsewhere with Maven `<configFile>` or
+  `-Dtabletest.report.configFile`, with Gradle `configFile`, or with the CLI `--config` / `-c`.
+- Every HTML page footer now states when the report was generated: "Generated by tabletest-reporter
+  · 20 Jul 2026 14:32 UTC". A reader can then tell whether the published documentation still tracks
+  the code it came from. The footer states the timestamp in UTC and carries a machine-readable
+  `<time datetime>` attribute. Every page of one run shares the one timestamp.
 
 ## [1.2.0] - 2026-07-18
+
 ### Added
-- HTML format marks whitespace-significant literals with IDE-style per-character markers:
-  values with leading/trailing whitespace (on any line), tabs, runs of spaces, or pipes
-  (e.g. indent expectations, whitespace-only cells, formatted-row values) render in
-  monospace with a CSS-drawn dot per significant space and an arrow per tab, so space
-  counts and tab-vs-space composition are readable at a glance. Single spaces between
-  words stay unmarked, and the value text itself stays unaltered for copy/paste and
-  search.
-- Built-in `html` output format: self-contained, single-file-per-page living documentation
-  (inline CSS/JS, no external references) with autowidth tables, sticky header/first column,
-  nested-collection rendering, pass/fail badges and status colouring, collapsible failure
-  details, per-page row filter and "failing only" toggle, roles legend, light/dark toggle,
-  and a print stylesheet. Relative links throughout make the output tree GitHub Pages-ready.
-- HTML index pages roll pass/fail status up the tree: each nav item shows a status dot and
-  every index summarises its scenario pass rate ("N of M scenarios broken"/"All passing").
-- Every HTML page shows a breadcrumb trail of its ancestor pages (root package → class →
-  table), with relative links so the trail works from any subpath.
-- Every HTML page has a menu button opening a navigation drawer with the whole-report tree
-  (status dots included), the current page highlighted and all links relative to that page.
-  The drawer slides in over the content, so tables always get the full page width.
-- Whole-report search: a search box in the navigation drawer searches across every page's
-  title, description, headers and cell values, listing matching pages (with status dots) to
-  jump to. Backed by a single shared `tabletest-search-index.js` written once to the output
-  root and linked from every page by a relative prefix, so search works offline (`file://`)
-  and from any subpath without external requests.
-- Single-file HTML mode (`--single-file` / `-s` on the CLI): assembles the whole report into
-  one self-contained `.html` — every table inlined as an anchored section, sidebar navigation
-  and search targeting in-page anchors, search index inlined, no sibling assets. Ideal for
-  sharing as a release asset, email or ticket attachment. Multi-file stays the default.
+- A new built-in `html` output format writes living documentation that needs no Asciidoctor step.
+  Each page is a standalone file with its CSS and JavaScript inside it, and no external reference.
+  A page carries an autowidth table, with a sticky header row and first column. It draws a nested
+  collection as structure, and states a pass/fail badge with status colouring. A broken row opens
+  its failure details below the table. It
+  also carries a row filter, a "failing only" toggle, a roles legend, a light and dark toggle, and
+  a print stylesheet. Every link is relative, so the output tree is ready for GitHub Pages.
+- The HTML report marks whitespace you would otherwise have to count. Four things make a value
+  significant: whitespace at the start or end of any line, a tab, a run of spaces, and a pipe. Such
+  a value renders in monospace, with a dot drawn per significant space and an arrow per tab. An
+  indent expectation, a whitespace-only cell and a formatted row all read at a glance. A single
+  space between words stays unmarked. The value text itself does not change, so it still copies and
+  searches as the value the row ran with.
+- An HTML index page rolls pass and fail up the tree. Each entry of the tree carries a status dot,
+  and each index states its own scenario pass rate: "N of M scenarios broken", or "All passing".
+- Every HTML page opens with a breadcrumb trail of the pages above it: root package, then class,
+  then table. The links are relative, so the trail works from any subpath.
+- Every HTML page carries a menu button that opens a navigation drawer, holding the whole-report
+  tree with its status dots. The drawer marks the page you are on, and every link in it is relative
+  to that page. It slides in over the content, so a table always gets the full page width.
+- A search box in the navigation drawer searches the whole report: every page's title, description,
+  headers and cell values. It lists the matching pages, with their status dots, to jump to. One
+  shared `tabletest-search-index.js` backs it, written once to the output root and linked from each
+  page by a relative prefix. Search therefore works offline, over `file://`, and from any subpath,
+  and makes no external request.
+- Single-file HTML mode assembles the whole report into one self-contained `.html`. Pass
+  `--single-file` or `-s` on the CLI. The file inlines every table as an anchored section, and inlines the
+  search index too. The sidebar and the search target those anchors in the page. The reporter writes
+  no sibling asset. Reach for it to share a report as a release asset, or to attach one to an email or a
+  ticket. The multi-file report stays the default.
+
 ### Fixed
-- The Gradle `reportTableTests` task now tracks the TableTest YAML files as task inputs even
-  when no explicit `inputDir` is configured (default `build/junit-jupiter`, the JUnit output
-  dir override, and the `junit-platform.properties` location). Previously the task could stay
-  `UP-TO-DATE` — or restore a stale report from the build cache — after new test runs. The
-  task is also ordered to run after `Test` tasks when both are requested.
-- A table test whose display-name slug equals its class slug (e.g. the same `@DisplayName`
-  on both) no longer silently loses one of the two published YAML files: the table file now
-  gets a numeric suffix, keeping the class and table files distinct.
-- A row whose scenario value is a prefix of another row's scenario (e.g. "Add" and
-  "Add negative") no longer absorbs the other row's pass/fail results; and rows with
-  duplicated scenario values now get no pass/fail roles (as documented) instead of the
-  OR-ed result of all duplicates.
-- When the input directory accumulates YAML from several test runs (e.g. a
-  `junit.platform.reporting.output.dir` with `{uniqueNumber}`), the report now reflects the
-  most recently modified files instead of whichever run's files happened to sort first.
-- On Windows, index-page links and single-file anchors used backslashes (the platform file
-  separator) and were broken in browsers and Markdown/AsciiDoc renderers; generated links now
-  use `/` on every platform.
+- The Gradle `reportTableTests` task now tracks the TableTest YAML files as task inputs, even where
+  you configure no explicit `inputDir`. It tracks all three places they come from: the default
+  `build/junit-jupiter`, the JUnit output directory override, and the location
+  `junit-platform.properties` names. The task could otherwise stay `UP-TO-DATE` after a new test
+  run, or restore a stale report from the build cache. The task is also ordered to run after a
+  `Test` task where you ask for both.
+- A table test whose display-name slug matches its class slug no longer loses one of the two
+  published YAML files. The same `@DisplayName` on both is what produces the clash. The table file
+  now takes a numeric suffix, which keeps the class file and the table file apart.
+- A row whose scenario value is a prefix of another row's no longer absorbs that other row's
+  results. "Add" and "Add negative" is such a pair. Rows that share one scenario value now carry no
+  pass or fail role at all, as documented, in place of the OR of every duplicate.
+- Where the input directory holds YAML from several test runs, the report now reflects the files
+  modified most recently. A `junit.platform.reporting.output.dir` holding `{uniqueNumber}` produces
+  such a directory. The report used to take whichever run's files sorted first.
+- On Windows, an index-page link and a single-file anchor used a backslash, which is the platform's
+  file separator. Browsers, and Markdown and AsciiDoc renderers, all broke on them. A generated link
+  now uses `/` on every platform.
 
 ## [1.1.0] - 2026-04-07
 ### Changed
