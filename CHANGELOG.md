@@ -27,6 +27,17 @@
   project curated them instead of alphabetically. The `frontMatter` template block still works and
   still wins, for anyone who wants full control.
 
+- `@NamedLines` marks a column whose cells hold several blocks of text, each under a name, written
+  as a map from name to lines — a file and its contents is the case it was built for, so a cell
+  reads as a small directory. The HTML report renders each name as a caption over its own block,
+  indented behind a margin rule; the blocks are styled exactly as a `@Lines` cell, because that is
+  what they are. There is no converter: the parameter is a plain `Map<String, List<String>>`. Note
+  that a map key is never converted, so `Map<Path, List<String>>` compiles and then fails on first
+  read — resolve the name where the files are written.
+- `@Numbered` numbers the lines of a block in the HTML report. It is a role of its own, so it is
+  asked for beside `@Lines` or `@NamedLines` rather than being built into either, and it is off
+  unless asked for: on a block of two or three lines the digits are as wide as the text beside them.
+
 ### Changed
 - A `@Tree` column now draws one connected tree rather than two overlapping ones. The nesting was
   drawn twice: the container below a key carried a full-height rule, and each entry carried a

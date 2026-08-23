@@ -224,6 +224,30 @@ Declare the parameter as a `List<String>` instead to receive the lines themselve
 cell is unchanged either way — the reporter publishes the value the row ran with, so the cell is
 still the list of lines as it was written.
 
+**Several named blocks: `@NamedLines`.** Where one cell holds more than one block of text, each
+under a name, write it as a map from name to lines. A file and its contents is the case it was built
+for, so the cell reads as a small directory and the HTML report renders each name as a caption over
+its own block:
+
+```java
+@TableTest("""
+    Scenario                   | Your template directory                                       | Table page?
+    The name of the table page | [table.md.peb: ['# {{ title }} of note', 'Written by hand.']] | ['# Leap years of note', 'Written by hand.']
+    Two names that both match  | [b-table.md.peb: ['# From B'], a-table.md.peb: ['# From A']]  | ['# From A']
+    """)
+void rendersWithYourTemplate(
+        @NamedLines Map<String, List<String>> yourTemplateDirectory, @Lines List<String> tablePage) { ... }
+```
+
+The parameter is a plain `Map<String, List<String>>` — there is no converter, and **a map key is
+never converted**, so declaring `Map<Path, …>` compiles and then fails at the first read. Resolve the
+name yourself where you write the files out.
+
+**Numbered lines: `@Numbered`.** Numbering is a role of its own rather than part of the two above, so
+ask for it beside either — `@Lines @Numbered` or `@NamedLines @Numbered`. It earns its place on a
+block long enough that a reader needs to point at a line; on two or three lines it is a column of
+digits as wide as the text beside it, which is why it is off unless asked for.
+
 **A role of your own.** Annotate an annotation with `@ColumnRole` and put it on a parameter:
 
 ```java

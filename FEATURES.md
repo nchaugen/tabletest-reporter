@@ -149,7 +149,7 @@ Every published cell carries the roles of its column. The reporter derives four 
 a test parameter. The role is published as the annotation's simple name in kebab case, or as
 the token `@ColumnRole("...")` names.
 
-Two are built in, both rendered by the HTML format:
+Four are built in, all rendered by the HTML format:
 
 - `@Lines` – the cell holds the lines of one block of text, written as a list of lines because
   a table keeps every row on one line. Renders as a stacked monospace block rather than a
@@ -157,6 +157,12 @@ Two are built in, both rendered by the HTML format:
   the lines joined by newlines, or the lines themselves for a `List` parameter.
 - `@Tree` – the cell holds a tree, written as a nested collection. Each level opens below its
   parent rather than beside it, with a guide line down the level.
+- `@NamedLines` – the cell holds several blocks of text, each under a name, written as a map
+  from name to lines. A file and its contents is the case it was built for, so the cell reads
+  as a small directory: each name becomes a caption over its own block. The parameter is a
+  plain `Map<String, List<String>>`; a map key is never converted, so the name arrives as text.
+- `@Numbered` – numbers the lines of a block. A role of its own, so it is asked for beside
+  `@Lines` or `@NamedLines` rather than being built into either.
 
 A role reaches the HTML report as a CSS class on the cell, and the AsciiDoc report as an
 element role — which becomes a class when AsciiDoc is rendered to HTML. Markdown carries no

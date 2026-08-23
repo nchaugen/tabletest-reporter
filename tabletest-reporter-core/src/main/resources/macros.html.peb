@@ -562,15 +562,54 @@ td.cell.value-set .coll.set::before {
    no list markers, no gaps, monospaced, and whitespace preserved rather than collapsed.
    Body cells only — the header carries the role so a stylesheet can select the column,
    but it holds the column's name rather than source text. */
-td.cell.lines .coll.list { gap: 0; }
-td.cell.lines .coll.list > li { padding-left: 0; }
-td.cell.lines .coll.list > li::before { content: none; }
-td.cell.lines .literal { font-family: var(--font-mono); font-size: 0.85em; white-space: pre; }
+td.cell.lines .coll.list, td.cell.named-lines .coll.list { gap: 0; }
+td.cell.lines .coll.list > li, td.cell.named-lines .coll.list > li { padding-left: 0; }
+td.cell.lines .coll.list > li::before, td.cell.named-lines .coll.list > li::before { content: none; }
+td.cell.lines .literal, td.cell.named-lines .literal {
+    font-family: var(--font-mono); font-size: 0.85em; white-space: pre;
+}
 /* The layout already shows alignment padding, so its markers are noise here; a run at the end
    of a line is the one it cannot show, and keeps its marker. */
-td.cell.lines .literal.ws .sp:not(.trailing) { background: none; }
+td.cell.lines .literal.ws .sp:not(.trailing),
+td.cell.named-lines .literal.ws .sp:not(.trailing) { background: none; }
 /* A blank line is already visible as a line of the block, so it needs no empty-string mark. */
-td.cell.lines .literal.empty-string { visibility: hidden; }
+td.cell.lines .literal.empty-string, td.cell.named-lines .literal.empty-string { visibility: hidden; }
+
+/* A `named-lines` column holds several blocks of text, each under a name — a file and its
+   contents is the case it was built for, so a cell reads as a small directory. The blocks are
+   styled exactly as a `lines` cell above, because that is what they are; all this adds is the
+   caption and the space between one block and the next. */
+td.cell.named-lines .coll.map { display: block; }
+td.cell.named-lines .coll.map > dt {
+    display: block; font-family: var(--font-mono); font-size: 0.72em; font-weight: 700;
+    letter-spacing: 0.06em; color: var(--ink-soft); margin: 0.7rem 0 0.2rem;
+}
+td.cell.named-lines .coll.map > dt:first-child { margin-top: 0; }
+/* The caption stays at the left edge and the block steps in behind a margin rule, so a reader
+   can see where the name stops and the text starts, and where every line of it begins.
+
+   The gap after the rule is deliberately narrower than a space in the block's own monospace
+   face. A wider one reads as a leading space in the text, which for a template or a config
+   file is a difference that matters. */
+td.cell.named-lines .coll.map > dd {
+    display: block; margin: 0; padding-left: 0.25rem;
+    border-left: 1px solid var(--rule-strong);
+}
+
+/* A `numbered` column numbers the lines of its blocks. It is a role of its own rather than part
+   of `lines` or `named-lines`, so a column asks for numbers beside either of them and a block of
+   two or three lines is not given a column of digits it did not want. The numbers sit outside
+   whatever the block already sits behind, right-aligned on tabular figures so a two-digit number
+   keeps the column instead of pushing the text sideways. */
+td.cell.numbered .coll.list { counter-reset: line; }
+td.cell.numbered .coll.list > li { counter-increment: line; }
+td.cell.numbered .coll.list > li::before {
+    content: counter(line); position: absolute; left: -2.1rem; width: 1.5rem;
+    text-align: right; color: var(--marker); font-size: 0.85em;
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+}
+td.cell.numbered.lines .coll.list { margin-left: 2.1rem; }
+td.cell.numbered.named-lines .coll.map > dd { margin-left: 2.1rem; }
 
 /* Failures — reads like a test log */
 .failures { margin-top: 2rem; }

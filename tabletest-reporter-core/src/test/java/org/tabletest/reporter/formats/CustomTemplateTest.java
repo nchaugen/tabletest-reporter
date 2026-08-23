@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 import org.tabletest.reporter.junit.Lines;
+import org.tabletest.reporter.junit.NamedLines;
 import org.tabletest.reporter.junit.TableTestPublisher;
 import org.tabletest.reporter.support.PublishedReport;
 import org.tabletest.reporter.support.SampleRun;
@@ -15,6 +16,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,22 +49,43 @@ class CustomTemplateTest {
             template cannot extend itself.
             """)
     @TableTest("""
-        Scenario                     | Template file   | Template holds                            | Table page?                                                                  | Index page?
-        No template of your own      |                 |                                           | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', '', '* [Leap years](./leap-years.md)']
-        The name of the table page   | table.md.peb    | ['# {{ title }}', '', 'Written by hand.'] | ['# Leap years', 'Written by hand.']                                         | ['# Calendar', '', '* [Leap years](./leap-years.md)']
-        A hyphen before that name    | my-table.md.peb | ['# {{ title }}', '', 'Written by hand.'] | ['# Leap years', 'Written by hand.']                                         | ['# Calendar', '', '* [Leap years](./leap-years.md)']
-        That name without the hyphen | mytable.md.peb  | ['# {{ title }}', '', 'Written by hand.'] | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', '', '* [Leap years](./leap-years.md)']
-        The name of the index page   | index.md.peb    | ['# {{ title }}', '', 'Written by hand.'] | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', 'Written by hand.']
+        Scenario                     | Your template directory                                          | Table page?                                                                  | Index page?
+        No template of your own      | [:]                                                              | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', '', '* [Leap years](./leap-years.md)']
+        The name of the table page   | [table.md.peb: ['# {{ title }} of note', 'Written by hand.']]    | ['# Leap years of note', 'Written by hand.']                                 | ['# Calendar', '', '* [Leap years](./leap-years.md)']
+        A hyphen before that name    | [my-table.md.peb: ['# {{ title }} of note', 'Written by hand.']] | ['# Leap years of note', 'Written by hand.']                                 | ['# Calendar', '', '* [Leap years](./leap-years.md)']
+        That name without the hyphen | [mytable.md.peb: ['# {{ title }} of note', 'Written by hand.']]  | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar', '', '* [Leap years](./leap-years.md)']
+        The name of the index page   | [index.md.peb: ['# {{ title }} of note', 'Written by hand.']]    | ['## Leap years', '', '| Year | Leap? |', '| --- | --- |', '| 2004 | Yes |'] | ['# Calendar of note', 'Written by hand.']
         """)
     void usesATemplateNamedForThePageItRenders(
-            String templateFile,
-            @Lines String templateHolds,
+            @NamedLines Map<String, List<String>> yourTemplateDirectory,
             @Lines List<String> tablePage,
             @Lines List<String> indexPage) {
-        Path templates = templateDirectoryHolding(templateFile, templateHolds);
+        Path templates = templateDirectoryHolding(yourTemplateDirectory);
 
         assertThat(tablePageWith(templates, "markdown")).isEqualTo(tablePage);
         assertThat(indexPageWith(templates, "markdown")).isEqualTo(indexPage);
+    }
+
+    @DisplayName("Picks one template when several could render the page")
+    @Description("""
+            A directory can hold more than one candidate for the same page. The reporter has to
+            settle on one, and it does so the same way every run, so a report never changes because
+            a file was added beside another.
+
+            The alphabetical part carries no meaning of its own — it is there to make the choice
+            deterministic, not to give an ordering you should design around. A directory holding two
+            templates for one page is usually a mistake rather than a decision.
+            """)
+    @TableTest("""
+        Scenario                           | Your template directory                                      | Table page?
+        Two names that both match the page | [b-table.md.peb: ['# From B'], a-table.md.peb: ['# From A']] | ['# From A']
+        The page's own name beside a match | [table.md.peb: ['# Exact'], a-table.md.peb: ['# From A']]    | ['# Exact']
+        """)
+    void picks_one_template_when_several_could_render_the_page(
+            @NamedLines Map<String, List<String>> yourTemplateDirectory, @Lines List<String> tablePage) {
+        Path templates = templateDirectoryHolding(yourTemplateDirectory);
+
+        assertThat(tablePageWith(templates, "markdown")).isEqualTo(tablePage);
     }
 
     @DisplayName("Lets your template extend a built-in one and fill its blocks")
@@ -183,18 +206,25 @@ class CustomTemplateTest {
             """.formatted(blockName, filledWith);
     }
 
-    /** The directory holding one template file, or no directory at all when no file is named. */
-    private Path templateDirectoryHolding(String fileName, String content) {
-        if (fileName == null) {
+    /** A directory holding the files a row shows, or no directory at all when it shows none. */
+    private Path templateDirectoryHolding(Map<String, List<String>> files) {
+        if (files.isEmpty()) {
             return null;
         }
         try {
             Path directory = Files.createTempDirectory(workingDir, "templates");
-            Files.writeString(directory.resolve(fileName), content);
+            for (Map.Entry<String, List<String>> file : files.entrySet()) {
+                Files.writeString(directory.resolve(file.getKey()), String.join("\n", file.getValue()));
+            }
             return directory;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /** The directory holding one template file, for the rules that name a single file inline. */
+    private Path templateDirectoryHolding(String fileName, String content) {
+        return templateDirectoryHolding(Map.of(fileName, List.of(content)));
     }
 
     private List<String> tablePageWith(Path templates, String format) {
