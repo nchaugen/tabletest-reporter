@@ -70,6 +70,13 @@
   ones. They sat inside the Maven section, folded away, although they cover Maven, Gradle and the
   CLI alike — a Gradle reader following the Gradle instructions never met the Gradle option they
   hold.
+- Column roles are a section of the README in their own right, and no longer a subsection of
+  writing tests. They change how the HTML report draws a column, so they sit with the presentation
+  material. The section now also shows how to build a rendering of your own: the built-in roles
+  have no privileged path — the reporter draws a value from its shape and puts the column's roles
+  on the cell as CSS classes, so `@Lines`, `@Tree`, `@NamedLines` and `@Numbered` are each an
+  annotation plus a stylesheet rule. A worked example declares an annotation and styles it through
+  the `extra_stylesheet` block, which the README mentioned but never showed in use.
 - The README is reorganised. The numbered walkthrough used to dissolve at "Step 4", which had
   absorbed ten subsections of configuration reference and no fifth step. Getting started is now
   four steps and stops there. The four sections of `tabletest-reporter.yaml` sit together under

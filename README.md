@@ -34,6 +34,8 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
   - [Template replacement example](#template-replacement-example)
   - [The template context](#the-template-context)
   - [What an extension template can reach](#what-an-extension-template-can-reach)
+- [Column Roles](#column-roles)
+  - [Building a rendering of your own](#building-a-rendering-of-your-own)
 - [Styling HTML Reports](#styling-html-reports)
 - [For Plugin Developers](#for-plugin-developers)
 
@@ -242,71 +244,8 @@ documentation. Its rows carry no pass or fail indicator:
 
 The scenario column can have any name (`Scenario`, `Test Case`, `Description`, etc.) and contain any unique string value to identify each test case.
 
-#### Column roles
-
-Every published cell carries the roles of its column. The reporter derives four itself — `scenario`,
-`expectation`, `passed` and `failed` — and a test can declare more.
-
-**A column of source text: `@Lines`.** A table keeps every row on one line, so you write a
-multi-line value as a list of lines. Mark the column with `@Lines`. The parameter then takes the
-lines joined by newlines. The HTML report draws the cell as a stacked
-monospace block, and not as a bulleted list:
-
-```java
-@TableTest("""
-    Scenario   | Source                             | Table Count?
-    One table  | ["a | b", "1 | 2"]                 | 1
-    Two tables | ["a | b", "1 | 2", "", "c", "3"]   | 2
-    """)
-void countsTables(@Lines String source, int tableCount) {
-    assertEquals(tableCount, parser.parse(source).size());
-}
-```
-
-Declare the parameter as a `List<String>` instead, and it takes the lines themselves. The published
-cell does not change either way. The reporter publishes the value the row ran with, so the cell is
-still the list of lines you wrote.
-
-**Several named blocks: `@NamedLines`.** One cell can hold more than one block of text, each under
-a name. Write it as a map from name to lines. A file and its contents is the case it serves, so the cell reads as a small directory. The HTML report draws each name as a caption over its own
-block:
-
-```java
-@TableTest("""
-    Scenario                   | Your template directory                                       | Table page?
-    The name of the table page | [table.md.peb: ['# {{ title }} of note', 'Written by hand.']] | ['# Leap years of note', 'Written by hand.']
-    Two names that both match  | [b-table.md.peb: ['# From B'], a-table.md.peb: ['# From A']]  | ['# From A']
-    """)
-void rendersWithYourTemplate(
-        @NamedLines Map<String, List<String>> yourTemplateDirectory, @Lines List<String> tablePage) { ... }
-```
-
-The parameter is a plain `Map<String, List<String>>`, and there is no converter. Note that **a map
-key is never converted**. Declaring `Map<Path, …>` therefore compiles, and then fails at the first
-read. Resolve the name yourself where you write the files out.
-
-**Numbered lines: `@Numbered`.** Numbering is a role of its own, and not part of the two above. Ask
-for it beside either: `@Lines @Numbered` or `@NamedLines @Numbered`. It earns its place on a block
-long enough that a reader needs to point at a line. On two or three lines the digits are as wide as
-the text beside them, which is why it is off unless you ask.
-
-**A role of your own.** Annotate an annotation with `@ColumnRole` and put it on a parameter:
-
-```java
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-@ColumnRole
-public @interface Ingredient {}
-```
-
-The reporter publishes the role as the annotation's simple name in kebab case, so `@SourceLines`
-publishes `source-lines`. Name the token yourself with `@ColumnRole("...")` instead.
-
-The role reaches the HTML report as a CSS class on the cell, and the AsciiDoc report as an element
-role. A stylesheet of your own can therefore style the column. Markdown carries no roles.
-
-A role must be lower-case words joined by single hyphens. A role that names one the reporter derives
-publishes anyway: the column takes that role's styling, and the reporter never treats it as one.
+A column can also carry a **role**, which changes how the HTML report draws it — a block of
+source text, a tree, a set of named files. See [Column Roles](#column-roles).
 
 ### Run your tests
 
@@ -1294,6 +1233,112 @@ Two things to know about the blocks themselves:
 - **A block must sit at the top level of the page template to be overridable.** A block written
 inside a macro renders its default and ignores the override, without a word. A macro reaches the
 page through `{% import %}`, which is not inheritance.
+
+## Column Roles
+
+Every published cell carries the roles of its column. The reporter derives four itself — `scenario`,
+`expectation`, `passed` and `failed` — and a test can declare more.
+
+**A column of source text: `@Lines`.** A table keeps every row on one line, so you write a
+multi-line value as a list of lines. Mark the column with `@Lines`. The parameter then takes the
+lines joined by newlines. The HTML report draws the cell as a stacked
+monospace block, and not as a bulleted list:
+
+```java
+@TableTest("""
+    Scenario   | Source                             | Table Count?
+    One table  | ["a | b", "1 | 2"]                 | 1
+    Two tables | ["a | b", "1 | 2", "", "c", "3"]   | 2
+    """)
+void countsTables(@Lines String source, int tableCount) {
+    assertEquals(tableCount, parser.parse(source).size());
+}
+```
+
+Declare the parameter as a `List<String>` instead, and it takes the lines themselves. The published
+cell does not change either way. The reporter publishes the value the row ran with, so the cell is
+still the list of lines you wrote.
+
+**Several named blocks: `@NamedLines`.** One cell can hold more than one block of text, each under
+a name. Write it as a map from name to lines. A file and its contents is the case it serves, so the cell reads as a small directory. The HTML report draws each name as a caption over its own
+block:
+
+```java
+@TableTest("""
+    Scenario                   | Your template directory                                       | Table page?
+    The name of the table page | [table.md.peb: ['# {{ title }} of note', 'Written by hand.']] | ['# Leap years of note', 'Written by hand.']
+    Two names that both match  | [b-table.md.peb: ['# From B'], a-table.md.peb: ['# From A']]  | ['# From A']
+    """)
+void rendersWithYourTemplate(
+        @NamedLines Map<String, List<String>> yourTemplateDirectory, @Lines List<String> tablePage) { ... }
+```
+
+The parameter is a plain `Map<String, List<String>>`, and there is no converter. Note that **a map
+key is never converted**. Declaring `Map<Path, …>` therefore compiles, and then fails at the first
+read. Resolve the name yourself where you write the files out.
+
+**Numbered lines: `@Numbered`.** Numbering is a role of its own, and not part of the two above. Ask
+for it beside either: `@Lines @Numbered` or `@NamedLines @Numbered`. It earns its place on a block
+long enough that a reader needs to point at a line. On two or three lines the digits are as wide as
+the text beside them, which is why it is off unless you ask.
+
+**A role of your own.** Annotate an annotation with `@ColumnRole` and put it on a parameter:
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PARAMETER)
+@ColumnRole
+public @interface Ingredient {}
+```
+
+The reporter publishes the role as the annotation's simple name in kebab case, so `@SourceLines`
+publishes `source-lines`. Name the token yourself with `@ColumnRole("...")` instead.
+
+The role reaches the HTML report as a CSS class on the cell, and the AsciiDoc report as an element
+role. A stylesheet of your own can therefore style the column. Markdown carries no roles.
+
+A role must be lower-case words joined by single hyphens. A role that names one the reporter derives
+publishes anyway: the column takes that role's styling, and the reporter never treats it as one.
+
+### Building a rendering of your own
+
+A role of your own reaches the report exactly as a built-in one does, because the built-in roles
+have no privileged path. The reporter draws a value from its shape — a list, a set, a map or a
+literal — and puts the column's roles on the cell as CSS classes. Every built-in role is a rule in
+the stylesheet against that class, and nothing more. `@Numbered`, in full, is:
+
+```css
+td.cell.numbered .coll.list { counter-reset: line; }
+td.cell.numbered .coll.list > li { counter-increment: line; }
+```
+
+So `@Lines`, `@Tree`, `@NamedLines` and `@Numbered` are each an annotation plus a stylesheet rule,
+and you can write the same thing. Declare the annotation:
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PARAMETER)
+@ColumnRole
+public @interface Ingredient {}
+```
+
+Then add your rules through the `extra_stylesheet` block, in a template that extends the built-in
+one. Name it with the hyphen form, because a template cannot extend itself:
+
+```pebble
+{# my-table.html.peb #}
+{% extends "table.html.peb" %}
+{% block extra_stylesheet %}
+td.cell.ingredient .literal { font-variant: small-caps; letter-spacing: 0.04em; }
+{% endblock %}
+```
+
+Point the reporter at that template directory, and every cell of an `@Ingredient` column is drawn
+your way. The built-in stylesheet stays where it is, so you add to it rather than replace it.
+
+The limit is worth knowing. Your CSS restyles the markup the reporter emits for the value's shape.
+It cannot make the reporter emit different markup — for that, replace the page template, which
+[Custom Templates](#custom-templates) covers.
 
 ## Styling HTML Reports
 
