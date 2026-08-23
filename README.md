@@ -696,6 +696,54 @@ all its links and assets are relative.
 Single-file mode (`--single-file`) is the one to reach for whenever a directory of files is
 awkward — release assets, email, ticket attachments.
 
+### Publishing into an existing site
+
+Everything above hosts the report as a site of its own. The other route is to generate a text
+format straight into a site you already run, and let its generator lay the pages out. Which route
+you are on decides which options you need:
+
+| Route | Format | What you configure |
+|---|---|---|
+| The report **is** the site, or sits beside one | `html` | `site:` — the one link back out of an otherwise self-contained tree |
+| The report is **content for** your site | `markdown` or `asciidoc` | `frontMatter:` — what the generator needs to place and title each page |
+
+For the second route, point the output at your content directory and declare the front matter your
+generator reads:
+
+```xml
+<configuration>
+  <format>markdown</format>
+  <outputDirectory>${project.basedir}/../site/content/spec</outputDirectory>
+  <configFile>${project.basedir}/tabletest-reporter.yaml</configFile>
+</configuration>
+```
+
+```yaml
+# Hugo
+frontMatter:
+  title: $title
+  weight: $position
+  generated: $timestamp
+
+# Docusaurus
+frontMatter:
+  title: $title
+  sidebar_position: $position
+
+# Antora — a custom attribute reaches the UI model only under the page- prefix
+frontMatter:
+  page-title: $title
+  page-weight: $position
+```
+
+`$position` is what carries the reading order declared in `features:` across the boundary. Without
+it a generator sorts your pages alphabetically and the curation is lost.
+
+**Do not reach for `site:` on this route.** Your generator already draws the navigation, and a
+second trail beside its own would disagree about where the page sits — the site decides that, not
+the report. For the same reason neither text format carries breadcrumbs or a footer of its own; see
+[Choosing a Format](#choosing-a-format).
+
 ---
 
 ## Advanced Topics
