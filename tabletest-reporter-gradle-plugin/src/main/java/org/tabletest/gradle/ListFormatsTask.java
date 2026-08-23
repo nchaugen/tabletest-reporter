@@ -33,7 +33,7 @@ import java.nio.file.Path;
 /**
  * Gradle task for listing available output formats.
  *
- * <p>Displays built-in formats (asciidoc, markdown) and custom formats
+ * <p>Displays built-in formats (html, asciidoc, markdown) and custom formats
  * if a template directory is configured.
  */
 @DisableCachingByDefault(because = "This task only prints output to the console")

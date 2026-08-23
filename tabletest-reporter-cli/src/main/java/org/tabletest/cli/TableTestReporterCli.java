@@ -35,7 +35,7 @@ import java.util.concurrent.Callable;
 
 @Command(
         name = "tabletest-reporter",
-        description = "Generate AsciiDoc or Markdown documentation from TableTest YAML outputs.",
+        description = "Generate HTML, AsciiDoc or Markdown documentation from TableTest YAML outputs.",
         mixinStandardHelpOptions = true,
         version = {"tabletest-reporter CLI"})
 public final class TableTestReporterCli implements Callable<Integer> {

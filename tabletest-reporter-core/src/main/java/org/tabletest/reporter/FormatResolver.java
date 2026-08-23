@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 /**
  * Resolves format names to Format instances.
  *
- * <p>This class handles both built-in formats (asciidoc, markdown) and
+ * <p>This class handles both built-in formats (html, asciidoc, markdown) and
  * custom formats discovered from template directories.
  */
 public final class FormatResolver {

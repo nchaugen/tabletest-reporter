@@ -27,7 +27,7 @@ import java.nio.file.Path;
 /**
  * Lists all available output formats.
  *
- * <p>Displays built-in formats (asciidoc, markdown) and custom formats
+ * <p>Displays built-in formats (html, asciidoc, markdown) and custom formats
  * if a template directory is configured.
  */
 @Mojo(name = "list-formats", requiresProject = false, threadSafe = true)

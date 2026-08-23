@@ -50,7 +50,7 @@ import java.util.concurrent.Callable;
  * Gradle task for generating documentation from TableTest YAML outputs.
  * <p>
  * Reads YAML files produced by the TableTest JUnit extension and generates
- * human-readable documentation in AsciiDoc or Markdown format.
+ * human-readable documentation in HTML, AsciiDoc or Markdown format.
  */
 @CacheableTask
 public abstract class ReportTableTestsTask extends DefaultTask {
@@ -90,13 +90,13 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         this.configFileInput = objects.fileCollection();
         this.configFileInput.from((Callable<List<java.io.File>>) this::existingConfigFile);
         setGroup("documentation");
-        setDescription("Generates AsciiDoc or Markdown documentation from TableTest YAML outputs");
+        setDescription("Generates HTML, AsciiDoc or Markdown documentation from TableTest YAML outputs");
     }
 
     /**
      * Returns the output format property.
      *
-     * @return property for specifying output format (asciidoc or markdown)
+     * @return property for specifying output format (html, asciidoc or markdown)
      */
     @org.gradle.api.tasks.Optional
     @Input

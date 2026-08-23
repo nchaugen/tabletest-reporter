@@ -61,7 +61,7 @@ public abstract class TableTestReporterExtension {
     /**
      * Returns the output format property.
      *
-     * @return property for specifying output format (asciidoc or markdown)
+     * @return property for specifying output format (html, asciidoc or markdown)
      */
     public Property<String> getFormat() {
         return format;

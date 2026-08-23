@@ -34,7 +34,7 @@ public final class FormatLister {
      * Lists all available output formats.
      *
      * <p>Returns a sorted list of format names, one per line.
-     * Includes built-in formats (asciidoc, markdown) and custom formats
+     * Includes built-in formats (html, asciidoc, markdown) and custom formats
      * if a template directory is provided.
      *
      * @param templateDirectory optional template directory for discovering custom formats (may be null)
