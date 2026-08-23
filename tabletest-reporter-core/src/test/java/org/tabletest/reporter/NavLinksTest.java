@@ -11,17 +11,17 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests relative-href computation between report pages. Every href must be relative to the
- * linking page's own directory (never root-absolute) so the tree serves from any subpath.
+ * The href computation behind a report's links: a target resolved against the linking page's own
+ * directory, a page's path from the output root, and the climb from a page to that root.
+ *
+ * <p>Conformance rather than a rule. The published rules are in
+ * {@code structure/RelativeLinksTest}, where they are read off published reports in all three
+ * formats — the text formats build their links in the templates rather than here, so a rule read
+ * off this class alone would state HTML's scheme as the reporter's. These rows reach the
+ * computation directly, over page shapes a fixture would be long-winded to produce.
+ *
+ * <p>The example pages are a feature "boolean-logic" holding the tables "and-op" and "or-op".
  */
-@DisplayName("Relative links")
-@Description("""
-        Every link in a report is relative, never root-absolute. A generated report therefore
-        works from any directory: a local folder, a web server root, or a subpath such as GitHub
-        project Pages.
-
-        The example pages are a feature "boolean-logic" holding the tables "and-op" and "or-op".
-        """)
 class NavLinksTest {
 
     @DisplayName("Writes every link relative to the linking page's own directory")

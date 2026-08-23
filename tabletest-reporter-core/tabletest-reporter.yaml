@@ -26,6 +26,7 @@ features:
     features:                # the tree, then what its pages are called, then how much of it
       - name: the-page-tree  # gets an index page of its own
       - name: page-names
+      - name: relative-links
       - name: the-indexdepth-option
   - name: pages
     title: "Page contents"
@@ -63,6 +64,7 @@ publish:
     - target-path-resolver-test          # mapping a page to its on-disk output path
     - status-rollup-test                 # the counting behind a page's verdict
     - search-index-test                  # building the search index, and the matching the browser mirrors
+    - nav-links-test                     # computing one page's href to another
     - publish-pattern-match-test         # glob matching behind this very exclude list
     - publish-selection-apply-test       # applying the exclude/include tree transform
     - spec-metadata-apply-test           # applying title/intro/order onto the tree
