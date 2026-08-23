@@ -94,7 +94,7 @@ class SingleFileRenderingTest {
         Document singleFile = singleFilePage();
 
         assertThat(singleFile.select("section#" + section + " table")).isNotEmpty();
-        assertThat(singleFile.select("aside.sidebar .nav-item.table > a").eachAttr("href"))
+        assertThat(singleFile.select("aside.sidebar a.nav-row.table").eachAttr("href"))
                 .contains(link);
     }
 

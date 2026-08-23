@@ -55,7 +55,7 @@ class SidebarRenderingTest {
         assertThat(page.select("aside.sidebar a[aria-current=page]").text()).isEqualTo(currentEntry);
     }
 
-    private static final String SIDEBAR_ENTRIES = "aside.sidebar a.sidebar-home, aside.sidebar .nav-item > a";
+    private static final String SIDEBAR_ENTRIES = "aside.sidebar a.sidebar-home, aside.sidebar a.nav-row";
 
     /** A deeper report, so a rule about the trail has more than one entry above the page. */
     private static final List<String> NESTED_TABLES =
@@ -82,9 +82,33 @@ class SidebarRenderingTest {
             String pageUrl, List<String> trailEntries, String currentEntry) {
         Document page = PublishedReport.pageAt(pageUrl, NESTED_TABLES, workingDir);
 
-        assertThat(page.select("aside.sidebar .nav-item.ancestor > a").eachText())
-                .isEqualTo(trailEntries);
+        assertThat(page.select("aside.sidebar a.nav-row.ancestor").eachText()).isEqualTo(trailEntries);
         assertThat(page.select("aside.sidebar a[aria-current=page]").text()).isEqualTo(currentEntry);
+    }
+
+    @DisplayName("Arrives with the branch holding your page unfolded")
+    @Description("""
+            An entry that holds pages is a fold, so the sidebar of a large spec is a short list
+            rather than every rule at once. A reader who follows a link into the middle of a
+            report would then have to unfold their way back to where they already are, so the
+            branches on the trail to their page are written open.
+
+            These rows are read off the deeper report described above. A fold is named by the
+            entry that carries it, and only an entry with pages under it can be one: order-test
+            and pricing sit below the root, pricing-test sits below pricing.
+            """)
+    @TableTest("""
+        Scenario                | Page URL                        | Unfolded branches?
+        A page at the top level | /order-test                     | [order-test]
+        A page one step below   | /order-test/items               | [order-test]
+        A page two steps below  | /pricing/pricing-test/discounts | [pricing, pricing-test]
+        """)
+    void arrives_with_the_branch_holding_your_page_unfolded(String pageUrl, List<String> unfoldedBranches) {
+        Document page = PublishedReport.pageAt(pageUrl, NESTED_TABLES, workingDir);
+
+        assertThat(page.select("aside.sidebar details.nav-branch[open] > summary > a.nav-row")
+                        .eachText())
+                .isEqualTo(unfoldedBranches);
     }
 
     @Test

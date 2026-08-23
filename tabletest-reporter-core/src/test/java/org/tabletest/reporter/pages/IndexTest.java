@@ -1,5 +1,7 @@
 package org.tabletest.reporter.pages;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -75,6 +77,53 @@ public class IndexTest {
     void linksToEveryPageBeneathIt(String format, String pageUrl, @Lines List<String> pageContent) {
         assertThat(PublishedReport.linesAt(pageUrl, format, PUBLISHED_TABLES, workingDir))
                 .isEqualTo(pageContent);
+    }
+
+    /** A deeper report, so a rule about folding has a level below the level below the top. */
+    private static final List<String> NESTED_TABLES =
+            List.of("com.example.orders.OrderTest#items", "com.example.orders.pricing.PricingTest#discounts");
+
+    @DisplayName("Folds an HTML index page below its top level")
+    @Description("""
+            Every page under an index is written into it, however deep. Only the top level is
+            open: an entry that holds pages is a fold, and the reader opens the part they want
+            rather than the publisher choosing one depth for every reader. A folded page is
+            still on the page, so a browser search and a printed copy both reach it.
+
+            These rows are read off the root index of a second, deeper report, built from two
+            test classes: com.example.orders.OrderTest, whose table is items, and
+            com.example.orders.pricing.PricingTest, whose table is discounts. The report root is
+            the package orders, so its top level is order-test and pricing.
+            """)
+    @TableTest("""
+        Scenario                       | Entry        | Behind a fold?
+        A page at the top level        | order-test   | false
+        A table below a top-level page | items        | true
+        A fold below a top-level fold  | pricing-test | true
+        A table two levels down        | discounts    | true
+        """)
+    void folds_an_html_index_page_below_its_top_level(String entry, boolean behindAFold) {
+        Document rootIndex = PublishedReport.pageAt("/", NESTED_TABLES, workingDir);
+
+        assertThat(foldsAround(entryNamed(entry, rootIndex))).isEqualTo(behindAFold);
+    }
+
+    /** The entry's own row in the index body, which fails the rule outright if it was not written. */
+    private static Element entryNamed(String entry, Document rootIndex) {
+        return rootIndex.select("main a.nav-row").stream()
+                .filter(row -> row.text().equals(entry))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("The index page holds no entry named " + entry));
+    }
+
+    /**
+     * Whether any fold around the entry is closed. A fold's own row is its summary and shows
+     * whether that fold is open or closed, so the walk starts at the item the row sits in.
+     */
+    private static boolean foldsAround(Element row) {
+        return row.closest("li.nav-item").parents().stream()
+                .filter(parent -> parent.tagName().equals("details"))
+                .anyMatch(parent -> !parent.hasAttr("open"));
     }
 
     /**

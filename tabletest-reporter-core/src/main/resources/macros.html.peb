@@ -121,18 +121,32 @@
 
 {# ----- Index link-tree recursion (ported from macros.adoc.peb) ----- #}
 
+{# An entry that holds pages is a fold: the whole report is written out, and the reader opens the #}
+{# part they want instead of the publisher choosing one depth for everybody. The fold is a plain  #}
+{# <details>, so it works with no script, prints open, and survives a reader who arrives deep.    #}
 {% macro renderIndexItem(item) %}
-    <li class="nav-item {{ item.type }} {{ item.status }}">
-        <a href="./{{ item.path }}{{ item.type == 'index' ? '/index.html' : '.html' }}"><span class="status-dot" aria-hidden="true"></span>{{ (item.title ? item.title : item.name) | escape }}</a>
+    <li class="nav-item">
+        {%- set href = './' ~ item.path ~ (item.type == 'index' ? '/index.html' : '.html') -%}
+        {%- set label = (item.title ? item.title : item.name) -%}
         {%- if item.contents is not empty -%}
-            <ul class="nav-children">
-            {%- for nested in item.contents -%}
-                {{ renderIndexItem(nested) }}
-            {%- endfor -%}
-            </ul>
+            <details class="nav-branch">
+                <summary>{{ navRow(href, label, item.type, item.status, true, false, false) }}</summary>
+                <ul class="nav-children">
+                {%- for nested in item.contents -%}
+                    {{ renderIndexItem(nested) }}
+                {%- endfor -%}
+                </ul>
+            </details>
+        {%- else -%}
+            {{ navRow(href, label, item.type, item.status, false, false, false) }}
         {%- endif -%}
     </li>
 {% endmacro %}
+
+{# One row of a link tree, in the index body and in the sidebar alike. The state a stylesheet  #}
+{# reads sits on the row itself rather than on the item around it, because a fold puts the row #}
+{# one level further down and a rule keyed on the item would then reach the rows nested under. #}
+{% macro navRow(href, label, type, status, branch, current, ancestor) %}<a class="nav-row {{ type }} {{ status }}{{ branch ? ' branch' : '' }}{{ current ? ' current' : '' }}{{ ancestor ? ' ancestor' : '' }}" href="{{ href }}"{{ current ? ' aria-current="page"' : '' }}><span class="status-dot" aria-hidden="true"></span>{{ label | escape }}</a>{% endmacro %}
 
 {# ----- Breadcrumb trail: ancestor chain from the root to the current page ----- #}
 
@@ -289,15 +303,22 @@
 </script>
 {% endmacro %}
 
+{# The sidebar folds the same way the index body does, with one difference: the branches on the #}
+{# trail to the page the reader is on are written open, so a deep page arrives with its own      #}
+{# branch already unfolded and nothing to click before the reader can see where they are.        #}
 {% macro renderNavItem(item) %}
-    <li class="nav-item {{ item.type }} {{ item.status }}{{ item.current ? ' current' : '' }}{{ item.ancestor ? ' ancestor' : '' }}">
-        <a href="{{ item.href }}"{{ item.current ? ' aria-current="page"' : '' }}><span class="status-dot" aria-hidden="true"></span>{{ item.label | escape }}</a>
+    <li class="nav-item">
         {%- if item.contents is not empty -%}
-            <ul class="nav-children">
-            {%- for child in item.contents -%}
-                {{ renderNavItem(child) }}
-            {%- endfor -%}
-            </ul>
+            <details class="nav-branch{{ item.ancestor ? ' ancestor' : '' }}"{{ item.current or item.ancestor ? ' open' : '' }}>
+                <summary>{{ navRow(item.href, item.label, item.type, item.status, true, item.current, item.ancestor) }}</summary>
+                <ul class="nav-children">
+                {%- for child in item.contents -%}
+                    {{ renderNavItem(child) }}
+                {%- endfor -%}
+                </ul>
+            </details>
+        {%- else -%}
+            {{ navRow(item.href, item.label, item.type, item.status, false, item.current, item.ancestor) }}
         {%- endif -%}
     </li>
 {% endmacro %}
@@ -378,12 +399,12 @@ a { color: var(--accent); text-underline-offset: 2px; }
 }
 .sidebar-home:hover, .sidebar-home.current { color: var(--accent); }
 .site-nav { font-size: 0.85rem; }
-.site-nav .nav-item.current > a { color: var(--accent); font-weight: 700; }
+.site-nav .nav-row.current { color: var(--accent); font-weight: 700; }
 /* The trail to the page you are on. Marking the page alone highlights one leaf and leaves the
    reader to guess which branch holds it, so every entry above it is marked too: the label reads
    at full ink, and the rule line beside its children is drawn in accent. */
-.site-nav .nav-item.ancestor > a { color: var(--ink); font-weight: 700; }
-.site-nav .nav-item.ancestor > .nav-children { border-left-color: var(--accent); }
+.site-nav .nav-row.ancestor { color: var(--ink); font-weight: 700; }
+.site-nav .nav-branch.ancestor > .nav-children { border-left-color: var(--accent); }
 
 /* Whole-report search — a box atop the drawer whose results replace the tree while typing */
 .sidebar-search { margin-bottom: 0.5rem; }
@@ -646,17 +667,29 @@ td.cell.numbered.named-lines .coll.map > dd { margin-left: 2.1rem; }
 .nav-tree { margin-top: 0.5rem; }
 .nav-children { margin-left: 0.6rem; padding-left: 1rem; border-left: 1px solid var(--rule); }
 .nav-item { padding: 0.15rem 0; }
-.nav-item > a { display: inline-flex; align-items: baseline; gap: 0.55rem; text-decoration: none; padding: 0.15rem 0; }
-.nav-item > a:hover { text-decoration: underline; }
-.nav-item > a::before { font-family: var(--font-mono); color: var(--marker); }
-.nav-item.index > a { font-weight: 650; color: var(--ink); }
-.nav-item.index > a::before { content: "\25C6"; color: var(--accent); font-size: 0.7em; }
-.nav-item.table > a::before { content: "\2013"; }
+.nav-row { display: inline-flex; align-items: baseline; gap: 0.55rem; text-decoration: none; padding: 0.15rem 0; }
+.nav-row:hover { text-decoration: underline; }
+.nav-row::before { font-family: var(--font-mono); color: var(--marker); }
+.nav-row.index { font-weight: 650; color: var(--ink); }
+.nav-row.index::before { content: "\25C6"; color: var(--accent); font-size: 0.7em; }
+.nav-row.table::before { content: "\2013"; }
 /* Status dot: colour marks failure; passing is calm, neutral (no run) is muted */
 .status-dot { flex: none; align-self: center; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--marker); }
-.nav-item.passed > a .status-dot { background: var(--pass); }
-.nav-item.failed > a .status-dot { background: var(--fail); }
-.nav-item.neutral > a .status-dot { background: transparent; border: 1px solid var(--marker); }
+.nav-row.passed .status-dot { background: var(--pass); }
+.nav-row.failed .status-dot { background: var(--fail); }
+.nav-row.neutral .status-dot { background: transparent; border: 1px solid var(--marker); }
+
+/* A fold. The row of an entry that holds pages is the summary of a <details>, so the reader can
+   put a whole feature away; the pages themselves are always written, only folded. The row's own
+   marker is the fold's marker — a diamond says "a page below the top", a triangle says the same
+   and tells the reader which way it is turned, so the two would only compete. */
+.nav-branch > summary { list-style: none; cursor: pointer; }
+.nav-branch > summary::-webkit-details-marker { display: none; }
+.nav-row.branch::before {
+    content: "\25B8"; color: var(--accent); font-size: 0.85em;
+    display: inline-block; width: 0.7em; transition: transform 0.15s ease;
+}
+.nav-branch[open] > summary > .nav-row.branch::before { transform: rotate(90deg); }
 
 /* Footer */
 .doc-footer {
@@ -696,6 +729,11 @@ td.cell.numbered.named-lines .coll.map > dd { margin-left: 2.1rem; }
     /* A dot carries its verdict in a background colour, which a browser drops when printing
        unless it is asked to keep it. Without this a printed index tree states nothing. */
     .status-dot { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    /* Paper cannot be unfolded, so every branch prints open whatever the reader left folded. The
+       two rules are one each for the two ways a browser hides the closed part of a <details>. */
+    .nav-branch:not([open]) > .nav-children { display: block; }
+    .nav-branch::details-content { content-visibility: visible; }
+    .nav-row.branch::before { transform: rotate(90deg); }
 }
 </style>
 {% endmacro %}

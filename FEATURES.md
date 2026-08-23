@@ -86,9 +86,16 @@ Generated documentation mirrors your test package structure while removing
 redundant directory levels. Each package and class gets an index page, and
 each test method gets its own page.
 
+In HTML, an index page writes out every page below it and folds all but the top level away.
+The reader opens the part they want, so the publisher does not have to choose one depth for
+everybody. A folded entry is still on the page, so a browser search and a printed copy both
+reach it, and the sidebar arrives with the branch holding the current page already open.
+
 `indexDepth` controls how many levels of the tree each index page lists (default: all of
-them). Note that it counts tree levels, so introducing a grouping package shifts everything
-below it one level deeper.
+them), and is the coarse override for anyone who wants fewer levels written at all — a
+markdown or AsciiDoc index, which has nowhere to fold, is the usual reason. Note that it
+counts tree levels, so introducing a grouping package shifts everything below it one level
+deeper.
 
 ## Multi-Module Reports
 

@@ -39,6 +39,15 @@
   unless asked for: on a block of two or three lines the digits are as wide as the text beside them.
 
 ### Changed
+- An HTML index page and the sidebar now fold. Every page below is still written out, but only
+  the top level is open: an entry that holds pages is a fold the reader opens. A spec of forty
+  rules therefore opens on a list of its features instead of every rule at once, and the
+  publisher no longer chooses one depth for every reader. The fold is a plain `<details>`, so it
+  needs no script, and a folded entry stays in the page — a browser search finds it, and a
+  printed copy shows every level open. In the sidebar the branches on the trail to the page you
+  are on are written open, so a reader arriving on a deep link sees where they are. `indexDepth`
+  is unchanged and stays the coarse override for writing fewer levels at all, which is what a
+  Markdown or AsciiDoc index still needs.
 - The sidebar now marks the whole trail down to the page you are on, not the page alone. A rule
   deep in a spec highlighted one leaf, and nothing said which feature held it. Every entry above
   the current page now reads at full ink, and the rule line beside its children is drawn in the

@@ -58,26 +58,22 @@ public class HtmlIndexRenderingTest {
 
     @Test
     void renders_relative_type_aware_links_with_nesting() {
-        String rendered = templateEngine.renderIndex(HTML, context);
+        Document document = HtmlValidator.parse(templateEngine.renderIndex(HTML, context));
 
-        assertThat(rendered)
-                .contains(
-                        "<a href=\"./path/to/a_table.html\"><span class=\"status-dot\" aria-hidden=\"true\"></span>A Table</a>")
-                .contains(
-                        "<a href=\"./path/to/pkg/index.html\"><span class=\"status-dot\" aria-hidden=\"true\"></span>Nested Package</a>")
-                .contains("<ul class=\"nav-children\">")
-                .contains(
-                        "<a href=\"./path/to/pkg/b_table.html\"><span class=\"status-dot\" aria-hidden=\"true\"></span>B Table</a>");
+        assertThat(document.select("a.nav-row").eachAttr("href"))
+                .contains("./path/to/a_table.html", "./path/to/pkg/index.html", "./path/to/pkg/b_table.html");
+        assertThat(document.select("details.nav-branch > ul.nav-children > li.nav-item a.nav-row")
+                        .eachText())
+                .contains("B Table");
     }
 
     @Test
     void marks_each_nav_item_with_its_rolled_up_status() {
         Document document = HtmlValidator.parse(templateEngine.renderIndex(HTML, context));
 
-        assertThat(document.select("li.nav-item.table.passed > a").text()).isEqualTo("A Table");
-        assertThat(document.select("li.nav-item.index.failed > a").first().text())
-                .contains("Nested Package");
-        assertThat(document.select("li.nav-item.table.failed > a").text()).isEqualTo("B Table");
+        assertThat(document.select("a.nav-row.table.passed").text()).isEqualTo("A Table");
+        assertThat(document.select("a.nav-row.index.failed").first().text()).contains("Nested Package");
+        assertThat(document.select("a.nav-row.table.failed").text()).isEqualTo("B Table");
     }
 
     @Test
