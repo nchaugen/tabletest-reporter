@@ -19,8 +19,8 @@ import java.nio.file.Path;
 
 /**
  * The resolved, always-valid set of report-level options that drive a single report run:
- * the output format, an optional custom template directory, the index depth, and whether to
- * assemble a single-file report. Produced from the raw {@link ReportOptions} of an entry
+ * the output format, an optional custom template directory, the index depth, whether to
+ * assemble a single-file report, and the report-level curation read from the sidecar file. Produced from the raw {@link ReportOptions} of an entry
  * point by {@link ReportConfigurationResolver}; this is the shared value object that the
  * Maven mojo, CLI, and Gradle task all feed the reporter from.
  *
@@ -31,6 +31,8 @@ import java.nio.file.Path;
  * @param specMetadata the resolved spec-level curation, or {@link SpecMetadata#EMPTY} when none
  * @param publishSelection the resolved page selection, or {@link PublishSelection#EMPTY} to publish
  *     every page
+ * @param siteLink the link back to the site hosting the report, or {@link SiteLink#NONE} when the
+ *     report links nowhere
  */
 public record ReportConfiguration(
         Format format,
@@ -38,4 +40,5 @@ public record ReportConfiguration(
         IndexDepth indexDepth,
         boolean singleFile,
         SpecMetadata specMetadata,
-        PublishSelection publishSelection) {}
+        PublishSelection publishSelection,
+        SiteLink siteLink) {}

@@ -34,7 +34,7 @@
 
     {{ tableFailures(rowResults, 2) }}
 
-    {{ docFooter(generatedAt) }}
+    {% block footer %}{{ docFooter(generatedAt, site) }}{% endblock %}
 </main>
 {{ themeScript() }}
 {{ tableScrollScript() }}

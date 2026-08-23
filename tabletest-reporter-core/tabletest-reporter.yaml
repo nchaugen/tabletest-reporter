@@ -44,6 +44,13 @@ features:
       Choosing the format a report is written in, defining one of your own, and replacing or
       extending the templates that render it.
 
+# --- Site link ------------------------------------------------------------------------
+# The spec is published under tabletest.org/spec/reporter, where every link inside the report
+# is relative to the report's own tree. This is the one link back out to the site.
+site:
+  label: "TableTest"
+  url: "https://tabletest.org/"
+
 # --- Publish selection ----------------------------------------------------------------
 publish:
   exclude:

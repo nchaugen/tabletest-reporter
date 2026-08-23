@@ -382,6 +382,26 @@ typo never fails the report. The file is read at report time — a project witho
 exactly as before. Override its location with the `configFile` option (Maven `<configFile>`,
 Gradle `configFile`, CLI `--config`).
 
+### Linking back to your site (`site`)
+
+Every link inside a generated report is relative within its own tree. A reader who reaches
+the spec from your site therefore has no way back to it. Add a `site` section to the same
+`tabletest-reporter.yaml` to put one link in the footer of every HTML page:
+
+```yaml
+site:
+  label: "TableTest"                 # the link text; defaults to the address itself
+  url: "https://tabletest.org/"      # used exactly as written
+```
+
+The address is never resolved against the report's own tree, so a root-relative `/` or
+`/docs/` works for a site that hosts the spec below it, and an absolute URL works from
+anywhere. Without a `site` section the footer holds the attribution alone, as before.
+
+The footer is a `footer` block in each of the three HTML page templates, and the link has a
+`siteLink(site)` macro of its own — a template of yours can override the block, or call the
+macro to place the same link elsewhere. See [Custom Templates](#custom-templates).
+
 ### Selecting what publishes (`publish`)
 
 By default every table that ran is published. Add a `publish` section to the same

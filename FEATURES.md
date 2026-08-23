@@ -102,6 +102,10 @@ generation time. A project without one is unaffected.
   paths hold a page and its subtree back, `include` paths re-admit one below an excluded page.
   Paths name pages as the report's URLs do (`converting/convert-with`), with `*` for any part
   of a page name and `**` for any number of levels.
+- **Site link** – a `site` section with a `label` and a `url` puts a link back to the hosting
+  site at the start of the footer of every HTML page. Every other link a report holds is
+  relative within its own tree, so this is the only one that leaves it. The address is used as
+  written, so a root-relative one works for a site that hosts the spec below it.
 
 Because selection happens when the report is generated, what publishes is decoupled from how
 the suite was tagged or run — re-curating a spec needs no new test run.

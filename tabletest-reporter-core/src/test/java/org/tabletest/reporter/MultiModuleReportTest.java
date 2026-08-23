@@ -81,7 +81,7 @@ class MultiModuleReportTest {
 
     private static TableTestReporter markdownReporter() {
         return new TableTestReporter(new ReportConfiguration(
-                MARKDOWN, null, IndexDepth.DEFAULT, false, SpecMetadata.EMPTY, PublishSelection.EMPTY));
+                MARKDOWN, null, IndexDepth.DEFAULT, false, SpecMetadata.EMPTY, PublishSelection.EMPTY, SiteLink.NONE));
     }
 
     /** One module's test output directory, holding a single test class with a single table. */

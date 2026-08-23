@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Added
+- A report can link back to the site that hosts it. Every other link a report holds is relative
+  within its own tree, so a reader who arrives from a site has no way back once inside. Declare a
+  `site` section with a `label` and a `url` in `tabletest-reporter.yaml` and the link renders at the
+  start of the footer of every HTML page — the table page, the index page and the single-file report
+  alike. The address is used exactly as written and is never resolved against the report's own tree,
+  so a root-relative address works for a site that hosts the spec below it. A `url` declared without
+  a `label` labels itself with the address. Without a `site` section the footer is unchanged.
+- The three HTML page templates now leave a `footer` block, so a template of yours can replace the
+  footer without rewriting the page. The site link also has a `siteLink(site)` macro of its own,
+  which such a template can call to place the same link elsewhere.
+
 ## [1.4.0] - 2026-08-20
 
 ### Added

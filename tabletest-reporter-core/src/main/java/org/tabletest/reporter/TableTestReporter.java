@@ -44,7 +44,8 @@ public class TableTestReporter {
                 indexDepth,
                 false,
                 SpecMetadata.EMPTY,
-                PublishSelection.EMPTY));
+                PublishSelection.EMPTY,
+                SiteLink.NONE));
     }
 
     /** Reports against a resolved configuration — the form every entry point uses. */
@@ -94,7 +95,8 @@ public class TableTestReporter {
                         configuration.indexDepth(),
                         singleFile,
                         specMetadata,
-                        configuration.publishSelection()),
+                        configuration.publishSelection(),
+                        configuration.siteLink()),
                 List.of(inDir),
                 outDir);
     }
@@ -114,10 +116,11 @@ public class TableTestReporter {
         ReportNode tree =
                 config.specMetadata().applyTo(config.publishSelection().applyTo(built));
         GeneratedAt generatedAt = GeneratedAt.now();
+        SiteLink siteLink = config.siteLink();
         if (config.singleFile()) {
-            return reportSingleFile(format, tree, generatedAt, outDir);
+            return reportSingleFile(format, tree, generatedAt, siteLink, outDir);
         }
-        int count = report(tree, tree, List.of(), format, generatedAt, outDir);
+        int count = report(tree, tree, List.of(), format, generatedAt, siteLink, outDir);
         if (format == BuiltInFormat.HTML) {
             writeContent(
                     outDir.resolve(SearchIndex.ASSET_NAME), SearchIndex.of(tree).asJavaScript());
@@ -125,12 +128,13 @@ public class TableTestReporter {
         return ReportResult.success(count);
     }
 
-    private ReportResult reportSingleFile(Format format, ReportNode tree, GeneratedAt generatedAt, Path outDir) {
+    private ReportResult reportSingleFile(
+            Format format, ReportNode tree, GeneratedAt generatedAt, SiteLink siteLink, Path outDir) {
         if (format != BuiltInFormat.HTML) {
             throw new IllegalArgumentException(
                     "Single-file mode is currently supported only for the html format, not " + format.formatName());
         }
-        String content = templateEngine.renderSingle(SingleFileModel.of(tree, generatedAt));
+        String content = templateEngine.renderSingle(SingleFileModel.of(tree, generatedAt, siteLink));
         writeContent(outDir.resolve("index" + format.extension()), content);
         return ReportResult.success(1);
     }
@@ -141,12 +145,14 @@ public class TableTestReporter {
             List<ReportNode> ancestors,
             Format format,
             GeneratedAt generatedAt,
+            SiteLink siteLink,
             Path outDir) {
         Path relativeOutPath = Path.of("./" + node.outPath());
 
         return switch (node) {
             case IndexNode index -> {
-                Map<String, Object> context = createIndexContext(index, relativeOutPath, root, ancestors, generatedAt);
+                Map<String, Object> context =
+                        createIndexContext(index, relativeOutPath, root, ancestors, generatedAt, siteLink);
 
                 Path outPath = outDir.resolve(relativeOutPath).resolve("index" + format.extension());
                 String content = templateEngine.renderIndex(format, context);
@@ -154,12 +160,12 @@ public class TableTestReporter {
 
                 List<ReportNode> childAncestors = append(ancestors, index);
                 int childCount = index.contents().stream()
-                        .mapToInt(child -> report(child, root, childAncestors, format, generatedAt, outDir))
+                        .mapToInt(child -> report(child, root, childAncestors, format, generatedAt, siteLink, outDir))
                         .sum();
                 yield 1 + childCount;
             }
             case TableNode table -> {
-                Map<String, Object> context = createTableContext(table, root, ancestors, generatedAt);
+                Map<String, Object> context = createTableContext(table, root, ancestors, generatedAt, siteLink);
 
                 Path outPath = outDir.resolve(relativeOutPath + format.extension());
                 String content = templateEngine.renderTable(format, context);
@@ -174,7 +180,8 @@ public class TableTestReporter {
             Path relativeOutPath,
             ReportNode root,
             List<ReportNode> ancestors,
-            GeneratedAt generatedAt) {
+            GeneratedAt generatedAt,
+            SiteLink siteLink) {
         Map<String, Object> context = copyContext(index.resource());
         context.put("name", index.name());
         context.put("contents", buildContentsForTemplate(index.contents(), relativeOutPath, 1));
@@ -183,17 +190,19 @@ public class TableTestReporter {
         context.put("nav", buildNav(root, index));
         context.put("assetRoot", NavLinks.rootPrefix(index, root));
         context.put("generatedAt", generatedAt.toMap());
+        context.put("site", siteLink.toMap());
         return context;
     }
 
     private Map<String, Object> createTableContext(
-            TableNode table, ReportNode root, List<ReportNode> ancestors, GeneratedAt generatedAt) {
+            TableNode table, ReportNode root, List<ReportNode> ancestors, GeneratedAt generatedAt, SiteLink siteLink) {
         Map<String, Object> context = copyContext(table.resource());
         context.put("name", table.name());
         context.put("breadcrumbs", buildBreadcrumbs(ancestors, table));
         context.put("nav", buildNav(root, table));
         context.put("assetRoot", NavLinks.rootPrefix(table, root));
         context.put("generatedAt", generatedAt.toMap());
+        context.put("site", siteLink.toMap());
         context.put("featureDescription", descriptionOf(ancestors));
         return context;
     }

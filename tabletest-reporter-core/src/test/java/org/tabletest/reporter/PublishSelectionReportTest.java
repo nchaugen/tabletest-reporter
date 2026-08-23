@@ -53,7 +53,7 @@ class PublishSelectionReportTest {
 
     private void report(Path inDir, Path outDir, PublishSelection selection) {
         new TableTestReporter(new ReportConfiguration(
-                        MARKDOWN, null, IndexDepth.DEFAULT, false, SpecMetadata.EMPTY, selection))
+                        MARKDOWN, null, IndexDepth.DEFAULT, false, SpecMetadata.EMPTY, selection, SiteLink.NONE))
                 .report(inDir, outDir);
     }
 
