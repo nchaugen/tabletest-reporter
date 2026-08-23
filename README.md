@@ -2,6 +2,41 @@
 
 TableTest Reporter generates documentation from your [TableTest](https://github.com/nchaugen/tabletest) tests. It turns your test tables into a readable specification you can publish beside your project docs, as a self-contained HTML site or as AsciiDoc or Markdown for a site generator you already run.
 
+## Contents
+
+- [Quick Start](#quick-start)
+- [Requirements](#requirements)
+- [Getting Started](#getting-started)
+  - [Add the reporter plugin](#add-the-reporter-plugin)
+  - [Write your tests](#write-your-tests)
+  - [Run your tests](#run-your-tests)
+  - [Generate the documentation](#generate-the-documentation)
+- [Configuring the Report](#configuring-the-report)
+  - [The sidecar file (`tabletest-reporter.yaml`)](#the-sidecar-file-tabletest-reporteryaml)
+  - [Build options](#build-options)
+  - [Test-side options (JUnit configuration parameters)](#test-side-options-junit-configuration-parameters)
+- [Formats](#formats)
+  - [Choosing a format](#choosing-a-format)
+  - [The built-in HTML format](#the-built-in-html-format)
+  - [Listing available formats](#listing-available-formats)
+  - [Custom output formats](#custom-output-formats)
+- [Output Structure](#output-structure)
+  - [How names become filenames](#how-names-become-filenames)
+- [Publishing Your Documentation](#publishing-your-documentation)
+  - [GitHub Pages via Actions](#github-pages-via-actions)
+  - [Other hosting options](#other-hosting-options)
+  - [Publishing into an existing site](#publishing-into-an-existing-site)
+- [Custom Templates](#custom-templates)
+  - [Convention-based discovery](#convention-based-discovery)
+  - [Configuring a custom template directory](#configuring-a-custom-template-directory)
+  - [Template extension example](#template-extension-example)
+  - [Recording when the report was generated](#recording-when-the-report-was-generated)
+  - [Template replacement example](#template-replacement-example)
+  - [The template context](#the-template-context)
+  - [What an extension template can reach](#what-an-extension-template-can-reach)
+- [Styling HTML Reports](#styling-html-reports)
+- [For Plugin Developers](#for-plugin-developers)
+
 ## Quick Start
 
 1. Add the reporter plugin to your build
@@ -25,9 +60,11 @@ The compatibility test suite exercises these versions on every change. It covers
 6.1.2, on Maven and on Gradle. It also covers Spring Boot 3.5.0 and current, and Quarkus 3.21.2
 and current.
 
-## Step 1: Add the Reporter Plugin
+## Getting Started
 
-### Gradle
+### Add the reporter plugin
+
+#### Gradle setup
 
 Add the plugin to your `build.gradle.kts`:
 
@@ -43,7 +80,7 @@ The plugin automatically:
 
 That's it! No additional configuration needed for standard projects.
 
-### Maven
+#### Maven setup
 
 Add the dependency and plugin to your `pom.xml`, and enable JUnit extension autodetection:
 
@@ -145,7 +182,7 @@ tasks.test {
 
 </details>
 
-## Step 2: Write Your Tests
+### Write your tests
 
 Write your TableTest tests as usual. The reporter uses standard JUnit annotations to enhance the generated documentation:
 
@@ -201,7 +238,7 @@ documentation. Its rows carry no pass or fail indicator:
 
 The scenario column can have any name (`Scenario`, `Test Case`, `Description`, etc.) and contain any unique string value to identify each test case.
 
-### Column Roles
+#### Column roles
 
 Every published cell carries the roles of its column. The reporter derives four itself — `scenario`,
 `expectation`, `passed` and `failed` — and a test can declare more.
@@ -267,7 +304,7 @@ role. A stylesheet of your own can therefore style the column. Markdown carries 
 A role must be lower-case words joined by single hyphens. A role that names one the reporter derives
 publishes anyway: the column takes that role's styling, and the reporter never treats it as one.
 
-## Step 3: Run Your Tests
+### Run your tests
 
 Run your tests normally. The extension automatically generates YAML files in `<buildDir>/junit-jupiter/`:
 
@@ -284,13 +321,13 @@ Each TableTest method produces a YAML file with prefix `TABLETEST-`. File names 
 - `testUserPermissions` → `TABLETEST-test-user-permissions.yaml`
 - `leap_year_rules` → `TABLETEST-leap-year-rules.yaml`
 
-## Step 4: Generate Documentation
+### Generate the documentation
 
 Run the reporter to generate the documentation. It finds where your test framework writes its YAML
 files. Most standard Maven and Gradle
 projects therefore need no input directory at all. Run the plugin. See [Input Directory Resolution](#input-directory-resolution) for details on how detection works and when manual configuration is needed.
 
-### Maven
+#### Generating with Maven
 
 Where you configured the `report` goal in your plugin executions, as Step 1 shows, the build
 generates the documentation itself. Otherwise, run it by hand:
@@ -322,7 +359,7 @@ Or use command-line properties:
 mvn tabletest-reporter:report -Dtabletest.report.format=markdown
 ```
 
-### Gradle
+#### Generating with Gradle
 
 Run the task:
 ```bash
@@ -344,45 +381,19 @@ tableTestReporter {
 }
 ```
 
-### Multi-module builds (one spec from several modules)
+## Configuring the Report
 
-A single spec can span the modules of a multi-module build. The report tree comes from the
-test class names inside the YAML, not from where the files sit, so modules merge into one
-package hierarchy. The reporter skips a listed directory that does not exist, and warns. A partial build therefore still publishes what it has.
+Four of the report's settings live together in one optional sidecar file. The rest are options of
+the build that runs the reporter.
 
-**Maven** — let the plugin walk the reactor:
-```bash
-mvn tabletest-reporter:aggregate
-```
-The `aggregate` goal runs on the aggregator project and writes one report to its output directory.
-It finds each module's TableTest output the way the `report` goal finds its own: the JUnit output
-directory a module configures, or that module's `target/junit-jupiter`.
+### The sidecar file (`tabletest-reporter.yaml`)
 
-Name the directories yourself instead, which is the route to take where the goal cannot run inside
-the reactor. Use `<inputDirectories>` on the `report` goal, shown above, or:
-```bash
-mvn tabletest-reporter:report -Dtabletest.report.inputDirectories=target/junit-jupiter,../other/target/junit-jupiter
-```
+Put `tabletest-reporter.yaml` in the project directory, or point at it with Maven `<configFile>`,
+Gradle `configFile`, or the CLI `--config`. It holds four independent sections, and every one of
+them is optional. The reporter reads the file when it generates the report, so changing any of
+them needs no new test run.
 
-**Gradle** — list the subprojects' directories:
-```kotlin
-tableTestReporter {
-  inputDirs.from(
-    layout.buildDirectory.dir("junit-jupiter"),
-    project(":other-module").layout.buildDirectory.dir("junit-jupiter")
-  )
-}
-```
-
-**CLI** — repeat `-i`:
-```bash
-tabletest-reporter -i core/target/junit-jupiter -i junit/target/junit-jupiter
-```
-
-Where two modules published the same test class, the most recently written output wins —
-the same rule that settles repeated runs within one directory.
-
-### Spec metadata (`tabletest-reporter.yaml`)
+#### Spec metadata
 
 Without a sidecar file, the root index of a spec takes its title from the deepest common package
 segment, such as "junit" or "example". An intermediate index page shows a lowercase package name.
@@ -417,7 +428,7 @@ then does not repeat it. A feature that matches no page is logged and skipped, s
 typo never fails the report. The reporter reads the file at report time. A project without one reports exactly as before. Override its location with the `configFile` option (Maven `<configFile>`,
 Gradle `configFile`, CLI `--config`).
 
-### Front matter for a site generator (`frontMatter`)
+#### Front matter for a site generator (`frontMatter`)
 
 A site generator reads an AsciiDoc or Markdown report. It decides how each page looks, and where
 that page sits in the site. Front matter is what you tell the generator. Declare it once:
@@ -476,7 +487,7 @@ order of your spec. A site generator sorts the pages alphabetically without it, 
 The `frontMatter` template block still works and takes precedence — see
 [Custom Templates](#custom-templates) for when you need more than keys and values.
 
-### Linking back to your site (`site`)
+#### Linking back to your site (`site`)
 
 Every link inside a generated report is relative within its own tree. A reader who reaches
 the spec from your site therefore has no way back to it. Add a `site` section to the same
@@ -496,7 +507,7 @@ Each of the three HTML page templates leaves the footer as a `footer` block, and
 `siteLink(site)` macro of its own. A template of yours can override the block, or call the macro
 to place the same link elsewhere. See [Custom Templates](#custom-templates).
 
-### Selecting what publishes (`publish`)
+#### Selecting what publishes (`publish`)
 
 By default every table that ran publishes. Add a `publish` section to the same
 `tabletest-reporter.yaml` to hold pages back. It applies at
@@ -519,7 +530,11 @@ feature page left with nothing published under it disappears too. `include` wins
 `exclude`, so a single rule table can still publish from an otherwise internal class. A
 path matching no page is logged and skipped, like a mistyped feature name.
 
-### Pinning the report's timestamp (`generatedAt`)
+### Build options
+
+These are options of the build that runs the reporter, and not of the sidecar file.
+
+#### Pinning the report's timestamp (`generatedAt`)
 
 Every page states when the report was generated. The reporter reads the clock, so two runs of
 the same tests write two different pages. A build that compares its own output then sees a change
@@ -543,7 +558,120 @@ mvn tabletest-reporter:report \
 A report states the timestamp in UTC, whatever zone the build ran in. The label a reader sees
 drops the sub-second precision.
 
-### Choosing a Format
+#### Multi-module builds (one spec from several modules)
+
+A single spec can span the modules of a multi-module build. The report tree comes from the
+test class names inside the YAML, not from where the files sit, so modules merge into one
+package hierarchy. The reporter skips a listed directory that does not exist, and warns. A partial build therefore still publishes what it has.
+
+**Maven** — let the plugin walk the reactor:
+```bash
+mvn tabletest-reporter:aggregate
+```
+The `aggregate` goal runs on the aggregator project and writes one report to its output directory.
+It finds each module's TableTest output the way the `report` goal finds its own: the JUnit output
+directory a module configures, or that module's `target/junit-jupiter`.
+
+Name the directories yourself instead, which is the route to take where the goal cannot run inside
+the reactor. Use `<inputDirectories>` on the `report` goal, shown above, or:
+```bash
+mvn tabletest-reporter:report -Dtabletest.report.inputDirectories=target/junit-jupiter,../other/target/junit-jupiter
+```
+
+**Gradle** — list the subprojects' directories:
+```kotlin
+tableTestReporter {
+  inputDirs.from(
+    layout.buildDirectory.dir("junit-jupiter"),
+    project(":other-module").layout.buildDirectory.dir("junit-jupiter")
+  )
+}
+```
+
+**CLI** — repeat `-i`:
+```bash
+tabletest-reporter -i core/target/junit-jupiter -i junit/target/junit-jupiter
+```
+
+Where two modules published the same test class, the most recently written output wins —
+the same rule that settles repeated runs within one directory.
+
+#### Input directory resolution
+
+When you run the reporter, it needs to find the YAML files generated during your test run. In most cases, this is handled automatically.
+
+**Resolution order:**
+
+1. **Explicit configuration** — name an input directory, through plugin config or the CLI `-i`
+option, and the reporter uses it directly
+2. **Build tool detection** — The Maven and Gradle plugins read the JUnit output directory from your build configuration:
+   - **Maven:** From Surefire's `configurationParameters` (`junit.platform.reporting.output.dir` property)
+   - **Gradle:** From the test task's system properties or JVM argument providers
+3. **Properties file** — From `junit.platform.reporting.output.dir` in `src/test/resources/junit-platform.properties`
+4. **Convention fallback** — `<buildDir>/junit-jupiter` (e.g., `target/junit-jupiter` or `build/junit-jupiter`)
+
+At each step, the reporter checks whether the candidate directory contains `TABLETEST-*.yaml` files. The first directory with matching files is selected.
+
+**When auto-detection works (no configuration needed):**
+
+- Standard Maven projects using Surefire (output goes to `target/junit-jupiter/`)
+- Standard Gradle projects (output goes to `build/junit-jupiter/`)
+- Projects configuring `junit.platform.reporting.output.dir` via Surefire, Gradle test task properties, or `junit-platform.properties`
+- Gradle projects using custom output directories via `jvmArgumentProviders` or system properties (the Gradle plugin detects these automatically)
+
+**When you need to specify the input directory explicitly:**
+
+- **Non-standard engine IDs** — JUnit writes to `<buildDir>/<engine-id>/` by default. If your engine is not `junit-jupiter`, the convention fallback won't match
+- **IDE-specific output directories** — When running tests from an IDE, outputs may go to a different location than the build tool expects
+- **Custom `OutputDirectoryCreator` implementations** — If you've customised where JUnit writes report files
+- **CLI without a build directory** — The CLI falls back to `target/junit-jupiter` or `build/junit-jupiter`; if neither exists, you must specify `-i`
+
+**Configuring the input directory:**
+
+Maven:
+```bash
+mvn tabletest-reporter:report -Dtabletest.report.inputDirectory=/path/to/yaml/files
+```
+
+Gradle:
+```kotlin
+tableTestReporter {
+  inputDir.set(file("/path/to/yaml/files"))
+}
+```
+
+CLI:
+```bash
+java -jar tabletest-reporter-cli.jar -i /path/to/yaml/files
+```
+
+### Test-side options (JUnit configuration parameters)
+
+Configure TableTest Reporter through [JUnit Platform configuration
+parameters](https://docs.junit.org/current/running-tests/configuration-parameters.html).
+
+**`tabletest.reporter.expectation.pattern`**
+
+Defines a regular expression pattern to identify expectation columns in your test tables. By default, the reporter treats a column ending with `?` as an expectation.
+
+Default: `.*\?$` (columns ending with question mark)
+
+Example in `junit-platform.properties`:
+
+```properties
+# Prefix convention: "Expected Result", "Expected Value"
+tabletest.reporter.expectation.pattern=^Expected.*
+
+# Suffix convention: "resultExpected", "valueExpected"
+tabletest.reporter.expectation.pattern=.*[Ee]xpected$
+
+# Parenthetical notation: "value (expected)"
+tabletest.reporter.expectation.pattern=.*\\(expected\\)$
+```
+
+## Formats
+
+### Choosing a format
 
 The three built-in formats are not interchangeable, and picking one is picking a publishing
 route. One rule decides which features a format gets. A feature that changes the **data** a page carries
@@ -565,7 +693,93 @@ the `frontMatter` block of an extension template — see [Custom Templates](#cus
 **The default is `asciidoc`** where you name no format, in every entry point. If you intend to
 publish the result directly, set `html` explicitly.
 
-### Listing Available Formats
+### The built-in HTML format
+
+The `html` format renders self-contained living documentation, and needs no Asciidoctor step.
+Each page is a standalone `.html` file, with its CSS and JavaScript inside it and no external
+reference. The output tree therefore works directly on any static host, GitHub Pages included.
+
+```bash
+tabletest-reporter -f html -i target/junit-jupiter -o target/generated-docs/tabletest
+```
+
+Each table page includes:
+- wide, autowidth tables in a horizontal-scroll wrapper with a sticky header row and first column
+- nested collections rendered structurally (lists, sets, and maps with distinct markers)
+- a pass/fail badge, per-row and per-cell status colouring, and collapsible failure details
+- expectation- and scenario-column emphasis, a roles legend, per-page row filter, and a
+  "failing only" toggle
+- a light/dark theme toggle and a print stylesheet
+
+Every entry carries a status dot. The page also states its scenario pass rate, rolled up from the
+tables beneath it: "N of M scenarios broken", or "All N scenarios hold".
+
+The tree writes out every page below it, and folds all but the top level away. A spec of forty
+rules therefore opens on a list of its features, and not on every rule at once. A folded entry
+stays in the page, so a browser search finds it, and a printed copy shows every level open.
+
+Every page also carries a breadcrumb trail of the pages above it: root package, then class, then
+table. A menu button opens a navigation drawer, holding the whole-report tree with status dots
+throughout. The branch that holds the current page arrives open and marked. You can jump
+anywhere from any page. The drawer slides in over the content, so a wide table keeps the full
+page width.
+
+#### Reading a report from the keyboard
+
+Tab reaches every row of both trees, Enter follows one, and Space opens or closes a feature.
+The browser does all of that, and no script runs. These keys are new on top of it:
+
+| Key | Does |
+|---|---|
+| <kbd>↓</kbd> <kbd>↑</kbd> | move between the rows you can see, in the drawer or an index page's own tree |
+| <kbd>→</kbd> | open a feature, then step into it |
+| <kbd>←</kbd> | close a feature, or step out to the one above |
+| <kbd>Home</kbd> <kbd>End</kbd> | the first or last row you can see |
+| <kbd>/</kbd> | open the drawer and jump to the search box |
+| <kbd>m</kbd> | open or close the drawer |
+| <kbd>Esc</kbd> | leave the search box, or close the drawer |
+| <kbd>?</kbd> | list these keys on the page |
+
+The arrow keys act only on a row that already holds focus. They still scroll a long rule page
+everywhere else. A closed drawer is `inert`, so it stays out of the tab order until you open it.
+An open drawer holds focus until you leave it.
+
+Note for Safari readers. Safari does not move focus to a link with Tab. Turn that on in
+Settings → Advanced → "Press Tab to
+highlight each item on a webpage". Hold <kbd>Option</kbd>
+while you press Tab to reach a link without changing the setting. The arrow keys above work
+either way.
+
+The drawer also holds a search box, and that box searches the whole report: every page's title,
+description, headers and cell values. It lists the matching pages, with their status dots, to
+jump to. One `tabletest-search-index.js` backs the search, written once to the output root and
+linked from each page by a relative prefix. Search therefore works offline, over `file://`, and
+under any subpath, and makes no external request.
+
+Every link and asset reference is relative, so the generated tree deploys unchanged under a
+project subpath. GitHub *project* Pages, served from `/<repo>/`, is such a subpath. The
+`tabletest-search-index.js` asset sits at the output root, beside the root `index.html`.
+
+#### Single-file mode
+
+Add `--single-file` (`-s`) to assemble the whole report into **one** self-contained
+`.html` instead of a directory tree:
+
+```bash
+tabletest-reporter -f html --single-file -i target/junit-jupiter -o target/generated-docs/tabletest
+```
+
+The file inlines every table as an anchored section, and embeds the search index. The sidebar and
+the search jump to anchors in the page. The one `index.html` therefore has no sibling asset, and
+no external reference at all. This is the most portable form: attach it
+to a release, email or ticket where a directory of files is awkward. The multi-file tree
+remains the default (better for GitHub Pages and per-page linking). Single-file mode
+currently applies to the `html` format only.
+
+To customise the markup, drop your own `table.html.peb` / `index.html.peb` into a template
+directory — an exact filename match overrides the built-in template (see below).
+
+### Listing available formats
 
 You can list all available output formats (built-in and custom) using the following commands:
 
@@ -592,6 +806,80 @@ markdown
 ```
 
 When using custom templates with additional formats, those will also appear in the list.
+
+### Custom output formats
+
+Beyond the built-in AsciiDoc, Markdown, and HTML formats, you can define custom output formats (XML, JSON, etc.) by providing templates in your template directory.
+
+**Requirements:**
+- Both `table.{format}.peb` and `index.{format}.peb` must be present
+- Format name becomes the file extension (e.g., "xml" → ".xml")
+
+**Example: XML Format**
+
+Create `table.xml.peb`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<table title="{{ title }}">
+    {% if description %}<description>{{ description }}</description>{% endif %}
+    <headers>
+    {% for header in headers %}
+        <header>{{ header.value }}</header>
+    {% endfor %}
+    </headers>
+    <rows>
+    {% for row in rows %}
+        <row>
+        {% for cell in row %}
+            <cell>{{ cell.value }}</cell>
+        {% endfor %}
+        </row>
+    {% endfor %}
+    </rows>
+</table>
+```
+
+Create `index.xml.peb`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<index name="{{ title ? title : name }}">
+    {% if description %}<description>{{ description }}</description>{% endif %}
+    {% for item in contents %}
+    <item path="{{ item.path }}">{{ item.title }}</item>
+    {% endfor %}
+</index>
+```
+
+**Usage:**
+
+Specify the custom format when running the reporter:
+
+**Maven:**
+```xml
+<configuration>
+  <format>xml</format>
+  <templateDirectory>${project.basedir}/templates</templateDirectory>
+</configuration>
+```
+
+**Gradle:**
+```kotlin
+tableTestReporter {
+  format.set("xml")
+  templateDir.set(file("templates"))
+}
+```
+
+**CLI:**
+```bash
+java -jar tabletest-reporter-cli.jar \
+  --template-dir templates \
+  -f xml \
+  -i target/junit-jupiter \
+  -o target/generated-docs/tabletest
+```
+
+If an unknown format is specified, you'll get a helpful error message listing all available formats (both built-in and discovered custom formats).
 
 ## Output Structure
 
@@ -805,82 +1093,7 @@ report. For the same reason neither text format carries breadcrumbs or a footer 
 
 ---
 
-## Advanced Topics
-
-### Configuration Options
-
-Configure TableTest Reporter through [JUnit Platform configuration
-parameters](https://docs.junit.org/current/running-tests/configuration-parameters.html).
-
-**`tabletest.reporter.expectation.pattern`**
-
-Defines a regular expression pattern to identify expectation columns in your test tables. By default, the reporter treats a column ending with `?` as an expectation.
-
-Default: `.*\?$` (columns ending with question mark)
-
-Example in `junit-platform.properties`:
-
-```properties
-# Prefix convention: "Expected Result", "Expected Value"
-tabletest.reporter.expectation.pattern=^Expected.*
-
-# Suffix convention: "resultExpected", "valueExpected"
-tabletest.reporter.expectation.pattern=.*[Ee]xpected$
-
-# Parenthetical notation: "value (expected)"
-tabletest.reporter.expectation.pattern=.*\\(expected\\)$
-```
-
-### Input Directory Resolution
-
-When you run the reporter, it needs to find the YAML files generated during your test run. In most cases, this is handled automatically.
-
-**Resolution order:**
-
-1. **Explicit configuration** — name an input directory, through plugin config or the CLI `-i`
-option, and the reporter uses it directly
-2. **Build tool detection** — The Maven and Gradle plugins read the JUnit output directory from your build configuration:
-   - **Maven:** From Surefire's `configurationParameters` (`junit.platform.reporting.output.dir` property)
-   - **Gradle:** From the test task's system properties or JVM argument providers
-3. **Properties file** — From `junit.platform.reporting.output.dir` in `src/test/resources/junit-platform.properties`
-4. **Convention fallback** — `<buildDir>/junit-jupiter` (e.g., `target/junit-jupiter` or `build/junit-jupiter`)
-
-At each step, the reporter checks whether the candidate directory contains `TABLETEST-*.yaml` files. The first directory with matching files is selected.
-
-**When auto-detection works (no configuration needed):**
-
-- Standard Maven projects using Surefire (output goes to `target/junit-jupiter/`)
-- Standard Gradle projects (output goes to `build/junit-jupiter/`)
-- Projects configuring `junit.platform.reporting.output.dir` via Surefire, Gradle test task properties, or `junit-platform.properties`
-- Gradle projects using custom output directories via `jvmArgumentProviders` or system properties (the Gradle plugin detects these automatically)
-
-**When you need to specify the input directory explicitly:**
-
-- **Non-standard engine IDs** — JUnit writes to `<buildDir>/<engine-id>/` by default. If your engine is not `junit-jupiter`, the convention fallback won't match
-- **IDE-specific output directories** — When running tests from an IDE, outputs may go to a different location than the build tool expects
-- **Custom `OutputDirectoryCreator` implementations** — If you've customised where JUnit writes report files
-- **CLI without a build directory** — The CLI falls back to `target/junit-jupiter` or `build/junit-jupiter`; if neither exists, you must specify `-i`
-
-**Configuring the input directory:**
-
-Maven:
-```bash
-mvn tabletest-reporter:report -Dtabletest.report.inputDirectory=/path/to/yaml/files
-```
-
-Gradle:
-```kotlin
-tableTestReporter {
-  inputDir.set(file("/path/to/yaml/files"))
-}
-```
-
-CLI:
-```bash
-java -jar tabletest-reporter-cli.jar -i /path/to/yaml/files
-```
-
-### Custom Templates
+## Custom Templates
 
 TableTest Reporter uses [Pebble templates](https://pebbletemplates.io/) to generate documentation. You can customise the output by providing your own templates.
 
@@ -889,7 +1102,7 @@ TableTest Reporter uses [Pebble templates](https://pebbletemplates.io/) to gener
 1. **Template Extension** - Override specific parts (e.g., add front matter for Jekyll/Hugo)
 2. **Template Replacement** - Completely replace the built-in templates
 
-#### Convention-Based Discovery
+### Convention-based discovery
 
 Custom templates are discovered automatically by naming convention:
 
@@ -903,7 +1116,7 @@ The reporter picks up `custom-table.adoc.peb` or `jekyll-table.md.peb` by itself
 2. Pattern match (e.g., `custom-table.adoc.peb`) - extension template
 3. Built-in template - default
 
-#### Configuring Custom Template Directory
+### Configuring a custom template directory
 
 **Maven Plugin:**
 ```xml
@@ -928,7 +1141,7 @@ java -jar tabletest-reporter-cli.jar \
   -o target/generated-docs/tabletest
 ```
 
-#### Template Extension Example
+### Template extension example
 
 Extend built-in templates by overriding specific blocks. Create `jekyll-table.md.peb`:
 
@@ -959,7 +1172,7 @@ Available blocks for indexes:
 - `contents` - List of child pages
 - `footer` - Content after the document
 
-#### Recording When the Report Was Generated
+### Recording when the report was generated
 
 Most projects want [the `frontMatter` config section](#front-matter-for-a-site-generator-frontmatter)
 instead — it needs no template at all. Write the block yourself when you need more than keys and
@@ -988,7 +1201,7 @@ For AsciiDoc the same block carries document attributes instead:
 {% endblock %}
 ```
 
-#### Template Replacement Example
+### Template replacement example
 
 Completely replace the built-in template. Create `table.adoc.peb`:
 
@@ -1014,7 +1227,7 @@ Custom header content here.
 Generated on {{ generatedAt.label }}
 ```
 
-#### The Template Context
+### The template context
 
 Every key below is available to a replacement template, and to a block you override in an
 extension template.
@@ -1053,7 +1266,7 @@ extension template.
 `level`, `description`, and `headers` / `rows` / `rowResults` for a table. It has **no**
 `breadcrumbs`.
 
-#### What an Extension Template Can Reach
+### What an extension template can reach
 
 A template that extends a built-in one reads every context key above, inside the block it
 overrides. It can also import the built-in macros and call them:
@@ -1076,167 +1289,7 @@ Two things to know about the blocks themselves:
 inside a macro renders its default and ignores the override, without a word. A macro reaches the
 page through `{% import %}`, which is not inheritance.
 
-### Built-in HTML Format
-
-The `html` format renders self-contained living documentation, and needs no Asciidoctor step.
-Each page is a standalone `.html` file, with its CSS and JavaScript inside it and no external
-reference. The output tree therefore works directly on any static host, GitHub Pages included.
-
-```bash
-tabletest-reporter -f html -i target/junit-jupiter -o target/generated-docs/tabletest
-```
-
-Each table page includes:
-- wide, autowidth tables in a horizontal-scroll wrapper with a sticky header row and first column
-- nested collections rendered structurally (lists, sets, and maps with distinct markers)
-- a pass/fail badge, per-row and per-cell status colouring, and collapsible failure details
-- expectation- and scenario-column emphasis, a roles legend, per-page row filter, and a
-  "failing only" toggle
-- a light/dark theme toggle and a print stylesheet
-
-Every entry carries a status dot. The page also states its scenario pass rate, rolled up from the
-tables beneath it: "N of M scenarios broken", or "All N scenarios hold".
-
-The tree writes out every page below it, and folds all but the top level away. A spec of forty
-rules therefore opens on a list of its features, and not on every rule at once. A folded entry
-stays in the page, so a browser search finds it, and a printed copy shows every level open.
-
-Every page also carries a breadcrumb trail of the pages above it: root package, then class, then
-table. A menu button opens a navigation drawer, holding the whole-report tree with status dots
-throughout. The branch that holds the current page arrives open and marked. You can jump
-anywhere from any page. The drawer slides in over the content, so a wide table keeps the full
-page width.
-
-#### Reading a report from the keyboard
-
-Tab reaches every row of both trees, Enter follows one, and Space opens or closes a feature.
-The browser does all of that, and no script runs. These keys are new on top of it:
-
-| Key | Does |
-|---|---|
-| <kbd>↓</kbd> <kbd>↑</kbd> | move between the rows you can see, in the drawer or an index page's own tree |
-| <kbd>→</kbd> | open a feature, then step into it |
-| <kbd>←</kbd> | close a feature, or step out to the one above |
-| <kbd>Home</kbd> <kbd>End</kbd> | the first or last row you can see |
-| <kbd>/</kbd> | open the drawer and jump to the search box |
-| <kbd>m</kbd> | open or close the drawer |
-| <kbd>Esc</kbd> | leave the search box, or close the drawer |
-| <kbd>?</kbd> | list these keys on the page |
-
-The arrow keys act only on a row that already holds focus. They still scroll a long rule page
-everywhere else. A closed drawer is `inert`, so it stays out of the tab order until you open it.
-An open drawer holds focus until you leave it.
-
-Note for Safari readers. Safari does not move focus to a link with Tab. Turn that on in
-Settings → Advanced → "Press Tab to
-highlight each item on a webpage". Hold <kbd>Option</kbd>
-while you press Tab to reach a link without changing the setting. The arrow keys above work
-either way.
-
-The drawer also holds a search box, and that box searches the whole report: every page's title,
-description, headers and cell values. It lists the matching pages, with their status dots, to
-jump to. One `tabletest-search-index.js` backs the search, written once to the output root and
-linked from each page by a relative prefix. Search therefore works offline, over `file://`, and
-under any subpath, and makes no external request.
-
-Every link and asset reference is relative, so the generated tree deploys unchanged under a
-project subpath. GitHub *project* Pages, served from `/<repo>/`, is such a subpath. The
-`tabletest-search-index.js` asset sits at the output root, beside the root `index.html`.
-
-#### Single-file mode
-
-Add `--single-file` (`-s`) to assemble the whole report into **one** self-contained
-`.html` instead of a directory tree:
-
-```bash
-tabletest-reporter -f html --single-file -i target/junit-jupiter -o target/generated-docs/tabletest
-```
-
-The file inlines every table as an anchored section, and embeds the search index. The sidebar and
-the search jump to anchors in the page. The one `index.html` therefore has no sibling asset, and
-no external reference at all. This is the most portable form: attach it
-to a release, email or ticket where a directory of files is awkward. The multi-file tree
-remains the default (better for GitHub Pages and per-page linking). Single-file mode
-currently applies to the `html` format only.
-
-To customise the markup, drop your own `table.html.peb` / `index.html.peb` into a template
-directory — an exact filename match overrides the built-in template (see below).
-
-### Custom Output Formats
-
-Beyond the built-in AsciiDoc, Markdown, and HTML formats, you can define custom output formats (XML, JSON, etc.) by providing templates in your template directory.
-
-**Requirements:**
-- Both `table.{format}.peb` and `index.{format}.peb` must be present
-- Format name becomes the file extension (e.g., "xml" → ".xml")
-
-**Example: XML Format**
-
-Create `table.xml.peb`:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<table title="{{ title }}">
-    {% if description %}<description>{{ description }}</description>{% endif %}
-    <headers>
-    {% for header in headers %}
-        <header>{{ header.value }}</header>
-    {% endfor %}
-    </headers>
-    <rows>
-    {% for row in rows %}
-        <row>
-        {% for cell in row %}
-            <cell>{{ cell.value }}</cell>
-        {% endfor %}
-        </row>
-    {% endfor %}
-    </rows>
-</table>
-```
-
-Create `index.xml.peb`:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<index name="{{ title ? title : name }}">
-    {% if description %}<description>{{ description }}</description>{% endif %}
-    {% for item in contents %}
-    <item path="{{ item.path }}">{{ item.title }}</item>
-    {% endfor %}
-</index>
-```
-
-**Usage:**
-
-Specify the custom format when running the reporter:
-
-**Maven:**
-```xml
-<configuration>
-  <format>xml</format>
-  <templateDirectory>${project.basedir}/templates</templateDirectory>
-</configuration>
-```
-
-**Gradle:**
-```kotlin
-tableTestReporter {
-  format.set("xml")
-  templateDir.set(file("templates"))
-}
-```
-
-**CLI:**
-```bash
-java -jar tabletest-reporter-cli.jar \
-  --template-dir templates \
-  -f xml \
-  -i target/junit-jupiter \
-  -o target/generated-docs/tabletest
-```
-
-If an unknown format is specified, you'll get a helpful error message listing all available formats (both built-in and discovered custom formats).
-
-### Styling HTML Reports
+## Styling HTML Reports
 
 When generating HTML from AsciiDoc reports, you can apply custom CSS styling based on the roles generated by TableTest Reporter.
 
@@ -1318,7 +1371,7 @@ See the [Asciidoctor stylesheet documentation](https://docs.asciidoctor.org/asci
 
 A complete working example is available in the project's compatibility tests: [`compatibility-tests/junit-6-maven/`](compatibility-tests/junit-6-maven/)
 
-### For Plugin Developers
+## For Plugin Developers
 
 **CLI Usage:**
 

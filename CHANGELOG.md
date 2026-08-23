@@ -66,6 +66,13 @@
   lines the digits are as wide as the text beside them.
 
 ### Changed
+- The README is reorganised. The numbered walkthrough used to dissolve at "Step 4", which had
+  absorbed ten subsections of configuration reference and no fifth step. Getting started is now
+  four steps and stops there. The four sections of `tabletest-reporter.yaml` sit together under
+  the file they belong to, with the build's own options beside them rather than among them.
+  Choosing a format, the HTML report and custom formats are one section instead of three places.
+  "Advanced Topics" is gone, replaced by named sections. Two pairs of headings both called Maven
+  and Gradle no longer collide over the same anchors, and the file opens with a table of contents.
 - The README no longer opens with the notice about the move to `org.tabletest` coordinates. The
   move shipped in 1.0.0, five releases back, and the relocation POMs on Maven Central still point
   anyone on the old coordinates at the new ones.
