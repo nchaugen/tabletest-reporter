@@ -21,8 +21,8 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
   - [The roles the reporter derives](#the-roles-the-reporter-derives)
   - [The roles a test can declare](#the-roles-a-test-can-declare)
   - [A role of your own](#a-role-of-your-own)
-  - [Styling an HTML report by its roles](#styling-an-html-report-by-its-roles)
-  - [Styling an AsciiDoc report by its roles](#styling-an-asciidoc-report-by-its-roles)
+  - [Styling for HTML](#styling-for-html)
+  - [Styling for AsciiDoc](#styling-for-asciidoc)
 - [Custom Templates](#custom-templates)
   - [Convention-based discovery](#convention-based-discovery)
   - [Configuring a custom template directory](#configuring-a-custom-template-directory)
@@ -483,8 +483,7 @@ carries the data of a report and leaves the presentation to the renderer you run
 - Whitespace you would otherwise have to count is written with glyphs: an open box for a space, an
   arrow for a tab.
 - A column role reaches the value as an element role — `[.lines]`, `[.value-set]` — for your
-  stylesheet to act on. [Styling an AsciiDoc report by its roles](#styling-an-asciidoc-report-by-its-roles)
-  shows how.
+  stylesheet to act on. [Styling for AsciiDoc](#styling-for-asciidoc) shows how.
 - `frontMatter` is written as document attributes above the page.
 
 Presentation the HTML report draws itself — the block layout of `@Lines`, the connectors of
@@ -536,10 +535,18 @@ styling sections below apply to them without any difference.
 
 ### The roles a test can declare
 
-**A column of source text: `@Lines`.** A table keeps every row on one line, so you write a
-multi-line value as a list of lines. Mark the column with `@Lines`. The parameter then takes the
-lines joined by newlines. The HTML report draws the cell as a stacked
-monospace block, and not as a bulleted list:
+Four roles are annotations you put on a test parameter. Each one changes how the HTML report
+draws that column:
+
+| Role | The cell holds | What the HTML report draws |
+|---|---|---|
+| `@Lines` | a list of lines — one block of text | a stacked monospace block, not a bulleted list |
+| `@Tree` | a nested collection | each level opened below its parent, with a guide line |
+| `@NamedLines` | a map from name to lines | each name as a caption over its own block |
+| `@Numbered` | nothing of its own — it stacks on either of the two above | line numbers down the block |
+
+**`@Lines`.** A table keeps every row on one line, so a multi-line value is written as a list of
+lines. The parameter takes those lines joined by newlines:
 
 ```java
 @TableTest("""
@@ -556,14 +563,12 @@ Declare the parameter as a `List<String>` instead, and it takes the lines themse
 cell does not change either way. The reporter publishes the value the row ran with, so the cell is
 still the list of lines you wrote.
 
-**A tree: `@Tree`.** Where a cell holds a tree, written as a nested collection, `@Tree` opens each
-level below its parent instead of beside it, with a guide line down the level and a tick on each
-entry. The default map rendering puts a key beside its value, which walks a deep tree sideways
-across the page.
+**`@Tree`.** The default map rendering puts a key beside its value, which walks a deep tree
+sideways across the page. `@Tree` turns it downwards instead, with a guide line down each level
+and a tick on each entry. The cell value does not change — only how it is drawn.
 
-**Several named blocks: `@NamedLines`.** One cell can hold more than one block of text, each under
-a name. Write it as a map from name to lines. A file and its contents is the case it serves, so the cell reads as a small directory. The HTML report draws each name as a caption over its own
-block:
+**`@NamedLines`.** A file and its contents is the case it serves, so the cell reads as a small
+directory:
 
 ```java
 @TableTest("""
@@ -579,10 +584,10 @@ The parameter is a plain `Map<String, List<String>>`, and there is no converter.
 key is never converted**. Declaring `Map<Path, …>` therefore compiles, and then fails at the first
 read. Resolve the name yourself where you write the files out.
 
-**Numbered lines: `@Numbered`.** Numbering is a role of its own, and not part of the two above. Ask
-for it beside either: `@Lines @Numbered` or `@NamedLines @Numbered`. It earns its place on a block
-long enough that a reader needs to point at a line. On two or three lines the digits are as wide as
-the text beside them, which is why it is off unless you ask.
+**`@Numbered`.** Ask for it beside either of the block roles: `@Lines @Numbered` or `@NamedLines
+@Numbered`. It earns its place on a block long enough that a reader needs to point at a line. On
+two or three lines the digits are as wide as the text beside them, which is why it is off unless
+you ask.
 
 ### A role of your own
 
@@ -602,7 +607,7 @@ A role must be lower-case words joined by single hyphens. A role that names one 
 derives publishes anyway: the column takes that role's styling, and the reporter never treats it
 as one.
 
-### Styling an HTML report by its roles
+### Styling for HTML
 
 The built-in roles have no privileged path. The reporter draws a value from its shape — a list, a
 set, a map or a literal — and puts the column's roles on the cell as CSS classes. Every built-in
@@ -642,7 +647,7 @@ The limit is worth knowing. Your CSS restyles the markup the reporter emits for 
 It cannot make the reporter emit different markup — for that, replace the page template, which
 [Custom Templates](#custom-templates) covers.
 
-### Styling an AsciiDoc report by its roles
+### Styling for AsciiDoc
 
 A role reaches an AsciiDoc report too, as an element role on the value, so you can style an
 AsciiDoc report by the same roles. The route differs: this one styles the HTML **Asciidoctor**

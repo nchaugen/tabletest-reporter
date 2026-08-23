@@ -70,6 +70,9 @@
   ones. They sat inside the Maven section, folded away, although they cover Maven, Gradle and the
   CLI alike — a Gradle reader following the Gradle instructions never met the Gradle option they
   hold.
+- The roles a test can declare open with a table of their own, matching the derived ones: what the
+  cell holds, and what the HTML report draws from it. The entry below each role now carries what a
+  table cannot — the parameter type, and why the shape is what it is.
 - The roles the reporter derives for itself are documented, in a table saying what each one marks
   and where it comes from: `scenario`, `expectation`, `passed`, `failed` and `value-set`. There are
   five of them, not the four the README and the `CellRole` javadoc both claimed — `value-set`
