@@ -2,12 +2,15 @@ package org.tabletest.reporter.support;
 
 import org.junit.platform.engine.OutputDirectoryCreator;
 import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.discovery.ClassSelector;
+import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.testkit.engine.EngineTestKit;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
@@ -32,6 +35,22 @@ public final class SampleRun {
     /** The output a run of the given sample class published, in a fresh directory. */
     public static Path outputFor(Class<?> sampleClass, Path workingDir) {
         return outputFor(sampleClass, Map.of(), workingDir);
+    }
+
+    /**
+     * The output a run of the given sample classes published, in one fresh directory — a report of
+     * several classes, which is what a rule about an index summing its pages needs.
+     */
+    public static Path outputFor(List<Class<?>> sampleClasses, Path workingDir) {
+        Path runDir = createTempDirectory(workingDir);
+        EngineTestKit.engine("junit-jupiter")
+                .selectors(sampleClasses.stream()
+                        .map(DiscoverySelectors::selectClass)
+                        .toArray(ClassSelector[]::new))
+                .enableImplicitConfigurationParameters(true)
+                .outputDirectoryCreator(into(runDir))
+                .execute();
+        return runDir;
     }
 
     /**

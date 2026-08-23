@@ -12,15 +12,13 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests aggregate pass/fail rollup: a table's status derived from its executed row results,
- * and an index's status summed bottom-up from its children.
+ * The arithmetic behind the verdict a page states: a table's status derived from its executed row
+ * results, and an index's status summed bottom-up from its children.
+ *
+ * <p>Conformance rather than a rule. The published rules are in {@code pages/PassFailRollupTest},
+ * where they are read off the pages of a report of a run that really passed and failed; these
+ * cases reach the counting directly, including the ones a run cannot easily produce.
  */
-@DisplayName("Pass/fail rollup")
-@Description("""
-        Every page shows how many of its scenarios pass. A table's counts come from its
-        own executed rows; a feature's counts sum bottom-up from its children. A page
-        with no executed scenarios is neutral: reported without a pass/fail verdict.
-        """)
 class StatusRollupTest {
 
     @DisplayName("Derives a table's status from its executed row results")

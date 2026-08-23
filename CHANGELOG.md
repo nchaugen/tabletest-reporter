@@ -47,6 +47,9 @@
   unless asked for: on a block of two or three lines the digits are as wide as the text beside them.
 
 ### Changed
+- An index page states a passing verdict in the same words a table page does: "All 4 scenarios
+  hold", where it used to say "passing". A reader moving from an index to a table page read the
+  same fact stated two ways.
 - An HTML index page and the sidebar now fold. Every page below is still written out, but only
   the top level is open: an entry that holds pages is a fold the reader opens. A spec of forty
   rules therefore opens on a list of its features instead of every rule at once, and the

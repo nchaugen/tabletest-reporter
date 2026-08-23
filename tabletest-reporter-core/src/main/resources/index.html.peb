@@ -16,7 +16,7 @@
             {%- if status.broken > 0 -%}
                 <p class="verdict fail"><span class="count">{{ status.broken }}</span> of {{ status.total }} scenario{{ status.total == 1 ? '' : 's' }} broken</p>
             {%- else -%}
-                <p class="verdict pass">All <span class="count">{{ status.total }}</span> scenario{{ status.total == 1 ? '' : 's' }} passing</p>
+                <p class="verdict pass">All <span class="count">{{ status.total }}</span> scenario{{ status.total == 1 ? '' : 's' }} hold</p>
             {%- endif -%}
         {%- endif -%}
         {% for paragraph in description | paragraphs %}<p class="description">{{ paragraph | escape }}</p>{% endfor %}

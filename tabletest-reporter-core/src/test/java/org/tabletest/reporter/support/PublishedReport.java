@@ -63,6 +63,17 @@ public final class PublishedReport {
     }
 
     /**
+     * The HTML page at the given report URL, in a report of the output a real run published — so a
+     * rule that needs verdicts from rows that really passed or failed can still name its page by
+     * the URL a reader would be at.
+     */
+    public static Document pageOfRun(String url, Path publishedRunOutput, Path workingDir) {
+        Path outputDirectory = createTempDirectory(workingDir);
+        new TableTestReporter().report(HTML, publishedRunOutput, outputDirectory);
+        return HtmlValidator.parse(read(fileAt(url, HTML, outputDirectory)));
+    }
+
+    /**
      * The lines of the table page, or of the class index page, of a report generated from output
      * the extension published — rendered in the named format, and with the given directory of
      * templates of the reader's own, or null for the built-in templates alone.
