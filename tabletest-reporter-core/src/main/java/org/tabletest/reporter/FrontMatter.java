@@ -15,34 +15,59 @@
  */
 package org.tabletest.reporter;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
  * The front matter a project declares in the {@code frontMatter:} section of its
  * {@code tabletest-reporter.yaml} sidecar, written above every AsciiDoc and Markdown page so a site
- * generator can read it. Most entries are literal and identical on every page. Three keys are the
- * exception: {@code title}, {@code weight} and {@code generated} are filled by the reporter when
- * their declared value is {@code true}, because it knows the page's title, its position in the
- * declared reading order, and when the run happened.
+ * generator can read it. Most entries are literal and identical on every page.
+ *
+ * <p>Three values the reporter knows and a generator cannot work out are asked for by token rather
+ * than by key name: {@code $title}, {@code $position} and {@code $timestamp}. The key stays the
+ * project's own, because generators do not agree on what to call these — a position is
+ * {@code weight} to Hugo, {@code sidebar_position} to Docusaurus, {@code nav_order} to a Jekyll
+ * theme, and {@code page-weight} to Antora, which exposes a custom attribute only under that
+ * prefix. Write {@code $$} for a literal value that begins with a dollar sign.
  *
  * <p>Declared order is kept, so the generated block reads as it was written. An entry whose derived
  * value the reporter cannot supply for a page is dropped rather than written empty. The HTML format
  * writes no front matter at all — it is a complete page, not source for a generator.
  *
- * @param entries the declared keys in order, each mapped to its literal value or to {@link #DERIVED}
+ * @param entries the declared keys in order, each mapped to a literal value or a {@link Derived}
  */
 public record FrontMatter(Map<String, Object> entries) {
 
-    /** The marker a derived key carries instead of a literal value. */
-    static final Object DERIVED = new Object();
+    /** A value the reporter fills in, asked for by its token rather than by the key it is put under. */
+    public enum Derived {
+        TITLE("$title"),
+        POSITION("$position"),
+        TIMESTAMP("$timestamp");
 
-    /** The keys the reporter fills itself, when they are declared as {@code true}. */
-    private static final Set<String> DERIVABLE = Set.of("title", "weight", "generated");
+        private final String token;
+
+        Derived(String token) {
+            this.token = token;
+        }
+
+        static Derived of(String value) {
+            return Arrays.stream(values())
+                    .filter(derived -> derived.token.equals(value))
+                    .findFirst()
+                    .orElse(null);
+        }
+    }
+
+    private static final Logger LOGGER = System.getLogger(FrontMatter.class.getName());
+
+    /** Anything shaped like a token, so one the reporter does not know can be reported rather than written. */
+    private static final Pattern TOKEN_SHAPED = Pattern.compile("\\$[a-zA-Z][a-zA-Z0-9-]*");
 
     /** A character that starts a YAML construct, or a separator that ends a plain scalar early. */
     private static final Pattern INDICATOR = Pattern.compile("^[-?:,\\[\\]{}#&*!|>'\"%@`]|: | #|[\\n\\t]");
@@ -67,8 +92,7 @@ public record FrontMatter(Map<String, Object> entries) {
             return NONE;
         }
         Map<String, Object> entries = new LinkedHashMap<>();
-        declared.forEach(
-                (key, value) -> entries.put(String.valueOf(key), literalOrDerived(String.valueOf(key), value)));
+        declared.forEach((key, value) -> entries.put(String.valueOf(key), declaredValue(String.valueOf(key), value)));
         return new FrontMatter(entries);
     }
 
@@ -87,14 +111,15 @@ public record FrontMatter(Map<String, Object> entries) {
      * derived, and a {@code yaml} scalar that is quoted and escaped where YAML needs it. An entry
      * whose derived value is null for this page is left out.
      *
-     * @param title the page's title, for a derived {@code title}
-     * @param weight the page's position among its siblings, for a derived {@code weight}
-     * @param generatedAt the run timestamp, for a derived {@code generated}
+     * @param title the page's title, for a {@code $title}
+     * @param position the page's place among its siblings, for a {@code $position}
+     * @param generatedAt the run timestamp, for a {@code $timestamp}
      */
-    public List<Map<String, Object>> entriesFor(String title, Integer weight, String generatedAt) {
+    public List<Map<String, Object>> entriesFor(String title, Integer position, String generatedAt) {
         List<Map<String, Object>> rendered = new ArrayList<>();
         entries.forEach((key, declared) -> {
-            Object value = declared == DERIVED ? derive(key, title, weight, generatedAt) : declared;
+            Object value =
+                    declared instanceof Derived derived ? derive(derived, title, position, generatedAt) : declared;
             if (value != null) {
                 rendered.add(entry(key, value));
             }
@@ -102,16 +127,39 @@ public record FrontMatter(Map<String, Object> entries) {
         return List.copyOf(rendered);
     }
 
-    private static Object literalOrDerived(String key, Object value) {
-        return DERIVABLE.contains(key) && Boolean.TRUE.equals(value) ? DERIVED : value;
+    /**
+     * The value a key was declared with: a {@link Derived} for one of the reporter's tokens, the
+     * text after a leading {@code $$} for an escaped literal, and the value itself otherwise. A
+     * value that looks like a token the reporter does not know is written as it stands, with a
+     * warning, so a typo never fails a report.
+     */
+    private static Object declaredValue(String key, Object value) {
+        if (!(value instanceof String text)) {
+            return value;
+        }
+        if (text.startsWith("$$")) {
+            return text.substring(1);
+        }
+        Derived derived = Derived.of(text);
+        if (derived != null) {
+            return derived;
+        }
+        if (TOKEN_SHAPED.matcher(text).matches()) {
+            LOGGER.log(
+                    Level.WARNING,
+                    "Front matter key ''{0}'' asks for ''{1}'', which is not a value the reporter fills."
+                            + " Write $$ to keep a literal dollar sign.",
+                    key,
+                    text);
+        }
+        return text;
     }
 
-    private static Object derive(String key, String title, Integer weight, String generatedAt) {
-        return switch (key) {
-            case "title" -> title;
-            case "weight" -> weight;
-            case "generated" -> generatedAt;
-            default -> null;
+    private static Object derive(Derived derived, String title, Integer position, String generatedAt) {
+        return switch (derived) {
+            case TITLE -> title;
+            case POSITION -> position;
+            case TIMESTAMP -> generatedAt;
         };
     }
 

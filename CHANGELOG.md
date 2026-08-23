@@ -18,11 +18,14 @@
   `tabletest-reporter.yaml` and every AsciiDoc and Markdown page is written with it above the page —
   a fenced YAML block for Markdown, document attributes for AsciiDoc, and nothing for HTML, which is
   a finished page rather than source for a site generator. Keys keep their declared order, and a
-  value is quoted only where YAML would otherwise misread it. Three keys are filled by the reporter
-  when declared as `true`: `title`, `weight` and `generated`. `weight` is the page's position in the
-  reading order the `features:` section declares, so a site generator ordering pages by weight lists
-  them as the project curated them instead of alphabetically. The `frontMatter` template block still
-  works and still wins, for anyone who wants full control.
+  value is quoted only where YAML would otherwise misread it. Three values the reporter knows are
+  asked for by a token in the value rather than by the key's name — `$title`, `$position` and
+  `$timestamp` — because site generators do not agree on what to call them: a page's position is
+  `weight` to Hugo, `sidebar_position` to Docusaurus, `nav_order` to a Jekyll theme and
+  `page-weight` to Antora, which exposes a custom attribute under no other prefix. `$position` is
+  the place the `features:` section declares, so a generator ordering pages by it lists them as the
+  project curated them instead of alphabetically. The `frontMatter` template block still works and
+  still wins, for anyone who wants full control.
 
 ### Fixed
 - The page footer now prints legibly. Its screen colour is a pale grey that falls to a 2.2:1

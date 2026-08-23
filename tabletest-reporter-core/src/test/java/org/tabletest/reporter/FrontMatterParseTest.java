@@ -36,24 +36,48 @@ class FrontMatterParseTest {
     }
 
     @Test
-    void theThreeDerivedKeysAreFilledByTheReporter() {
+    void aTokenAsksTheReporterToFillTheValueUnderAnyKeyName() {
         FrontMatter frontMatter = parse("""
                 frontMatter:
-                  title: true
-                  weight: true
-                  generated: true
+                  title: $title
+                  sidebar_position: $position
+                  generated: $timestamp
                 """);
 
         List<Map<String, Object>> entries = frontMatter.entriesFor("Leap years", 3, "2026-08-23T09:19:33Z");
 
-        assertThat(entries).extracting(entry -> entry.get("key")).containsExactly("title", "weight", "generated");
+        assertThat(entries)
+                .extracting(entry -> entry.get("key"))
+                .containsExactly("title", "sidebar_position", "generated");
         assertThat(entries)
                 .extracting(entry -> entry.get("value"))
                 .containsExactly("Leap years", 3, "2026-08-23T09:19:33Z");
     }
 
     @Test
-    void aDerivedNameCarryingItsOwnValueStaysLiteral() {
+    void aTokenTheReporterDoesNotKnowIsWrittenAsItStands() {
+        FrontMatter frontMatter = parse("""
+                frontMatter:
+                  layout: $unknown
+                """);
+
+        assertThat(frontMatter.entriesFor("Leap years", 3, null).get(0).get("value"))
+                .isEqualTo("$unknown");
+    }
+
+    @Test
+    void aDoubledDollarKeepsALiteralDollarSign() {
+        FrontMatter frontMatter = parse("""
+                frontMatter:
+                  layout: $$position
+                """);
+
+        assertThat(frontMatter.entriesFor("Leap years", 3, null).get(0).get("value"))
+                .isEqualTo("$position");
+    }
+
+    @Test
+    void aKeyNamedForADerivedValueIsStillLiteralWithoutTheToken() {
         FrontMatter frontMatter = parse("""
                 frontMatter:
                   title: "A title of my own"
@@ -69,7 +93,7 @@ class FrontMatterParseTest {
         FrontMatter frontMatter = parse("""
                 frontMatter:
                   layout: report
-                  weight: true
+                  weight: $position
                 """);
 
         assertThat(frontMatter.entriesFor("Leap years", null, "2026-08-23T09:19:33Z"))
@@ -120,7 +144,7 @@ class FrontMatterParseTest {
     void aNumberAndABooleanNeedNoQuoting() {
         FrontMatter frontMatter = parse("""
                 frontMatter:
-                  weight: true
+                  weight: $position
                   draft: false
                 """);
 

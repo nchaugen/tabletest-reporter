@@ -389,11 +389,11 @@ where it sits. Front matter is how you tell it what it needs. Declare it once:
 
 ```yaml
 frontMatter:
-  layout: report       # any key you like, written as declared
+  layout: report          # any key you like, written as declared
   type: docs
-  title: true          # filled by the reporter: the page's own title
-  weight: true         # filled by the reporter: its place in the reading order
-  generated: true      # filled by the reporter: when the run happened
+  title: $title           # filled by the reporter: the page's own title
+  weight: $position       # filled by the reporter: its place in the reading order
+  generated: $timestamp   # filled by the reporter: when the run happened
 ```
 
 Markdown pages open with a fenced block and AsciiDoc pages with document attributes:
@@ -416,15 +416,28 @@ generated: "2026-08-23T09:19:33Z"
 
 **HTML gets none.** It is a finished page, not source for a generator.
 
-**`title`, `weight` and `generated` are the only keys the reporter fills**, and only when you
-declare them as `true`; give one a value of your own and it is written as declared, like any other
-key. A derived value that does not apply to a page — `weight` on the root index, which has no
-siblings — leaves its key out rather than writing it empty. Keys keep their declared order, and a
-value is quoted only where YAML would otherwise read it back as something else.
+**The token goes in the value, not in the key**, because generators do not agree on what to call
+these. A page's position is `weight` to Hugo, `sidebar_position` to Docusaurus, `nav_order` to a
+Jekyll theme, and `page-weight` to Antora, which exposes a custom attribute under no other prefix.
+So name the key whatever your generator reads:
 
-**`weight` is the one worth knowing about.** The `features:` section above declares the reading
-order of your spec. Without a weight, a site generator sorts the pages alphabetically and that
-curation is lost at the boundary; with it, the published site reads in the order you chose.
+```yaml
+frontMatter:
+  sidebar_position: $position    # Docusaurus
+  page-weight: $position         # Antora
+  nav_order: $position           # Jekyll
+```
+
+There are exactly three tokens — `$title`, `$position` and `$timestamp` — and everything else is
+written as declared. A value that merely looks like a token is written as it stands with a warning,
+so a typo never fails a report; write `$$` for a literal value beginning with a dollar sign. A
+derived value that does not apply to a page — a position on the root index, which has no siblings —
+leaves its key out rather than writing it empty. Keys keep their declared order, and a value is
+quoted only where YAML would otherwise read it back as something else.
+
+**`$position` is the one worth knowing about.** The `features:` section above declares the reading
+order of your spec. Without it, a site generator sorts the pages alphabetically and that curation is
+lost at the boundary; with it, the published site reads in the order you chose.
 
 The `frontMatter` template block still works and takes precedence — see
 [Custom Templates](#custom-templates) for when you need more than keys and values.

@@ -118,9 +118,11 @@ generation time. A project without one is unaffected.
   of a page name and `**` for any number of levels.
 - **Front matter** – a `frontMatter` section is written above every AsciiDoc and Markdown page:
   a fenced YAML block for Markdown, document attributes for AsciiDoc, nothing for HTML. Keys are
-  written as declared; `title`, `weight` and `generated` are filled by the reporter when declared
-  as `true`. `weight` carries the declared reading order into a site generator that would
-  otherwise sort the pages alphabetically.
+  written as declared, and three values the reporter knows are asked for by token in the value —
+  `$title`, `$position` and `$timestamp` — so the key stays whatever your generator reads
+  (`weight` for Hugo, `sidebar_position` for Docusaurus, `page-weight` for Antora). `$position`
+  carries the declared reading order into a generator that would otherwise sort pages
+  alphabetically.
 - **Site link** – a `site` section with a `label` and a `url` puts a link back to the hosting
   site at the start of the footer of every HTML page. Every other link a report holds is
   relative within its own tree, so this is the only one that leaves it. The address is used as

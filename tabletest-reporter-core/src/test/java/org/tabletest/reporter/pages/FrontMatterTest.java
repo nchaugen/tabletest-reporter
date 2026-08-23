@@ -56,24 +56,29 @@ public class FrontMatterTest {
                 .startsWith(pageOpensWith.toArray(String[]::new));
     }
 
-    @DisplayName("Fills the keys it is asked to derive for each page")
+    @DisplayName("Fills a value asked for by token, under whatever key you name")
     @Description("""
-            Three keys carry a value the reporter knows and the site generator does not, and
-            declaring one as true asks for it: title, weight and generated. The position is the one
-            the spec metadata declares, so a generator ordering pages by weight lists them in the
-            reading order the project chose rather than alphabetically.
+            Three values the reporter knows and a site generator cannot work out are asked for by
+            token: $title, $position and $timestamp. The token sits in the value, never in the key,
+            because generators do not agree on what to call these — a position is weight to Hugo,
+            sidebar_position to Docusaurus, nav_order to a Jekyll theme, and page-weight to Antora,
+            which exposes a custom attribute under no other prefix.
+
+            The position is the one the spec metadata declares, so a generator ordering pages by it
+            lists them in the reading order the project chose rather than alphabetically.
 
             The rows below are Markdown; the values are the same whichever text format writes them.
-            The third derived key, generated, carries the run timestamp and so has no fixed value to
-            show here.
+            $timestamp carries the run timestamp and so has no fixed value to show here.
             """)
     @TableTest("""
-        Scenario                           | Declared                           | Page URL      | Page opens with?
-        First page of the reading order    | ['title: true', 'weight: true']    | /order-test   | ['---', 'title: order-test', 'weight: 1', '---', '# order-test']
-        Second page of the reading order   | ['title: true', 'weight: true']    | /product-test | ['---', 'title: product-test', 'weight: 2', '---', '# product-test']
-        A page with no position of its own | ['weight: true', 'layout: report'] | /             | ['---', 'layout: report', '---', '# orders']
+        Scenario                            | Declared                                | Page URL      | Page opens with?
+        First page of the reading order     | ['title: $title', 'weight: $position']  | /order-test   | ['---', 'title: order-test', 'weight: 1', '---', '# order-test']
+        Second page of the reading order    | ['title: $title', 'weight: $position']  | /product-test | ['---', 'title: product-test', 'weight: 2', '---', '# product-test']
+        A key named for another generator   | ['sidebar_position: $position']         | /order-test   | ['---', 'sidebar_position: 1', '---', '# order-test']
+        A page with no position of its own  | ['weight: $position', 'layout: report'] | /             | ['---', 'layout: report', '---', '# orders']
+        A key named for a value, without it | ['title: a title of my own']            | /order-test   | ['---', 'title: a title of my own', '---', '# order-test']
         """)
-    void fills_the_keys_it_is_asked_to_derive_for_each_page(
+    void fills_a_value_asked_for_by_token_under_whatever_key_you_name(
             @Lines List<String> declared, String pageUrl, @Lines List<String> pageOpensWith) {
         assertThat(PublishedReport.linesAt(pageUrl, "markdown", sidecarWith(declared), PUBLISHED_TABLES, workingDir))
                 .startsWith(pageOpensWith.toArray(String[]::new));
