@@ -3,6 +3,14 @@
 ## [Unreleased]
 
 ### Added
+- A build can pin the instant a report states it was generated at, with `generatedAt` on the Maven
+  plugin (`-Dtabletest.report.generatedAt`) and the Gradle extension, or `--generated-at` on the
+  CLI. Left unset the reporter reads the clock, as before, so two runs of the same tests write two
+  different pages and a build that diffs its output sees a change every time. Pinning the instant
+  is what makes the same tests produce the same bytes. The value is an ISO-8601 instant and
+  anything else fails the build. The reporter does not read `SOURCE_DATE_EPOCH` itself — output
+  that depends on the environment it ran in is the thing being fixed — so a reproducible build
+  passes its own value in.
 - A report can link back to the site that hosts it. Every other link a report holds is relative
   within its own tree, so a reader who arrives from a site has no way back once inside. Declare a
   `site` section with a `label` and a `url` in `tabletest-reporter.yaml` and the link renders at the

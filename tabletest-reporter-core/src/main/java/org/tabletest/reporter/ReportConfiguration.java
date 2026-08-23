@@ -16,6 +16,7 @@
 package org.tabletest.reporter;
 
 import java.nio.file.Path;
+import java.time.Instant;
 
 /**
  * The resolved, always-valid set of report-level options that drive a single report run:
@@ -34,6 +35,8 @@ import java.nio.file.Path;
  * @param siteLink the link back to the site hosting the report, or {@link SiteLink#NONE} when the
  *     report links nowhere
  * @param frontMatter the front matter for the text formats, or {@link FrontMatter#NONE} when none
+ * @param generatedAt the instant the report states it was generated at, or null to read the clock
+ *     when the report runs
  */
 public record ReportConfiguration(
         Format format,
@@ -43,4 +46,28 @@ public record ReportConfiguration(
         SpecMetadata specMetadata,
         PublishSelection publishSelection,
         SiteLink siteLink,
-        FrontMatter frontMatter) {}
+        FrontMatter frontMatter,
+        Instant generatedAt) {
+
+    /** A configuration that leaves the report to stamp itself with the instant it runs. */
+    public ReportConfiguration(
+            Format format,
+            Path templateDirectory,
+            IndexDepth indexDepth,
+            boolean singleFile,
+            SpecMetadata specMetadata,
+            PublishSelection publishSelection,
+            SiteLink siteLink,
+            FrontMatter frontMatter) {
+        this(
+                format,
+                templateDirectory,
+                indexDepth,
+                singleFile,
+                specMetadata,
+                publishSelection,
+                siteLink,
+                frontMatter,
+                null);
+    }
+}

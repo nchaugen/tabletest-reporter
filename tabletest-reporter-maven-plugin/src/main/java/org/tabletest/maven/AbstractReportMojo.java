@@ -26,6 +26,8 @@ import org.tabletest.reporter.TableTestReporter;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,14 +55,35 @@ abstract class AbstractReportMojo extends AbstractMojo {
     @Parameter(property = "tabletest.report.configFile", defaultValue = "${project.basedir}/tabletest-reporter.yaml")
     protected File configFile;
 
+    /**
+     * The instant to stamp the report with, in ISO-8601. Left unset the report reads the clock, so
+     * a build that reruns writes a different page every time. Set it to the build's
+     * {@code SOURCE_DATE_EPOCH} for a report that is the same bytes from the same tests.
+     */
+    @Parameter(property = "tabletest.report.generatedAt")
+    protected String generatedAt;
+
     @Parameter(defaultValue = "${project.basedir}", readonly = true)
     protected File baseDirectory;
 
     /** Generates the report for the given input directories and logs its outcome. */
     protected void generateReport(List<Path> inputDirs, Path outputDir) {
-        ReportConfiguration config = ReportConfigurationResolver.resolve(
-                new ReportOptions(format, toPath(templateDirectory), indexDepth, null, toPath(configFile)));
+        ReportConfiguration config = ReportConfigurationResolver.resolve(new ReportOptions(
+                format, toPath(templateDirectory), indexDepth, null, toPath(configFile), pinnedInstant()));
         logResult(new TableTestReporter(config).report(inputDirs, outputDir));
+    }
+
+    /** The instant the build pinned, or null to read the clock. A value that is not an instant fails the build. */
+    private Instant pinnedInstant() {
+        if (generatedAt == null || generatedAt.isBlank()) {
+            return null;
+        }
+        try {
+            return Instant.parse(generatedAt.trim());
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid generatedAt instant: '" + generatedAt
+                    + "'. Expected ISO-8601, for example 2026-07-20T14:32:09Z.");
+        }
     }
 
     /** Reports the directories that are not there, without stopping a report the others can still fill. */

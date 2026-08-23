@@ -59,6 +59,7 @@ public class TableTestReporterPlugin implements Plugin<Project> {
             t.getTemplateDir().convention(ext.getTemplateDir());
             t.getJunitOutputDir().convention(project.provider(() -> resolveJunitOutputDir(project)));
             t.getIndexDepth().convention(ext.getIndexDepth());
+            t.getGeneratedAt().convention(ext.getGeneratedAt());
             t.getConfigFile().convention(ext.getConfigFile());
             t.getProjectDir().convention(project.getLayout().getProjectDirectory());
             t.getDefaultInputDir()

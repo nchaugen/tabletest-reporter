@@ -36,6 +36,7 @@ public abstract class TableTestReporterExtension {
     private final DirectoryProperty outputDir;
     private final DirectoryProperty templateDir;
     private final Property<String> indexDepth;
+    private final Property<String> generatedAt;
     private final RegularFileProperty configFile;
 
     /**
@@ -54,6 +55,7 @@ public abstract class TableTestReporterExtension {
                 .convention(layout.getBuildDirectory().dir("generated-docs/tabletest"));
         this.templateDir = objects.directoryProperty();
         this.indexDepth = objects.property(String.class).convention("infinite");
+        this.generatedAt = objects.property(String.class);
         this.configFile =
                 objects.fileProperty().convention(layout.getProjectDirectory().file("tabletest-reporter.yaml"));
     }
@@ -112,6 +114,15 @@ public abstract class TableTestReporterExtension {
      */
     public Property<String> getIndexDepth() {
         return indexDepth;
+    }
+
+    /**
+     * Returns the generated-at property.
+     *
+     * @return property for the ISO-8601 instant to stamp the report with, unset to read the clock
+     */
+    public Property<String> getGeneratedAt() {
+        return generatedAt;
     }
 
     /**

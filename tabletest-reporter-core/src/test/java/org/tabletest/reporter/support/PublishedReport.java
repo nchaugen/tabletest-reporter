@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,6 +29,21 @@ public final class PublishedReport {
     /** The HTML page at the given report URL, in a report built from the given published tables. */
     public static Document pageAt(String url, List<String> publishedTables, Path workingDir) {
         return HtmlValidator.parse(read(fileAt(url, HTML, generate(HTML, false, publishedTables, workingDir))));
+    }
+
+    /**
+     * The HTML page at the given report URL, in a report the build stamped with the given instant.
+     * A report reads the clock unless a build pins it, which no rule about the stamp could state.
+     */
+    public static Document pageAt(String url, Instant generatedAt, List<String> publishedTables, Path workingDir) {
+        Path inputDirectory = PublishedRun.outputFor(publishedTables, workingDir);
+        Path outputDirectory = createTempDirectory(workingDir);
+        new TableTestReporter(stampedWith(generatedAt)).report(inputDirectory, outputDirectory);
+        return HtmlValidator.parse(read(fileAt(url, HTML, outputDirectory)));
+    }
+
+    private static ReportConfiguration stampedWith(Instant generatedAt) {
+        return ReportConfigurationResolver.resolve(new ReportOptions("html", null, null, false, null, generatedAt));
     }
 
     /** The lines of the page at the given report URL, rendered in the named format. */

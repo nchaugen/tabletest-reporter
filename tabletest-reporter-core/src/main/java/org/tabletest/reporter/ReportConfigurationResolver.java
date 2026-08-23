@@ -52,7 +52,8 @@ public final class ReportConfigurationResolver {
                 configFile.specMetadata(),
                 configFile.publishSelection(),
                 configFile.siteLink(),
-                configFile.frontMatter());
+                configFile.frontMatter(),
+                options.generatedAt());
     }
 
     private static Path validatedTemplateDirectory(Path templateDirectory) {

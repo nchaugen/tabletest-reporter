@@ -16,6 +16,7 @@
 package org.tabletest.reporter;
 
 import java.nio.file.Path;
+import java.time.Instant;
 
 /**
  * The raw, partially-specified report options a single entry point (Maven mojo, CLI, or
@@ -30,6 +31,20 @@ import java.nio.file.Path;
  * @param singleFile whether to assemble a single-file report, or null for the default (false)
  * @param configFile the resolved {@code tabletest-reporter.yaml} path to read spec metadata from,
  *     or null when none applies (no file present or none configured)
+ * @param generatedAt the instant to stamp the report with, or null to read the clock when the
+ *     report runs
  */
 public record ReportOptions(
-        String format, Path templateDirectory, String indexDepth, Boolean singleFile, Path configFile) {}
+        String format,
+        Path templateDirectory,
+        String indexDepth,
+        Boolean singleFile,
+        Path configFile,
+        Instant generatedAt) {
+
+    /** Options that leave the report to stamp itself with the instant it runs. */
+    public ReportOptions(
+            String format, Path templateDirectory, String indexDepth, Boolean singleFile, Path configFile) {
+        this(format, templateDirectory, indexDepth, singleFile, configFile, null);
+    }
+}

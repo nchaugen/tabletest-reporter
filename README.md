@@ -302,6 +302,7 @@ Documentation is generated to `target/generated-docs/tabletest/`.
   <inputDirectory>${project.build.directory}/junit-jupiter</inputDirectory>
   <outputDirectory>${project.build.directory}/generated-docs/tabletest</outputDirectory>
   <indexDepth>infinite</indexDepth>  <!-- levels in index (1, 2, ..., or 'infinite') -->
+  <generatedAt>2026-07-20T14:32:09Z</generatedAt>  <!-- pin the report's timestamp, see below -->
   <configFile>${project.basedir}/tabletest-reporter.yaml</configFile>  <!-- spec metadata + publish selection, see below -->
   <inputDirectories>  <!-- several modules merged into one spec, see below -->
     <dir>${project.build.directory}/junit-jupiter</dir>
@@ -331,6 +332,7 @@ tableTestReporter {
   inputDir.set(layout.buildDirectory.dir("junit-jupiter"))
   outputDir.set(layout.buildDirectory.dir("generated-docs/tabletest"))
   indexDepth.set("infinite")  // levels in index (1, 2, ..., or "infinite")
+  generatedAt.set("2026-07-20T14:32:09Z")  // pin the report's timestamp, see below
   configFile.set(layout.projectDirectory.file("tabletest-reporter.yaml"))  // spec metadata + publish selection, see below
   inputDirs.from(layout.buildDirectory.dir("junit-jupiter"))  // several modules merged into one spec, see below
 }
@@ -508,6 +510,31 @@ matches any number of levels. Excluding a page takes its whole subtree with it, 
 feature page left with nothing published under it disappears too. `include` wins over
 `exclude`, so a single rule table can still publish from an otherwise internal class. A
 path matching no page is logged and skipped, like a mistyped feature name.
+
+### Pinning the report's timestamp (`generatedAt`)
+
+Every page states when the report was generated. The reporter reads the clock, so two runs of
+the same tests write two different pages, and a build that diffs its output sees a change every
+time. Pin the instant and the same tests produce the same bytes:
+
+```bash
+mvn tabletest-reporter:report -Dtabletest.report.generatedAt=2026-07-20T14:32:09Z
+./gradlew reportTableTests                      # generatedAt.set("2026-07-20T14:32:09Z")
+tabletest-reporter --generated-at 2026-07-20T14:32:09Z -i target/junit-jupiter
+```
+
+The value is an ISO-8601 instant; anything else fails the build rather than falling back to the
+clock. The reporter does not read `SOURCE_DATE_EPOCH` itself — a report that changes with the
+environment it ran in is the problem being solved — so a reproducible build passes its own value
+in:
+
+```bash
+mvn tabletest-reporter:report \
+  -Dtabletest.report.generatedAt="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y-%m-%dT%H:%M:%SZ)"
+```
+
+The timestamp is stated in UTC whatever zone the build ran in, and the label a reader sees drops
+sub-second precision.
 
 ### Choosing a Format
 
@@ -1261,6 +1288,7 @@ java -jar tabletest-reporter-cli.jar \
   -i target/junit-jupiter \
   -o target/generated-docs/tabletest \
   --index-depth 2 \  # levels in index (1, 2, ..., or 'infinite')
+  --generated-at 2026-07-20T14:32:09Z \  # pin the report's timestamp (default: the clock)
   --config tabletest-reporter.yaml  # spec metadata + publish selection (default: ./tabletest-reporter.yaml)
 ```
 

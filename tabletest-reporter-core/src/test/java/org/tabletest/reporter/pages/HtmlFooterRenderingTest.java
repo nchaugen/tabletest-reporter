@@ -2,14 +2,21 @@ package org.tabletest.reporter.pages;
 
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.tabletest.junit.Description;
 import org.tabletest.junit.TableTest;
 import org.tabletest.junit.TypeConverter;
 import org.tabletest.reporter.SiteLink;
 import org.tabletest.reporter.TemplateEngine;
 import org.tabletest.reporter.support.HtmlValidator;
+import org.tabletest.reporter.support.PublishedReport;
 
+import java.nio.file.Path;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
@@ -24,6 +31,46 @@ public class HtmlFooterRenderingTest {
 
     private static final Map<String, Object> RUN_TIMESTAMP =
             Map.of("datetime", "2026-07-20T14:32:09Z", "label", "20 Jul 2026 14:32 UTC");
+
+    /** The report the timestamp rules below are read off: one class with one table. */
+    private static final List<String> PUBLISHED_TABLES = List.of("com.example.orders.OrderTest#items");
+
+    @TempDir
+    Path workingDir;
+
+    @DisplayName("States the run timestamp in UTC, whatever zone it ran in")
+    @Description("""
+        A report generated in CI reads the same for every reader, so the timestamp is stated in
+        UTC wherever the build ran. The label a reader sees drops the sub-second precision they
+        have no use for; the attribute beside it keeps whole seconds, so tooling can compare the
+        report against the revision it came from.
+
+        A report reads the clock unless the build pins an instant. Pinning one is what makes the
+        same tests produce the same bytes, which is what a build comparing two runs needs, so the
+        rows below are read off reports the build pinned.
+        """)
+    @TableTest("""
+        Scenario             | Instant the build pinned      | Timestamp attribute?   | Footer label?
+        Afternoon run        | "2026-07-20T14:32:09Z"        | "2026-07-20T14:32:09Z" | 20 Jul 2026 14:32 UTC
+        Sub-second precision | "2026-07-20T14:32:09.123456Z" | "2026-07-20T14:32:09Z" | 20 Jul 2026 14:32 UTC
+        Turn of the year     | "2027-01-01T00:00:00Z"        | "2027-01-01T00:00:00Z" | 1 Jan 2027 00:00 UTC
+        """)
+    void states_the_run_timestamp_in_utc(Instant pinnedInstant, String timestampAttribute, String footerLabel) {
+        Document page = PublishedReport.pageAt("/order-test/items", pinnedInstant, PUBLISHED_TABLES, workingDir);
+
+        assertThat(page.select("footer.doc-footer time").attr("datetime")).isEqualTo(timestampAttribute);
+        assertThat(page.select("footer.doc-footer time").text()).isEqualTo(footerLabel);
+    }
+
+    /** Conformance: a build that pins nothing gets the clock, which no row could state as a value. */
+    @Test
+    void a_report_the_build_did_not_pin_states_the_clock_it_ran_at() {
+        Instant beforeTheRun = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        Document page = PublishedReport.pageAt("/order-test/items", null, PUBLISHED_TABLES, workingDir);
+
+        Instant stamped = Instant.parse(page.select("footer.doc-footer time").attr("datetime"));
+        assertThat(stamped).isBetween(beforeTheRun, Instant.now());
+    }
 
     @DisplayName("Records on every page when the report was generated")
     @Description("""

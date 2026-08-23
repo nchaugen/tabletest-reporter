@@ -30,6 +30,8 @@ import picocli.CommandLine.Option;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -85,6 +87,13 @@ public final class TableTestReporterCli implements Callable<Integer> {
                     + "publish selection (default: ./tabletest-reporter.yaml)")
     private String configFileArg;
 
+    @Option(
+            names = {"--generated-at"},
+            description = "Instant to stamp the report with, in ISO-8601 (for example "
+                    + "2026-07-20T14:32:09Z). Default: the clock when the report runs. Pass the "
+                    + "build's SOURCE_DATE_EPOCH here for a report that is the same bytes every run")
+    private String generatedAtArg;
+
     public static void main(String[] args) {
         int exit = new CommandLine(new TableTestReporterCli()).execute(args);
         System.exit(exit);
@@ -110,8 +119,8 @@ public final class TableTestReporterCli implements Callable<Integer> {
                 return 2;
             }
 
-            ReportConfiguration config = ReportConfigurationResolver.resolve(
-                    new ReportOptions(format, rawTemplateDir(), indexDepthArg, singleFile, resolveConfigFile()));
+            ReportConfiguration config = ReportConfigurationResolver.resolve(new ReportOptions(
+                    format, rawTemplateDir(), indexDepthArg, singleFile, resolveConfigFile(), parsedGeneratedAt()));
             ReportResult result = new TableTestReporter(config).report(in, out);
             if (result.filesGenerated() == 0) {
                 System.err.println(result.message());
@@ -164,6 +173,19 @@ public final class TableTestReporterCli implements Callable<Integer> {
         return configFileArg == null || configFileArg.isBlank()
                 ? Path.of(ReportConfigFile.DEFAULT_FILE_NAME)
                 : Path.of(configFileArg);
+    }
+
+    /** The instant the build pinned, or null to read the clock. A value that is not an instant fails the run. */
+    private Instant parsedGeneratedAt() {
+        if (generatedAtArg == null || generatedAtArg.isBlank()) {
+            return null;
+        }
+        try {
+            return Instant.parse(generatedAtArg.trim());
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid generated-at instant: '" + generatedAtArg
+                    + "'. Expected ISO-8601, for example " + "2026-07-20T14:32:09Z.");
+        }
     }
 
     private Path rawTemplateDir() {

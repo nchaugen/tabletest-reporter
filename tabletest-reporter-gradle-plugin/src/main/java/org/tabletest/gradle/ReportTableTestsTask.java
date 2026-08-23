@@ -41,6 +41,8 @@ import javax.inject.Inject;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -63,6 +65,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     private final DirectoryProperty templateDir;
     private final Property<String> junitOutputDir;
     private final Property<String> indexDepth;
+    private final Property<String> generatedAt;
     private final RegularFileProperty configFile;
     private final DirectoryProperty projectDir;
     private final DirectoryProperty defaultInputDir;
@@ -82,6 +85,7 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         this.templateDir = objects.directoryProperty();
         this.junitOutputDir = objects.property(String.class);
         this.indexDepth = objects.property(String.class);
+        this.generatedAt = objects.property(String.class);
         this.configFile = objects.fileProperty();
         this.projectDir = objects.directoryProperty();
         this.defaultInputDir = objects.directoryProperty();
@@ -171,6 +175,17 @@ public abstract class ReportTableTestsTask extends DefaultTask {
     @Input
     public Property<String> getIndexDepth() {
         return indexDepth;
+    }
+
+    /**
+     * Returns the generated-at property.
+     *
+     * @return property for the ISO-8601 instant to stamp the report with, unset to read the clock
+     */
+    @org.gradle.api.tasks.Optional
+    @Input
+    public Property<String> getGeneratedAt() {
+        return generatedAt;
     }
 
     /**
@@ -298,13 +313,32 @@ public abstract class ReportTableTestsTask extends DefaultTask {
         List<Path> in = resolveInputDirectories(configuredInput, defaultInput, baseDir, junitDir);
 
         ReportConfiguration config = ReportConfigurationResolver.resolve(new ReportOptions(
-                format.getOrNull(), toPath(templateDir), indexDepth.getOrNull(), null, resolvedConfigFile()));
+                format.getOrNull(),
+                toPath(templateDir),
+                indexDepth.getOrNull(),
+                null,
+                resolvedConfigFile(),
+                pinnedInstant()));
 
         try {
             ReportResult result = new TableTestReporter(config).report(in, out);
             logResult(result);
         } catch (Exception e) {
             throw new GradleException("Failed to generate TableTest report: " + e.getMessage(), e);
+        }
+    }
+
+    /** The instant the build pinned, or null to read the clock. A value that is not an instant fails the build. */
+    private @Nullable Instant pinnedInstant() {
+        String declared = generatedAt.getOrNull();
+        if (declared == null || declared.isBlank()) {
+            return null;
+        }
+        try {
+            return Instant.parse(declared.trim());
+        } catch (DateTimeParseException e) {
+            throw new GradleException("Invalid generatedAt instant: '" + declared
+                    + "'. Expected ISO-8601, for example 2026-07-20T14:32:09Z.");
         }
     }
 

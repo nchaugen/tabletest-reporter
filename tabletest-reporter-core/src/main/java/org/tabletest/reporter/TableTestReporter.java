@@ -99,7 +99,8 @@ public class TableTestReporter {
                         specMetadata,
                         configuration.publishSelection(),
                         configuration.siteLink(),
-                        configuration.frontMatter()),
+                        configuration.frontMatter(),
+                        configuration.generatedAt()),
                 List.of(inDir),
                 outDir);
     }
@@ -118,7 +119,7 @@ public class TableTestReporter {
         Format format = config.format();
         ReportNode tree =
                 config.specMetadata().applyTo(config.publishSelection().applyTo(built));
-        GeneratedAt generatedAt = GeneratedAt.now();
+        GeneratedAt generatedAt = GeneratedAt.at(config.generatedAt());
         RenderRun run = new RenderRun(format, generatedAt, config.siteLink(), config.frontMatter(), outDir);
         if (config.singleFile()) {
             return reportSingleFile(tree, run);

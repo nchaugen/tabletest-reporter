@@ -36,6 +36,14 @@ record GeneratedAt(Instant instant) {
         return new GeneratedAt(Instant.now());
     }
 
+    /**
+     * The instant the build pinned the report to, or the clock when it pinned none. A build that
+     * wants the same bytes from the same tests pins one; every other build reads the clock.
+     */
+    static GeneratedAt at(Instant pinned) {
+        return pinned == null ? now() : new GeneratedAt(pinned);
+    }
+
     Map<String, Object> toMap() {
         return Map.of("datetime", datetime(), "label", label());
     }
