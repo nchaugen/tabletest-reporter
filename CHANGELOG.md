@@ -70,6 +70,13 @@
   ones. They sat inside the Maven section, folded away, although they cover Maven, Gradle and the
   CLI alike — a Gradle reader following the Gradle instructions never met the Gradle option they
   hold.
+- The README's Formats section is regrouped. Choosing a format and listing the available ones sit
+  together, because both answer "which format?". Defining a format of your own moved in with the
+  templates, because a format *is* a pair of templates — name the pair after a format that exists
+  and you replace it, name it after one that does not and you have defined a format. The HTML
+  section is renamed "What the HTML report gives you", so it no longer implies AsciiDoc and
+  Markdown siblings that would be stubs: what those two formats carry is already the substance of
+  Choosing a format.
 - The README section on styling now says which format it serves. It was called "Styling HTML
   Reports", but every word of it is about the `asciidoc` format after Asciidoctor has converted it
   — a reader on the built-in `html` format would have configured a plugin that has no bearing on

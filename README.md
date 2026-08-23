@@ -17,16 +17,15 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
   - [Test-side options (JUnit configuration parameters)](#test-side-options-junit-configuration-parameters)
 - [Formats](#formats)
   - [Choosing a format](#choosing-a-format)
-  - [The built-in HTML format](#the-built-in-html-format)
-  - [Styling an AsciiDoc report once it is HTML](#styling-an-asciidoc-report-once-it-is-html)
   - [Listing available formats](#listing-available-formats)
-  - [Custom output formats](#custom-output-formats)
+  - [What the HTML report gives you](#what-the-html-report-gives-you)
 - [Output Structure](#output-structure)
   - [How names become filenames](#how-names-become-filenames)
 - [Publishing Your Documentation](#publishing-your-documentation)
   - [GitHub Pages via Actions](#github-pages-via-actions)
   - [Other hosting options](#other-hosting-options)
   - [Publishing into an existing site](#publishing-into-an-existing-site)
+  - [Styling an AsciiDoc report once it is HTML](#styling-an-asciidoc-report-once-it-is-html)
 - [Custom Templates](#custom-templates)
   - [Convention-based discovery](#convention-based-discovery)
   - [Configuring a custom template directory](#configuring-a-custom-template-directory)
@@ -35,6 +34,7 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
   - [Template replacement example](#template-replacement-example)
   - [The template context](#the-template-context)
   - [What an extension template can reach](#what-an-extension-template-can-reach)
+  - [Defining a format of your own](#defining-a-format-of-your-own)
 - [Column Roles](#column-roles)
   - [Building a rendering of your own](#building-a-rendering-of-your-own)
 - [For Plugin Developers](#for-plugin-developers)
@@ -637,7 +637,38 @@ the `frontMatter` block of an extension template — see [Custom Templates](#cus
 **The default is `asciidoc`** where you name no format, in every entry point. If you intend to
 publish the result directly, set `html` explicitly.
 
-### The built-in HTML format
+A format of your own is a pair of templates rather than a setting, so it lives with the templates
+— see [Defining a format of your own](#defining-a-format-of-your-own).
+
+### Listing available formats
+
+You can list all available output formats (built-in and custom) using the following commands:
+
+**Maven:**
+```bash
+mvn tabletest-reporter:list-formats
+```
+
+**Gradle:**
+```bash
+./gradlew listTableTestReportFormats
+```
+
+**CLI:**
+```bash
+tabletest-reporter --list-formats
+```
+
+The output shows all available formats, sorted alphabetically. By default, you'll see the built-in formats:
+```
+asciidoc
+html
+markdown
+```
+
+When using custom templates with additional formats, those will also appear in the list.
+
+### What the HTML report gives you
 
 The `html` format renders self-contained living documentation, and needs no Asciidoctor step.
 Each page is a standalone `.html` file, with its CSS and JavaScript inside it and no external
@@ -723,195 +754,6 @@ currently applies to the `html` format only.
 To customise the markup, drop your own `table.html.peb` / `index.html.peb` into a template
 directory — an exact filename match overrides the built-in template, as
 [Custom Templates](#custom-templates) describes.
-
-### Styling an AsciiDoc report once it is HTML
-
-This section is for the `asciidoc` format, once you have run Asciidoctor over it. The built-in
-`html` format is not styled this way — it carries its stylesheet inside each page, and you add to
-it through the `extra_stylesheet` block, which [Column Roles](#column-roles) shows.
-
-When you generate HTML from an AsciiDoc report, you can style it by the roles TableTest Reporter
-emits.
-
-**Understanding CSS Class Placement**
-
-TableTest Reporter generates AsciiDoc with custom roles (`.scenario`, `.expectation`, `.passed`, `.failed`) that become CSS classes in HTML output. The reporter puts these classes on **an inline element inside a table cell**, such as a `span`, a `ul` or an `ol`. It does not put them on the `th` or the `td`.
-
-To style cells based on their content's roles, use the CSS `:has()` selector:
-
-```css
-/* Scenario column - light yellow background */
-:is(th, td):has(.scenario) {
-    background-color: #fffacd;
-    font-style: italic;
-}
-
-/* Expectation columns - light blue background */
-:is(th, td):has(.expectation) {
-    background-color: #add8e6;
-}
-
-/* Passed rows - light green background */
-:is(th, td):has(.passed) {
-    background-color: #90ee90;
-}
-
-/* Failed rows - light red background */
-:is(th, td):has(.failed) {
-    background-color: #ffcccb;
-}
-
-/* Expectation cells in passed rows - bold green */
-:is(th, td):has(.expectation.passed) {
-    background-color: #32cd32;
-    font-weight: bold;
-}
-
-/* Expectation cells in failed rows - bold red */
-:is(th, td):has(.expectation.failed) {
-    background-color: #ff6347;
-    font-weight: bold;
-}
-```
-
-**Note:** use `:has(.classname)` and name no element type. A role can land on a different element,
-depending on what the cell holds.
-
-**Asciidoctor Maven Plugin Configuration**
-
-Configure the [asciidoctor-maven-plugin](https://docs.asciidoctor.org/maven-tools/latest/) to use your custom stylesheet:
-
-```xml
-<plugin>
-    <groupId>org.asciidoctor</groupId>
-    <artifactId>asciidoctor-maven-plugin</artifactId>
-    <version>3.2.0</version>
-    <configuration>
-        <sourceDirectory>${project.build.directory}/generated-docs/tabletest</sourceDirectory>
-        <outputDirectory>${project.build.directory}/generated-html/tabletest</outputDirectory>
-        <backend>html5</backend>
-        <preserveDirectories>true</preserveDirectories>
-        <attributes>
-            <stylesheet>tabletest.css</stylesheet>
-            <stylesdir>${project.basedir}/src/main/resources</stylesdir>
-            <copycss>true</copycss>
-        </attributes>
-    </configuration>
-</plugin>
-```
-
-Key attributes:
-- `stylesheet` - Name of your CSS file
-- `stylesdir` - Directory containing your CSS file
-- `copycss` - Embeds CSS in each HTML file (set to `false` and use `linkcss` for external stylesheet)
-
-See the [Asciidoctor stylesheet documentation](https://docs.asciidoctor.org/asciidoc/latest/docinfo/stylesheet/) for more options.
-
-**Working Example**
-
-A complete working example is available in the project's compatibility tests: [`compatibility-tests/junit-6-maven/`](compatibility-tests/junit-6-maven/)
-
-### Listing available formats
-
-You can list all available output formats (built-in and custom) using the following commands:
-
-**Maven:**
-```bash
-mvn tabletest-reporter:list-formats
-```
-
-**Gradle:**
-```bash
-./gradlew listTableTestReportFormats
-```
-
-**CLI:**
-```bash
-tabletest-reporter --list-formats
-```
-
-The output shows all available formats, sorted alphabetically. By default, you'll see the built-in formats:
-```
-asciidoc
-html
-markdown
-```
-
-When using custom templates with additional formats, those will also appear in the list.
-
-### Custom output formats
-
-Beyond the built-in AsciiDoc, Markdown, and HTML formats, you can define custom output formats (XML, JSON, etc.) by providing templates in your template directory.
-
-**Requirements:**
-- Both `table.{format}.peb` and `index.{format}.peb` must be present
-- Format name becomes the file extension (e.g., "xml" → ".xml")
-
-**Example: XML Format**
-
-Create `table.xml.peb`:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<table title="{{ title }}">
-    {% if description %}<description>{{ description }}</description>{% endif %}
-    <headers>
-    {% for header in headers %}
-        <header>{{ header.value }}</header>
-    {% endfor %}
-    </headers>
-    <rows>
-    {% for row in rows %}
-        <row>
-        {% for cell in row %}
-            <cell>{{ cell.value }}</cell>
-        {% endfor %}
-        </row>
-    {% endfor %}
-    </rows>
-</table>
-```
-
-Create `index.xml.peb`:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<index name="{{ title ? title : name }}">
-    {% if description %}<description>{{ description }}</description>{% endif %}
-    {% for item in contents %}
-    <item path="{{ item.path }}">{{ item.title }}</item>
-    {% endfor %}
-</index>
-```
-
-**Usage:**
-
-Specify the custom format when running the reporter:
-
-**Maven:**
-```xml
-<configuration>
-  <format>xml</format>
-  <templateDirectory>${project.basedir}/templates</templateDirectory>
-</configuration>
-```
-
-**Gradle:**
-```kotlin
-tableTestReporter {
-  format.set("xml")
-  templateDir.set(file("templates"))
-}
-```
-
-**CLI:**
-```bash
-java -jar tabletest-reporter-cli.jar \
-  --template-dir templates \
-  -f xml \
-  -i target/junit-jupiter \
-  -o target/generated-docs/tabletest
-```
-
-If an unknown format is specified, you'll get a helpful error message listing all available formats (both built-in and discovered custom formats).
 
 ## Output Structure
 
@@ -1125,6 +967,93 @@ report. For the same reason neither text format carries breadcrumbs or a footer 
 
 ---
 
+### Styling an AsciiDoc report once it is HTML
+
+This section is for the `asciidoc` format, once you have run Asciidoctor over it. The built-in
+`html` format is not styled this way — it carries its stylesheet inside each page, and you add to
+it through the `extra_stylesheet` block, which [Column Roles](#column-roles) shows.
+
+When you generate HTML from an AsciiDoc report, you can style it by the roles TableTest Reporter
+emits.
+
+**Understanding CSS Class Placement**
+
+TableTest Reporter generates AsciiDoc with custom roles (`.scenario`, `.expectation`, `.passed`, `.failed`) that become CSS classes in HTML output. The reporter puts these classes on **an inline element inside a table cell**, such as a `span`, a `ul` or an `ol`. It does not put them on the `th` or the `td`.
+
+To style cells based on their content's roles, use the CSS `:has()` selector:
+
+```css
+/* Scenario column - light yellow background */
+:is(th, td):has(.scenario) {
+    background-color: #fffacd;
+    font-style: italic;
+}
+
+/* Expectation columns - light blue background */
+:is(th, td):has(.expectation) {
+    background-color: #add8e6;
+}
+
+/* Passed rows - light green background */
+:is(th, td):has(.passed) {
+    background-color: #90ee90;
+}
+
+/* Failed rows - light red background */
+:is(th, td):has(.failed) {
+    background-color: #ffcccb;
+}
+
+/* Expectation cells in passed rows - bold green */
+:is(th, td):has(.expectation.passed) {
+    background-color: #32cd32;
+    font-weight: bold;
+}
+
+/* Expectation cells in failed rows - bold red */
+:is(th, td):has(.expectation.failed) {
+    background-color: #ff6347;
+    font-weight: bold;
+}
+```
+
+**Note:** use `:has(.classname)` and name no element type. A role can land on a different element,
+depending on what the cell holds.
+
+**Asciidoctor Maven Plugin Configuration**
+
+Configure the [asciidoctor-maven-plugin](https://docs.asciidoctor.org/maven-tools/latest/) to use your custom stylesheet:
+
+```xml
+<plugin>
+    <groupId>org.asciidoctor</groupId>
+    <artifactId>asciidoctor-maven-plugin</artifactId>
+    <version>3.2.0</version>
+    <configuration>
+        <sourceDirectory>${project.build.directory}/generated-docs/tabletest</sourceDirectory>
+        <outputDirectory>${project.build.directory}/generated-html/tabletest</outputDirectory>
+        <backend>html5</backend>
+        <preserveDirectories>true</preserveDirectories>
+        <attributes>
+            <stylesheet>tabletest.css</stylesheet>
+            <stylesdir>${project.basedir}/src/main/resources</stylesdir>
+            <copycss>true</copycss>
+        </attributes>
+    </configuration>
+</plugin>
+```
+
+Key attributes:
+- `stylesheet` - Name of your CSS file
+- `stylesdir` - Directory containing your CSS file
+- `copycss` - Embeds CSS in each HTML file (set to `false` and use `linkcss` for external stylesheet)
+
+See the [Asciidoctor stylesheet documentation](https://docs.asciidoctor.org/asciidoc/latest/docinfo/stylesheet/) for more options.
+
+**Working Example**
+
+A complete working example is available in the project's compatibility tests: [`compatibility-tests/junit-6-maven/`](compatibility-tests/junit-6-maven/)
+
 ## Custom Templates
 
 TableTest Reporter uses [Pebble templates](https://pebbletemplates.io/) to generate documentation. You can customise the output by providing your own templates.
@@ -1320,6 +1249,82 @@ Two things to know about the blocks themselves:
 - **A block must sit at the top level of the page template to be overridable.** A block written
 inside a macro renders its default and ignores the override, without a word. A macro reaches the
 page through `{% import %}`, which is not inheritance.
+
+### Defining a format of your own
+
+A format is a pair of templates. Name the pair after a format that exists and you replace it, as
+above. Name it after one that does not, and you have defined a format. Put the templates in your
+template directory, and the reporter can write XML, JSON, or whatever else you template.
+
+**Requirements:**
+- Both `table.{format}.peb` and `index.{format}.peb` must be present
+- Format name becomes the file extension (e.g., "xml" → ".xml")
+
+**Example: XML Format**
+
+Create `table.xml.peb`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<table title="{{ title }}">
+    {% if description %}<description>{{ description }}</description>{% endif %}
+    <headers>
+    {% for header in headers %}
+        <header>{{ header.value }}</header>
+    {% endfor %}
+    </headers>
+    <rows>
+    {% for row in rows %}
+        <row>
+        {% for cell in row %}
+            <cell>{{ cell.value }}</cell>
+        {% endfor %}
+        </row>
+    {% endfor %}
+    </rows>
+</table>
+```
+
+Create `index.xml.peb`:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<index name="{{ title ? title : name }}">
+    {% if description %}<description>{{ description }}</description>{% endif %}
+    {% for item in contents %}
+    <item path="{{ item.path }}">{{ item.title }}</item>
+    {% endfor %}
+</index>
+```
+
+**Usage:**
+
+Specify the custom format when running the reporter:
+
+**Maven:**
+```xml
+<configuration>
+  <format>xml</format>
+  <templateDirectory>${project.basedir}/templates</templateDirectory>
+</configuration>
+```
+
+**Gradle:**
+```kotlin
+tableTestReporter {
+  format.set("xml")
+  templateDir.set(file("templates"))
+}
+```
+
+**CLI:**
+```bash
+java -jar tabletest-reporter-cli.jar \
+  --template-dir templates \
+  -f xml \
+  -i target/junit-jupiter \
+  -o target/generated-docs/tabletest
+```
+
+If an unknown format is specified, you'll get a helpful error message listing all available formats (both built-in and discovered custom formats).
 
 ## Column Roles
 
