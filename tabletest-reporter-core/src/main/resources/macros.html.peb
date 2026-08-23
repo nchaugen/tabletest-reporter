@@ -522,17 +522,34 @@ td.failed.expectation { background: var(--fail-wash); }
 
 /* A `tree` column holds a tree written as a nested collection. The default rendering puts a
    key beside its value, which walks a deep tree sideways; here each level opens below its
-   parent, indented, with a guide line down the level and a connector on each entry. */
+   parent, indented, and joined to it by a drawn line.
+
+   One element draws the whole structure. The entry owns its stem, which runs the height of
+   everything nested under it, and a tick that meets the entry's own text. The last entry
+   stops its stem at the tick, which is what turns it into a corner. The value container
+   below a key therefore draws nothing at all: an earlier version gave it a border of its own,
+   a shade paler and a little to the left of the connector glyphs, so every level carried two
+   competing verticals that never met the corners belonging to them. */
 td.cell.tree .coll.map { display: block; }
 td.cell.tree .coll.map > dt { display: block; }
-td.cell.tree .coll.map > dd {
-    display: block; margin: 0 0 0 0.2rem; padding-left: 0.6rem;
-    border-left: 1px solid var(--rule);
+td.cell.tree .coll.map > dd { display: block; margin: 0; padding: 0; border: 0; }
+/* One gap sits on both sides of a tick: between the text above and the stem below it, and
+   between the end of the tick and the text it points at. Naming it once keeps them equal. */
+td.cell.tree .coll.list { gap: 0; --tree-gap: 0.35rem; --tree-tick: 0.75rem; }
+td.cell.tree .coll.list > li {
+    margin-left: var(--tree-gap);
+    padding-left: calc(var(--tree-tick) + var(--tree-gap));
+    border-left: 1px solid var(--rule-strong);
 }
-td.cell.tree .coll.list { gap: 0; }
-td.cell.tree .coll.list > li { padding-left: 1.1rem; }
-td.cell.tree .coll.list > li::before { content: "\251C\2500"; color: var(--marker); }
-td.cell.tree .coll.list > li:last-child::before { content: "\2514\2500"; }
+td.cell.tree .coll.list > li::before {
+    content: ""; position: absolute; left: 0; top: 0.72em; width: var(--tree-tick); height: 0;
+    border-top: 1px solid var(--rule-strong);
+}
+td.cell.tree .coll.list > li:last-child { border-left-color: transparent; }
+td.cell.tree .coll.list > li:last-child::after {
+    content: ""; position: absolute; left: -1px; top: 0; width: 0; height: 0.72em;
+    border-left: 1px solid var(--rule-strong);
+}
 
 /* A value set expands its row into one run per value, rather than reaching the test as a
    set. A reader cannot tell the two apart from the cell alone, so the cell says which it is. */

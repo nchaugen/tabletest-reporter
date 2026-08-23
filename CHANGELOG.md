@@ -27,6 +27,15 @@
   project curated them instead of alphabetically. The `frontMatter` template block still works and
   still wins, for anyone who wants full control.
 
+### Changed
+- A `@Tree` column now draws one connected tree rather than two overlapping ones. The nesting was
+  drawn twice: the container below a key carried a full-height rule, and each entry carried a
+  box-drawing glyph a shade darker and a little to its right, so every level showed two competing
+  verticals and no corner met the line it belonged to. The entry now owns the whole structure — a
+  stem running the height of what is nested under it, a tick meeting its own text, and a stem that
+  stops at the tick on the last entry, which is what makes the corner. The lines are drawn rather
+  than typed, so they connect exactly and scale with the font.
+
 ### Fixed
 - A report now prints the same whichever colour scheme it is viewed in. Printing drops a dark
   background but keeps the text colours, so a reader in dark mode printed pale grey on white — every
