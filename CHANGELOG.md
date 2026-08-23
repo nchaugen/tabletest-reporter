@@ -39,6 +39,10 @@
   unless asked for: on a block of two or three lines the digits are as wide as the text beside them.
 
 ### Changed
+- The sidebar now marks the whole trail down to the page you are on, not the page alone. A rule
+  deep in a spec highlighted one leaf, and nothing said which feature held it. Every entry above
+  the current page now reads at full ink, and the rule line beside its children is drawn in the
+  accent colour.
 - A `@Tree` column now draws one connected tree rather than two overlapping ones. The nesting was
   drawn twice: the container below a key carried a full-height rule, and each entry carried a
   box-drawing glyph a shade darker and a little to its right, so every level showed two competing

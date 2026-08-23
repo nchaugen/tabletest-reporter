@@ -57,18 +57,30 @@ final class NavModel {
         }
         return index.contents().stream()
                 .map(child -> {
+                    List<Map<String, Object>> children = tree(child, current, hrefOf);
                     Map<String, Object> item = new HashMap<>();
                     item.put("label", label(child));
                     item.put("href", hrefOf.apply(child));
                     item.put("type", child.type());
                     item.put("status", StatusRollup.of(child).state());
                     item.put("current", child == current);
-                    List<Map<String, Object>> children = tree(child, current, hrefOf);
+                    item.put("ancestor", holdsCurrentPage(children));
                     if (!children.isEmpty()) {
                         item.put("contents", children);
                     }
                     return item;
                 })
                 .toList();
+    }
+
+    /**
+     * Whether the current page sits somewhere below the entries given. An entry marked this way is
+     * on the trail to the page the reader is on, which is what tells the sidebar which branch to
+     * mark and which branch to open.
+     */
+    private static boolean holdsCurrentPage(List<Map<String, Object>> entries) {
+        return entries.stream()
+                .anyMatch(entry ->
+                        Boolean.TRUE.equals(entry.get("current")) || Boolean.TRUE.equals(entry.get("ancestor")));
     }
 }

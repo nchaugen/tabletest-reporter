@@ -290,7 +290,7 @@
 {% endmacro %}
 
 {% macro renderNavItem(item) %}
-    <li class="nav-item {{ item.type }} {{ item.status }}{{ item.current ? ' current' : '' }}">
+    <li class="nav-item {{ item.type }} {{ item.status }}{{ item.current ? ' current' : '' }}{{ item.ancestor ? ' ancestor' : '' }}">
         <a href="{{ item.href }}"{{ item.current ? ' aria-current="page"' : '' }}><span class="status-dot" aria-hidden="true"></span>{{ item.label | escape }}</a>
         {%- if item.contents is not empty -%}
             <ul class="nav-children">
@@ -379,6 +379,11 @@ a { color: var(--accent); text-underline-offset: 2px; }
 .sidebar-home:hover, .sidebar-home.current { color: var(--accent); }
 .site-nav { font-size: 0.85rem; }
 .site-nav .nav-item.current > a { color: var(--accent); font-weight: 700; }
+/* The trail to the page you are on. Marking the page alone highlights one leaf and leaves the
+   reader to guess which branch holds it, so every entry above it is marked too: the label reads
+   at full ink, and the rule line beside its children is drawn in accent. */
+.site-nav .nav-item.ancestor > a { color: var(--ink); font-weight: 700; }
+.site-nav .nav-item.ancestor > .nav-children { border-left-color: var(--accent); }
 
 /* Whole-report search — a box atop the drawer whose results replace the tree while typing */
 .sidebar-search { margin-bottom: 0.5rem; }
