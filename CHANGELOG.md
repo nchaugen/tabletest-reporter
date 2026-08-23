@@ -14,6 +14,12 @@
   footer without rewriting the page. The site link also has a `siteLink(site)` macro of its own,
   which such a template can call to place the same link elsewhere.
 
+### Fixed
+- The page footer now prints legibly. Its screen colour is a pale grey that falls to a 2.2:1
+  contrast ratio against white paper, so the attribution and the run timestamp read as nothing in a
+  printed page or a PDF. The footer now prints as ink, in a colour of its own rather than a themed
+  one, so it survives whichever colour scheme the reader views the report in.
+
 ## [1.4.0] - 2026-08-20
 
 ### Added

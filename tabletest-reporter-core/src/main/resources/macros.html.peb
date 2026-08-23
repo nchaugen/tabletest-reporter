@@ -612,6 +612,9 @@ td.cell.lines .literal.empty-string { visibility: hidden; }
     .failures details { break-inside: avoid; }
     /* On paper a reader cannot follow a link, so the address is spelled out */
     .doc-footer .site-link::after { content: " (" attr(href) ")"; }
+    /* The footer's screen grey is a 2.2:1 contrast on paper, which reads as nothing.
+       Print the whole line as ink, so the attribution and the timestamp survive. */
+    .doc-footer, .doc-footer .site-link { color: #44474f; }
 }
 </style>
 {% endmacro %}
