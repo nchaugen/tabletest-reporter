@@ -10,7 +10,7 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
 ## Quick Start
 
 1. Add the reporter plugin to your build
-2. Run your tests (YAML files are generated automatically)
+2. Run your tests, which write the YAML files
 3. Run the reporter plugin to generate documentation
 
 For Gradle users, the plugin handles everything automatically. Maven users need to add the dependency and configure autodetection manually.
@@ -26,7 +26,9 @@ For Gradle users, the plugin handles everything automatically. Maven users need 
 
 Popular frameworks like Spring Boot (3.5.0+) and Quarkus (3.21.2+) include compatible JUnit versions.
 
-These are the versions the compatibility test suite exercises on every change: JUnit 5.12.0 and 6.1.2 on both Maven and Gradle, Spring Boot 3.5.0 and current, Quarkus 3.21.2 and current.
+The compatibility test suite exercises these versions on every change. It covers JUnit 5.12.0 and
+6.1.2, on Maven and on Gradle. It also covers Spring Boot 3.5.0 and current, and Quarkus 3.21.2
+and current.
 
 ## Step 1: Add the Reporter Plugin
 
@@ -88,7 +90,8 @@ The `report` goal generates documentation from the collected test data.
 <details>
 <summary><b>Manual Setup (Advanced)</b></summary>
 
-If you need manual control over the JUnit extension setup (e.g., for the CLI runner or custom configurations), you can add the dependency and configure autodetection manually:
+You may want manual control over the JUnit extension setup, for the CLI runner or for a
+configuration of your own. Add the dependency and configure autodetection yourself:
 
 **Add Dependency:**
 
@@ -177,7 +180,9 @@ class AuthenticationTest {
 
 **Important: Scenario Column Requirement**
 
-To enable pass/fail indicators (`.passed`/`.failed` CSS roles) in your generated documentation, **your table must include a scenario column**, either implicitly as a leading, undeclared column, or explicitly with the `@Scenario` annotation marker.
+**Your table needs a scenario column** for the pass and fail indicators, which are the `.passed`
+and `.failed` CSS roles. Give it one of two ways: as a leading column the test does not declare,
+or with the `@Scenario` annotation on the parameter you choose.
 
 ```java
 @TableTest("""
@@ -187,7 +192,9 @@ To enable pass/fail indicators (`.passed`/`.failed` CSS roles) in your generated
     """)
 ```
 
-Without a scenario column, pass/fail roles cannot be reliably applied due to parameter type conversion. Tables without scenario columns will still generate documentation, but rows won't be marked with pass/fail indicators:
+Without a scenario column, the reporter cannot apply the pass and fail roles reliably, because
+parameter type conversion gets in the way. A table with no scenario column still generates
+documentation. Its rows carry no pass or fail indicator:
 
 ```java
 @TableTest("""
@@ -204,10 +211,10 @@ The scenario column can have any name (`Scenario`, `Test Case`, `Description`, e
 Every published cell carries the roles of its column. The reporter derives four itself — `scenario`,
 `expectation`, `passed` and `failed` — and a test can declare more.
 
-**A column of source text: `@Lines`.** A table keeps every row on one line, so a multi-line value is
-written as a list of lines. Mark the column with `@Lines` and the parameter receives the lines joined
-by newlines, while the HTML report renders the cell as a stacked monospace block instead of a
-bulleted list:
+**A column of source text: `@Lines`.** A table keeps every row on one line, so you write a
+multi-line value as a list of lines. Mark the column with `@Lines`. The parameter then takes the
+lines joined by newlines. The HTML report draws the cell as a stacked
+monospace block, and not as a bulleted list:
 
 ```java
 @TableTest("""
@@ -220,14 +227,13 @@ void countsTables(@Lines String source, int tableCount) {
 }
 ```
 
-Declare the parameter as a `List<String>` instead to receive the lines themselves. The published
-cell is unchanged either way — the reporter publishes the value the row ran with, so the cell is
-still the list of lines as it was written.
+Declare the parameter as a `List<String>` instead, and it takes the lines themselves. The published
+cell does not change either way. The reporter publishes the value the row ran with, so the cell is
+still the list of lines you wrote.
 
-**Several named blocks: `@NamedLines`.** Where one cell holds more than one block of text, each
-under a name, write it as a map from name to lines. A file and its contents is the case it was built
-for, so the cell reads as a small directory and the HTML report renders each name as a caption over
-its own block:
+**Several named blocks: `@NamedLines`.** One cell can hold more than one block of text, each under
+a name. Write it as a map from name to lines. A file and its contents is the case it serves, so the cell reads as a small directory. The HTML report draws each name as a caption over its own
+block:
 
 ```java
 @TableTest("""
@@ -239,14 +245,14 @@ void rendersWithYourTemplate(
         @NamedLines Map<String, List<String>> yourTemplateDirectory, @Lines List<String> tablePage) { ... }
 ```
 
-The parameter is a plain `Map<String, List<String>>` — there is no converter, and **a map key is
-never converted**, so declaring `Map<Path, …>` compiles and then fails at the first read. Resolve the
-name yourself where you write the files out.
+The parameter is a plain `Map<String, List<String>>`, and there is no converter. Note that **a map
+key is never converted**. Declaring `Map<Path, …>` therefore compiles, and then fails at the first
+read. Resolve the name yourself where you write the files out.
 
-**Numbered lines: `@Numbered`.** Numbering is a role of its own rather than part of the two above, so
-ask for it beside either — `@Lines @Numbered` or `@NamedLines @Numbered`. It earns its place on a
-block long enough that a reader needs to point at a line; on two or three lines it is a column of
-digits as wide as the text beside it, which is why it is off unless asked for.
+**Numbered lines: `@Numbered`.** Numbering is a role of its own, and not part of the two above. Ask
+for it beside either: `@Lines @Numbered` or `@NamedLines @Numbered`. It earns its place on a block
+long enough that a reader needs to point at a line. On two or three lines the digits are as wide as
+the text beside them, which is why it is off unless you ask.
 
 **A role of your own.** Annotate an annotation with `@ColumnRole` and put it on a parameter:
 
@@ -257,12 +263,14 @@ digits as wide as the text beside it, which is why it is off unless asked for.
 public @interface Ingredient {}
 ```
 
-The role is published as the annotation's simple name in kebab case — `@SourceLines` publishes
-`source-lines` — or as the token `@ColumnRole("...")` names. It reaches the HTML report as a CSS
-class on the cell and the AsciiDoc report as an element role, so your own stylesheet can style the
-column; Markdown carries no roles. A role must be lower-case words joined by single hyphens, and one
-naming a role the reporter derives is published anyway — the column is then styled as that role
-without being treated as one.
+The reporter publishes the role as the annotation's simple name in kebab case, so `@SourceLines`
+publishes `source-lines`. Name the token yourself with `@ColumnRole("...")` instead.
+
+The role reaches the HTML report as a CSS class on the cell, and the AsciiDoc report as an element
+role. A stylesheet of your own can therefore style the column. Markdown carries no roles.
+
+A role must be lower-case words joined by single hyphens. A role that names one the reporter derives
+publishes anyway: the column takes that role's styling, and the reporter never treats it as one.
 
 ## Step 3: Run Your Tests
 
@@ -283,17 +291,20 @@ Each TableTest method produces a YAML file with prefix `TABLETEST-`. File names 
 
 ## Step 4: Generate Documentation
 
-Run the reporter to generate AsciiDoc or Markdown documentation. The reporter automatically detects where your test framework writes YAML files, so in most standard Maven and Gradle projects you don't need to configure the input directory at all — just run the plugin. See [Input Directory Resolution](#input-directory-resolution) for details on how detection works and when manual configuration is needed.
+Run the reporter to generate the documentation. It finds where your test framework writes its YAML
+files. Most standard Maven and Gradle
+projects therefore need no input directory at all. Run the plugin. See [Input Directory Resolution](#input-directory-resolution) for details on how detection works and when manual configuration is needed.
 
 ### Maven
 
-If you configured the `report` goal in your plugin executions (see Step 1), documentation is generated automatically during the build. Otherwise, run manually:
+Where you configured the `report` goal in your plugin executions, as Step 1 shows, the build
+generates the documentation itself. Otherwise, run it by hand:
 
 ```bash
 mvn tabletest-reporter:report
 ```
 
-Documentation is generated to `target/generated-docs/tabletest/`.
+The plugin writes the documentation to `target/generated-docs/tabletest/`.
 
 **Configuration options:**
 ```xml
@@ -323,7 +334,7 @@ Run the task:
 ./gradlew reportTableTests
 ```
 
-Documentation is generated to `build/generated-docs/tabletest/`.
+The task writes the documentation to `build/generated-docs/tabletest/`.
 
 **Configuration options:**
 ```kotlin
@@ -342,18 +353,18 @@ tableTestReporter {
 
 A single spec can span the modules of a multi-module build. The report tree comes from the
 test class names inside the YAML, not from where the files sit, so modules merge into one
-package hierarchy. A listed directory that does not exist is skipped with a warning, so a
-partial build still publishes what it has.
+package hierarchy. The reporter skips a listed directory that does not exist, and warns. A partial build therefore still publishes what it has.
 
 **Maven** — let the plugin walk the reactor:
 ```bash
 mvn tabletest-reporter:aggregate
 ```
-The `aggregate` goal runs on the aggregator project, finds each module's TableTest output
-the way the `report` goal finds its own (the JUnit output directory a module configures,
-else its `target/junit-jupiter`), and writes one report to the aggregator's output
-directory. To name the directories yourself instead — the option when the goal cannot run
-inside the reactor — use `<inputDirectories>` on the `report` goal (shown above), or:
+The `aggregate` goal runs on the aggregator project and writes one report to its output directory.
+It finds each module's TableTest output the way the `report` goal finds its own: the JUnit output
+directory a module configures, or that module's `target/junit-jupiter`.
+
+Name the directories yourself instead, which is the route to take where the goal cannot run inside
+the reactor. Use `<inputDirectories>` on the `report` goal, shown above, or:
 ```bash
 mvn tabletest-reporter:report -Dtabletest.report.inputDirectories=target/junit-jupiter,../other/target/junit-jupiter
 ```
@@ -378,10 +389,12 @@ the same rule that settles repeated runs within one directory.
 
 ### Spec metadata (`tabletest-reporter.yaml`)
 
-By default the root index of a spec is titled by the deepest common package segment (e.g.
-"junit" or "example") and intermediate index pages show lowercase package names. Drop an
-optional `tabletest-reporter.yaml` in the project directory to give the spec a real title
-and intro, retitle intermediate pages, and set an explicit feature reading order:
+Without a sidecar file, the root index of a spec takes its title from the deepest common package
+segment, such as "junit" or "example". An intermediate index page shows a lowercase package name.
+
+Drop an optional `tabletest-reporter.yaml` in the project directory. It gives the spec a real
+title and intro, retitles an intermediate page, and sets an explicit reading order for the
+features:
 
 ```yaml
 title: "TableTest Core — Specification"
@@ -400,18 +413,19 @@ features:
     title: "Worked Examples"
 ```
 
-Everything is optional. Declared features render first in the order given; undeclared
-siblings follow alphabetically. A `description` is rendered under the feature's title on its
-index page, the way a test class's `@Description` is — use it for what the whole group has in
-common, so an individual rule need not repeat it. A feature that matches no page is logged and skipped, so a
-typo never fails the report. The file is read at report time — a project without it reports
-exactly as before. Override its location with the `configFile` option (Maven `<configFile>`,
+Everything is optional. A declared feature renders first, in the order you gave it. An undeclared
+sibling follows, alphabetically.
+
+The reporter draws a `description` under the feature's title on its index page, the way it draws a
+test class's `@Description`. Use it for what the whole group has in common. An individual rule
+then does not repeat it. A feature that matches no page is logged and skipped, so a
+typo never fails the report. The reporter reads the file at report time. A project without one reports exactly as before. Override its location with the `configFile` option (Maven `<configFile>`,
 Gradle `configFile`, CLI `--config`).
 
 ### Front matter for a site generator (`frontMatter`)
 
-An AsciiDoc or Markdown report is read by a site generator, which decides how each page looks and
-where it sits. Front matter is how you tell it what it needs. Declare it once:
+A site generator reads an AsciiDoc or Markdown report. It decides how each page looks, and where
+that page sits in the site. Front matter is what you tell the generator. Declare it once:
 
 ```yaml
 frontMatter:
@@ -440,12 +454,12 @@ generated: "2026-08-23T09:19:33Z"
 :generated: 2026-08-23T09:19:33Z
 ```
 
-**HTML gets none.** It is a finished page, not source for a generator.
+**An HTML page carries none.** It is a finished page, and not source for a generator.
 
-**The token goes in the value, not in the key**, because generators do not agree on what to call
-these. A page's position is `weight` to Hugo, `sidebar_position` to Docusaurus, `nav_order` to a
-Jekyll theme, and `page-weight` to Antora, which exposes a custom attribute under no other prefix.
-So name the key whatever your generator reads:
+**Write the token as the value, never as the key.** Generators do not agree on what to call a
+page's position. Hugo calls it `weight`, Docusaurus `sidebar_position`, a Jekyll theme `nav_order`,
+and Antora `page-weight`. Antora exposes a custom attribute under no other prefix. Name the key
+whatever your generator reads:
 
 ```yaml
 frontMatter:
@@ -454,16 +468,15 @@ frontMatter:
   nav_order: $position           # Jekyll
 ```
 
-There are exactly three tokens — `$title`, `$position` and `$timestamp` — and everything else is
-written as declared. A value that merely looks like a token is written as it stands with a warning,
-so a typo never fails a report; write `$$` for a literal value beginning with a dollar sign. A
-derived value that does not apply to a page — a position on the root index, which has no siblings —
-leaves its key out rather than writing it empty. Keys keep their declared order, and a value is
-quoted only where YAML would otherwise read it back as something else.
+There are three tokens: `$title`, `$position` and `$timestamp`. The reporter writes everything else as you declared it. A value that only looks like a token stays as it stands, and the reporter warns. A typo therefore never fails a report. Write `$$` for a literal value that begins with a dollar sign.
+
+A derived value that does not apply to a page leaves its key out, rather than writing it empty. A
+position on the root index is such a value, because the root has no siblings. Keys keep the order
+you declared them in. A value is quoted only where YAML would otherwise read it back as something
+else.
 
 **`$position` is the one worth knowing about.** The `features:` section above declares the reading
-order of your spec. Without it, a site generator sorts the pages alphabetically and that curation is
-lost at the boundary; with it, the published site reads in the order you chose.
+order of your spec. A site generator sorts the pages alphabetically without it, and loses your curation at the boundary. With it, the published site reads in the order you chose.
 
 The `frontMatter` template block still works and takes precedence — see
 [Custom Templates](#custom-templates) for when you need more than keys and values.
@@ -480,19 +493,19 @@ site:
   url: "https://tabletest.org/"      # used exactly as written
 ```
 
-The address is never resolved against the report's own tree, so a root-relative `/` or
-`/docs/` works for a site that hosts the spec below it, and an absolute URL works from
+The reporter never resolves the address against the report's own tree. A root-relative `/` or
+`/docs/` therefore works for a site that hosts the spec below it, and an absolute URL works from
 anywhere. Without a `site` section the footer holds the attribution alone, as before.
 
-The footer is a `footer` block in each of the three HTML page templates, and the link has a
-`siteLink(site)` macro of its own — a template of yours can override the block, or call the
-macro to place the same link elsewhere. See [Custom Templates](#custom-templates).
+Each of the three HTML page templates leaves the footer as a `footer` block, and the link has a
+`siteLink(site)` macro of its own. A template of yours can override the block, or call the macro
+to place the same link elsewhere. See [Custom Templates](#custom-templates).
 
 ### Selecting what publishes (`publish`)
 
-By default every table that ran is published. Add a `publish` section to the same
-`tabletest-reporter.yaml` to hold pages back — at report time, so changing what publishes
-does not mean running the test suite again, and no test-framework tags are involved:
+By default every table that ran publishes. Add a `publish` section to the same
+`tabletest-reporter.yaml` to hold pages back. It applies at
+report time, so changing what publishes needs no new test run. No test-framework tag is involved:
 
 ```yaml
 publish:
@@ -514,8 +527,8 @@ path matching no page is logged and skipped, like a mistyped feature name.
 ### Pinning the report's timestamp (`generatedAt`)
 
 Every page states when the report was generated. The reporter reads the clock, so two runs of
-the same tests write two different pages, and a build that diffs its output sees a change every
-time. Pin the instant and the same tests produce the same bytes:
+the same tests write two different pages. A build that compares its own output then sees a change
+every time. Pin the instant, and the same tests give you the same bytes:
 
 ```bash
 mvn tabletest-reporter:report -Dtabletest.report.generatedAt=2026-07-20T14:32:09Z
@@ -523,25 +536,24 @@ mvn tabletest-reporter:report -Dtabletest.report.generatedAt=2026-07-20T14:32:09
 tabletest-reporter --generated-at 2026-07-20T14:32:09Z -i target/junit-jupiter
 ```
 
-The value is an ISO-8601 instant; anything else fails the build rather than falling back to the
-clock. The reporter does not read `SOURCE_DATE_EPOCH` itself — a report that changes with the
-environment it ran in is the problem being solved — so a reproducible build passes its own value
-in:
+The value is an ISO-8601 instant. Any other value fails the build, and never falls back to the
+clock. The reporter does not read `SOURCE_DATE_EPOCH` itself, because a report that changes with
+its environment is the fault being fixed. A reproducible build passes its own value in:
 
 ```bash
 mvn tabletest-reporter:report \
   -Dtabletest.report.generatedAt="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y-%m-%dT%H:%M:%SZ)"
 ```
 
-The timestamp is stated in UTC whatever zone the build ran in, and the label a reader sees drops
-sub-second precision.
+A report states the timestamp in UTC, whatever zone the build ran in. The label a reader sees
+drops the sub-second precision.
 
 ### Choosing a Format
 
 The three built-in formats are not interchangeable, and picking one is picking a publishing
-route. One rule decides which features a format gets: a feature that changes the **data** a page
-carries reaches every format that can express it, and a feature that changes how a page **looks**
-reaches HTML alone.
+route. One rule decides which features a format gets. A feature that changes the **data** a page carries
+reaches every format that can express it. A feature that changes how a page **looks** reaches HTML
+alone.
 
 | Format | What it is for | What it carries |
 |---|---|---|
@@ -550,13 +562,12 @@ reaches HTML alone.
 | `markdown` | interchange that renders anywhere — GitHub, Docusaurus, MkDocs | the table, the titles, the descriptions; plain, with no roles |
 
 **Neither text format carries breadcrumbs, navigation or a footer.** That is deliberate rather
-than missing. A site generator builds those from its own page tree, and it decides where your
-spec is nested — so a trail the reporter wrote would name different ancestors than the site's,
-and both would render. Where you want a fact the generator cannot know, such as when the report
-was generated, put it in the `frontMatter` block of an extension template; see
-[Custom Templates](#custom-templates).
+than missing. A site generator builds those from its own page tree, and it decides where your spec is nested. A
+trail the reporter wrote would therefore name different ancestors than the site's, and both would
+render. You may want a fact the generator cannot know, such as when the report was generated. Put it in
+the `frontMatter` block of an extension template — see [Custom Templates](#custom-templates).
 
-**The default is `asciidoc`** when no format is given, in every entry point. If you intend to
+**The default is `asciidoc`** where you name no format, in every entry point. If you intend to
 publish the result directly, set `html` explicitly.
 
 ### Listing Available Formats
@@ -632,7 +643,8 @@ The structure eliminates redundant directory levels—only the branching parts o
 
 ### How names become filenames
 
-A `@DisplayName`, a Kotlin backtick name, or a camelCase method name is reduced to a lowercase name usable as both a filename and a URL segment. Words are split on spaces, underscores, and camelCase boundaries; every other run of punctuation or symbols becomes a single hyphen.
+The reporter reduces a `@DisplayName`, a Kotlin backtick name, or a camelCase method name to one
+lowercase name. That name serves as a filename and as a URL segment. The reporter splits words on spaces, on underscores, and on camelCase boundaries. Every other run of punctuation or symbols becomes one hyphen.
 
 Names outside plain ASCII are handled as follows:
 
@@ -648,14 +660,17 @@ Names outside plain ASCII are handled as follows:
 | `Москва` | `москва` | a name with no ASCII form keeps its own script |
 | `日本語のテスト` | `日本語のテスト` | likewise for CJK, Greek, Devanagari, and the rest |
 
-A name written in its own script is published as-is: those are legal filenames on every supported platform and legal URLs once a browser percent-encodes them, and GitHub Pages serves UTF-8 paths. A name with no letters or digits at all falls back to `unnamed-` plus a stable hash of the name, so two such names still get two pages.
+A name written in its own script publishes as it stands. Such names are legal filenames on every
+supported platform, and legal URLs once a browser percent-encodes them. GitHub Pages serves UTF-8
+paths. A name with no letter and no digit falls back to `unnamed-` plus a stable hash of the name. Two
+such names therefore still get two pages.
 
 Two tables in the same class that reduce to the same filename are disambiguated with a numeric suffix (`-1`, `-2`).
 
 ## Publishing Your Documentation
 
-The `html` format is publishable as it stands: every page is self-contained and every link
-relative, so the output directory can be copied to a static host with no build step. The
+The `html` format publishes as it stands. Every page is self-contained, and every link is
+relative. Copy the output directory to a static host, with no build step. The
 AsciiDoc and Markdown formats are intermediate sources for a toolchain you already run:
 
 - **HTML:** Copy the output directory to any static host — no conversion step
@@ -666,8 +681,7 @@ AsciiDoc and Markdown formats are intermediate sources for a toolchain you alrea
 
 Living documentation is only worth publishing if it keeps up with the code, which means
 generating it in CI rather than committing it. The workflow below runs the tests, generates
-the HTML report, and deploys it to Pages. Because the report is generated from a test run,
-the `test` phase must run in the same invocation as the `report` goal.
+the HTML report, and deploys it to Pages. The reporter builds the report from a test run, so the `test` phase must run in the same invocation as the `report` goal.
 
 ```yaml
 name: Publish living documentation
@@ -731,7 +745,7 @@ lands in one spec:
           --no-transfer-progress
 ```
 
-Project Pages are served from `/<repo>/`, which the report handles without configuration —
+GitHub serves Project Pages from `/<repo>/`, which the report handles with no configuration —
 all its links and assets are relative.
 
 ### Other hosting options
@@ -787,12 +801,11 @@ frontMatter:
   page-weight: $position
 ```
 
-`$position` is what carries the reading order declared in `features:` across the boundary. Without
-it a generator sorts your pages alphabetically and the curation is lost.
+`$position` is what carries the reading order declared in `features:` across the boundary. Without it a generator sorts your pages alphabetically, and loses your curation.
 
-**Do not reach for `site:` on this route.** Your generator already draws the navigation, and a
-second trail beside its own would disagree about where the page sits — the site decides that, not
-the report. For the same reason neither text format carries breadcrumbs or a footer of its own; see
+**Do not use `site:` on this route.** Your generator already draws the navigation. A second trail
+beside its own would disagree about where the page sits, and the site decides that, not the
+report. For the same reason neither text format carries breadcrumbs or a footer of its own; see
 [Choosing a Format](#choosing-a-format).
 
 ---
@@ -801,11 +814,12 @@ the report. For the same reason neither text format carries breadcrumbs or a foo
 
 ### Configuration Options
 
-TableTest Reporter can be configured through [JUnit Platform configuration parameters](https://docs.junit.org/current/running-tests/configuration-parameters.html).
+Configure TableTest Reporter through [JUnit Platform configuration
+parameters](https://docs.junit.org/current/running-tests/configuration-parameters.html).
 
 **`tabletest.reporter.expectation.pattern`**
 
-Defines a regular expression pattern to identify expectation columns in your test tables. By default, columns ending with `?` are treated as expectations.
+Defines a regular expression pattern to identify expectation columns in your test tables. By default, the reporter treats a column ending with `?` as an expectation.
 
 Default: `.*\?$` (columns ending with question mark)
 
@@ -828,7 +842,8 @@ When you run the reporter, it needs to find the YAML files generated during your
 
 **Resolution order:**
 
-1. **Explicit configuration** — If you specify an input directory (via plugin config or CLI `-i` option), it is used directly
+1. **Explicit configuration** — name an input directory, through plugin config or the CLI `-i`
+option, and the reporter uses it directly
 2. **Build tool detection** — The Maven and Gradle plugins read the JUnit output directory from your build configuration:
    - **Maven:** From Surefire's `configurationParameters` (`junit.platform.reporting.output.dir` property)
    - **Gradle:** From the test task's system properties or JVM argument providers
@@ -886,7 +901,7 @@ Custom templates are discovered automatically by naming convention:
 - `*-table.adoc.peb` or `*-table.md.peb` - Custom table templates
 - `*-index.adoc.peb` or `*-index.md.peb` - Custom index templates
 
-For example, `custom-table.adoc.peb` or `jekyll-table.md.peb` will be used automatically.
+The reporter picks up `custom-table.adoc.peb` or `jekyll-table.md.peb` by itself, for example.
 
 **Precedence:**
 1. Exact match (e.g., `table.adoc.peb`) - complete replacement
@@ -965,9 +980,9 @@ generated: "{{ generatedAt.datetime }}"
 {% endblock %}
 ```
 
-**Quote the value.** Pebble trims the newline immediately after a `}}` expression, so a line ending
-in one joins the line below it — an unquoted `generated: {{ generatedAt.datetime }}` puts the
-closing `---` on the value line and the front matter stops parsing. Any character after the braces
+**Quote the value.** Pebble trims the newline straight after a `}}` expression, so a line ending
+in one joins the line below it. An unquoted `generated: {{ generatedAt.datetime }}` therefore puts
+the closing `---` on the value line, and the front matter stops parsing. Any character after the braces
 prevents it, and quotes are valid YAML for a timestamp.
 
 For AsciiDoc the same block carries document attributes instead:
@@ -1045,8 +1060,8 @@ extension template.
 
 #### What an Extension Template Can Reach
 
-A template that extends a built-in one reads every context key above inside the block it
-overrides, and it can import the built-in macros to call them:
+A template that extends a built-in one reads every context key above, inside the block it
+overrides. It can also import the built-in macros and call them:
 
 ```pebble
 {% extends "index.html.peb" %}
@@ -1059,18 +1074,18 @@ overrides, and it can import the built-in macros to call them:
 
 Two things to know about the blocks themselves:
 
-- **The three text-format blocks are not in the HTML templates.** `frontMatter`, `title`,
-  `description`, `table`, `failures` and `contents` are left by the AsciiDoc and Markdown
-  templates. The HTML templates leave `extra_stylesheet` and `footer`.
-- **A block must be at the top level of the page template to be overridable.** A block written
-  inside a macro renders its default and ignores the override silently, because a macro reaches the
-  page through `{% import %}`, which is not inheritance.
+- **The three text-format blocks are not in the HTML templates.** The AsciiDoc and Markdown
+  templates leave `frontMatter`, `title`, `description`, `table`, `failures` and `contents`. The
+  HTML templates leave `extra_stylesheet` and `footer`.
+- **A block must sit at the top level of the page template to be overridable.** A block written
+inside a macro renders its default and ignores the override, without a word. A macro reaches the
+page through `{% import %}`, which is not inheritance.
 
 ### Built-in HTML Format
 
-The `html` format renders self-contained, living documentation that needs no Asciidoctor
-step. Each page is a standalone `.html` file with inline CSS and JavaScript (no external
-references), so the output tree works directly on any static host, including GitHub Pages.
+The `html` format renders self-contained living documentation, and needs no Asciidoctor step.
+Each page is a standalone `.html` file, with its CSS and JavaScript inside it and no external
+reference. The output tree therefore works directly on any static host, GitHub Pages included.
 
 ```bash
 tabletest-reporter -f html -i target/junit-jupiter -o target/generated-docs/tabletest
@@ -1084,21 +1099,23 @@ Each table page includes:
   "failing only" toggle
 - a light/dark theme toggle and a print stylesheet
 
-Each index page shows a link tree of its tables and sub-packages, with a status dot on every
-entry and a summary of the scenario pass rate ("N of M scenarios broken", or "All N scenarios
-hold") rolled up from the tables beneath it. The tree writes out every page below it and folds
-all but the top level away, so a spec of forty rules opens on a list of its features rather
-than every rule at once; a folded entry is still in the page, so a browser search finds it and
-a printed copy shows every level open. Every page also carries a breadcrumb trail of its
-ancestors (root package → class → table) and a menu button that opens a navigation drawer
-with the whole-report tree — the branch holding the current page already open and marked,
-status dots throughout — so you can jump anywhere from any page. The drawer slides in over the
-content, keeping the full page width available for wide tables.
+Every entry carries a status dot. The page also states its scenario pass rate, rolled up from the
+tables beneath it: "N of M scenarios broken", or "All N scenarios hold".
+
+The tree writes out every page below it, and folds all but the top level away. A spec of forty
+rules therefore opens on a list of its features, and not on every rule at once. A folded entry
+stays in the page, so a browser search finds it, and a printed copy shows every level open.
+
+Every page also carries a breadcrumb trail of the pages above it: root package, then class, then
+table. A menu button opens a navigation drawer, holding the whole-report tree with status dots
+throughout. The branch that holds the current page arrives open and marked. You can jump
+anywhere from any page. The drawer slides in over the content, so a wide table keeps the full
+page width.
 
 #### Reading a report from the keyboard
 
-Tab reaches every row of both trees, Enter follows one, and Space opens or closes a feature —
-all of it the browser's own behaviour, with no script involved. On top of that:
+Tab reaches every row of both trees, Enter follows one, and Space opens or closes a feature.
+The browser does all of that, and no script runs. These keys are new on top of it:
 
 | Key | Does |
 |---|---|
@@ -1111,24 +1128,25 @@ all of it the browser's own behaviour, with no script involved. On top of that:
 | <kbd>Esc</kbd> | leave the search box, or close the drawer |
 | <kbd>?</kbd> | list these keys on the page |
 
-The arrows act only on a row that already has focus, so they still scroll a long rule page
-everywhere else. A closed drawer is `inert`, so it is not in the tab order until you open it,
-and an open one holds focus until you leave it.
+The arrow keys act only on a row that already holds focus. They still scroll a long rule page
+everywhere else. A closed drawer is `inert`, so it stays out of the tab order until you open it.
+An open drawer holds focus until you leave it.
 
-Note for Safari readers: Safari does not move focus to a link with Tab unless you turn that on
-in Settings → Advanced → "Press Tab to highlight each item on a webpage". Hold <kbd>Option</kbd>
-while pressing Tab to reach links without changing the setting. The arrow keys above are
-unaffected either way.
+Note for Safari readers. Safari does not move focus to a link with Tab. Turn that on in
+Settings → Advanced → "Press Tab to
+highlight each item on a webpage". Hold <kbd>Option</kbd>
+while you press Tab to reach a link without changing the setting. The arrow keys above work
+either way.
 
-The drawer also has a search box that searches the whole report — every page's title,
-description, headers, and cell values — and lists the matching pages (with status dots) to
-jump to. Search is backed by a single `tabletest-search-index.js`, written once to the output
-root and linked from each page by a relative prefix, so it works offline (opened via
-`file://`) and under any subpath without any external requests.
+The drawer also holds a search box, and that box searches the whole report: every page's title,
+description, headers and cell values. It lists the matching pages, with their status dots, to
+jump to. One `tabletest-search-index.js` backs the search, written once to the output root and
+linked from each page by a relative prefix. Search therefore works offline, over `file://`, and
+under any subpath, and makes no external request.
 
-Because every link and asset reference is relative, the generated tree deploys unchanged
-under a project subpath (e.g. GitHub *project* Pages served from `/<repo>/`). The
-`tabletest-search-index.js` asset sits at the output root alongside the root `index.html`.
+Every link and asset reference is relative, so the generated tree deploys unchanged under a
+project subpath. GitHub *project* Pages, served from `/<repo>/`, is such a subpath. The
+`tabletest-search-index.js` asset sits at the output root, beside the root `index.html`.
 
 #### Single-file mode
 
@@ -1139,9 +1157,9 @@ Add `--single-file` (`-s`) to assemble the whole report into **one** self-contai
 tabletest-reporter -f html --single-file -i target/junit-jupiter -o target/generated-docs/tabletest
 ```
 
-Every table is inlined as an anchored section, the sidebar navigation and search jump to
-in-page anchors, and the search index is embedded — so the single `index.html` has no
-sibling assets and no external references at all. This is the most portable form: attach it
+The file inlines every table as an anchored section, and embeds the search index. The sidebar and
+the search jump to anchors in the page. The one `index.html` therefore has no sibling asset, and
+no external reference at all. This is the most portable form: attach it
 to a release, email or ticket where a directory of files is awkward. The multi-file tree
 remains the default (better for GitHub Pages and per-page linking). Single-file mode
 currently applies to the `html` format only.
@@ -1229,7 +1247,7 @@ When generating HTML from AsciiDoc reports, you can apply custom CSS styling bas
 
 **Understanding CSS Class Placement**
 
-TableTest Reporter generates AsciiDoc with custom roles (`.scenario`, `.expectation`, `.passed`, `.failed`) that become CSS classes in HTML output. These classes are applied to **inline elements inside table cells** (such as `span`, `ul`, `ol`), not directly to the `th`/`td` elements.
+TableTest Reporter generates AsciiDoc with custom roles (`.scenario`, `.expectation`, `.passed`, `.failed`) that become CSS classes in HTML output. The reporter puts these classes on **an inline element inside a table cell**, such as a `span`, a `ul` or an `ol`. It does not put them on the `th` or the `td`.
 
 To style cells based on their content's roles, use the CSS `:has()` selector:
 
@@ -1268,7 +1286,8 @@ To style cells based on their content's roles, use the CSS `:has()` selector:
 }
 ```
 
-**Note:** Use `:has(.classname)` without specifying element type, since roles may be applied to different elements depending on content.
+**Note:** use `:has(.classname)` and name no element type. A role can land on a different element,
+depending on what the cell holds.
 
 **Asciidoctor Maven Plugin Configuration**
 
@@ -1308,7 +1327,7 @@ A complete working example is available in the project's compatibility tests: [`
 
 **CLI Usage:**
 
-The CLI can be used standalone if you're building custom tooling:
+Use the CLI on its own where you are building tooling of your own:
 
 ```bash
 java -jar tabletest-reporter-cli.jar \

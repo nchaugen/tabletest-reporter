@@ -58,12 +58,18 @@ and asset reference is relative, so the tree also deploys unchanged under a proj
 
 **Across the report:**
 - index pages showing a link tree with a status dot on every entry, and a scenario pass-rate
-  summary rolled up from the tables beneath ("N of M scenarios broken" / "All passing")
-- a breadcrumb trail on every page, and a navigation drawer with the whole-report tree
+  summary rolled up from the tables beneath ("N of M scenarios broken" / "All N scenarios hold")
+- a link tree that folds: every level is written out, and all but the top starts folded away,
+  so a spec of forty rules opens on a list of its features
+- a breadcrumb trail on every page, and a navigation drawer with the whole-report tree, opened
+  on the branch that holds the page you are on
 - whole-report search over every page's title, description, headers, and cell values
+- keyboard navigation: Tab, Enter and Space with no script, plus arrow keys through the tree,
+  `/` to search, `m` for the drawer and `?` for the key list
 - a light/dark theme toggle and a print stylesheet
 - a footer stating when the report was generated, in UTC, so readers can tell whether the
   documentation still tracks the code it came from
+- a run timestamp your build can pin, with `generatedAt`, so the same tests write the same bytes
 
 **Single-file mode** (`--single-file`) assembles the whole report into one self-contained
 `.html` file with navigation and search embedded — the most portable form, for attaching to
