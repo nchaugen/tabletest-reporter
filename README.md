@@ -39,11 +39,13 @@ TableTest Reporter generates documentation from your [TableTest](https://github.
 
 ## Quick Start
 
-1. Add the reporter plugin to your build
-2. Run your tests, which write the YAML files
-3. Run the reporter plugin to generate documentation
+1. [Add the reporter plugin](#add-the-reporter-plugin) to your build
+2. [Write your tests](#write-your-tests) as TableTest tables
+3. [Run your tests](#run-your-tests), which write the YAML files
+4. [Generate the documentation](#generate-the-documentation) from that output
 
-For Gradle users, the plugin handles everything automatically. Maven users need to add the dependency and configure autodetection manually.
+The Gradle plugin handles every part of this. A Maven build declares the reporter dependency and
+turns on JUnit extension autodetection itself, which the Maven setup below shows.
 
 ## Requirements
 
@@ -331,7 +333,8 @@ projects therefore need no input directory at all. Run the plugin. See [Input Di
 
 #### Generating with Maven
 
-Where you configured the `report` goal in your plugin executions, as Step 1 shows, the build
+Where you configured the `report` goal in your plugin executions, as [Maven setup](#maven-setup)
+shows, the build
 generates the documentation itself. Otherwise, run it by hand:
 
 ```bash
@@ -348,8 +351,8 @@ The plugin writes the documentation to `target/generated-docs/tabletest/`.
   <outputDirectory>${project.build.directory}/generated-docs/tabletest</outputDirectory>
   <indexDepth>infinite</indexDepth>  <!-- levels in index (1, 2, ..., or 'infinite') -->
   <generatedAt>2026-07-20T14:32:09Z</generatedAt>  <!-- pin the report's timestamp, see below -->
-  <configFile>${project.basedir}/tabletest-reporter.yaml</configFile>  <!-- spec metadata + publish selection, see below -->
-  <inputDirectories>  <!-- several modules merged into one spec, see below -->
+  <configFile>${project.basedir}/tabletest-reporter.yaml</configFile>  <!-- the sidecar file, see Configuring the Report -->
+  <inputDirectories>  <!-- several modules merged into one spec, see Build options -->
     <dir>${project.build.directory}/junit-jupiter</dir>
     <dir>${project.basedir}/../other-module/target/junit-jupiter</dir>
   </inputDirectories>
@@ -378,7 +381,7 @@ tableTestReporter {
   outputDir.set(layout.buildDirectory.dir("generated-docs/tabletest"))
   indexDepth.set("infinite")  // levels in index (1, 2, ..., or "infinite")
   generatedAt.set("2026-07-20T14:32:09Z")  // pin the report's timestamp, see below
-  configFile.set(layout.projectDirectory.file("tabletest-reporter.yaml"))  // spec metadata + publish selection, see below
+  configFile.set(layout.projectDirectory.file("tabletest-reporter.yaml"))  // the sidecar file, see Configuring the Report
   inputDirs.from(layout.buildDirectory.dir("junit-jupiter"))  // several modules merged into one spec, see below
 }
 ```
@@ -393,7 +396,7 @@ the build that runs the reporter.
 Put `tabletest-reporter.yaml` in the project directory, or point at it with Maven `<configFile>`,
 Gradle `configFile`, or the CLI `--config`. It holds four independent sections, and every one of
 them is optional. The reporter reads the file when it generates the report, so changing any of
-them needs no new test run.
+them needs no new test run. A project with no such file reports exactly as it did before.
 
 #### Spec metadata
 
@@ -427,8 +430,7 @@ sibling follows, alphabetically.
 The reporter draws a `description` under the feature's title on its index page, the way it draws a
 test class's `@Description`. Use it for what the whole group has in common. An individual rule
 then does not repeat it. A feature that matches no page is logged and skipped, so a
-typo never fails the report. The reporter reads the file at report time. A project without one reports exactly as before. Override its location with the `configFile` option (Maven `<configFile>`,
-Gradle `configFile`, CLI `--config`).
+typo never fails the report.
 
 #### Front matter for a site generator (`frontMatter`)
 
@@ -575,7 +577,8 @@ It finds each module's TableTest output the way the `report` goal finds its own:
 directory a module configures, or that module's `target/junit-jupiter`.
 
 Name the directories yourself instead, which is the route to take where the goal cannot run inside
-the reactor. Use `<inputDirectories>` on the `report` goal, shown above, or:
+the reactor. Use `<inputDirectories>` on the `report` goal, as the
+[Maven configuration options](#generating-with-maven) show, or:
 ```bash
 mvn tabletest-reporter:report -Dtabletest.report.inputDirectories=target/junit-jupiter,../other/target/junit-jupiter
 ```
@@ -726,6 +729,16 @@ throughout. The branch that holds the current page arrives open and marked. You 
 anywhere from any page. The drawer slides in over the content, so a wide table keeps the full
 page width.
 
+The drawer also holds a search box, and that box searches the whole report: every page's title,
+description, headers and cell values. It lists the matching pages, with their status dots, to
+jump to. One `tabletest-search-index.js` backs the search, written once to the output root and
+linked from each page by a relative prefix. Search therefore works offline, over `file://`, and
+under any subpath, and makes no external request.
+
+Every link and asset reference is relative, so the generated tree deploys unchanged under a
+project subpath. GitHub *project* Pages, served from `/<repo>/`, is such a subpath. The
+`tabletest-search-index.js` asset sits at the output root, beside the root `index.html`.
+
 #### Reading a report from the keyboard
 
 Tab reaches every row of both trees, Enter follows one, and Space opens or closes a feature.
@@ -747,20 +760,10 @@ everywhere else. A closed drawer is `inert`, so it stays out of the tab order un
 An open drawer holds focus until you leave it.
 
 Note for Safari readers. Safari does not move focus to a link with Tab. Turn that on in
-Settings → Advanced → "Press Tab to
-highlight each item on a webpage". Hold <kbd>Option</kbd>
+Settings → Advanced → "Press Tab to highlight each item on a webpage". Hold <kbd>Option</kbd>
 while you press Tab to reach a link without changing the setting. The arrow keys above work
 either way.
 
-The drawer also holds a search box, and that box searches the whole report: every page's title,
-description, headers and cell values. It lists the matching pages, with their status dots, to
-jump to. One `tabletest-search-index.js` backs the search, written once to the output root and
-linked from each page by a relative prefix. Search therefore works offline, over `file://`, and
-under any subpath, and makes no external request.
-
-Every link and asset reference is relative, so the generated tree deploys unchanged under a
-project subpath. GitHub *project* Pages, served from `/<repo>/`, is such a subpath. The
-`tabletest-search-index.js` asset sits at the output root, beside the root `index.html`.
 
 #### Single-file mode
 
@@ -779,7 +782,8 @@ remains the default (better for GitHub Pages and per-page linking). Single-file 
 currently applies to the `html` format only.
 
 To customise the markup, drop your own `table.html.peb` / `index.html.peb` into a template
-directory — an exact filename match overrides the built-in template (see below).
+directory — an exact filename match overrides the built-in template, as
+[Custom Templates](#custom-templates) describes.
 
 ### Listing available formats
 
