@@ -70,6 +70,11 @@
   ones. They sat inside the Maven section, folded away, although they cover Maven, Gradle and the
   CLI alike — a Gradle reader following the Gradle instructions never met the Gradle option they
   hold.
+- The README section on styling now says which format it serves. It was called "Styling HTML
+  Reports", but every word of it is about the `asciidoc` format after Asciidoctor has converted it
+  — a reader on the built-in `html` format would have configured a plugin that has no bearing on
+  their output. It is now "Styling an AsciiDoc report once it is HTML", sits with the formats, and
+  opens by pointing anyone on the built-in format at `extra_stylesheet` instead.
 - Column roles are a section of the README in their own right, and no longer a subsection of
   writing tests. They change how the HTML report draws a column, so they sit with the presentation
   material. The section now also shows how to build a rendering of your own: the built-in roles
