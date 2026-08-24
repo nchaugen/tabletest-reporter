@@ -120,7 +120,8 @@ public class TableTestReporter {
         ReportNode tree =
                 config.specMetadata().applyTo(config.publishSelection().applyTo(built));
         GeneratedAt generatedAt = GeneratedAt.at(config.generatedAt());
-        RenderRun run = new RenderRun(format, generatedAt, config.siteLink(), config.frontMatter(), outDir);
+        RenderRun run = new RenderRun(
+                format, generatedAt, config.siteLink(), config.frontMatter(), config.indexDepth(), outDir);
         if (config.singleFile()) {
             return reportSingleFile(tree, run);
         }
@@ -144,11 +145,16 @@ public class TableTestReporter {
 
     /**
      * What stays the same for every page of one report run: the format being written, the run
-     * timestamp, the link back to the hosting site, and where the files go. Passing one value keeps
-     * the recursive walk readable as the render options grow.
+     * timestamp, the link back to the hosting site, how deep an index lists its contents, and where
+     * the files go. Passing one value keeps the recursive walk readable as the render options grow.
      */
     private record RenderRun(
-            Format format, GeneratedAt generatedAt, SiteLink siteLink, FrontMatter frontMatter, Path outDir) {}
+            Format format,
+            GeneratedAt generatedAt,
+            SiteLink siteLink,
+            FrontMatter frontMatter,
+            IndexDepth indexDepth,
+            Path outDir) {}
 
     private int report(ReportNode node, ReportNode root, List<ReportNode> ancestors, Integer weight, RenderRun run) {
         Path relativeOutPath = Path.of("./" + node.outPath());
@@ -191,7 +197,7 @@ public class TableTestReporter {
             RenderRun run) {
         Map<String, Object> context = copyContext(index.resource());
         context.put("name", index.name());
-        context.put("contents", buildContentsForTemplate(index.contents(), relativeOutPath, 1));
+        context.put("contents", buildContentsForTemplate(index.contents(), relativeOutPath, 1, run));
         context.put("status", StatusRollup.of(index).toMap());
         context.put("breadcrumbs", buildBreadcrumbs(ancestors, index));
         context.put("nav", buildNav(root, index));
@@ -274,8 +280,8 @@ public class TableTestReporter {
         return List.copyOf(result);
     }
 
-    private List<Map<String, Object>> buildContentsForTemplate(
-            List<ReportNode> contents, Path relativeOutPath, int currentDepth) {
+    private static List<Map<String, Object>> buildContentsForTemplate(
+            List<ReportNode> contents, Path relativeOutPath, int currentDepth, RenderRun run) {
         return contents.stream()
                 .map(child -> {
                     Map<String, Object> contentMap = new HashMap<>();
@@ -292,9 +298,9 @@ public class TableTestReporter {
                     }
 
                     if (child instanceof IndexNode indexChild
-                            && currentDepth < configuration.indexDepth().value()) {
+                            && currentDepth < run.indexDepth().value()) {
                         List<Map<String, Object>> nested =
-                                buildContentsForTemplate(indexChild.contents(), relativeOutPath, currentDepth + 1);
+                                buildContentsForTemplate(indexChild.contents(), relativeOutPath, currentDepth + 1, run);
                         if (!nested.isEmpty()) {
                             contentMap.put("contents", nested);
                         }
