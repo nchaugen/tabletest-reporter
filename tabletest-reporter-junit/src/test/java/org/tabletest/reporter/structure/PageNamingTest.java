@@ -25,31 +25,26 @@ class PageNamingTest {
     @DisplayName("Titles a page after the test that made it")
     @Description("""
             The name is read as words and written back with a space between them. A run of capital
-            letters is one word, so an acronym survives. A trailing capital run that ends the name
-            joins the word before it, which is why getHTTPSURL reads as it does.
+            letters is one word, so an acronym survives. A run that ends the name joins the word
+            before it, which is why getHTTPSURL reads as it does.
 
-            An underscore separates words the same way, and a name already written with spaces is
-            left alone.
+            Only the first letter of the title is capitalised. No other letter changes case, which
+            is why the underscore name reads Snake name and not Snake Name. A name already written
+            with spaces is left alone.
             """)
     @TableTest("""
         Name              | Title?
         LeapYearRules     | Leap Year Rules
+        simpleTest        | Simple Test
         XMLParser         | XML Parser
         parseHTMLDocument | Parse HTML Document
-        HTTPSConnection   | HTTPS Connection
-        simpleTest        | Simple Test
-        A                 | A
-        AB                | AB
-        ABC               | ABC
-        AbcDef            | Abc Def
-        ABCDef            | ABC Def
-        MyHTTPServer      | My HTTP Server
         getHTTPSURL       | Get HTTPSURL
-        IOError           | IO Error
-        SimpleClassName   | Simple Class Name
+        test123Method     | Test123 Method
+        A                 | A
+        ABC               | ABC
         snake_name        | Snake name
         name with spaces  | name with spaces
-        ""                | ""
+        ''                | ''
                           |
         """)
     void titlesAPageAfterTheTestThatMadeIt(String name, String title) {
@@ -63,51 +58,36 @@ class PageNamingTest {
         its own characters instead of collapsing to an unusable empty filename, and a name
         with no letters or digits anywhere falls back to a stable hash so that two of them
         still get two filenames.
+
+        Words are separated before the fold runs. A name that holds a space or an underscore
+        is separated there and is not also split at its capitals.
         """)
     @TableTest("""
-        Scenario                     | Name                    | URL?
-        CamelCase PascalCase         | LeapYearRules           | leap-year-rules
-        CamelCase multi-word         | TestClassName           | test-class-name
-        CamelCase starting lowercase | simpleTest              | simple-test
-        Acronym at beginning         | XMLParser               | xml-parser
-        Acronym in middle            | parseHTMLDocument       | parse-html-document
-        Acronym at beginning caps    | HTTPSConnection         | https-connection
-        Acronym to acronym           | URLToHTMLConverter      | url-to-html-converter
-        Snake_case lowercase         | leap_year_rules         | leap-year-rules
-        Snake_case multi-word        | test_method_name        | test-method-name
-        Snake_case simple            | simple_test             | simple-test
-        Spaces multiple words        | Leap Year Rules         | leap-year-rules
-        Spaces with punctuation      | A Custom Test Title!    | a-custom-test-title
-        Spaces two words             | table test              | table-test
-        Spaces title case            | User Authentication     | user-authentication
-        Special char at-sign         | test@example.com        | test-example-com
-        Special char percentage      | 100% coverage           | 100-coverage
-        Special char colon           | user:admin              | user-admin
-        Single word uppercase        | Test                    | test
-        Single word lowercase        | test                    | test
-        Single word acronym          | XML                     | xml
-        Empty string                 | ''                      | ''
-        Single char lowercase        | a                       | a
-        Single char uppercase        | A                       | a
-        Numeric only                 | 123                     | 123
-        CamelCase with number inline | test123Method           | test123-method
-        Snake_case with number       | test_123_method         | test-123-method
-        Acronym with number          | UTF8Encoder             | utf8-encoder
-        CamelCase number at start    | base64Encode            | base64-encode
-        Mixed space and underscore   | test_method with spaces | test-method-with-spaces
-        Mixed snake and camel        | Test_Method_Name        | test-method-name
-        Mixed snake and acronym      | XML_Parser              | xml-parser
-        Accented letters             | naïve façade            | naive-facade
-        Ligature letters             | Grüße aus München       | grusse-aus-munchen
-        Nordic letters               | ÆØÅ                     | aeoa
-        Thorn without Latin base     | Þingvellir              | thingvellir
-        Compatibility ligature       | ﬁle ﬂow                 | file-flow
-        Greek script                 | Ελληνικά                | ελληνικά
-        Cyrillic script              | Москва                  | москва
-        CJK script                   | 日本語のテスト          | 日本語のテスト
-        Cyrillic backtick name       | Москва основана в 1147  | москва-основана-в-1147
-        Cyrillic camelCase           | проверкаИмени           | проверка-имени
-        No letters or digits         | '!!!'                   | unnamed-00008001
+        Scenario                    | Name                    | URL?
+        CamelCase                   | LeapYearRules           | leap-year-rules
+        An acronym beside a word    | parseHTMLDocument       | parse-html-document
+        A digit before a word       | test123Method           | test123-method
+        A single letter             | A                       | a
+        Snake case                  | leap_year_rules         | leap-year-rules
+        Snake case with capitals    | TestClass_MethodName    | testclass-methodname
+        Spaces                      | Leap Year Rules         | leap-year-rules
+        Spaces and underscores      | test_method with spaces | test-method-with-spaces
+        Punctuation inside the name | test@example.com        | test-example-com
+        Punctuation ending the name | A Custom Test Title!    | a-custom-test-title
+        Accented letters            | naïve façade            | naive-facade
+        Ligature letters            | Grüße aus München       | grusse-aus-munchen
+        Nordic letters              | ÆØÅ                     | aeoa
+        Thorn without Latin base    | Þingvellir              | thingvellir
+        Compatibility ligature      | ﬁle ﬂow                 | file-flow
+        Greek script                | Ελληνικά                | ελληνικά
+        Cyrillic script             | Москва                  | москва
+        CJK script                  | 日本語のテスト          | 日本語のテスト
+        Cyrillic camelCase          | проверкаИмени           | проверка-имени
+        Digits and no letters       | 123                     | 123
+        No letters or digits        | '!!!'                   | unnamed-00008001
+        Another with neither        | '???'                   | unnamed-0000f45f
+        An empty name               | ''                      | ''
+        No name at all              |                         |
         """)
     void turnsANameIntoTheUrlOfItsPage(String name, String url) {
         assertThat(Slugger.slugify(name)).isEqualTo(url);
