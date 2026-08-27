@@ -149,8 +149,8 @@ class CustomTemplateTest {
 
     @DisplayName("Lets your template add to the built-in stylesheet")
     @Description("""
-            The HTML report carries its stylesheet inside the file, so a role that a test declares has
-            nowhere to take a style from. The extra_stylesheet block is that place. The reporter writes
+            The HTML report carries its stylesheet inside the file. A role that a test declares
+            therefore has nowhere to take a style from. The extra_stylesheet block is that place. The reporter writes
             what the block holds after the built-in stylesheet, and the built-in stylesheet stays.
 
             These rows read a report of BinSample, whose Bins column holds a list.

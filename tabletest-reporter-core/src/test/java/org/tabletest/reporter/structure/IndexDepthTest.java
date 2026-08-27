@@ -77,8 +77,8 @@ class IndexDepthTest {
     @DisplayName("Refuses an index depth below one level")
     @Description("""
             A depth of one indexes the top level alone. Nothing is shallower. The reporter therefore
-            refuses a depth below one, and never raises it to one quietly. The message names the depth
-            you gave.
+            refuses a depth below one. It never raises the depth to one instead. The message names
+            the depth you gave.
             """)
     @TableTest("""
         Scenario                 | Depth | Error message?

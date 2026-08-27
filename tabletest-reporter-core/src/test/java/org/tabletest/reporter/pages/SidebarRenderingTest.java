@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         Every page carries the whole report as a link tree. A reader can therefore reach any rule
         from any page, without going back to an index first.
 
-        The rules below are read off a report built from one test class,
+        The rules below read a report of one test class,
         com.example.orders.OrderTest, whose only table is items. That report is three pages deep:
         the package orders, the class page order-test, and the table page items.
         """)
@@ -89,9 +89,9 @@ class SidebarRenderingTest {
     @DisplayName("Arrives with the branch holding your page unfolded")
     @Description("""
             An entry that holds pages is a fold. The sidebar of a large spec is therefore a short
-            list, and not every rule at once. A reader who follows a link into the middle of a
-            report would then have to unfold a path back to where they already are. The sidebar
-            writes the folds on the trail to their page open.
+            list, and not every rule at once. A reader can follow a link into the middle of a
+            report. Without help, that reader has to unfold a path back to their own page. The
+            sidebar therefore writes the folds on the path to their page open.
 
             These rows read the deeper report described above. Each fold takes the name of the
             entry that carries it. Only an entry with pages under it is a fold: order-test and

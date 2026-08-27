@@ -27,8 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
         The rules below read a report of two test classes in one package,
         com.example.orders.OrderTest and com.example.orders.ProductTest, with one table each. The
-        report root is the package orders, above the two class pages order-test and product-test,
-        each above its one table, items and price.
+        report root is the package orders. It sits above the two class pages order-test and
+        product-test. Each class page sits above its one table, items or price.
         """)
 class RelativeLinksTest {
 

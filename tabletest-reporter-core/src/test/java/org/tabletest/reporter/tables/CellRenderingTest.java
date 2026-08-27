@@ -86,10 +86,10 @@ public class CellRenderingTest {
             two or more spaces, and a tab. A single space between words stays as it is, and so does a
             value with no whitespace at all.
 
-            Markdown and AsciiDoc are plain text, and have no styling to reach for. They therefore put
-            a glyph into the value itself. A space becomes an open box, and a tab becomes an arrow.
-            AsciiDoc wraps every literal in ++ pass-through markers, whatever whitespace that literal
-            holds, which is why those markers run through its whole column.
+            Markdown and AsciiDoc are plain text, and have no styling available. They therefore
+            put a glyph into the value itself. A space becomes an open box, and a tab becomes an
+            arrow. AsciiDoc wraps every literal in ++ pass-through markers, whatever whitespace the
+            literal holds. Those markers therefore run through its whole column.
 
             HTML holds the real characters and marks them instead: one sp span per run of spaces, one
             tab span per tab. The stylesheet draws the dot and the arrow over those spans. A value

@@ -15,9 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PublishSelectionApplyTest {
 
     @Description("""
-            Every scenario starts from the same report: two features, each with its table pages —
-            features/null-values, parsing/lists and parsing/maps. Published pages? lists the pages
-            that survive, feature pages included; the root index always publishes and is not listed.
+            Every scenario starts from the same report. It holds two features, each with its
+            table pages: features/null-values, parsing/lists and parsing/maps. Published pages?
+            lists the pages that survive, and it includes the feature pages. The root index always
+            publishes, so the column does not list it.
             """)
     @TableTest("""
         Scenario                                 | Exclude                       | Include         | Published pages?

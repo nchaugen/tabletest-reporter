@@ -56,8 +56,8 @@ class NavLinksTest {
 
     @DisplayName("Reaches shared assets by climbing to the output root")
     @Description("""
-            Stylesheets and the search index live once at the output root; each page
-            references them through a ../ prefix matching its own depth.
+            Stylesheets and the search index live once at the output root. Each page references
+            them through a ../ prefix that matches its own depth.
             """)
     @TableTest("""
         Scenario          | Page                 | Page type | Asset prefix?

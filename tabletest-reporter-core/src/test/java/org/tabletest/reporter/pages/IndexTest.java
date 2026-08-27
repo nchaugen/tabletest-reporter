@@ -27,7 +27,7 @@ import static org.tabletest.reporter.support.MarkdownValidator.assertValidMarkdo
         Every level of the report has an index page listing what is under it, and the report opens
         on the root one.
 
-        The rule below is read off a report built from two test classes in one package,
+        The rule below reads a report of two test classes in one package,
         com.example.orders.OrderTest and com.example.orders.ProductTest, with one table each. The
         root index therefore sits above two class pages, and each class page above one table.
         """)

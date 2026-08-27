@@ -29,7 +29,7 @@ import static org.tabletest.reporter.BuiltInFormat.HTML;
         self-contained HTML file instead. You can mail that file, attach it to a build, or open it
         from a memory stick with nothing beside it.
 
-        The rules below are read off a report built from one test class,
+        The rules below read a report of one test class,
         org.example.CalendarTest, with two tables: leapYear and monthLength.
         """)
 class SingleFileRenderingTest {
@@ -62,7 +62,7 @@ class SingleFileRenderingTest {
     @Description("""
             The file holds everything the report needs. It links no stylesheet and no script. It
             fetches no address. The default report writes the search index as a script beside the
-            pages; this file holds that index inside it. The file therefore works offline, and it
+            pages. This file holds that index inside it. The file therefore works offline, and it
             survives a move on its own.
             """)
     @TableTest("""
@@ -102,12 +102,12 @@ class SingleFileRenderingTest {
 
     @DisplayName("Heads each section at its depth, and no deeper than six")
     @Description("""
-            The one file carries the outline that the tree carried, so each section takes a heading one
-            level below the section it sits in. HTML stops at h6. A report deep enough to need an h7
+            The one file carries the outline that the tree carried. Each section therefore takes
+            a heading one level below the section it sits in. HTML stops at h6. A report deep enough to need an h7
             therefore holds its deepest sections at h6. The reporter writes no heading a browser does
             not know.
 
-            The second class below holds the report's root shallow. The packages named in each row are
+            The second class below keeps the report root shallow. The packages named in each row are
             then levels the reader walks down.
             """)
     @TableTest("""
@@ -125,9 +125,9 @@ class SingleFileRenderingTest {
     @DisplayName("Offers single-file mode for HTML only")
     @Description("""
             The other two formats cannot be self-contained. An AsciiDoc or markdown page carries its
-            structure in files and links, and not in one document. The reporter therefore refuses a
-            request for a single file in either, and never ignores that request quietly. The message
-            names the format the request asked for.
+            structure in files and links, and not in one document. The reporter therefore refuses
+            a request for a single file in either format. It never ignores the request. The
+            message names the format the request asked for.
             """)
     @TableTest("""
         Scenario         | Format   | Error message?

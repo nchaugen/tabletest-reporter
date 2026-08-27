@@ -115,8 +115,8 @@ public class HtmlFooterRenderingTest {
         Declare it in the site section of the tabletest-reporter.yaml sidecar file. Until you do,
         the report links nowhere.
 
-        The address reaches the page as you wrote it. A site that hosts the report below one of
-        its own paths can therefore use a root-relative address as well as an absolute one.
+        The address reaches the page as you wrote it. A site can host the report below one of its
+        own paths. Such a site can use a root-relative address as well as an absolute one.
 
         The footer is a block of its own in each of the three page templates. A template of yours
         can override that block and call the siteLink macro to place the same link elsewhere.

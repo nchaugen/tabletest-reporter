@@ -17,8 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
         A pair of templates named after the format is the whole definition.
 
         The name identifies the format, and every file of the report takes that name as its
-        extension. The reporter therefore refuses a name that cannot be an extension when the
-        project declares the format, and not when it writes the first file.
+        extension. The reporter therefore refuses a name that cannot be an extension. It refuses
+        the name when the project declares the format, and not when it writes the first file.
         """)
 class CustomFormatTest {
 
