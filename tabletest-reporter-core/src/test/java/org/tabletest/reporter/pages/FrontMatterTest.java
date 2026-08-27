@@ -8,6 +8,7 @@ import org.tabletest.reporter.junit.Lines;
 import org.tabletest.reporter.support.PublishedReport;
 
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,17 +39,19 @@ public class FrontMatterTest {
             AsciiDoc writes document attributes. The keys hold the order you declared them in, so
             a reader meets the block as you wrote it.
 
-            The reporter writes a value as it stands, where YAML reads that value back as the same
-            text. It quotes a value where YAML would not. Two values need the quotes: a value that
-            holds a colon, and a value a reader takes for a number or a boolean.
+            Markdown fences YAML, so the reporter writes a value as it stands only where YAML reads
+            that value back as the same text. It adds the quotes where YAML would not: around a
+            value holding a colon, and around one a reader takes for a number or a boolean. An
+            AsciiDoc attribute is not YAML and takes every value as it stands.
             """)
     @TableTest("""
-        Scenario                   | Format   | Declared                           | Page opens with?
-        A section of literal keys  | markdown | ['layout: report', 'type: docs']   | ['---', 'layout: report', 'type: docs', '---', '# orders']
-        A section of literal keys  | asciidoc | ['layout: report', 'type: docs']   | [':layout: report', ':type: docs', '= ++orders++']
-        A value YAML would misread | markdown | ['version: "2.0"', 'note: "a: b"'] | ['---', 'version: "2.0"', 'note: "a: b"', '---', '# orders']
-        No front matter declared   | markdown |                                    | ['# orders']
-        No front matter declared   | asciidoc |                                    | ['= ++orders++']
+        Scenario                  | Format   | Declared                                          | Page opens with?
+        A section of literal keys | markdown | ['layout: report', 'type: docs']                  | ['---', 'layout: report', 'type: docs', '---', '# orders']
+        A section of literal keys | asciidoc | ['layout: report', 'type: docs']                  | [':layout: report', ':type: docs', '= ++orders++']
+        Values YAML would misread | markdown | ["version: '2.0'", "draft: 'no'", "note: 'a: b'"] | ['---', 'version: "2.0"', 'draft: "no"', 'note: "a: b"', '---', '# orders']
+        Values YAML would misread | asciidoc | ["version: '2.0'", "draft: 'no'", "note: 'a: b'"] | [':version: 2.0', ':draft: no', ':note: a: b', '= ++orders++']
+        No front matter declared  | markdown |                                                   | ['# orders']
+        No front matter declared  | asciidoc |                                                   | ['= ++orders++']
         """)
     void writes_the_declared_front_matter_above_a_text_page(
             String format, @Lines List<String> declared, @Lines List<String> pageOpensWith) {
@@ -69,19 +72,22 @@ public class FrontMatterTest {
             alphabetically.
 
             The rows below are Markdown. Every text format writes the same values. $timestamp
-            carries the run timestamp, which has no fixed value to show here.
+            carries the instant the report states it was generated at. A build that pins no
+            instant reads the clock, which is what a blank cell below means.
             """)
     @TableTest("""
-        Scenario                            | Declared                                | Page URL      | Page opens with?
-        First page of the reading order     | ['title: $title', 'weight: $position']  | /order-test   | ['---', 'title: order-test', 'weight: 1', '---', '# order-test']
-        Second page of the reading order    | ['title: $title', 'weight: $position']  | /product-test | ['---', 'title: product-test', 'weight: 2', '---', '# product-test']
-        A key named for another generator   | ['sidebar_position: $position']         | /order-test   | ['---', 'sidebar_position: 1', '---', '# order-test']
-        A page with no position of its own  | ['weight: $position', 'layout: report'] | /             | ['---', 'layout: report', '---', '# orders']
-        A key named for a value, without it | ['title: a title of my own']            | /order-test   | ['---', 'title: a title of my own', '---', '# order-test']
+        Scenario                            | Declared                                | Page URL      | Run pinned at        | Page opens with?
+        First page of the reading order     | ['title: $title', 'weight: $position']  | /order-test   |                      | ['---', 'title: order-test', 'weight: 1', '---', '# order-test']
+        Second page of the reading order    | ['title: $title', 'weight: $position']  | /product-test |                      | ['---', 'title: product-test', 'weight: 2', '---', '# product-test']
+        A key named for another generator   | ['sidebar_position: $position']         | /order-test   |                      | ['---', 'sidebar_position: 1', '---', '# order-test']
+        The instant of the run              | ['date: $timestamp']                    | /order-test   | 2026-08-23T09:19:33Z | ['---', 'date: 2026-08-23T09:19:33Z', '---', '# order-test']
+        A page with no position of its own  | ['weight: $position', 'layout: report'] | /             |                      | ['---', 'layout: report', '---', '# orders']
+        A key named for a value, without it | ['title: a title of my own']            | /order-test   |                      | ['---', 'title: a title of my own', '---', '# order-test']
         """)
     void fills_a_value_asked_for_by_token_under_whatever_key_you_name(
-            @Lines List<String> declared, String pageUrl, @Lines List<String> pageOpensWith) {
-        assertThat(PublishedReport.linesAt(pageUrl, "markdown", sidecarWith(declared), PUBLISHED_TABLES, workingDir))
+            @Lines List<String> declared, String pageUrl, Instant runPinnedAt, @Lines List<String> pageOpensWith) {
+        assertThat(PublishedReport.linesAt(
+                        pageUrl, "markdown", sidecarWith(declared), runPinnedAt, PUBLISHED_TABLES, workingDir))
                 .startsWith(pageOpensWith.toArray(String[]::new));
     }
 

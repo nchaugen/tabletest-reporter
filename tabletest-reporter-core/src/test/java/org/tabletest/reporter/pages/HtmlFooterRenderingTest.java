@@ -50,10 +50,11 @@ public class HtmlFooterRenderingTest {
         below read reports the build pinned.
         """)
     @TableTest("""
-        Scenario             | Instant the build pinned      | Timestamp attribute?   | Footer label?
-        Afternoon run        | "2026-07-20T14:32:09Z"        | "2026-07-20T14:32:09Z" | 20 Jul 2026 14:32 UTC
-        Sub-second precision | "2026-07-20T14:32:09.123456Z" | "2026-07-20T14:32:09Z" | 20 Jul 2026 14:32 UTC
-        Turn of the year     | "2027-01-01T00:00:00Z"        | "2027-01-01T00:00:00Z" | 1 Jan 2027 00:00 UTC
+        Scenario               | Instant the build pinned      | Timestamp attribute?   | Footer label?
+        Afternoon run          | "2026-07-20T14:32:09Z"        | "2026-07-20T14:32:09Z" | 20 Jul 2026 14:32 UTC
+        The same instant, CEST | "2026-07-20T16:32:09+02:00"   | "2026-07-20T14:32:09Z" | 20 Jul 2026 14:32 UTC
+        Sub-second precision   | "2026-07-20T14:32:09.123456Z" | "2026-07-20T14:32:09Z" | 20 Jul 2026 14:32 UTC
+        Turn of the year       | "2027-01-01T00:00:00Z"        | "2027-01-01T00:00:00Z" | 1 Jan 2027 00:00 UTC
         """)
     void states_the_run_timestamp_in_utc(Instant pinnedInstant, String timestampAttribute, String footerLabel) {
         Document page = PublishedReport.pageAt("/order-test/items", pinnedInstant, PUBLISHED_TABLES, workingDir);

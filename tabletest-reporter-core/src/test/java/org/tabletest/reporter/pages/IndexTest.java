@@ -64,7 +64,8 @@ public class IndexTest {
             the list is one level of the report.
 
             Each link takes the syntax of the format the reporter generates, and points at the file
-            that format writes. A report therefore reads the same in every format.
+            that format writes. The two text formats therefore list the same pages. An HTML index
+            lists them too, and folds all but the top level away — the rule below states that.
             """)
     @TableTest("""
         Scenario            | Format   | Page URL    | Page content?
@@ -97,6 +98,7 @@ public class IndexTest {
     @TableTest("""
         Scenario                       | Entry        | Behind a fold?
         A page at the top level        | order-test   | false
+        A fold at the top level        | pricing      | false
         A table below a top-level page | items        | true
         A fold below a top-level fold  | pricing-test | true
         A table two levels down        | discounts    | true

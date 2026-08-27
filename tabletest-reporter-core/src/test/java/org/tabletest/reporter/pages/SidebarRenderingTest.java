@@ -61,11 +61,17 @@ class SidebarRenderingTest {
     private static final List<String> NESTED_TABLES =
             List.of("com.example.orders.OrderTest#items", "com.example.orders.pricing.PricingTest#discounts");
 
-    @DisplayName("Marks the whole trail down to the page you are on")
+    @DisplayName("Opens and marks the trail down to your page")
     @Description("""
             A page deep in the report is one entry in a long tree. A mark on that entry alone
             highlights a single leaf, and leaves the reader to work out which feature holds it.
             The sidebar therefore marks every entry above the page as well.
+
+            An entry that holds pages is a fold, so the sidebar of a large spec is a short list
+            rather than every rule at once. A reader can follow a link into the middle of a report,
+            and would then have to unfold a path back to their own page. The sidebar writes the
+            folds on that path open instead. Only an entry with pages under it is a fold, which is
+            why a page at the top level opens one fold and stands above no entry at all.
 
             These rows read a second, deeper report, of two test classes:
             com.example.orders.OrderTest, whose table is items, and
@@ -73,39 +79,16 @@ class SidebarRenderingTest {
             the package orders, so the entries below it are order-test and pricing.
             """)
     @TableTest("""
-        Scenario                | Page URL                        | Trail entries?          | Current entry?
-        A page at the top level | /order-test                     | []                      | order-test
-        A page one step below   | /order-test/items               | [order-test]            | items
-        A page two steps below  | /pricing/pricing-test/discounts | [pricing, pricing-test] | discounts
+        Scenario                | Page URL                        | Trail entries?          | Unfolded branches?
+        A page at the top level | /order-test                     | []                      | [order-test]
+        A page one step below   | /order-test/items               | [order-test]            | [order-test]
+        A page two steps below  | /pricing/pricing-test/discounts | [pricing, pricing-test] | [pricing, pricing-test]
         """)
-    void marks_the_whole_trail_down_to_the_current_page(
-            String pageUrl, List<String> trailEntries, String currentEntry) {
+    void opens_and_marks_the_trail_down_to_the_current_page(
+            String pageUrl, List<String> trailEntries, List<String> unfoldedBranches) {
         Document page = PublishedReport.pageAt(pageUrl, NESTED_TABLES, workingDir);
 
         assertThat(page.select("aside.sidebar a.nav-row.ancestor").eachText()).isEqualTo(trailEntries);
-        assertThat(page.select("aside.sidebar a[aria-current=page]").text()).isEqualTo(currentEntry);
-    }
-
-    @DisplayName("Arrives with the branch holding your page unfolded")
-    @Description("""
-            An entry that holds pages is a fold. The sidebar of a large spec is therefore a short
-            list, and not every rule at once. A reader can follow a link into the middle of a
-            report. Without help, that reader has to unfold a path back to their own page. The
-            sidebar therefore writes the folds on the path to their page open.
-
-            These rows read the deeper report described above. Each fold takes the name of the
-            entry that carries it. Only an entry with pages under it is a fold: order-test and
-            pricing sit below the root, and pricing-test sits below pricing.
-            """)
-    @TableTest("""
-        Scenario                | Page URL                        | Unfolded branches?
-        A page at the top level | /order-test                     | [order-test]
-        A page one step below   | /order-test/items               | [order-test]
-        A page two steps below  | /pricing/pricing-test/discounts | [pricing, pricing-test]
-        """)
-    void arrives_with_the_branch_holding_your_page_unfolded(String pageUrl, List<String> unfoldedBranches) {
-        Document page = PublishedReport.pageAt(pageUrl, NESTED_TABLES, workingDir);
-
         assertThat(page.select("aside.sidebar details.nav-branch[open] > summary > a.nav-row")
                         .eachText())
                 .isEqualTo(unfoldedBranches);

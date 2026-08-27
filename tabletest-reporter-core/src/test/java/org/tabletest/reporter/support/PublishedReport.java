@@ -149,18 +149,35 @@ public final class PublishedReport {
      */
     public static List<String> linesAt(
             String url, String formatName, String sidecar, List<String> publishedTables, Path workingDir) {
+        return linesAt(url, formatName, sidecar, null, publishedTables, workingDir);
+    }
+
+    /**
+     * The same, of a report the build pinned to the given instant — so a rule can state a value
+     * the clock would otherwise move under it. A null instant leaves the report to read the clock.
+     */
+    public static List<String> linesAt(
+            String url,
+            String formatName,
+            String sidecar,
+            Instant generatedAt,
+            List<String> publishedTables,
+            Path workingDir) {
         Format format = formatNamed(formatName);
         Path inputDirectory = PublishedRun.outputFor(publishedTables, workingDir);
         Path outputDirectory = createTempDirectory(workingDir);
-        new TableTestReporter(configuredBy(sidecar, formatName, workingDir)).report(inputDirectory, outputDirectory);
+        new TableTestReporter(configuredBy(sidecar, formatName, generatedAt, workingDir))
+                .report(inputDirectory, outputDirectory);
         return read(fileAt(url, format, outputDirectory)).lines().toList();
     }
 
-    private static ReportConfiguration configuredBy(String sidecar, String formatName, Path workingDir) {
+    private static ReportConfiguration configuredBy(
+            String sidecar, String formatName, Instant generatedAt, Path workingDir) {
         try {
             Path configFile = createTempDirectory(workingDir).resolve("tabletest-reporter.yaml");
             Files.writeString(configFile, sidecar == null ? "" : sidecar);
-            return ReportConfigurationResolver.resolve(new ReportOptions(formatName, null, null, false, configFile));
+            return ReportConfigurationResolver.resolve(
+                    new ReportOptions(formatName, null, null, false, configFile, generatedAt));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
