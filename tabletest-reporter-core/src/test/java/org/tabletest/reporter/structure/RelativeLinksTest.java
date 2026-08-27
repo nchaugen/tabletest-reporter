@@ -25,16 +25,17 @@ import static org.assertj.core.api.Assertions.assertThat;
         local folder, the root of a web server, and a subpath such as a project's GitHub Pages.
         You do not generate it again for each.
 
-        The rules below read a report of two test classes in one package,
-        com.example.orders.OrderTest and com.example.orders.ProductTest, with one table each. The
-        report root is the package orders. It sits above the two class pages order-test and
-        product-test. Each class page sits above its one table, items or price.
+        The rules below read a report of two test classes in sibling packages,
+        com.example.orders.OrderTest and com.example.products.ProductTest, with one table each.
+        The report root is the package example. Below it sit the packages orders and products,
+        each above one class page, and each class page sits above its one table — items or price.
+        A page of that report therefore lies up to two directories below the root.
         """)
 class RelativeLinksTest {
 
     /** The report every rule below is read off. */
     private static final List<String> PUBLISHED_TABLES =
-            List.of("com.example.orders.OrderTest#items", "com.example.orders.ProductTest#price");
+            List.of("com.example.orders.OrderTest#items", "com.example.products.ProductTest#price");
 
     @TempDir
     Path workingDir;
@@ -47,9 +48,9 @@ class RelativeLinksTest {
             at the root of the report, and never at the root of a server.
             """)
     @TableTest("""
-        Scenario                       | Page URL    | Links to   | In HTML?                | In markdown?          | In asciidoc?
-        The root index to a class page | /           | order-test | ./order-test/index.html | ./order-test/index.md | ./order-test/index.adoc
-        A class index to its table     | /order-test | items      | ./items.html            | ./items.md            | ./items.adoc
+        Scenario                         | Page URL           | Links to | In HTML?            | In markdown?      | In asciidoc?
+        The root index to a package page | /                  | orders   | ./orders/index.html | ./orders/index.md | ./orders/index.adoc
+        A class index to its table       | /orders/order-test | items    | ./items.html        | ./items.md        | ./items.adoc
         """)
     void writes_an_index_pages_links_relative_to_that_page(
             String pageUrl, String linksTo, String inHtml, String inMarkdown, String inAsciidoc) {
@@ -68,10 +69,10 @@ class RelativeLinksTest {
             no page chrome to load it from.
             """)
     @TableTest("""
-        Scenario              | Page URL          | Path to the search index?
-        The root index        | /                 | tabletest-search-index.js
-        A class index         | /order-test       | ../tabletest-search-index.js
-        A table below a class | /order-test/items | ../tabletest-search-index.js
+        Scenario                 | Page URL                 | Path to the search index?
+        The root index           | /                        | tabletest-search-index.js
+        A package index below it | /orders                  | ../tabletest-search-index.js
+        A table two levels down  | /orders/order-test/items | ../../tabletest-search-index.js
         """)
     void reaches_a_shared_asset_by_climbing_to_the_output_root(String pageUrl, String pathToTheSearchIndex) {
         Document page = PublishedReport.pageAt(pageUrl, PUBLISHED_TABLES, workingDir);

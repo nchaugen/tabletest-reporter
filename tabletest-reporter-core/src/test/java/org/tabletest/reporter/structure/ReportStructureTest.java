@@ -33,13 +33,20 @@ class ReportStructureTest {
     Path workingDir;
 
     @DisplayName("Makes one page for each package, class, and table")
+    @Description("""
+            A nested test class is a page below its outer class, and the outer class becomes an
+            index page even when it publishes no table of its own. That index page is the one page
+            the reporter names after the Java class rather than after its slug, which is why the
+            row below reads OrderTest beside product-test. Open: whether it should carry the slug
+            the other class pages carry.
+            """)
     @TableTest("""
         Scenario                        | Published tables                                                 | Page tree?
         One class with one table        | ['pkg.OrderTest#items']                                          | [pkg: [[order-test: [items]]]]
         One class with two tables       | ['pkg.OrderTest#items', 'pkg.OrderTest#totals']                  | [pkg: [[order-test: [items, totals]]]]
         Two classes in one package      | ['pkg.OrderTest#items', 'pkg.ProductTest#price']                 | [pkg: [[order-test: [items]], [product-test: [price]]]]
         Two classes in sibling packages | ['pkg.orders.OrderTest#items', 'pkg.products.ProductTest#price'] | [pkg: [[orders: [[order-test: [items]]]], [products: [[product-test: [price]]]]]]
-        A nested test class             | ['pkg.OrderTest$WhenEmpty#items']                                | [OrderTest: [[when-empty: [items]]]]
+        A nested test class             | ['pkg.OrderTest$WhenEmpty#items', 'pkg.ProductTest#price']       | [pkg: [[OrderTest: [[when-empty: [items]]]], [product-test: [price]]]]
         """)
     void mirrorsThePackageHierarchy(List<String> publishedTables, @Tree Map<String, Object> pageTree) {
         assertThat(ReportStructure.pageTreeFor(publishedTables, workingDir)).isEqualTo(pageTree);
@@ -49,6 +56,10 @@ class ReportStructureTest {
     @Description("""
             Every page shares the packages above the root, so a reader walking through them never
             makes a choice there.
+
+            Classes that share no package leave the root page with no package to name it. The
+            reporter leaves that page unnamed and the report titles it from the spec metadata. The
+            row below writes it (root), which is the name the rows use for a page that has none.
             """)
     @TableTest("""
         Scenario                          | Published tables                                                                 | Page tree?
