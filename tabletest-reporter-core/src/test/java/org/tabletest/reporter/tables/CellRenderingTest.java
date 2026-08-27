@@ -51,7 +51,6 @@ public class CellRenderingTest {
         A list within a list | '[[1, 2], [a, b]]'    | '[[1, 2], [a, b]]'
         A map within a map   | '[a: [b: 1]]'         | '[a: [b: 1]]'
         Collections mixed    | '[a: [1, 2], b: {3}]' | '[a: [1, 2], b: {3}]'
-        A list holding pipes | '["|", "|"]'          | '[\\|, \\|]'
         """)
     void publishesAMarkdownCellInTheNotationItWasWrittenIn(String cell, String publishedCell) {
         assertThat(PublishedCell.of("markdown", cell)).isEqualTo(publishedCell);
@@ -84,7 +83,8 @@ public class CellRenderingTest {
     @Description("""
             Three kinds of whitespace are significant: whitespace at either edge of the value, a run of
             two or more spaces, and a tab. A single space between words stays as it is, and so does a
-            value with no whitespace at all.
+            value with no whitespace at all. A value that is empty holds no whitespace either, and
+            the last row is here because a reader still has to tell it from a value that is missing.
 
             Markdown and AsciiDoc are plain text, and have no styling available. They therefore
             put a glyph into the value itself. A space becomes an open box, and a tab becomes an

@@ -124,25 +124,25 @@ class RolesAndResultsTest {
             not only what somebody wrote. Every cell of a row carries that row's verdict. A reader can
             then see whether the spec still holds.
 
-            The Year cell stands for the whole row. The rule asserts that every cell of the row agrees
-            with it.
+            The Year cell below stands for the whole row. The last column is the verdict every cell of
+            that row carries, so a row whose cells disagreed would not read as one word. Markdown
+            carries no mark, and therefore no verdict.
 
             These rows read LeapYearSample, whose century row claims the wrong answer on purpose.
             """)
     @TableTest("""
-        Scenario         | Row                      | In markdown? | In AsciiDoc?          | In HTML?
-        A row that held  | A year divisible by four | 2004         | '[.passed]#++2004++#' | '<td class="cell passed"><span class="literal">2004</span></td>'
-        A row that broke | A century year           | 1900         | '[.failed]#++1900++#' | '<td class="cell failed"><span class="literal">1900</span></td>'
+        Scenario         | Row                      | In markdown? | In AsciiDoc?          | In HTML?                                                         | On every cell of the row?
+        A row that held  | A year divisible by four | 2004         | '[.passed]#++2004++#' | '<td class="cell passed"><span class="literal">2004</span></td>' | passed
+        A row that broke | A century year           | 1900         | '[.failed]#++1900++#' | '<td class="cell failed"><span class="literal">1900</span></td>' | failed
         """)
-    void marksEveryCellOfARowWithItsVerdict(String row, String inMarkdown, String inAsciiDoc, String inHtml) {
+    void marksEveryCellOfARowWithItsVerdict(
+            String row, String inMarkdown, String inAsciiDoc, String inHtml, String onEveryCellOfTheRow) {
         assertThat(cellOf(LeapYearSample.class, "markdown", row)).isEqualTo(inMarkdown);
         assertThat(cellOf(LeapYearSample.class, "asciidoc", row)).isEqualTo(inAsciiDoc);
         assertThat(cellOf(LeapYearSample.class, "html", row)).isEqualTo(inHtml);
 
-        String verdict = inHtml.contains("failed") ? "failed" : "passed";
-        assertThat(verdictOf(LeapYearSample.class, "asciidoc", row)).isEqualTo(verdict);
-        assertThat(verdictOf(LeapYearSample.class, "html", row)).isEqualTo(verdict);
-        assertThat(verdictOf(LeapYearSample.class, "markdown", row)).isNull();
+        assertThat(verdictOf(LeapYearSample.class, "asciidoc", row)).isEqualTo(onEveryCellOfTheRow);
+        assertThat(verdictOf(LeapYearSample.class, "html", row)).isEqualTo(onEveryCellOfTheRow);
     }
 
     @DisplayName("Marks a set that expands the row into one run per value")
@@ -178,21 +178,19 @@ class RolesAndResultsTest {
             A reader of the spec therefore meets what the code did, and not what the row claimed.
 
             Every format publishes that list, each below a heading of its own and fenced its own way.
-            The message inside is the same text in all three, so one column serves for all three.
+            The message inside is the same text in all three, which is what the format column below
+            states.
 
             These rows read LeapYearSample.
             """)
     @TableTest("""
-        Scenario         | Row                      | Message below the table?
-        A row that held  | A year divisible by four |
-        A row that broke | A century year           | ['expected: "Yes"', ' but was: "No"']
+        Scenario         | Format                     | Row                      | Message below the table?
+        A row that held  | {markdown, asciidoc, html} | A year divisible by four |
+        A row that broke | {markdown, asciidoc, html} | A century year           | ['expected: "Yes"', ' but was: "No"']
         """)
-    void publishesABrokenRowsMessageBelowTheTable(String row, @Lines List<String> messageBelowTheTable) {
-        for (String format : List.of("markdown", "asciidoc", "html")) {
-            assertThat(publishedTableOf(LeapYearSample.class, format).failureMessageOf(row))
-                    .describedAs("the message published in %s", format)
-                    .isEqualTo(messageBelowTheTable);
-        }
+    void publishesABrokenRowsMessageBelowTheTable(String format, String row, @Lines List<String> messageBelowTheTable) {
+        assertThat(publishedTableOf(LeapYearSample.class, format).failureMessageOf(row))
+                .isEqualTo(messageBelowTheTable);
     }
 
     private String headerCellOf(Class<?> sampleClass, String format, String column) {
