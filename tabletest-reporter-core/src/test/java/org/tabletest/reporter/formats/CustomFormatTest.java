@@ -29,9 +29,9 @@ class CustomFormatTest {
             like any other here. A separate rule says which templates that name finds.
             """)
     @TableTest("""
-        Scenario                    | Custom format | File extension?
-        A name of its own           | report        | .report
-        A name a built-in also uses | html          | .html
+        Scenario                    | Format name | File extension?
+        A name of its own           | report      | .report
+        A name a built-in also uses | html        | .html
         """)
     void isNamedByTheExtensionItsFilesAreGiven(CustomFormat format, String fileExtension) {
         assertThat(format.extension()).isEqualTo(fileExtension);

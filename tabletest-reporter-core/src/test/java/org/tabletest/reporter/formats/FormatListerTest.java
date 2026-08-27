@@ -28,11 +28,10 @@ class FormatListerTest {
             whole list alphabetically.
             """)
     @TableTest("""
-        Scenario                      | Template Files                                                             | Available Formats?
+        Scenario                      | Template files                                                             | Available formats?
         Empty template directory      | []                                                                         | [asciidoc, html, markdown]
         Custom XML format             | [table.xml.peb, index.xml.peb]                                             | [asciidoc, html, markdown, xml]
         Formats sorted alphabetically | [table.zebra.peb, index.zebra.peb, table.aardvark.peb, index.aardvark.peb] | [aardvark, asciidoc, html, markdown, zebra]
-        Single custom format          | [table.custom.peb, index.custom.peb]                                       | [asciidoc, custom, html, markdown]
         """)
     void lists_formats(
             @Scenario String scenario, List<String> templateFiles, List<String> availableFormats, @TempDir Path tempDir)

@@ -85,6 +85,17 @@ public final class PublishedReport {
                 .toList();
     }
 
+    /**
+     * The lines of the one file single-file mode writes, rendered with the given directory of
+     * templates of the reader's own, or null for the built-in templates alone. HTML is the only
+     * format single-file mode offers.
+     */
+    public static List<String> singleFileLinesOf(Path publishedRunOutput, Path templateDirectory, Path workingDir) {
+        Path outputDirectory = createTempDirectory(workingDir);
+        new TableTestReporter(templateDirectory).report(HTML, publishedRunOutput, outputDirectory, true);
+        return read(outputDirectory.resolve("index" + HTML.extension())).lines().toList();
+    }
+
     private static Path pageOf(
             Path publishedRunOutput, Format format, Path templateDirectory, boolean index, Path workingDir) {
         Path outputDirectory = createTempDirectory(workingDir);

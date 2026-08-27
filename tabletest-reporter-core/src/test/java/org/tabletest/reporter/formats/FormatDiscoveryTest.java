@@ -29,7 +29,7 @@ class FormatDiscoveryTest {
             lone index template, any other file, and every subdirectory.
             """)
     @TableTest("""
-        Scenario                   | Template Files                                                                                 | Discovered Formats?
+        Scenario                   | Template files                                                                                 | Discovered formats?
         Single format              | [table.html.peb, index.html.peb]                                                               | [html]
         Multiple formats           | [table.html.peb, index.html.peb, table.xml.peb, index.xml.peb, table.json.peb, index.json.peb] | [html, xml, json]
         Only table template        | [table.html.peb]                                                                               | []
