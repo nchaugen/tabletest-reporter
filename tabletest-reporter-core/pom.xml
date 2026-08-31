@@ -23,7 +23,7 @@
         <version.assertj>3.27.7</version.assertj>
         <version.commonmark>0.30.0</version.commonmark>
         <version.asciidoctorj>3.0.1</version.asciidoctorj>
-        <version.jsoup>1.23.1</version.jsoup>
+        <version.jsoup>1.23.2</version.jsoup>
     </properties>
 
     <dependencies>
