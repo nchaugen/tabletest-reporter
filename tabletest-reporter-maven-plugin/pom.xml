@@ -14,7 +14,7 @@
     <name>TableTest Reporter Maven Plugin</name>
 
     <properties>
-        <version.plugin.plugin-api>3.9.16</version.plugin.plugin-api>
+        <version.plugin.plugin-api>3.10.0</version.plugin.plugin-api>
         <version.plugin.plugin>3.16.0</version.plugin.plugin>
         <version.assertj>3.27.7</version.assertj>
     </properties>
