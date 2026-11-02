@@ -49,13 +49,12 @@ public final class FormatResolver {
         String normalizedName = formatName.trim().toLowerCase();
 
         // Check built-in formats first
-        Format builtInFormat =
-                switch (normalizedName) {
-                    case "adoc", "asciidoc", "asciidoctor" -> BuiltInFormat.ASCIIDOC;
-                    case "md", "markdown" -> BuiltInFormat.MARKDOWN;
-                    case "html" -> BuiltInFormat.HTML;
-                    default -> null;
-                };
+        Format builtInFormat = switch (normalizedName) {
+            case "adoc", "asciidoc", "asciidoctor" -> BuiltInFormat.ASCIIDOC;
+            case "md", "markdown" -> BuiltInFormat.MARKDOWN;
+            case "html" -> BuiltInFormat.HTML;
+            default -> null;
+        };
 
         if (builtInFormat != null) {
             return builtInFormat;

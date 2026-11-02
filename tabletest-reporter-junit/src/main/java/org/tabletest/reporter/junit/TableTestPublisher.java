@@ -53,19 +53,20 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
 
     private void recordInvocationResult(ExtensionContext context, boolean passed, Throwable cause) {
         // Get the parent context (test template context for parameterized tests)
-        context.getParent().ifPresent(parentContext -> parentContext
-                .getTestMethod()
-                .flatMap(method ->
-                        TableTestAnnotationResolver.resolveInput(method, parentContext.getRequiredTestClass()))
-                .ifPresent(input -> {
-                    // Ensure table metadata is stored (only happens once per test method)
-                    ensureTableMetadataStored(parentContext, input);
+        context.getParent()
+                .ifPresent(parentContext -> parentContext
+                        .getTestMethod()
+                        .flatMap(method ->
+                                TableTestAnnotationResolver.resolveInput(method, parentContext.getRequiredTestClass()))
+                        .ifPresent(input -> {
+                            // Ensure table metadata is stored (only happens once per test method)
+                            ensureTableMetadataStored(parentContext, input);
 
-                    // Store this invocation's result
-                    int rowIndex = getInvocationIndex(context);
-                    store.storeRowResult(
-                            parentContext, new RowResult(rowIndex, passed, cause, context.getDisplayName()));
-                }));
+                            // Store this invocation's result
+                            int rowIndex = getInvocationIndex(context);
+                            store.storeRowResult(
+                                    parentContext, new RowResult(rowIndex, passed, cause, context.getDisplayName()));
+                        }));
     }
 
     /**
