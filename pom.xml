@@ -246,6 +246,39 @@
     </build>
 
     <profiles>
+        <!-- Compiles and tests with another JDK from ~/.m2/toolchains.xml, while Maven and Spotless
+             run on the JDK that starts Maven (palantir fails on JDK 27). Off unless jdk.toolchain
+             is set, for example -Djdk.toolchain=27 or a profile in ~/.m2/settings.xml. -->
+        <profile>
+            <id>jdk-toolchain</id>
+            <activation>
+                <property>
+                    <name>jdk.toolchain</name>
+                </property>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <configuration>
+                                <jdkToolchain>
+                                    <version>${jdk.toolchain}</version>
+                                </jdkToolchain>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <jdkToolchain>
+                                    <version>${jdk.toolchain}</version>
+                                </jdkToolchain>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
         <!-- Creates additional artefacts that are required for deployment. -->
         <profile>
             <id>release</id>
