@@ -53,6 +53,14 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${version.plugin.surefire}</version>
                 <configuration>
+                    <properties>
+                        <configurationParameters>
+                            junit.jupiter.execution.parallel.enabled=true
+                            junit.jupiter.execution.parallel.config.strategy=fixed
+                            junit.jupiter.execution.parallel.config.fixed.parallelism=4
+                            junit.jupiter.execution.parallel.config.fixed.max-pool-size=16
+                        </configurationParameters>
+                    </properties>
                     <!-- Allow intentional test failures for verification -->
                     <testFailureIgnore>true</testFailureIgnore>
                     <!-- Autodetection configured via junit-platform.properties -->

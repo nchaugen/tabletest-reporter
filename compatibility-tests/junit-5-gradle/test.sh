@@ -43,6 +43,7 @@ echo -e "${GREEN}✓ Tests completed${NC}"
 # Step 2: Validate YAML generation
 echo -e "\n${YELLOW}[2/9] Validating YAML generation at build/junit-jupiter...${NC}"
 validate_yaml_files "build/junit-jupiter" 10
+python3 "$SCRIPT_DIR/../verify-parallel-publication.py" "build/junit-jupiter" "build/test-results/test"
 echo -e "${GREEN}✓ YAML files generated${NC}"
 
 # Step 3: Generate Markdown
@@ -87,6 +88,7 @@ echo -e "${GREEN}✓ Tests completed${NC}"
 # Step 7: Validate YAML generation
 echo -e "\n${YELLOW}[7/9] Validating YAML generation at build/custom-reports...${NC}"
 validate_yaml_files "build/custom-reports" 10
+python3 "$SCRIPT_DIR/../verify-parallel-publication.py" "build/custom-reports" "build/test-results/test"
 echo -e "${GREEN}✓ YAML files generated${NC}"
 
 # Step 8: Generate Markdown

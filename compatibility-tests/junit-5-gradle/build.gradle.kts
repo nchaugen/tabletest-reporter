@@ -43,6 +43,12 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 
+    // Only the fixture marked @Execution(CONCURRENT) opts into parallel execution.
+    systemProperty("junit.jupiter.execution.parallel.enabled", "true")
+    systemProperty("junit.jupiter.execution.parallel.config.strategy", "fixed")
+    systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", "4")
+    systemProperty("junit.jupiter.execution.parallel.config.fixed.max-pool-size", "16")
+
     // Custom expectation pattern for testing
     systemProperty("tabletest.reporter.expectation.pattern", "^Expected.*")
 

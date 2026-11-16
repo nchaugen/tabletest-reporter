@@ -17,9 +17,13 @@ package org.tabletest.reporter.junit;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.tabletest.parser.Table;
+import org.tabletest.parser.TableParser;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Manages storage of TableTest data and results using JUnit's ExtensionContext stores.
@@ -39,41 +43,23 @@ class TableTestStore {
     void storeRowResult(ExtensionContext context, RowResult result) {
         ExtensionContext.Store store = getTestMethodStore(context);
         @SuppressWarnings("unchecked")
-        List<RowResult> results =
-                (List<RowResult>) store.getOrComputeIfAbsent("rowResults", key -> new ArrayList<RowResult>());
+        Queue<RowResult> results = (Queue<RowResult>)
+                store.getOrComputeIfAbsent("rowResults", key -> new ConcurrentLinkedQueue<RowResult>());
         results.add(result);
     }
 
     /**
-     * Stores parsed table for a TableTest method.
-     */
-    void storeTable(ExtensionContext context, Table table) {
-        getTestMethodStore(context).put("table", table);
-    }
-
-    /**
-     * Checks if a table has already been stored for this TableTest method.
-     */
-    boolean hasTable(ExtensionContext context) {
-        return getTestMethodStore(context).get("table") != null;
-    }
-
-    /**
-     * Marks that this test class has TableTests.
-     */
-    void markClassAsHavingTableTests(ExtensionContext context) {
-        getClassStore(context).put("hasTableTests", true);
-    }
-
-    /**
-     * Adds a method context to the list of methods that need publishing.
+     * Initialises the table atomically and registers its method once, preserving registration order.
      */
     @SuppressWarnings("unchecked")
-    void addMethodForPublishing(ExtensionContext methodContext) {
+    void registerTable(ExtensionContext methodContext, String input) {
+        getTestMethodStore(methodContext).getOrComputeIfAbsent("table", key -> TableParser.parse(input));
         ExtensionContext.Store classStore = getClassStore(methodContext);
-        List<ExtensionContext> contexts = (List<ExtensionContext>)
-                classStore.getOrComputeIfAbsent("methodContexts", key -> new ArrayList<ExtensionContext>());
-        contexts.add(methodContext);
+        Map<String, ExtensionContext> contexts = (Map<String, ExtensionContext>)
+                classStore.getOrComputeIfAbsent("methodContexts", key -> new LinkedHashMap<String, ExtensionContext>());
+        synchronized (contexts) {
+            contexts.putIfAbsent(methodContext.getUniqueId(), methodContext);
+        }
     }
 
     /**
@@ -82,8 +68,13 @@ class TableTestStore {
     @SuppressWarnings("unchecked")
     List<ExtensionContext> getMethodsToPublish(ExtensionContext classContext) {
         ExtensionContext.Store classStore = getClassStore(classContext);
-        List<ExtensionContext> contexts = (List<ExtensionContext>) classStore.get("methodContexts");
-        return contexts != null ? contexts : List.of();
+        Map<String, ExtensionContext> contexts = (Map<String, ExtensionContext>) classStore.get("methodContexts");
+        if (contexts == null) {
+            return List.of();
+        }
+        synchronized (contexts) {
+            return List.copyOf(contexts.values());
+        }
     }
 
     /**
@@ -92,8 +83,8 @@ class TableTestStore {
     @SuppressWarnings("unchecked")
     void storePublishedTableTest(ExtensionContext methodContext, PublishedTableTestInfo info) {
         ExtensionContext.Store classStore = getClassStore(methodContext);
-        List<PublishedTableTestInfo> tests = (List<PublishedTableTestInfo>)
-                classStore.getOrComputeIfAbsent("publishedTableTests", key -> new ArrayList<PublishedTableTestInfo>());
+        Queue<PublishedTableTestInfo> tests = (Queue<PublishedTableTestInfo>) classStore.getOrComputeIfAbsent(
+                "publishedTableTests", key -> new ConcurrentLinkedQueue<PublishedTableTestInfo>());
         tests.add(info);
     }
 
@@ -103,8 +94,8 @@ class TableTestStore {
     @SuppressWarnings("unchecked")
     List<PublishedTableTestInfo> getPublishedTableTests(ExtensionContext classContext) {
         ExtensionContext.Store classStore = getClassStore(classContext);
-        List<PublishedTableTestInfo> tests = (List<PublishedTableTestInfo>) classStore.get("publishedTableTests");
-        return tests != null ? tests : List.of();
+        Queue<PublishedTableTestInfo> tests = (Queue<PublishedTableTestInfo>) classStore.get("publishedTableTests");
+        return tests != null ? List.copyOf(tests) : List.of();
     }
 
     /**
@@ -119,7 +110,9 @@ class TableTestStore {
      */
     @SuppressWarnings("unchecked")
     List<RowResult> getRowResults(ExtensionContext methodContext) {
-        return (List<RowResult>) getTestMethodStore(methodContext).get("rowResults");
+        Queue<RowResult> results =
+                (Queue<RowResult>) getTestMethodStore(methodContext).get("rowResults");
+        return results != null ? List.copyOf(results) : null;
     }
 
     private ExtensionContext.Store getTestMethodStore(ExtensionContext context) {

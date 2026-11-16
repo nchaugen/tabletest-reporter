@@ -20,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.MediaType;
 import org.junit.jupiter.api.extension.TestWatcher;
 import org.tabletest.parser.Table;
-import org.tabletest.parser.TableParser;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,31 +59,13 @@ public class TableTestPublisher implements TestWatcher, AfterAllCallback {
                                 TableTestAnnotationResolver.resolveInput(method, parentContext.getRequiredTestClass()))
                         .ifPresent(input -> {
                             // Ensure table metadata is stored (only happens once per test method)
-                            ensureTableMetadataStored(parentContext, input);
+                            store.registerTable(parentContext, input);
 
                             // Store this invocation's result
                             int rowIndex = getInvocationIndex(context);
                             store.storeRowResult(
                                     parentContext, new RowResult(rowIndex, passed, cause, context.getDisplayName()));
                         }));
-    }
-
-    /**
-     * Ensures table metadata is stored exactly once per test method. On first invocation: parses table, stores
-     * metadata, marks method for publishing. On subsequent invocations: does nothing (metadata already stored).
-     */
-    private void ensureTableMetadataStored(ExtensionContext methodContext, String input) {
-        if (store.hasTable(methodContext)) {
-            return; // Already stored
-        }
-
-        // Parse and store table
-        Table table = TableParser.parse(input);
-        store.storeTable(methodContext, table);
-
-        // Mark this method for publishing and mark class as having table tests
-        store.addMethodForPublishing(methodContext);
-        store.markClassAsHavingTableTests(methodContext);
     }
 
     private static int getInvocationIndex(ExtensionContext context) {

@@ -32,6 +32,7 @@ echo -e "${GREEN}✓ Tests completed${NC}"
 # Step 2: Validate YAML generation at convention location
 echo -e "\n${YELLOW}[2/9] Validating YAML generation at target/junit-jupiter...${NC}"
 validate_yaml_files "target/junit-jupiter" 10
+python3 "$SCRIPT_DIR/../verify-parallel-publication.py" "target/junit-jupiter" "target/surefire-reports"
 echo -e "${GREEN}✓ YAML files generated${NC}"
 
 # Step 3: Generate Markdown
@@ -85,6 +86,7 @@ echo -e "${GREEN}✓ Tests completed${NC}"
 # Step 8: Validate YAML at custom location
 echo -e "\n${YELLOW}[8/9] Validating YAML generation at target/custom-reports...${NC}"
 validate_yaml_files "target/custom-reports" 10
+python3 "$SCRIPT_DIR/../verify-parallel-publication.py" "target/custom-reports" "target/surefire-reports"
 echo -e "${GREEN}✓ YAML files generated at custom location${NC}"
 
 # Step 9: Generate Markdown (discovers input via properties file)

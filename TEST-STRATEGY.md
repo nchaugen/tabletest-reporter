@@ -43,6 +43,32 @@ worth catching is worth asserting.
 
 Test the interaction between modules (e.g., JUnit extension generating YAML that the core module processes).
 
+`TableTestExecutionTest` runs real TableTest fixtures through JUnit's `EngineTestKit`
+with parallel execution enabled. It checks that concurrent methods and rows are
+published exactly once and that out-of-order completion preserves set-expansion
+result attribution and row roles. Latches coordinate the fixtures; generated YAML
+and engine events provide the assertions. These regressions run in the ordinary
+test suite.
+
+Run these checks against the configured production dependencies before comparing a
+JUnit milestone:
+
+```bash
+mvn -pl tabletest-reporter-junit -Dtest=TableTestExecutionTest test
+```
+
+`TableTestLifecycleProbe` separately checks that an arguments-source failure waits
+for an already-submitted invocation before publication. It fails on JUnit 6.1.3
+because the engine closes the method store and permits class publication while the
+invocation is still running; it passes on JUnit 6.2.0-M1. Its `Probe` suffix keeps
+this known upstream failure outside the ordinary suite. Invoke it explicitly to
+compare versions without changing production dependencies:
+
+```bash
+mvn -pl tabletest-reporter-junit -Dtest=TableTestLifecycleProbe test
+mvn -pl tabletest-reporter-junit -Dtest=TableTestLifecycleProbe -Dversion.junit=6.2.0-M1 test
+```
+
 ### 3. Compatibility Tests
 
 Located in `compatibility-tests/`. These are end-to-end tests that verify the complete pipeline works across different environments.

@@ -137,6 +137,15 @@ The JUnit projects include comprehensive edge case coverage:
 - Intentionally failing tests (for CSS class verification)
 - Custom expectation patterns
 
+Both JUnit 5.12 projects also run two TableTest methods with two concurrent rows
+each. A latch requires all four invocations to start before any can finish.
+`verify-parallel-publication.py` checks the fixture's test results and generated
+YAML in both output-directory passes: four passing invocations, exactly two table
+files and one class index, one entry per method, correct row attribution and passed
+roles. These checks fail the compatibility script even though other fixtures have
+intentional failures. The verifier uses Python 3's standard library and compares
+the reporter's serialised result entries while allowing either completion order.
+
 ## Adding New Tests
 
 To add a new compatibility test:

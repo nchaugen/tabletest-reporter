@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+- Parallel TableTest invocations no longer publish duplicate tables or lose row results
+  when several rows finish together. Duplicate registrations could also add unnecessary
+  numeric suffixes to generated filenames; affected tables now use their normal filenames.
+
 ## [1.5.0] - 2026-08-23
 
 ### Added

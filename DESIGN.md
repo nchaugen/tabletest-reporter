@@ -57,11 +57,10 @@ Documentation Files (AsciiDoc/Markdown/Custom)
 1. For each test invocation: `testSuccessful()` or `testFailed()` called
 2. Check if method has `@TableTest` annotation
 3. On first invocation of a table test method:
-   - Parse table content from annotation
-   - Store table metadata
-   - Mark class as having table tests
-   - Add method to publishing queue
-4. On subsequent invocations: Store row results only
+   - Atomically initialise parsed table metadata
+   - Register the method by its JUnit unique ID for publication
+4. On every invocation: Collect the row result in a concurrent queue; registering
+   the same method again leaves its existing entry in place
 5. After all tests in class: `afterAll()` triggers publication
 
 ### Data Storage
@@ -70,11 +69,14 @@ Documentation Files (AsciiDoc/Markdown/Custom)
 
 **Method Store** (per test method):
 - `"table"`: Parsed `Table` object from `@TableTest` annotation
-- `"rowResults"`: `List<RowResult>` containing pass/fail status for each invocation
+- `"rowResults"`: A concurrent queue containing pass/fail status for each invocation
 
 **Class Store** (per test class):
-- `"hasTableTests"`: Boolean flag indicating class has at least one `@TableTest` method
-- `"methodContexts"`: `List<ExtensionContext>` of methods to publish
+- `"methodContexts"`: A map from JUnit unique IDs to method contexts. Access is
+  synchronised, and registration order is preserved for publication
+- `"publishedTableTests"`: A concurrent queue of published table metadata for the class index
+
+Publication reads snapshots of the method registry and result queues.
 
 ### YAML Publication
 
