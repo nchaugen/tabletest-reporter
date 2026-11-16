@@ -107,7 +107,7 @@
     {%- else -%}
         {#- regex below matches characters that need encoding and whitespace that would otherwise be trimmed  #}
         {%- set NEEDS_ENCODING = '(^ +)|( +$)|(\t+)|([ \t]{2,})|([+]+)|([|]+)' -%}
-        {%- set PIPE = '\\|' -%}
+        {%- set PIPE = '\\\\|' -%}
         {%- set PLUS = '&#43;' -%}
         {%- set TAB = '&#x21E5;' -%}
         {%- set SPACE = '&#x2423;' -%}
