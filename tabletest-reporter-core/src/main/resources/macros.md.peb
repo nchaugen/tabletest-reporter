@@ -25,7 +25,7 @@
     {%- else %}
         {#- regex below matches characters that need encoding and whitespace that would otherwise not render  #}
         {%- set NEEDS_ENCODING = '(^ +)|( +$)|(\t+)|([ \t]{2,})|([|]+)' %}
-        {%- set PIPE = '\\|' %}
+        {%- set PIPE = '\\\\|' %}
         {%- set TAB_SIGN = '&#x21E5;' %}
         {%- set SPACE_SIGN = '&#x2423;' %}
         {{- value | replaceInMatch(NEEDS_ENCODING, {'\|': PIPE, ' ': SPACE_SIGN, '\t': TAB_SIGN}) -}}
