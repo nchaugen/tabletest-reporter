@@ -69,6 +69,35 @@ mvn -pl tabletest-reporter-junit -Dtest=TableTestLifecycleProbe test
 mvn -pl tabletest-reporter-junit -Dtest=TableTestLifecycleProbe -Dversion.junit=6.2.0-M1 test
 ```
 
+#### New JUnit release checks
+
+The **Test New JUnit Releases** workflow checks Maven Central daily for releases
+newer than `version.junit` in `tabletest-reporter-junit/pom.xml`, including milestones
+(`M`) and release candidates (`RC`). Each untested version runs the full Maven
+reactor and then `TableTestLifecycleProbe` in its own step. The probe still runs if
+the ordinary suite fails, unless the workflow is cancelled. Either failure fails
+the release check; test reports are uploaded for diagnosis.
+
+These runs use a command-line version override and leave production dependencies
+unchanged. Only successful checks are remembered in GitHub Actions caches; failed
+versions are retried on the next poll. Cache expiry or eviction can also trigger a
+retest. This workflow is separate from the normal CI suite and its minimum-version
+compatibility tests.
+
+Use **Run workflow** with `junit_version` to retest a specific JUnit 6 or newer
+release after a code change, even if it previously passed. Leave it blank to
+discover untested releases. Explicitly selecting 6.1.3 reproduces the known
+upstream lifecycle failure; 6.2.0-M1 passes. GitHub does not provide a direct
+cross-repository release trigger, so discovery uses a daily poll without another
+service or token. Permissions only allow reading repository contents and Actions
+cache metadata.
+
+The version-selection checks run with Python's standard library:
+
+```sh
+python3 -m unittest discover -s .github/scripts -p 'test_junit_releases.py' -v
+```
+
 ### 3. Compatibility Tests
 
 Located in `compatibility-tests/`. These are end-to-end tests that verify the complete pipeline works across different environments.
