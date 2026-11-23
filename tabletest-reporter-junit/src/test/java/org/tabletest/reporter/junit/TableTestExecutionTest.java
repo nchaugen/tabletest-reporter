@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -165,7 +166,18 @@ class TableTestExecutionTest {
     }
 
     private static void await(CountDownLatch latch, String message) throws InterruptedException {
-        assertTrue(latch.await(10, TimeUnit.SECONDS), message);
+        ForkJoinPool.managedBlock(new ForkJoinPool.ManagedBlocker() {
+            @Override
+            public boolean isReleasable() {
+                return latch.getCount() == 0;
+            }
+
+            @Override
+            public boolean block() throws InterruptedException {
+                assertTrue(latch.await(10, TimeUnit.SECONDS), message);
+                return true;
+            }
+        });
     }
 
     /** Releases both tables only after all four invocations have started. */
