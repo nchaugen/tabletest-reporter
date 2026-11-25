@@ -12,12 +12,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SpecMetadataApplyTest {
 
     @TableTest("""
-        Scenario                   | Existing  | Declared  | Order?
-        No features keeps order    | [a, b, c] | []        | [a, b, c]
-        Declared come first        | [a, b, c] | [c, a]    | [c, a, b]
-        Full reorder               | [b, a]    | [a, b]    | [a, b]
-        Unmatched declared ignored | [a, b, c] | [x]       | [a, b, c]
-        Partial with unmatched     | [a, b, c] | [c, x, a] | [c, a, b]
+        Scenario                   | Existing              | Declared      | Order?
+        No features keeps order    | [a, b, c]             | []            | [a, b, c]
+        Declared come first        | [a, b, c]             | [c, a]        | [c, a, b]
+        Full reorder               | [b, a]                | [a, b]        | [a, b]
+        Unmatched declared ignored | [a, b, c]             | [x]           | [a, b, c]
+        Partial with unmatched     | [a, b, c]             | [c, x, a]     | [c, a, b]
+        Declared in another case   | [Cellar, DrinkWindow] | [drinkwindow] | [DrinkWindow, Cellar]
         """)
     void reordersTopLevelFeaturesDeclaredFirstThenAlphabetical(
             List<String> existing, List<String> declared, List<String> order) {

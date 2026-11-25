@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 ### Fixed
+- A feature `name` and a `publish` path match a page name in any case. Before, they matched only
+  the case the page's segment had in its class name, although the page's URL is lowercase: a
+  folder `DrinkWindow` matched `DrinkWindow`, not `drinkwindow`.
 - Parallel TableTest invocations no longer publish duplicate tables or lose row results
   when several rows finish together. Duplicate registrations could also add unnecessary
   numeric suffixes to generated filenames; affected tables now use their normal filenames.

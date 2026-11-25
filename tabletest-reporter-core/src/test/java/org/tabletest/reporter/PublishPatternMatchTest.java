@@ -31,6 +31,9 @@ class PublishPatternMatchTest {
         Trailing deep wildcard needs no level | parsing/**    | [parsing]              | true
         Single wildcard is not a deep one     | parsing/*     | [parsing, lists, deep] | false
         Different feature does not match      | parsing/lists | [features, lists]      | false
+        Name in the case of the page's URL    | drinkwindow   | [DrinkWindow]          | true
+        Name in another case still matches    | Parsing/LISTS | [parsing, lists]       | true
+        Wildcard in another case              | drink*        | [DrinkWindow]          | true
         """)
     void matchesPagePathsBySegment(String pattern, List<String> pagePath, boolean matches) {
         assertThat(PublishPattern.parse(pattern).matches(pagePath)).isEqualTo(matches);

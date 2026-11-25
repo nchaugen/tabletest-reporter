@@ -67,7 +67,8 @@ final class SpecMetadataApplier {
 
     private static ReportNode removeMatch(List<ReportNode> nodes, String name) {
         for (int i = 0; i < nodes.size(); i++) {
-            if (name.equals(nodes.get(i).name())) {
+            // A page's URL lowercases its name, so a feature may name it either way
+            if (name.equalsIgnoreCase(nodes.get(i).name())) {
                 return nodes.remove(i);
             }
         }

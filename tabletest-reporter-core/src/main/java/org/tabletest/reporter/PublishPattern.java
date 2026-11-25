@@ -68,7 +68,12 @@ record PublishPattern(List<String> segments) {
     }
 
     private static boolean nameMatches(String segment, String pageName) {
-        return segment.indexOf('*') < 0 ? segment.equals(pageName) : Pattern.matches(asRegex(segment), pageName);
+        // A page's URL lowercases its name, so a pattern may name it either way
+        return segment.indexOf('*') < 0
+                ? segment.equalsIgnoreCase(pageName)
+                : Pattern.compile(asRegex(segment), Pattern.CASE_INSENSITIVE)
+                        .matcher(pageName)
+                        .matches();
     }
 
     private static String asRegex(String segment) {

@@ -1101,7 +1101,7 @@ intro: >
   Generated from the executable TableTest suite. Every scenario below runs in CI;
   a broken row means the documented behaviour regressed.
 features:
-  - name: formatter          # matches an index page by its path segment / slug
+  - name: formatter          # matches an index page by its path segment / slug, in any case
     title: "Table Formatter"
     description: >           # a paragraph introducing the feature on its own index page
       How a table is laid out, in the order the formatter works in.
@@ -1216,7 +1216,8 @@ publish:
 ```
 
 Paths name pages the way the report's URLs do: the page names from the root index down,
-separated by `/`. Within a name, `*` matches any part of it; a whole segment of `**`
+separated by `/`. A name matches in any case, so `drinkwindow` and `DrinkWindow` name the same
+page; a feature `name` matches the same way. Within a name, `*` matches any part of it; a whole segment of `**`
 matches any number of levels. Excluding a page takes its whole subtree with it, and a
 feature page left with nothing published under it disappears too. `include` wins over
 `exclude`, so a single rule table can still publish from an otherwise internal class. A
