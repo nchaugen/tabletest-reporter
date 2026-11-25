@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.tabletest</groupId>
         <artifactId>tabletest-reporter</artifactId>
-        <version>1.5.1-SNAPSHOT</version>
+        <version>1.5.1</version>
     </parent>
 
     <artifactId>tabletest-reporter-core</artifactId>

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-11-25
+
 ### Fixed
 - A feature `name` and a `publish` path match a page name in any case. Before, they matched only
   the case the page's segment had in its class name, although the page's URL is lowercase: a
@@ -467,7 +469,8 @@
 - Slugified output directories and filenames
 
 
-[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.5.0...HEAD
+[Unreleased]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.5.1...HEAD
+[1.5.1]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.5.0...tabletest-reporter-1.5.1
 [1.5.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.4.0...tabletest-reporter-1.5.0
 [1.4.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.3.0...tabletest-reporter-1.4.0
 [1.3.0]: https://github.com/nchaugen/tabletest-reporter/compare/tabletest-reporter-1.2.0...tabletest-reporter-1.3.0
