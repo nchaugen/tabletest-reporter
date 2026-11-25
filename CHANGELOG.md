@@ -6,6 +6,8 @@
 - A feature `name` and a `publish` path match a page name in any case. Before, they matched only
   the case the page's segment had in its class name, although the page's URL is lowercase: a
   folder `DrinkWindow` matched `DrinkWindow`, not `drinkwindow`.
+- A list item in a description stays on its own line in HTML. A line that starts with `- `, `* `,
+  `+ `, or a number and a full stop (`1. `, `2. `, `12. `) keeps its line break; before, every line of a paragraph joined into one.
 - Parallel TableTest invocations no longer publish duplicate tables or lose row results
   when several rows finish together. Duplicate registrations could also add unnecessary
   numeric suffixes to generated filenames; affected tables now use their normal filenames.

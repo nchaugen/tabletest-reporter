@@ -216,7 +216,10 @@ class AuthenticationTest {
 
 **What gets collected:**
 - **Titles:** From `@DisplayName` annotations (class and method level)
-- **Descriptions:** From TableTest `@Description` annotations
+- **Descriptions:** From TableTest `@Description` annotations. A blank line starts a new
+  paragraph. A line that starts with `- `, `* `, `+ `, or a number and a full stop
+  (`1. `, `2. `, `12. `) stays on its own line in HTML, so
+  a list keeps its items apart; every other line break joins the lines
 - **Table structure:** Headers, rows, and column roles (scenario vs expectation columns)
 - **Test results:** Pass/fail status for each row
 
